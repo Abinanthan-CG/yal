@@ -1,0 +1,30 @@
+[package]
+name = "yal-ui"
+description = "The egui palette window that presents commands, results and actions."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "launcher"
+path = "src/bin/launcher.rs"
+
+[dependencies]
+yal-core.workspace = true
+yal-search.workspace = true
+yal-calc.workspace = true
+yal-data.workspace = true
+yal-index.workspace = true
+yal-store.workspace = true
+yal-system.workspace = true
+yal-engine.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+egui.workspace = true
+eframe.workspace = true
+

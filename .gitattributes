@@ -1,0 +1,8 @@
+# Keep source line endings stable across platforms.
+* text=auto eol=lf
+
+# Binary files that must never be rewritten.
+*.png binary
+*.exe binary
+*.node binary
+*.db binary

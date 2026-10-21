@@ -1,0 +1,14 @@
+/target
+**/*.rs.bk
+*.pdb
+
+# Local databases and captured evidence
+*.db
+*.db-shm
+*.db-wal
+*.png
+
+# Editor and OS noise
+.idea/
+.vscode/
+.DS_Store

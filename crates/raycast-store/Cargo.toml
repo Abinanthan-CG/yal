@@ -1,0 +1,19 @@
+[package]
+name = "yal-store"
+description = "SQLite persistence for settings, snippets, quicklinks, clipboard history and usage history."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+yal-core.workspace = true
+yal-search.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+dirs.workspace = true

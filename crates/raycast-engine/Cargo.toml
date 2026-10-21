@@ -1,0 +1,21 @@
+[package]
+name = "yal-engine"
+description = "Assembles commands from the store, index and calculator into ranked results."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+yal-core.workspace = true
+yal-search.workspace = true
+yal-calc.workspace = true
+yal-store.workspace = true
+yal-index.workspace = true
+yal-data.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+tracing.workspace = true
