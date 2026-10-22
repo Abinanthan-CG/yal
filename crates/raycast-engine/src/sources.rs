@@ -83,15 +83,26 @@ pub fn snippets(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
 }
 
 /// Build candidates for quicklinks.
-pub fn quicklinks(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
+///
+/// A quicklink may hold a `{}` placeholder for the query. When there is a
+/// query, the placeholder is filled with the percent-encoded text, so
+/// `google.com/search?q={}` plus `rust closures` opens the search results
+/// page. With no query the link opens as written, which is how a quicklink
+/// whose target has no placeholder behaves.
+pub fn quicklinks(store: &Store, query: &str) -> yal_store::StoreResult<Vec<Candidate>> {
     Ok(store
         .quicklinks()?
         .into_iter()
         .map(|quicklink| {
+            let url = if query.is_empty() {
+                quicklink.url.clone()
+            } else {
+                quicklink.url.replace("{}", &url_encode(query))
+            };
             let item = Item::new(quicklink.name.clone())
                 .with_id(format!("quicklink:{}", quicklink.id))
-                .with_subtitle(quicklink.url.clone())
-                .with_action(Action::open_url(quicklink.url.clone()));
+                .with_subtitle(url.clone())
+                .with_action(Action::open_url(url));
             Candidate::new(item, CommandKind::Quicklinks)
         })
         .collect())
@@ -243,26 +254,443 @@ pub fn web_search(query: &str) -> Option<Candidate> {
 }
 
 /// Build candidates for the open windows.
+///
+/// The window itself, plus the window-management actions for it. Each action
+/// is its own candidate so the palette stays a flat list: a query for one
+/// window ranks its own actions with it.
 pub fn windows(list: &[yal_system::Window]) -> Vec<Candidate> {
     list.iter()
-        .map(|window| {
-            let mut item = Item::new(window.title.clone())
+        .flat_map(|window| {
+            let title = window.title.clone();
+            let prefix = window.process_name.clone().unwrap_or_else(|| {
+                format!("pid {}", window.process_id)
+            });
+
+            let mut focus = Item::new(title.clone())
                 .with_id(format!("window:{}", window.handle))
-                .with_subtitle(
-                    window
-                        .process_name
-                        .clone()
-                        .unwrap_or_else(|| format!("pid {}", window.process_id)),
-                )
-                .with_action(Action::open_path(std::path::PathBuf::from(
-                    format!("window:{}", window.handle),
-                )));
+                .with_subtitle(prefix.clone())
+                .with_action(Action::task(
+                    "window",
+                    vec![window.handle.to_string(), "focus".into()],
+                ));
             if let Some(name) = &window.process_name {
-                item = item.with_keyword(name.clone());
+                focus = focus.with_keyword(name.clone());
             }
-            Candidate::new(item, CommandKind::Windows)
+
+            let mut out = vec![Candidate::new(focus, CommandKind::Windows)];
+            out.extend(
+                yal_system::window_controls::WINDOW_MENU
+                    .iter()
+                    .filter(|entry| {
+                        entry.action != yal_system::window_controls::WindowAction::Focus
+                    })
+                    .map(|entry| {
+                        Candidate::new(
+                            Item::new(format!("{} — {}", entry.title, title))
+                                .with_id(format!("window:{}:{}", window.handle, entry.title))
+                                .with_subtitle(prefix.clone())
+                                .with_action(Action::task(
+                                    "window",
+                                    vec![
+                                        window.handle.to_string(),
+                                        action_slug(entry.action).to_string(),
+                                    ],
+                                )),
+                            CommandKind::Windows,
+                        )
+                    }),
+            );
+            out
         })
         .collect()
+}
+
+/// The slug a window action is carried out under.
+fn action_slug(action: yal_system::window_controls::WindowAction) -> &'static str {
+    use yal_system::window_controls::WindowAction;
+    match action {
+        WindowAction::Close => "close",
+        WindowAction::Minimize => "minimize",
+        WindowAction::Maximize => "maximize",
+        WindowAction::Restore => "restore",
+        WindowAction::Focus => "focus",
+    }
+}
+
+/// Build candidates for the system commands.
+///
+/// The destructive actions are here because launcher offers them; carrying
+/// them out is guarded by the user choosing them deliberately. The volume
+/// and theme actions read the current state for their subtitle, so a muted
+/// machine offers "Restore the volume" rather than a guess.
+pub fn system_commands() -> Vec<Candidate> {
+    use yal_system::system::SystemCommand;
+
+    let destructive = [
+        SystemCommand::Lock,
+        SystemCommand::Sleep,
+        SystemCommand::Shutdown,
+        SystemCommand::Restart,
+        SystemCommand::LogOut,
+        SystemCommand::EmptyBin,
+    ];
+
+    let mut found: Vec<Candidate> = destructive
+        .into_iter()
+        .map(|command| {
+            let (slug, subject) = match command {
+                SystemCommand::Lock => ("lock", "affects your session"),
+                SystemCommand::Sleep => ("sleep", "affects the whole machine"),
+                SystemCommand::Shutdown => ("shutdown", "affects the whole machine"),
+                SystemCommand::Restart => ("restart", "affects the whole machine"),
+                SystemCommand::LogOut => ("logout", "affects your session"),
+                SystemCommand::EmptyBin => ("empty-bin", "empties the recycle bin"),
+            };
+            let mut item = Item::new(command.title())
+                .with_id(format!("system:{slug}"))
+                .with_subtitle(subject)
+                .with_action(Action::task("system", vec![slug.to_string()]));
+            for keyword in command.keywords() {
+                item = item.with_keyword(*keyword);
+            }
+            Candidate::new(item, CommandKind::System)
+        })
+        .collect();
+
+    // The symmetric volume actions. What is on offer depends on the state
+    // right now, which is as honest as a subtitle can be.
+    if let Ok(state) = yal_system::audio::volume() {
+        let builder = |title: &str, slug: &str, id: String| {
+            Candidate::new(
+                Item::new(title.to_string())
+                    .with_id(id)
+                    .with_subtitle(format!("currently {:.0}", state.level))
+                    .with_action(Action::task("system", vec![slug.to_string()])),
+                CommandKind::System,
+            )
+        };
+        if state.muted {
+            found.push(builder("Restore the volume", "unmute", "system:unmute".into()));
+        } else {
+            found.push(builder("Mute the volume", "mute", "system:mute".into()));
+        }
+        found.push(builder("Volume up", "volume-up", "system:volume-up".into()));
+        found.push(builder("Volume down", "volume-down", "system:volume-down".into()));
+    }
+
+    // The theme.
+    if let Ok(dark) = yal_system::display::is_dark_mode() {
+        let (title, slug) = if dark {
+            ("Switch to light mode", "light-mode")
+        } else {
+            ("Switch to dark mode", "dark-mode")
+        };
+        found.push(Candidate::new(
+            Item::new(title)
+                .with_id(format!("system:{slug}"))
+                .with_subtitle("applications re-read it as they restart")
+                .with_action(Action::task("system", vec![slug.to_string()])),
+            CommandKind::System,
+        ));
+    }
+
+    // Generators that need no input.
+    found.push(Candidate::new(
+        Item::new(yal_data::text::uuid())
+            .with_id("system:uuid")
+            .with_subtitle("a fresh identifier, ready to copy")
+            .with_action(Action::copy(quick_uuid())),
+        CommandKind::System,
+    ));
+
+    found
+}
+
+/// A fresh identifier, generated at build time so the title and the copied
+/// text are the same string.
+fn quick_uuid() -> String {
+    yal_data::text::uuid()
+}
+
+/// Build candidates for the text transforms.
+///
+/// The query is split at its first space: the head chooses the transform and
+/// the remainder is the text to transform. `upper hello` offers the
+/// upper-cased text; a head with no text yet offers the transform without a
+/// preview.
+pub fn text_transforms(query: &str) -> Vec<Candidate> {
+    let Some((head, input)) = query.split_once(' ') else {
+        return Vec::new();
+    };
+    let head = head.trim().to_lowercase();
+    let input = input.trim();
+    if head.is_empty() {
+        return Vec::new();
+    }
+
+    yal_data::text::TRANSFORMS
+        .iter()
+        .filter(|transform| {
+            transform.slug == head
+                || transform.keywords.iter().any(|keyword| *keyword == head)
+        })
+        .filter_map(|transform| {
+            if input.is_empty() {
+                // Without input there is nothing to preview; the palette
+                // shows the transform and asks for the text.
+                return Some(Candidate::new(
+                    Item::new(transform.title)
+                        .with_id(format!("text:{}", transform.slug))
+                        .with_subtitle("type the text after the transform"),
+                    CommandKind::Text,
+                ));
+            }
+
+            let result = yal_data::text::apply(transform.slug, input).ok()?;
+            // The user typed the head and the input as one query; that is
+            // the text this result is ranked against.
+            let invocation = format!("{head} {input}");
+            let mut item = Item::new(display_text(&result))
+                .with_id(format!("text:{}", transform.slug))
+                .with_subtitle(format!("{} — copied when chosen", transform.title))
+                .with_keyword(invocation)
+                .with_keyword(transform.slug.to_string());
+            for keyword in transform.keywords {
+                item = item.with_keyword((*keyword).to_string());
+            }
+            Some(Candidate::new(
+                item.with_action(Action::copy(result.clone()))
+                    .with_payload(serde_json::json!({ "kind": "text", "result": result })),
+                CommandKind::Text,
+            ))
+        })
+        .collect()
+}
+
+/// A result shortened for the title line.
+fn display_text(text: &str) -> String {
+    const WIDTH: usize = 80;
+    let line = text.lines().next().unwrap_or(text);
+    if line.chars().count() <= WIDTH {
+        return line.to_string();
+    }
+    line.chars().take(WIDTH).collect()
+}
+
+/// Build candidates for the running processes.
+///
+/// `query` is the text after the `kill` prefix; an empty query offers the
+/// most demanding processes first.
+pub fn processes(
+    running: &[yal_system::processes::Running],
+    query: &str,
+    limit: usize,
+) -> Vec<Candidate> {
+    running
+        .iter()
+        .filter(|process| {
+            if query.is_empty() {
+                return true;
+            }
+            let needle = query.to_lowercase();
+            process.name.to_lowercase().contains(&needle)
+                || process.process_id.to_string().contains(&needle)
+        })
+        .take(limit)
+        .map(|process| {
+            Candidate::new(
+                Item::new(format!("Kill — {}", process.name))
+                    .with_id(format!("kill:{}", process.process_id))
+                    .with_subtitle(format!(
+                        "pid {}, {:.0} MB in use",
+                        process.process_id,
+                        process.memory as f64 / 1_048_576.0
+                    ))
+                    .with_keyword(format!("kill {}", process.process_id))
+                    .with_keyword(format!("kill {}", process.name.to_lowercase()))
+                    .with_action(Action::task(
+                        "kill",
+                        vec![process.process_id.to_string()],
+                    )),
+                CommandKind::Process,
+            )
+        })
+        .collect()
+}
+
+/// Build candidates for the open browser tabs.
+pub fn browser_tabs(
+    tabs: &[yal_system::tabs::BrowserTab],
+    query: &str,
+    limit: usize,
+) -> Vec<Candidate> {
+    tabs.iter()
+        .filter(|tab| {
+            if query.is_empty() {
+                return true;
+            }
+            let needle = query.to_lowercase();
+            tab.title.to_lowercase().contains(&needle)
+                || tab.browser.to_lowercase().contains(&needle)
+        })
+        .take(limit)
+        .map(|tab| {
+            Candidate::new(
+                Item::new(tab.title.clone())
+                    .with_id(format!("tab:{}:{}", tab.window, tab.title))
+                    .with_subtitle(tab.browser.clone())
+                    .with_keyword(format!("tabs {}", tab.title.to_lowercase()))
+                    .with_keyword(format!("tabs {}", tab.browser.to_lowercase()))
+                    .with_keyword(tab.title.to_lowercase())
+                    .with_action(Action::task(
+                        "window",
+                        vec![tab.window.to_string(), "focus".into()],
+                    )),
+                CommandKind::BrowserTabs,
+            )
+        })
+        .collect()
+}
+
+/// A saved timer, decoded from the store.
+struct SavedTimer {
+    id: String,
+    label: String,
+    ends_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Decode the timers stored in settings.
+fn saved_timers(store: &Store) -> yal_store::StoreResult<Vec<SavedTimer>> {
+    let mut found = Vec::new();
+    for (key, value) in store.settings()? {
+        let Some(id) = key.strip_prefix("timer:") else {
+            continue;
+        };
+        if value.is_empty() {
+            continue;
+        }
+        let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
+            continue;
+        };
+        let Some(label) = parsed.get("label").and_then(|label| label.as_str()) else {
+            continue;
+        };
+        let Some(ends_at) = parsed.get("ends_at").and_then(|ends| ends.as_i64()) else {
+            continue;
+        };
+        let Some(ends_at) = chrono::DateTime::<chrono::Utc>::from_timestamp(ends_at, 0) else {
+            continue;
+        };
+        found.push(SavedTimer {
+            id: id.to_string(),
+            label: label.to_string(),
+            ends_at,
+        });
+    }
+    Ok(found)
+}
+
+/// Build candidates for the running timers.
+///
+/// An expired timer is not listed: it is raised as a banner by the palette
+/// and removed once the user has acknowledged it.
+pub fn timers(store: &Store, now: chrono::DateTime<chrono::Utc>) -> yal_store::StoreResult<Vec<Candidate>> {
+    Ok(saved_timers(store)?
+        .into_iter()
+        .filter(|timer| timer.ends_at > now)
+        .map(|timer| {
+            let remaining = timer.ends_at - now;
+            let seconds = remaining.num_seconds().max(0);
+            let minutes = seconds / 60;
+            let shown = if minutes >= 1 {
+                format!("{}m {:02}s", minutes, seconds % 60)
+            } else {
+                format!("{seconds}s")
+            };
+            Candidate::new(
+                Item::new(format!("Timer — {}", timer.label))
+                    .with_id(format!("timer:{}", timer.id))
+                    .with_subtitle(format!("{shown} remaining"))
+                    .with_action(Action::task("timer-cancel", vec![timer.id.clone()])),
+                CommandKind::Timer,
+            )
+        })
+        .collect())
+}
+
+/// The timer candidate for a query like `timer 10m pomodoro`.
+///
+/// The duration is a run of tokens such as `90`, `10m`, `1h 30m`; the label
+/// is everything after the first token that is not a duration. `None` when
+/// the query is not a timer at all.
+pub fn timer_specification(query: &str) -> Option<Candidate> {
+    let rest = query.strip_prefix("timer ")?.trim();
+    if rest.is_empty() {
+        return None;
+    }
+
+    let mut total: u64 = 0;
+    let mut consumed = String::new();
+    for token in rest.split_whitespace() {
+        let split = token
+            .find(|ch: char| !ch.is_ascii_digit())
+            .unwrap_or(token.len());
+        let (digits, unit) = token.split_at(split);
+        let multiplier = match unit.to_lowercase().as_str() {
+            "" | "s" => 1,
+            "m" => 60,
+            "h" => 3_600,
+            "d" => 86_400,
+            _ => break,
+        };
+        let Ok(amount) = digits.parse::<u64>() else {
+            break;
+        };
+        total += amount.saturating_mul(multiplier);
+        consumed.push_str(token);
+        consumed.push(' ');
+    }
+
+    if total == 0 || total > 24 * 3_600 {
+        return None;
+    }
+
+    // The tokens that parsed as durations are exactly the prefix of the
+    // query, so the rest is the label.
+    let remainder = rest[consumed.len()..].trim();
+    let label = if remainder.is_empty() {
+        "Timer".to_string()
+    } else {
+        remainder.to_string()
+    };
+
+    Some(Candidate::new(
+        Item::new(format!(
+            "Timer — {} for {label}",
+            shown_duration(total)
+        ))
+        .with_id("timer:new".to_string())
+        .with_subtitle("starts when chosen")
+        .with_action(Action::task(
+            "timer",
+            vec![total.to_string(), label.clone()],
+        )),
+        CommandKind::Timer,
+    ))
+}
+
+/// A duration as it is written to people.
+fn shown_duration(total: u64) -> String {
+    let hours = total / 3_600;
+    let minutes = (total % 3_600) / 60;
+    let seconds = total % 60;
+    if hours > 0 {
+        format!("{hours}h {minutes:02}m")
+    } else if minutes > 0 {
+        format!("{minutes}m {seconds:02}s")
+    } else {
+        format!("{seconds}s")
+    }
 }
 
 /// Build candidates for files found on disk.

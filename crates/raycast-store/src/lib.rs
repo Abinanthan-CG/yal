@@ -140,6 +140,43 @@ impl Store {
         Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
+    /// Seed the quicklinks every installation starts with, once.
+    ///
+    /// The search templates are stored as ordinary quicklinks, so the user
+    /// can rename, edit or delete them like any other. The `{}` in a target
+    /// is where the palette query goes.
+    pub fn seed_default_quicklinks(&self) -> StoreResult<()> {
+        if self.setting("quicklinks-seeded")?.is_some() {
+            return Ok(());
+        }
+
+        let now = Utc::now();
+        let templates: &[(&str, &str)] = &[
+            ("Google", "https://www.google.com/search?q={}"),
+            ("Bing", "https://www.bing.com/search?q={}"),
+            ("DuckDuckGo", "https://duckduckgo.com/?q={}"),
+            ("YouTube", "https://www.youtube.com/results?search_query={}"),
+            ("Wikipedia", "https://en.wikipedia.org/w/index.php?search={}"),
+            ("GitHub", "https://github.com/search?q={}"),
+            ("Stack Overflow", "https://stackoverflow.com/search?q={}"),
+            ("Reddit", "https://www.reddit.com/search/?q={}"),
+            ("Amazon", "https://www.amazon.com/s?k={}"),
+            ("X", "https://x.com/search?q={}"),
+            ("Maps", "https://www.google.com/maps/search/{}"),
+        ];
+
+        for (index, (name, url)) in templates.iter().enumerate() {
+            self.upsert_quicklink(&Quicklink {
+                id: format!("template-{index}"),
+                name: (*name).to_string(),
+                url: (*url).to_string(),
+                created_at: now,
+            })?;
+        }
+
+        self.set_setting("quicklinks-seeded", "true")
+    }
+
     // ---- usage and frecency --------------------------------------------
 
     /// Record that a result was chosen.

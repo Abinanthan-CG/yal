@@ -64,6 +64,16 @@ pub enum CommandKind {
     Settings,
     /// Web search.
     WebSearch,
+    /// System commands: lock, sleep, volume, brightness, emptying the bin.
+    System,
+    /// Text transforms: case changes, encodings, hashes, UUIDs.
+    Text,
+    /// Processes: kill a running program.
+    Process,
+    /// Open browser tabs.
+    BrowserTabs,
+    /// Countdown timers.
+    Timer,
     /// A third-party extension.
     ///
     /// Reserved. No extension runtime ships in this milestone
@@ -93,6 +103,11 @@ impl CommandKind {
             CommandKind::Windows => "Windows",
             CommandKind::Settings => "Preferences",
             CommandKind::WebSearch => "Search the Web",
+            CommandKind::System => "System",
+            CommandKind::Text => "Text",
+            CommandKind::Process => "Processes",
+            CommandKind::BrowserTabs => "Browser Tabs",
+            CommandKind::Timer => "Timers",
             CommandKind::Extension => "Extensions",
         }
     }

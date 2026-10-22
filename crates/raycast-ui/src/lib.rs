@@ -62,6 +62,10 @@ pub struct Palette {
     cached_texture: Option<egui::TextureHandle>,
     /// The last error shown to the user.
     status: Option<String>,
+    /// The last timer check, so timers are only read once a second.
+    last_timer_check: Option<Instant>,
+    /// A timer that rang while the palette was away.
+    ring: Option<String>,
 }
 
 /// The identifier the launcher hotkey is registered under.
@@ -104,8 +108,14 @@ impl Palette {
             cached_image: None,
             cached_texture: None,
             status: None,
+            last_timer_check: None,
+            ring: None,
         };
         palette.register_hotkey();
+        // The built-in search templates are seeded once, on install.
+        if let Err(error) = palette.store.seed_default_quicklinks() {
+            palette.status = Some(format!("the bundled links could not be seeded: {error}"));
+        }
         palette.run_search();
         palette
     }
@@ -173,6 +183,7 @@ impl Palette {
         self.visible = true;
         ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
         self.query.clear();
+        self.ring = None;
         self.run_search();
         self.needs_focus = true;
     }
@@ -228,7 +239,7 @@ impl Palette {
             return;
         };
 
-        if let Err(error) = perform(&action) {
+        if let Err(error) = self.perform(&action) {
             self.status = Some(error.to_string());
             return;
         }
@@ -245,28 +256,238 @@ impl Palette {
     }
 }
 
-/// Carry out an action.
-fn perform(action: &Action) -> Result<(), String> {
-    match (&action.kind, &action.target) {
-        (ActionKind::OpenPath, OpenTarget::Path(path)) => {
-            yal_system::launch::launch(path).map_err(|err| err.to_string())
+impl Palette {
+    /// Carry out an action.
+    ///
+    /// The palette owns the tasks that are not intents about other
+    /// programs: it has the applications list to resolve a launch, and the
+    /// store to keep a timer in.
+    fn perform(&self, action: &Action) -> Result<(), String> {
+        match (&action.kind, &action.target) {
+            (ActionKind::OpenPath, OpenTarget::Path(path)) => {
+                yal_system::launch::launch(path).map_err(|err| err.to_string())
+            }
+            (ActionKind::OpenUrl, OpenTarget::Url(url)) => {
+                yal_system::launch::open_url(url).map_err(|err| err.to_string())
+            }
+            (ActionKind::RevealInFileManager, OpenTarget::Path(path)) => {
+                yal_system::launch::reveal_in_file_manager(path).map_err(|err| err.to_string())
+            }
+            (ActionKind::CopyToClipboard, OpenTarget::Text(text))
+            | (ActionKind::PasteToClipboard, OpenTarget::Text(text)) => {
+                let mut clipboard = yal_system::clipboard::Clipboard::new()
+                    .map_err(|err| err.to_string())?;
+                clipboard.write_text(text).map_err(|err| err.to_string())
+            }
+            (ActionKind::OpenApplication, OpenTarget::Application(id)) => {
+                // The identifier is resolved against the palette's own
+                // index, because only it knows where the application lives.
+                let resolved = self
+                    .applications
+                    .iter()
+                    .find(|application| application.id == *id)
+                    .ok_or_else(|| format!("\"{id}\" is not an application this launcher knows"))?;
+                yal_system::launch::launch(&resolved.path).map_err(|err| err.to_string())
+            }
+            (ActionKind::RunCommand, OpenTarget::Command { program, args }) => {
+                // Detached: the palette does not wait and does not keep a
+                // console for the child.
+                std::process::Command::new(program)
+                    .args(args)
+                    .spawn()
+                    .map(|_| ())
+                    .map_err(|err| format!("{program:?} could not be started: {err}"))
+            }
+            (ActionKind::LauncherTask, OpenTarget::Task { name, arguments }) => {
+                self.perform_task(name, arguments)
+            }
+            // An action with no matching implementation is not an error; it
+            // is simply not carried out.
+            _ => Ok(()),
         }
-        (ActionKind::OpenUrl, OpenTarget::Url(url)) => {
-            yal_system::launch::open_url(url).map_err(|err| err.to_string())
-        }
-        (ActionKind::RevealInFileManager, OpenTarget::Path(path)) => {
-            yal_system::launch::reveal_in_file_manager(path).map_err(|err| err.to_string())
-        }
-        (ActionKind::CopyToClipboard, OpenTarget::Text(text))
-        | (ActionKind::PasteToClipboard, OpenTarget::Text(text)) => {
-            let mut clipboard = yal_system::clipboard::Clipboard::new()
-                .map_err(|err| err.to_string())?;
-            clipboard.write_text(text).map_err(|err| err.to_string())
-        }
-        // An action with no matching implementation is not an error; it is
-        // simply not carried out.
-        _ => Ok(()),
     }
+
+    /// Carry out a task the launcher itself owns.
+    fn perform_task(&self, name: &str, arguments: &[String]) -> Result<(), String> {
+        let head: Option<String> = arguments.first().cloned();
+        let head = head.as_deref();
+
+        match name {
+            "system" => {
+                let command = head
+                    .ok_or_else(|| "the system command is missing".to_string())?;
+                perform_system(command)
+            }
+            "kill" => {
+                let pid = head
+                    .ok_or_else(|| "the process identifier is missing".to_string())?
+                    .parse::<u32>()
+                    .map_err(|err| format!("\"{}\" is not a process id: {err}", arguments[0]))?;
+                yal_system::processes::terminate(pid).map_err(|err| err.to_string())
+            }
+            "window" => {
+                let handle = arguments
+                    .first()
+                    .ok_or_else(|| "the window handle is missing".to_string())?
+                    .parse::<u64>()
+                    .map_err(|err| format!("the window handle is not a number: {err}"))?;
+                let action_slug = arguments
+                    .get(1)
+                    .map(String::as_str)
+                    .unwrap_or("focus");
+                let action = match action_slug {
+                    "close" => yal_system::window_controls::WindowAction::Close,
+                    "minimize" => yal_system::window_controls::WindowAction::Minimize,
+                    "maximize" => yal_system::window_controls::WindowAction::Maximize,
+                    "restore" => yal_system::window_controls::WindowAction::Restore,
+                    _ => yal_system::window_controls::WindowAction::Focus,
+                };
+                yal_system::window_controls::perform(handle, action)
+                    .map_err(|err| err.to_string())
+            }
+            "text" => {
+                let slug = head.ok_or_else(|| "the transform is missing".to_string())?;
+                let input = arguments.get(1).map(String::as_str).unwrap_or("");
+                let result = yal_data::text::apply(slug, input)
+                    .map_err(|err| err.to_string())?;
+                let mut clipboard = yal_system::clipboard::Clipboard::new()
+                    .map_err(|err| err.to_string())?;
+                clipboard.write_text(&result).map_err(|err| err.to_string())
+            }
+            "timer" => {
+                let seconds = head
+                    .ok_or_else(|| "the timer length is missing".to_string())?
+                    .parse::<u64>()
+                    .map_err(|err| format!("the timer length is not seconds: {err}"))?;
+                let label = arguments.get(1).cloned().unwrap_or_else(|| "Timer".into());
+                self.create_timer(seconds, &label).map_err(|err| err.to_string())
+            }
+            "timer-cancel" => {
+                let id = head
+                    .ok_or_else(|| "the timer identifier is missing".to_string())?;
+                self.store
+                    .clear_setting(&format!("timer:{id}"))
+                    .map_err(|err| err.to_string())
+            }
+            unknown => {
+                let _ = unknown;
+                Err(format!("the task \"{name}\" is not one this launcher carries out"))
+            }
+        }
+    }
+
+    /// Store a timer in the settings, where the tick can find it again.
+    fn create_timer(
+        &self,
+        seconds: u64,
+        label: &str,
+    ) -> Result<(), yal_store::StoreError> {
+        let id = chrono::Utc::now().timestamp_millis().to_string();
+        let ends_at = chrono::Utc::now() + chrono::Duration::seconds(seconds as i64);
+        let record = serde_json::json!({
+            "label": label,
+            "ends_at": ends_at.timestamp(),
+            "seconds": seconds,
+        });
+        self.store.set_setting(&format!("timer:{id}"), &record.to_string())
+    }
+
+    /// Check the stored timers once a second.
+    ///
+    /// A timer that has run out is announced with a toast when the system
+    /// allows it, and always removed. When the toast is refused — an
+    /// unpackaged program may be without a registered user model — the
+    /// palette raises itself with a banner instead, which cannot fail.
+    fn check_timers(&mut self, ctx: &egui::Context) {
+        const CHECK_INTERVAL: std::time::Duration = std::time::Duration::from_secs(1);
+        if let Some(last) = self.last_timer_check {
+            if last.elapsed() < CHECK_INTERVAL {
+                return;
+            }
+        }
+        self.last_timer_check = Some(Instant::now());
+
+        let Ok(settings) = self.store.settings() else {
+            return;
+        };
+        let now = chrono::Utc::now();
+        for (key, value) in settings {
+            if !key.starts_with("timer:") || value.is_empty() {
+                continue;
+            }
+            let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
+                continue;
+            };
+            let Some(label) = parsed.get("label").and_then(|label| label.as_str()) else {
+                continue;
+            };
+            let Some(ends_at) = parsed
+                .get("ends_at")
+                .and_then(|ends| ends.as_i64())
+                .and_then(|timestamp| chrono::DateTime::<chrono::Utc>::from_timestamp(timestamp, 0))
+            else {
+                continue;
+            };
+            if ends_at > now {
+                continue;
+            }
+
+            let _ = self.store.clear_setting(&key);
+            let announcement = format!("{label}: the timer has finished");
+            match yal_system::notify::toast(label, "The timer has finished.") {
+                Ok(()) => {}
+                Err(_) => {
+                    self.ring = Some(announcement);
+                    self.visible = true;
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+                    ctx.request_repaint();
+                }
+            }
+        }
+    }
+}
+
+/// A system command by its slug, carried out on demand.
+fn perform_system(command: &str) -> Result<(), String> {
+    use yal_system::audio as audio_system;
+    use yal_system::display as display_system;
+    use yal_system::system as power_system;
+
+    match command {
+        "lock" => power_system::lock().map_err(|err| err.to_string()),
+        "sleep" => power_system::sleep().map_err(|err| err.to_string()),
+        "shutdown" => power_system::shutdown().map_err(|err| err.to_string()),
+        "restart" => power_system::restart().map_err(|err| err.to_string()),
+        "logout" => power_system::log_out().map_err(|err| err.to_string()),
+        "empty-bin" => power_system::empty_recycle_bin().map_err(|err| err.to_string()),
+        "mute" => audio_system::set_muted(true).map_err(|err| err.to_string()),
+        "unmute" => audio_system::set_muted(false).map_err(|err| err.to_string()),
+        "volume-up" => audio_system::adjust_volume(5.0).map(|_| ()).map_err(|err| err.to_string()),
+        "volume-down" => audio_system::adjust_volume(-5.0).map(|_| ()).map_err(|err| err.to_string()),
+        "brighten" => display_system::set_brightness(current_brightness()
+            .map(|value| (value + 10.0).min(100.0))
+            .unwrap_or(60.0))
+        .map_err(|err| err.to_string()),
+        "dim" => display_system::set_brightness(current_brightness()
+            .map(|value| (value - 10.0).max(0.0))
+            .unwrap_or(40.0))
+        .map_err(|err| err.to_string()),
+        "dark-mode" | "light-mode" => {
+            let dark = display_system::is_dark_mode().unwrap_or(false);
+            display_system::set_dark_mode(!dark)
+                .map(|_| ())
+                .map_err(|err| err.to_string())
+        }
+        other => Err(format!("the system command \"{other}\" is not one this launcher carries out")),
+    }
+}
+
+/// The first controllable monitor's brightness, for nudging it.
+fn current_brightness() -> Option<f64> {
+    yal_system::display::read_brightness()
+        .ok()?
+        .first()
+        .map(|(_monitor, level)| *level)
 }
 
 /// The colours the palette draws with.
@@ -320,6 +541,10 @@ impl eframe::App for Palette {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
             }
         }
+
+        // Timers are checked every second, even while the palette is away,
+        // because a finished one raises a banner here.
+        self.check_timers(ctx);
 
         // Deliver messages sent from other threads.
         while let Ok(message) = self.receiver.try_recv() {
@@ -458,6 +683,14 @@ impl eframe::App for Palette {
                     }
                 });
 
+                if let Some(ring) = &self.ring {
+                    ui.add_space(6.0);
+                    ui.label(
+                        RichText::new(ring.clone())
+                            .color(Color32::from_rgb(230, 120, 120))
+                            .size(15.0),
+                    );
+                }
                 if let Some(status) = &self.status {
                     ui.add_space(6.0);
                     ui.label(RichText::new(status).color(Color32::from_rgb(230, 120, 120)));
@@ -795,8 +1028,8 @@ mod tests {
 
     #[test]
     fn splits_multibyte_characters_without_breaking_them() {
-        let segments = split_by_ranges("æ—¥æœ¬èªž", std::slice::from_ref(&(1..2)));
+        let segments = split_by_ranges("日本語", std::slice::from_ref(&(1..2)));
         assert_eq!(segments.len(), 3);
-        assert_eq!(segments[1], ("æœ¬".to_string(), true));
+        assert_eq!(segments[1], ("本".to_string(), true));
     }
 }

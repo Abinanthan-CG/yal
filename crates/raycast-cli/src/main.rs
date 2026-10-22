@@ -174,6 +174,143 @@ enum Command {
 
     /// Report on the state of the local environment.
     Doctor,
+
+    /// Show or change the master volume.
+    Audio {
+        #[command(subcommand)]
+        action: AudioAction,
+    },
+
+    /// Brightness and theme.
+    Display {
+        #[command(subcommand)]
+        action: DisplayAction,
+    },
+
+    /// System power and shell commands.
+    ///
+    /// These act immediately when run.
+    System {
+        /// What to do: `lock`, `sleep`, `shutdown`, `restart`, `logout`,
+        /// `empty-bin`.
+        command: String,
+    },
+
+    /// List the running processes, heaviest first.
+    Processes,
+
+    /// End a running process.
+    Kill {
+        /// The process identifier.
+        pid: u32,
+    },
+
+    /// Search the open browser tabs.
+    Tabs {
+        /// The tab title to look for.
+        query: String,
+    },
+
+    /// Show a toast notification.
+    Notice {
+        /// The heading.
+        title: String,
+        /// The message.
+        #[arg(default_value = "")]
+        body: String,
+        /// The user model identifier to send from, when the launcher's own
+        /// is not trusted yet.
+        #[arg(long)]
+        app_id: Option<String>,
+    },
+
+    /// Start a countdown timer, such as `10m` or `1h 30s`.
+    Timer {
+        /// The duration tokens: `90`, `10m`, `1h 30m`.
+        duration: Vec<String>,
+        /// What the timer is for.
+        #[arg(default_value = "Timer")]
+        label: String,
+    },
+
+    /// List the stored timers with the time left on them.
+    Timers,
+
+    /// Cancel a stored timer.
+    ///
+    /// The identifier is the key the timer is stored under.
+    TimerCancel {
+        /// The identifier from `rc timers`.
+        id: String,
+    },
+
+    /// Apply a text transform, such as `upper` or `base64encode`.
+    Transform {
+        /// The transform slug; `rc transforms` lists them.
+        slug: String,
+        /// The text to transform.
+        text: String,
+    },
+
+    /// List every text transform.
+    Transforms,
+
+    /// Hash text.
+    Hash {
+        /// The text to hash.
+        text: String,
+        /// `sha256`, `sha1` or `md5`.
+        #[arg(default_value = "sha256")]
+        algorithm: String,
+    },
+
+    /// Generate an identifier.
+    #[command(name = "uuid")]
+    UuidGenerate,
+
+    /// Generate placeholder text.
+    Lorem {
+        /// How many paragraphs.
+        #[arg(default_value_t = 2)]
+        paragraphs: usize,
+    },
+
+    /// Seed the bundled search templates into the store, once.
+    SeedQuicklinks,
+}
+
+/// Volume operations.
+#[derive(Subcommand, Debug)]
+enum AudioAction {
+    /// Read the master volume and mute state.
+    Get,
+    /// Set the volume, 0 to 100.
+    Set {
+        #[arg(value_name = "LEVEL")]
+        level: f64,
+    },
+    /// Mute the output.
+    Mute,
+    /// Unmute the output.
+    Unmute,
+    /// Mute or unmute, whichever changes the state.
+    Toggle,
+}
+
+/// Display operations.
+#[derive(Subcommand, Debug)]
+enum DisplayAction {
+    /// Read the brightness of every controllable monitor.
+    Brightness {
+        /// A new level from 0 to 100; without it, read only.
+        #[arg(value_name = "LEVEL")]
+        level: Option<f64>,
+    },
+    /// Read or set the application theme.
+    Dark {
+        /// `on`, `off` or nothing to report the state.
+        state: Option<String>,
+    },
 }
 
 /// Snippet operations.
@@ -689,6 +826,242 @@ fn run(cli: &Cli) -> Result<()> {
                 yal_data::all_time_zones().len()
             );
         }
+
+        Command::Audio { action } => match action {
+            AudioAction::Get => {
+                let state = yal_system::audio::volume()
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!(
+                    "volume {:.0}{}",
+                    state.level,
+                    if state.muted { " (muted)" } else { "" }
+                );
+            }
+            AudioAction::Set { level } => {
+                yal_system::audio::set_volume(*level)
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!("volume set to {level:.0}");
+            }
+            AudioAction::Mute => {
+                yal_system::audio::set_muted(true)
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!("muted");
+            }
+            AudioAction::Unmute => {
+                yal_system::audio::set_muted(false)
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!("unmuted");
+            }
+            AudioAction::Toggle => {
+                let state = yal_system::audio::toggle_mute()
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!(
+                    "volume {:.0}{}",
+                    state.level,
+                    if state.muted { " (muted)" } else { "" }
+                );
+            }
+        },
+
+        Command::Display { action } => match action {
+            DisplayAction::Brightness { level } => {
+                if let Some(level) = level {
+                    yal_system::display::set_brightness(*level)
+                        .map_err(|err| anyhow::anyhow!("{err}"))?;
+                }
+                let readings =
+                    yal_system::display::read_brightness()
+                        .map_err(|err| anyhow::anyhow!("{err}"))?;
+                for (monitor, percent) in readings {
+                    println!("monitor {monitor}: {:.0}", percent);
+                }
+            }
+            DisplayAction::Dark { state } => {
+                match state.as_deref().map(str::to_lowercase).as_deref() {
+                    Some("on") | Some("dark") => {
+                        yal_system::display::set_dark_mode(true)
+                            .map_err(|err| anyhow::anyhow!("{err}"))?;
+                        println!("applications now dark");
+                    }
+                    Some("off") | Some("light") => {
+                        yal_system::display::set_dark_mode(false)
+                            .map_err(|err| anyhow::anyhow!("{err}"))?;
+                        println!("applications now light");
+                    }
+                    _ => {
+                        let dark = yal_system::display::is_dark_mode()
+                            .map_err(|err| anyhow::anyhow!("{err}"))?;
+                        println!("{}", if dark { "dark" } else { "light" });
+                    }
+                }
+            }
+        },
+
+        Command::System { command } => {
+            use yal_system::system as power_system;
+            let outcome = match command.as_str() {
+                "lock" => power_system::lock().map(|_| "locked the session".to_string()),
+                "sleep" => power_system::sleep().map(|_| "sleeping".to_string()),
+                "shutdown" => power_system::shutdown().map(|_| "shutdown begins in 5s".to_string()),
+                "restart" => power_system::restart().map(|_| "restart begins in 5s".to_string()),
+                "logout" => power_system::log_out().map(|_| "logged out".to_string()),
+                "empty-bin" => {
+                    power_system::empty_recycle_bin().map(|_| "recycle bin emptied".to_string())
+                }
+                other => anyhow::bail!(
+                    "`{other}` is not a system command (lock, sleep, shutdown, restart, logout, empty-bin)"
+                ),
+            };
+            println!("{}", outcome?);
+        }
+
+        Command::Processes => {
+            let running = yal_system::processes::running();
+            for process in &running {
+                println!(
+                    "{:<8} {:<28} {:.0} MB",
+                    process.process_id,
+                    process.name,
+                    process.memory as f64 / 1_048_576.0
+                );
+            }
+            println!("{} processes", running.len());
+        }
+
+        Command::Kill { pid } => {
+            yal_system::processes::terminate(*pid)
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+            println!("asked process {pid} to end");
+        }
+
+        Command::Tabs { query } => {
+            let tabs = yal_system::tabs::open_tabs();
+            let needle = query.to_lowercase();
+            for tab in &tabs {
+                if tab.title.to_lowercase().contains(&needle)
+                    || tab.browser.to_lowercase().contains(&needle)
+                {
+                    println!("{:<20} {}", tab.browser, tab.title);
+                }
+            }
+            println!("{} tabs", tabs.len());
+        }
+
+        Command::Notice { title, body, app_id } => {
+            // Reports honestly: on a host that refuses toasts from this
+            // launcher, the failure is the answer.
+            match app_id {
+                Some(app_id) => yal_system::notify::toast_with(app_id, title, body),
+                None => yal_system::notify::toast(title, body),
+            }
+            .map_err(|err| anyhow::anyhow!("{err}"))?;
+            println!("toast accepted: {title}");
+        }
+
+        Command::Timer { duration, label } => {
+            let token = duration.join(" ");
+            let seconds = duration_seconds(&token)
+                .ok_or_else(|| anyhow::anyhow!("`{token}` is not a duration, such as `10m`"))?;
+            let store = open_store(cli)?;
+            let id = chrono::Utc::now().timestamp_millis().to_string();
+            let ends_at = chrono::Utc::now() + chrono::Duration::seconds(seconds as i64);
+            let record = serde_json::json!({
+                "label": label,
+                "ends_at": ends_at.timestamp(),
+                "seconds": seconds,
+            });
+            store.set_setting(&format!("timer:{id}"), &record.to_string())?;
+            println!(
+                "timer `{label}` stored as {} starts now",
+                id
+            );
+            yal_system::notify::toast(
+                label,
+                &format!("Timer set for {}.", shown_duration(seconds)),
+            )
+            .map_err(|err| anyhow::anyhow!("{err}"))?;
+        }
+
+        Command::Timers => {
+            let store = open_store(cli)?;
+            let now = chrono::Utc::now();
+            let mut shown = 0usize;
+            for (key, value) in store.settings()? {
+                if !key.starts_with("timer:") || value.is_empty() {
+                    continue;
+                }
+                let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
+                    continue;
+                };
+                let label = parsed
+                    .get("label")
+                    .and_then(|label| label.as_str())
+                    .unwrap_or("Timer");
+                let Some(ends_at) = parsed
+                    .get("ends_at")
+                    .and_then(|ends| ends.as_i64())
+                    .and_then(|timestamp| chrono::DateTime::<chrono::Utc>::from_timestamp(timestamp, 0))
+                else {
+                    continue;
+                };
+                let id = key.trim_start_matches("timer:");
+                if ends_at > now {
+                    println!(
+                        "{:<20} {:<20} {}s remaining",
+                        id,
+                        label,
+                        (ends_at - now).num_seconds()
+                    );
+                } else {
+                    println!("{:<20} {:<20} finished", id, label);
+                    let _ = store.clear_setting(&key);
+                }
+                shown += 1;
+            }
+            println!("{shown} stored timers");
+        }
+
+        Command::TimerCancel { id } => {
+            let store = open_store(cli)?;
+            store.clear_setting(&format!("timer:{id}"))?;
+            println!("timer {id} cancelled");
+        }
+
+        Command::Transform { slug, text } => {
+            let result = yal_data::text::apply(slug, text)
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+            println!("{result}");
+        }
+
+        Command::Transforms => {
+            for transform in yal_data::text::TRANSFORMS {
+                println!("{:<16} {}", transform.slug, transform.title);
+            }
+        }
+
+        Command::Hash { algorithm, text } => {
+            let digest = match algorithm.to_lowercase().as_str() {
+                "sha256" | "sha-256" => yal_data::text::Digest::Sha256,
+                "sha1" | "sha-1" => yal_data::text::Digest::Sha1,
+                "md5" => yal_data::text::Digest::Md5,
+                other => anyhow::bail!("`{other}` is not a digest (sha256, sha1, md5)"),
+            };
+            println!("{}", yal_data::text::hash(digest, text)?);
+        }
+
+        Command::UuidGenerate => {
+            println!("{}", yal_data::text::uuid());
+        }
+
+        Command::Lorem { paragraphs } => {
+            println!("{}", yal_data::text::lorem_ipsum(*paragraphs));
+        }
+
+        Command::SeedQuicklinks => {
+            let store = open_store(cli)?;
+            store.seed_default_quicklinks()?;
+            println!("quicklinks bundled with the launcher are stored");
+        }
     }
     Ok(())
 }
@@ -711,4 +1084,45 @@ fn stable_id(value: &str) -> u64 {
         hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
     }
     hash
+}
+
+/// Duration tokens such as `90`, `10m`, `1h 30s` into seconds.
+fn duration_seconds(token: &str) -> Option<u64> {
+    let mut total: u64 = 0;
+    let mut any = false;
+    for part in token.split_whitespace() {
+        let split = part
+            .find(|ch: char| !ch.is_ascii_digit())
+            .unwrap_or(part.len());
+        let (digits, unit) = part.split_at(split);
+        let multiplier = match unit.to_lowercase().as_str() {
+            "" | "s" => 1,
+            "m" => 60,
+            "h" => 3_600,
+            "d" => 86_400,
+            _ => return None,
+        };
+        let amount = digits.parse::<u64>().ok()?;
+        total += amount * multiplier;
+        any = true;
+    }
+    if any && total > 0 && total <= 24 * 3_600 {
+        Some(total)
+    } else {
+        None
+    }
+}
+
+/// A duration as it is written to people.
+fn shown_duration(total: u64) -> String {
+    let hours = total / 3_600;
+    let minutes = (total % 3_600) / 60;
+    let seconds = total % 60;
+    if hours > 0 {
+        format!("{hours}h {minutes:02}m")
+    } else if minutes > 0 {
+        format!("{minutes}m {seconds:02}s")
+    } else {
+        format!("{seconds}s")
+    }
 }

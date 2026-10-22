@@ -38,6 +38,13 @@ pub enum ActionKind {
 
     /// Start a search in another application.
     OpenInApplication,
+
+    /// Perform a task the launcher itself owns.
+    ///
+    /// System commands, window management, stopping processes and timers
+    /// are not intents about other programs: the launcher carries them out
+    /// through its host integration.
+    LauncherTask,
 }
 
 /// The payload carried by an action.
@@ -65,6 +72,15 @@ pub enum OpenTarget {
     ApplicationAndText {
         application: String,
         text: String,
+    },
+
+    /// A launcher-owned task and its arguments.
+    Task {
+        /// The task name, e.g. `system`, `kill`, `timer`.
+        name: String,
+
+        /// Everything the task needs to be carried out.
+        arguments: Vec<String>,
     },
 }
 
@@ -142,6 +158,17 @@ impl Action {
             target: OpenTarget::ApplicationAndText {
                 application: application.into(),
                 text: path.into().to_string_lossy().into_owned(),
+            },
+        }
+    }
+
+    /// Perform a task the launcher itself owns.
+    pub fn task(name: impl Into<String>, arguments: Vec<String>) -> Self {
+        Self {
+            kind: ActionKind::LauncherTask,
+            target: OpenTarget::Task {
+                name: name.into(),
+                arguments,
             },
         }
     }

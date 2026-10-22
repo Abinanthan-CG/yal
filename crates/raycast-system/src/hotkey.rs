@@ -510,7 +510,7 @@ fn named_key(name: &str) -> Option<u32> {
 /// The name of a virtual key code.
 fn virtual_key_name(key: u32) -> String {
     if (0x30..=0x39).contains(&key) || (0x41..=0x5A).contains(&key) {
-        return ((key as u8) as char).to_string();
+        return ((key as u8 as char).to_ascii_lowercase()).to_string();
     }
     format!("vk{key}")
 }

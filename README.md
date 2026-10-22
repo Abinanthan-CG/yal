@@ -22,10 +22,18 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else. |
 | **Clipboard** | History, kept by a background watcher. |
 | **Snippets** | Saved text, expanded straight from the palette. |
-| **Quicklinks, bookmarks** | Saved links, searchable. |
+| **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads. |
-| **Windows** | Every open window, by title. |
-| **QR codes** | Generated from any text and shown in the palette. || **One-time passwords** | RFC 6238 codes with a live countdown. |
+| **Windows** | Every open window, by title — then close, minimise, maximise or restore it. |
+| **Browser tabs** | The tabs each running browser holds, searchable. |
+| **Kill process** | The running processes, heaviest first; end one from the list. |
+| **System commands** | Lock, sleep, shutdown, restart, log out, empty the recycle bin. |
+| **Volume and mute** | Master volume read and set through the audio endpoint. |
+| **Display** | Brightness where the monitor can report it, light or dark theme everywhere. |
+| **Timer** | Countdowns that ring with a toast, with a palette banner as the guaranteed fallback. |
+| **Text transforms** | Case, camel/snake/kebab, base64, percent, hexadecimal, JSON, Morse; digests SHA-256, SHA-1, MD5; UUIDs; placeholder text. |
+| **QR codes** | Generated from any text and shown in the palette. |
+| **One-time passwords** | RFC 6238 codes with a live countdown. |
 | **Regular expressions** | Matched with capture groups. |
 | **Emoji** | 363 entries, searchable by name and by meaning. |
 | **Colours** | Named, hexadecimal, RGB and HSL, both ways. |
@@ -61,6 +69,15 @@ cargo run --bin rc -- totp JBSWY3DPEHPK3PXP
 cargo run --bin rc -- regex "(\w+)@(\w+)" "user@example"
 cargo run --bin rc -- qr "hello" --output code.png
 cargo run --bin rc -- windows
+cargo run --bin rc -- tabs grok
+cargo run --bin rc -- processes
+cargo run --bin rc -- audio get
+cargo run --bin rc -- display dark
+cargo run --bin rc -- transform upper "hello"
+cargo run --bin rc -- transform snake "Clean Room Rebuild"
+cargo run --bin rc -- hash abc
+cargo run --bin rc -- uuid
+cargo run --bin rc -- timer 10m pomodoro
 cargo run --bin rc -- doctor
 ```
 
@@ -153,16 +170,23 @@ This is an honest list, not a disclaimer.
 - **Snippet expansion replaces text in place.** A snippet whose keyword
   matches the query is offered as a result and copies to the clipboard; it
   does not expand inside another application the way launcher's does.
-- **Window management is read-only.** Open windows are listed and searchable.
-  Moving, resizing and closing them is not implemented.
+- **Window move and resize from the palette.** Close, minimise, maximise,
+  restore and focus are carried out; giving a window an arbitrary rectangle
+  is CLI-only (`window-controls::place` is not wired to the palette).
 - **Currency rates are static.** The bundled rates are indicative reference
   values with a recorded vintage, not live quotes. The launcher is local
   only and does not fetch anything.
+- **Timer toasts are not banner-verified.** The toast is accepted by the
+  notification system, but no banner was observed on the machine this was
+  built on — an unpackaged program may need a registered user model
+  identifier before Windows raises a banner. A timer that finishes always
+  raises the palette itself with a banner, which cannot fail; the toast is
+  an addition, not the guarantee.
 - **Reminders, notes, calendar and book links** — the parts of launcher that
   are really small apps rather than launcher features — are not built.
 - **The image preview and EXIF reader** are not built.
 
-### One thing worth knowing
+### Things worth knowing
 
 The hotkey registers successfully and the palette takes the keyboard focus
 when it appears — both were verified by launching the app and asking Windows
@@ -173,6 +197,14 @@ detected by reading the keyboard state directly rather than by waiting for
 the window manager's hotkey notification, which is the more robust of the two
 approaches. Press Ctrl+Space and it will either work or it will not — that is
 a one-second check, and `rc hotkey-wait` will tell you either way.
+
+**Verified live on the build machine**: volume read, set and mute through the
+audio endpoint; the theme round-trip through the registry and its broadcast;
+tab titles taken from running browser windows; ending a spawned process; the
+text transformations and the digests against published test vectors. **Never
+run**: shutdown, restart, log out, sleep, lock and emptying the recycle bin —
+they are implemented exactly as the system documents them, and each acts only
+when someone explicitly asks.
 
 ---
 

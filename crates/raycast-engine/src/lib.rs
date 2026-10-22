@@ -39,6 +39,10 @@ pub struct Engine {
     limit: usize,
     /// The last window list, and when it was taken.
     window_cache: Option<(DateTime<Utc>, Vec<yal_system::Window>)>,
+    /// The last browser-tab list, and when it was taken.
+    tab_cache: Option<(DateTime<Utc>, Vec<yal_system::tabs::BrowserTab>)>,
+    /// The last process snapshot, and when it was taken.
+    process_cache: Option<(DateTime<Utc>, Vec<yal_system::processes::Running>)>,
 }
 
 impl Default for Engine {
@@ -55,6 +59,8 @@ impl Engine {
             frecency_model: FrecencyModel::default(),
             limit: DEFAULT_LIMIT,
             window_cache: None,
+            tab_cache: None,
+            process_cache: None,
         }
     }
 
@@ -110,13 +116,15 @@ impl Engine {
         query: &str,
         now: DateTime<Utc>,
     ) -> EngineResult<Vec<Scored>> {
+        let trimmed = query.trim();
+
         let mut candidates = sources::applications(applications);
         candidates.extend(sources::snippets(store)?);
-        candidates.extend(sources::quicklinks(store)?);
+        candidates.extend(sources::quicklinks(store, trimmed)?);
         candidates.extend(sources::bookmarks(store)?);
         candidates.extend(sources::clipboard(store, 100)?);
+        candidates.extend(sources::system_commands());
 
-        let trimmed = query.trim();
         if !trimmed.is_empty() {
             candidates.extend(sources::emoji(trimmed, 20));
             if let Some(calculator) = sources::calculator(trimmed) {
@@ -137,6 +145,10 @@ impl Engine {
             if let Some(search) = sources::web_search(trimmed) {
                 candidates.push(search);
             }
+            candidates.extend(sources::text_transforms(trimmed));
+            if let Some(timer) = sources::timer_specification(trimmed) {
+                candidates.push(timer);
+            }
             if trimmed.chars().count() >= 3 {
                 let roots = yal_index::default_search_roots();
                 let found = yal_index::search_files(&roots, trimmed, 30, 2_000);
@@ -145,6 +157,20 @@ impl Engine {
         }
 
         candidates.extend(sources::windows(&self.open_windows(now)));
+
+        // The process and tab lists are expensive and only asked for under
+        // their own prefixes, so a query for an application does not pay
+        // for them.
+        if let Some(needle) = trimmed.strip_prefix("kill ") {
+            let running = self.running_processes(now);
+            candidates.extend(sources::processes(&running, needle.trim(), 20));
+        }
+        if let Some(needle) = trimmed.strip_prefix("tabs ") {
+            let tabs = self.open_tabs(now);
+            candidates.extend(sources::browser_tabs(&tabs, needle.trim(), 30));
+        }
+
+        candidates.extend(sources::timers(store, now)?);
 
         // Read usage history for every candidate in one query.
         let keys: Vec<String> = candidates
@@ -187,6 +213,32 @@ impl Engine {
         let windows = yal_system::list_windows().unwrap_or_default();
         self.window_cache = Some((now, windows.clone()));
         windows
+    }
+
+    /// The open browser tabs, refreshed like the window list.
+    fn open_tabs(&mut self, now: DateTime<Utc>) -> Vec<yal_system::tabs::BrowserTab> {
+        const TTL_SECONDS: i64 = 3;
+        if let Some((at, tabs)) = &self.tab_cache {
+            if (now - *at).num_seconds() < TTL_SECONDS {
+                return tabs.clone();
+            }
+        }
+        let tabs = yal_system::tabs::open_tabs();
+        self.tab_cache = Some((now, tabs.clone()));
+        tabs
+    }
+
+    /// The running processes, refreshed like the window list.
+    fn running_processes(&mut self, now: DateTime<Utc>) -> Vec<yal_system::processes::Running> {
+        const TTL_SECONDS: i64 = 3;
+        if let Some((at, running)) = &self.process_cache {
+            if (now - *at).num_seconds() < TTL_SECONDS {
+                return running.clone();
+            }
+        }
+        let running = yal_system::processes::running();
+        self.process_cache = Some((now, running.clone()));
+        running
     }
 
     /// Rank candidates by how often they are used, then by title.
