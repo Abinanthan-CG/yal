@@ -7,9 +7,15 @@
 pub mod colors;
 pub mod emoji;
 pub mod password;
+pub mod qr;
+pub mod regex;
 pub mod timezones;
+pub mod totp;
 
 pub use colors::{Color, ColorError, Hsl, NAMED_COLORS, by_name as color_by_name, parse as parse_color};
 pub use emoji::Emoji;
 pub use password::{PasswordOptions, generate as generate_password};
+pub use qr::{QrCode, QrError, generate as generate_qr};
+pub use regex::{RegexMatch, RegexResult, match_pattern};
 pub use timezones::{TimeZoneEntry, all_time_zones};
+pub use totp::TotpSecret;

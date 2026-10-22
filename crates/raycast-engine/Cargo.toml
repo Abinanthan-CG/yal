@@ -14,6 +14,7 @@ yal-calc.workspace = true
 yal-store.workspace = true
 yal-index.workspace = true
 yal-data.workspace = true
+yal-system.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true

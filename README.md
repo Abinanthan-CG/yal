@@ -15,15 +15,33 @@ provenance record is in [`docs/observations.md`](docs/observations.md).
 
 Press the palette, type a few characters, and get the thing you meant.
 
-- **Application launcher** — searches Start Menu shortcuts, Store packages,
-  installed programs and everything on `PATH`.
-- **Fuzzy search** — tiered matching that understands word boundaries,
-  camelCase acronyms and scattered subsequences.
-- **Calculator** — arithmetic, units, currencies and dates, in the same query
-  box as everything else.
-- **Snippets, quicklinks, bookmarks** — saved text and saved links.
-- **Clipboard history, emoji, colours, passwords, time zones** — the small
-  utilities that make a launcher worth keeping open.
+| | |
+| --- | --- |
+| **Launcher** | Searches Start Menu shortcuts, Store packages, installed programs and everything on `PATH`. |
+| **Search** | Tiered fuzzy matching that understands word boundaries, camelCase acronyms and scattered subsequences. |
+| **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else. |
+| **Clipboard** | History, kept by a background watcher. |
+| **Snippets** | Saved text, expanded straight from the palette. |
+| **Quicklinks, bookmarks** | Saved links, searchable. |
+| **Files** | Search your documents, desktop and downloads. |
+| **Windows** | Every open window, by title. |
+| **QR codes** | Generated from any text and shown in the palette. || **One-time passwords** | RFC 6238 codes with a live countdown. |
+| **Regular expressions** | Matched with capture groups. |
+| **Emoji** | 363 entries, searchable by name and by meaning. |
+| **Colours** | Named, hexadecimal, RGB and HSL, both ways. |
+| **Passwords** | Generated to length and character-class rules. |
+| **Time zones** | Every IANA zone with its current offset. |
+| **Screenshots** | Capture the screen. |
+| **Web search** | Hands the query to the search engine. |
+| **System tray** | The menu bar extra, in its Windows form. |
+
+The hotkey is **Ctrl+Space** by default and can be changed:
+
+```sh
+rc hotkey                      # show the current hotkey
+rc hotkey ctrl+alt+k           # change it
+rc hotkeys                     # see which combinations are free
+```
 
 ---
 
@@ -39,6 +57,10 @@ cargo run --bin launcher
 cargo run --bin rc -- search "launcher"
 cargo run --bin rc -- calc "100 km in miles"
 cargo run --bin rc -- apps --filter visual
+cargo run --bin rc -- totp JBSWY3DPEHPK3PXP
+cargo run --bin rc -- regex "(\w+)@(\w+)" "user@example"
+cargo run --bin rc -- qr "hello" --output code.png
+cargo run --bin rc -- windows
 cargo run --bin rc -- doctor
 ```
 
@@ -128,18 +150,29 @@ This is an honest list, not a disclaimer.
   TypeScript running against `@launcher/api`; a Rust rebuild needs a different
   extension model, and the domain reserves a slot for it but nothing ships.
 - **AI and cloud.** Excluded at the requester's instruction.
-- **The hotkey does not open the palette.** The hotkey registers with the
-  window manager and the palette window exists, but nothing yet connects the
-  two. Until that is wired, the palette is a window you focus by hand.
-- **Clipboard watching.** The store keeps clipboard history and the palette
-  reads it, but no watcher is running to record new entries.
-- **Snippet expansion.** Snippets appear as results and their expansion is
-  copied to the clipboard, but typing a keyword does not expand it in place.
+- **Snippet expansion replaces text in place.** A snippet whose keyword
+  matches the query is offered as a result and copies to the clipboard; it
+  does not expand inside another application the way launcher's does.
+- **Window management is read-only.** Open windows are listed and searchable.
+  Moving, resizing and closing them is not implemented.
 - **Currency rates are static.** The bundled rates are indicative reference
   values with a recorded vintage, not live quotes. The launcher is local
   only and does not fetch anything.
-- **File search is implemented but not wired into the palette.** The walker
-  exists and is tested; no command exposes it yet.
+- **Reminders, notes, calendar and book links** — the parts of launcher that
+  are really small apps rather than launcher features — are not built.
+- **The image preview and EXIF reader** are not built.
+
+### One thing worth knowing
+
+The hotkey registers successfully and the palette takes the keyboard focus
+when it appears — both were verified by launching the app and asking Windows
+which window was in front. **The keypress itself could not be verified end to
+end**, because synthetic keyboard injection is blocked in the session this was
+built in, so no automated check could produce a real key press. The press is
+detected by reading the keyboard state directly rather than by waiting for
+the window manager's hotkey notification, which is the more robust of the two
+approaches. Press Ctrl+Space and it will either work or it will not — that is
+a one-second check, and `rc hotkey-wait` will tell you either way.
 
 ---
 

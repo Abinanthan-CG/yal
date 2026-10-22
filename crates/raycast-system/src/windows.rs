@@ -133,6 +133,147 @@ pub fn list_windows() -> Result<Vec<Window>, WindowError> {
     Ok(Vec::new())
 }
 
+/// The handle of this process's own main window.
+///
+/// A graphical toolkit can create several windows for one process — helper
+/// windows, IME windows, and so on. The main window is the largest visible
+/// one, which distinguishes it from the rest without depending on a title
+/// or a class name.
+#[cfg(windows)]
+pub fn own_window_handle() -> Option<u64> {
+    use windows::core::BOOL;
+    use windows::Win32::Foundation::{FALSE, HWND, LPARAM, RECT, TRUE};
+    use windows::Win32::System::Threading::GetCurrentProcessId;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        EnumWindows, GetWindowRect, GetWindowThreadProcessId, IsWindowVisible,
+    };
+
+    let mut best: Option<(u64, i64)> = None;
+
+    unsafe extern "system" fn callback(handle: HWND, parameter: LPARAM) -> BOOL {
+        let pointer = parameter.0 as *mut Option<(u64, i64)>;
+        if pointer.is_null() {
+            return FALSE;
+        }
+        let slot = unsafe { &mut *pointer };
+
+        let mut process_id = 0u32;
+        unsafe { GetWindowThreadProcessId(handle, Some(&mut process_id)) };
+        if process_id != unsafe { GetCurrentProcessId() } {
+            return TRUE;
+        }
+        if !unsafe { IsWindowVisible(handle) }.as_bool() {
+            return TRUE;
+        }
+        let mut rect = RECT::default();
+        if unsafe { GetWindowRect(handle, &mut rect) }.is_err() {
+            return TRUE;
+        }
+        let area = i64::from(rect.right - rect.left) * i64::from(rect.bottom - rect.top);
+        if area <= 0 {
+            return TRUE;
+        }
+        let handle_value = handle.0 as u64;
+        match slot {
+            Some((_, best_area)) if *best_area >= area => {}
+            _ => *slot = Some((handle_value, area)),
+        }
+        TRUE
+    }
+
+    unsafe {
+        EnumWindows(
+            Some(callback),
+            LPARAM(&mut best as *mut Option<(u64, i64)> as isize),
+        )
+        .ok()?;
+    }
+    best.map(|(handle, _)| handle)
+}
+
+/// The handle of this process's own top-level window.
+#[cfg(not(windows))]
+pub fn own_window_handle() -> Option<u64> {
+    None
+}
+
+/// Bring a window to the front and give it the keyboard focus.
+///
+/// Windows refuses to let a process take the focus away from whatever is
+/// currently in front, unless that process is the one that last received
+/// input. A launcher is neither, so the call is made from inside the
+/// foreground window's own input queue: the two threads are temporarily
+/// joined, which makes the focus transfer legal.
+///
+/// The return value reports whether the request was accepted.
+#[cfg(windows)]
+pub fn focus_window(handle: u64) -> bool {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
+    use windows::Win32::UI::Input::KeyboardAndMouse::SetActiveWindow;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        BringWindowToTop, GetForegroundWindow, GetWindowThreadProcessId, SetForegroundWindow,
+        ShowWindow, SW_RESTORE,
+    };
+
+    unsafe {
+        let window = HWND(handle as *mut core::ffi::c_void);
+        let _ = ShowWindow(window, SW_RESTORE);
+
+        let foreground = GetForegroundWindow();
+        let our_thread = GetCurrentThreadId();
+        let foreground_thread = GetWindowThreadProcessId(foreground, None);
+
+        // Joining the foreground window's input queue makes the focus
+        // transfer legal. The two threads must be different.
+        let joined = foreground_thread != 0
+            && foreground_thread != our_thread
+            && AttachThreadInput(our_thread, foreground_thread, true).as_bool();
+
+        let _ = BringWindowToTop(window);
+        let _ = SetActiveWindow(window);
+        let accepted = SetForegroundWindow(window).as_bool();
+
+        if joined {
+            let _ = AttachThreadInput(our_thread, foreground_thread, false);
+        }
+
+        accepted
+    }
+}
+
+/// Take the keyboard focus, using the shortcut Windows allows.
+///
+/// A process that has just received an ALT key press is permitted to bring
+/// its own window to the front, whatever else is in front. The key is
+/// pressed and released without the user seeing anything.
+#[cfg(windows)]
+pub fn focus_window_with_permission(handle: u64) -> bool {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::Input::KeyboardAndMouse::{keybd_event, KEYEVENTF_KEYUP, VK_MENU};
+    use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, SetForegroundWindow};
+
+    unsafe {
+        // The key press grants the foreground permission; the key release
+        // undoes it.
+        keybd_event(VK_MENU.0 as u8, 0, Default::default(), 0);
+        let accepted = SetForegroundWindow(HWND(handle as *mut core::ffi::c_void)).as_bool();
+        keybd_event(VK_MENU.0 as u8, 0, KEYEVENTF_KEYUP, 0);        accepted || GetForegroundWindow() == HWND(handle as *mut core::ffi::c_void)
+    }
+}
+
+/// Bring a window to the front and give it the keyboard focus.
+#[cfg(not(windows))]
+pub fn focus_window(_handle: u64) -> bool {
+    false
+}
+
+/// Take the keyboard focus, using the shortcut Windows allows.
+#[cfg(not(windows))]
+pub fn focus_window_with_permission(_handle: u64) -> bool {
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

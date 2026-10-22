@@ -1,4 +1,4 @@
-//! The palette window.
+﻿//! The palette window.
 //!
 //! The palette is a single always-on-top window: a query field at the top and
 //! a flat list of ranked results below it. There are no modes and no pages —
@@ -46,16 +46,41 @@ pub struct Palette {
     pending: bool,
     receiver: Receiver<PaletteMessage>,
     sender: Sender<PaletteMessage>,
+    /// The global hotkey that opens the palette.
+    hotkey: yal_system::hotkey::HotkeyListener,
+    /// Whether the palette window is currently visible.
+    visible: bool,
     /// Set when the palette should close after the next frame.
     close_requested: bool,
+    /// Set when the palette should hide after the next frame.
+    hide_requested: bool,
+    /// Set when the palette still needs the keyboard focus.
+    needs_focus: bool,
+    /// The image bytes of the result whose texture is cached.
+    cached_image: Option<Vec<u8>>,
+    /// The cached texture.
+    cached_texture: Option<egui::TextureHandle>,
     /// The last error shown to the user.
     status: Option<String>,
 }
+
+/// The identifier the launcher hotkey is registered under.
+const HOTKEY_ID: i32 = 0x5241;
 
 impl Palette {
     /// Build a palette over a store.
     pub fn new(store: Store) -> Self {
         let (sender, receiver) = channel();
+
+        // The hotkey is a setting, so the user can change it without
+        // recompiling.
+        let spec = store
+            .setting("hotkey")
+            .ok()
+            .flatten()
+            .and_then(|text| yal_system::hotkey::HotkeySpec::parse(&text))
+            .unwrap_or_else(yal_system::hotkey::HotkeySpec::default_spec);
+
         let mut palette = Self {
             store,
             engine: Engine::new(),
@@ -67,11 +92,35 @@ impl Palette {
             pending: false,
             receiver,
             sender,
+            hotkey: yal_system::hotkey::HotkeyListener::spawn(
+                spec.virtual_key,
+                spec.modifiers,
+                HOTKEY_ID,
+            ),
+            visible: true,
             close_requested: false,
+            hide_requested: false,
+            needs_focus: true,
+            cached_image: None,
+            cached_texture: None,
             status: None,
         };
+        palette.register_hotkey();
         palette.run_search();
         palette
+    }
+
+    /// Register the global hotkey that opens the palette.
+    ///
+    /// The listener runs on its own thread with its own message queue; see
+    /// `yal-system`'s hotkey module for why.
+    fn register_hotkey(&mut self) {
+        if self.hotkey.is_taken() {
+            // Another application already owns the combination. The palette
+            // still works; it just has to be focused by hand.
+            self.status =
+                Some("the launcher hotkey is taken by another application".into());
+        }
     }
 
     /// The channel used to talk to the palette from another thread.
@@ -82,6 +131,69 @@ impl Palette {
     /// The store the palette reads from.
     pub fn store(&self) -> &Store {
         &self.store
+    }
+
+    /// The image carried by the selected result, if it has one.
+    fn selected_image(&self) -> Option<Vec<u8>> {
+        let result = self.results.get(self.selected)?;
+        let payload = result.item.payload.as_ref()?;
+        let encoded = payload.get("png_base64")?.as_str()?;
+        decode_base64(encoded)
+    }
+
+    /// Turn the selected result's image into a texture.
+    ///
+    /// The texture is cached against the image bytes, so a result that stays
+    /// selected is only decoded once.
+    fn image_texture(
+        &mut self,
+        ctx: &egui::Context,
+        bytes: &[u8],
+    ) -> Option<egui::TextureHandle> {
+        if self.cached_image.as_deref() == Some(bytes) {
+            return self.cached_texture.clone();
+        }
+
+        let decoded = image::load_from_memory(bytes).ok()?.to_rgba8();
+        let size = [decoded.width() as usize, decoded.height() as usize];
+        let color = egui::ColorImage::from_rgba_unmultiplied(size, decoded.as_raw());
+        let texture = ctx.load_texture(
+            "result-image",
+            color,
+            egui::TextureOptions::LINEAR,
+        );
+
+        self.cached_image = Some(bytes.to_vec());
+        self.cached_texture = Some(texture.clone());
+        Some(texture)
+    }
+
+    /// Show the palette and give it the keyboard focus.
+    fn show(&mut self, ctx: &egui::Context) {
+        self.visible = true;
+        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+        self.query.clear();
+        self.run_search();
+        self.needs_focus = true;
+    }
+
+    /// Take the keyboard focus if the palette does not have it.
+    ///
+    /// A launcher that is visible but not focused is useless: the keystrokes
+    /// go to whatever else is on screen. The request is repeated until it
+    /// lands, because the window manager may refuse the first attempt.
+    fn take_focus(&mut self, ctx: &egui::Context) {
+        if !self.needs_focus {
+            return;
+        }
+        ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+        if let Some(handle) = yal_system::windows::own_window_handle() {
+            if yal_system::windows::focus_window_with_permission(handle) {
+                self.needs_focus = false;
+                return;
+            }
+            yal_system::windows::focus_window(handle);
+        }
     }
 
     /// Re-run the search for the current query.
@@ -127,7 +239,9 @@ impl Palette {
             let _ = self.store.record_use(&key, chrono::Utc::now());
         }
 
-        self.close_requested = true;
+        // The palette gets out of the way once a result is chosen.
+        self.visible = false;
+        self.hide_requested = true;
     }
 }
 
@@ -196,13 +310,23 @@ impl PaletteStyle {
 
 impl eframe::App for Palette {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // The global hotkey toggles the palette. It is polled before
+        // anything else so that the toggle is never lost between frames.
+        if self.hotkey.poll() {
+            self.visible = !self.visible;
+            if self.visible {
+                self.show(ctx);
+            } else {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+            }
+        }
+
         // Deliver messages sent from other threads.
         while let Ok(message) = self.receiver.try_recv() {
             match message {
                 PaletteMessage::Close => self.close_requested = true,
                 PaletteMessage::Show => {
-                    self.query.clear();
-                    self.run_search();
+                    self.show(ctx);
                 }
             }
         }
@@ -243,7 +367,10 @@ impl eframe::App for Palette {
         });
 
         if dismiss {
-            self.close_requested = true;
+            // Escape hides the palette rather than closing it, so that the
+            // hotkey can bring it back.
+            self.visible = false;
+            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
         }
 
         if move_down && !self.results.is_empty() {
@@ -265,6 +392,21 @@ impl eframe::App for Palette {
             .inner_margin(egui::Margin::same(10))
             .stroke(Stroke::new(1.0_f32, palette_style.border))
             .corner_radius(8.0);
+
+        // A result that carries an image gets a panel of its own. Drawing it
+        // below the list would put it off the screen, because the list takes
+        // all the space that is left.
+        if let Some(bytes) = self.selected_image() {
+            if let Some(texture) = self.image_texture(ctx, &bytes) {
+                let size = texture.size_vec2();
+                let scale = 170.0 / size.x.max(1.0);
+                egui::TopBottomPanel::bottom("detail").show(ctx, |ui| {
+                    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                        ui.add(egui::Image::new(&texture).fit_to_exact_size(size * scale));
+                    });
+                });
+            }
+        }
 
         egui::CentralPanel::default()
             .frame(frame)
@@ -331,6 +473,20 @@ impl eframe::App for Palette {
                     ctx.request_repaint_after(SEARCH_DEBOUNCE);
                 }
             }
+        }
+
+        if self.hide_requested {
+            self.hide_requested = false;
+            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+        }
+
+        self.take_focus(ctx);
+
+        // A hidden window does not produce events, so the event loop would
+        // sleep and never notice the hotkey. Asking for a repaint on an
+        // interval keeps the loop ticking while the palette is away.
+        if !self.visible {
+            ctx.request_repaint_after(std::time::Duration::from_millis(30));
         }
 
         if self.close_requested {
@@ -541,6 +697,27 @@ fn truncate_to_width(
     best
 }
 
+/// Decode standard base64 into bytes.
+fn decode_base64(text: &str) -> Option<Vec<u8>> {
+    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut buffer = 0u32;
+    let mut bits = 0u32;
+    let mut bytes = Vec::new();
+    for character in text.chars() {
+        if character == '=' || character.is_whitespace() {
+            continue;
+        }
+        let index = ALPHABET.iter().position(|&c| c == character as u8)? as u32;
+        buffer = (buffer << 6) | index;
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            bytes.push(((buffer >> bits) & 0xff) as u8);
+        }
+    }
+    Some(bytes)
+}
+
 /// Split a string into matched and unmatched segments.
 ///
 /// The ranges are character indices, which is what the matcher produces;
@@ -618,8 +795,8 @@ mod tests {
 
     #[test]
     fn splits_multibyte_characters_without_breaking_them() {
-        let segments = split_by_ranges("日本語", std::slice::from_ref(&(1..2)));
+        let segments = split_by_ranges("æ—¥æœ¬èªž", std::slice::from_ref(&(1..2)));
         assert_eq!(segments.len(), 3);
-        assert_eq!(segments[1], ("本".to_string(), true));
+        assert_eq!(segments[1], ("æœ¬".to_string(), true));
     }
 }

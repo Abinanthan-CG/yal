@@ -158,6 +158,191 @@ pub fn emoji(query: &str, limit: usize) -> Vec<Candidate> {
         .collect()
 }
 
+/// Build the QR code candidate for a query.
+///
+/// The rendered PNG travels in the item payload so the palette can draw it
+/// without touching the filesystem.
+pub fn qr_code(query: &str) -> Option<Candidate> {
+    let trimmed = query.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let code = yal_data::qr::generate(trimmed, 6).ok()?;
+    let encoded = base64_encode(&code.png);
+    let item = Item::new(format!("QR code — {trimmed}"))
+        .with_id("qr:result".to_string())
+        .with_subtitle(format!("{}×{} pixels", code.width, code.height))
+        .with_action(Action::copy(trimmed.to_string()))
+        .with_payload(serde_json::json!({
+            "kind": "qr",
+            "png_base64": encoded,
+            "width": code.width,
+            "height": code.height,
+        }));
+    Some(Candidate::new(item, CommandKind::QrCode))
+}
+
+/// Build the one-time password candidate for a query.
+///
+/// The query is a base32 secret. The subtitle carries the seconds remaining
+/// before the code changes.
+pub fn totp(query: &str) -> Option<Candidate> {
+    let trimmed = query.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let secret = yal_data::totp::TotpSecret::parse(trimmed)?;
+    let now = chrono::Utc::now().timestamp() as u64;
+    let (code, remaining) = secret.code_and_remaining(
+        now,
+        yal_data::totp::DEFAULT_DIGITS,
+        yal_data::totp::DEFAULT_PERIOD,
+    );
+    let item = Item::new(code.clone())
+        .with_id("totp:result".to_string())
+        .with_subtitle(format!("{remaining}s remaining"))
+        .with_action(Action::copy(code))
+        .with_payload(serde_json::json!({
+            "kind": "totp",
+            "seconds_remaining": remaining,
+        }));
+    Some(Candidate::new(item, CommandKind::Passwords))
+}
+
+/// Build the regular expression candidate for a query.
+///
+/// The pattern is the query; the subject is the text to match against.
+pub fn regex(query: &str, subject: &str) -> Option<Candidate> {
+    let trimmed = query.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let result = yal_data::regex::match_pattern(trimmed, subject);
+    let summary = yal_data::regex::summarise(&result);
+    let mut item = Item::new(summary.clone())
+        .with_id("regex:result".to_string())
+        .with_subtitle(trimmed.to_string());
+    if let Some(first) = result.matches.first() {
+        item = item.with_action(Action::copy(first.text.clone()));
+    }
+    Some(Candidate::new(item, CommandKind::Regex))
+}
+
+/// Build the web search candidate for a query.
+pub fn web_search(query: &str) -> Option<Candidate> {
+    let trimmed = query.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let url = format!("https://duckduckgo.com/?q={}", url_encode(trimmed));
+    let item = Item::new(format!("Search the web for “{trimmed}”"))
+        .with_id("websearch:result".to_string())
+        .with_subtitle(url.clone())
+        .with_action(Action::open_url(url));
+    Some(Candidate::new(item, CommandKind::WebSearch))
+}
+
+/// Build candidates for the open windows.
+pub fn windows(list: &[yal_system::Window]) -> Vec<Candidate> {
+    list.iter()
+        .map(|window| {
+            let mut item = Item::new(window.title.clone())
+                .with_id(format!("window:{}", window.handle))
+                .with_subtitle(
+                    window
+                        .process_name
+                        .clone()
+                        .unwrap_or_else(|| format!("pid {}", window.process_id)),
+                )
+                .with_action(Action::open_path(std::path::PathBuf::from(
+                    format!("window:{}", window.handle),
+                )));
+            if let Some(name) = &window.process_name {
+                item = item.with_keyword(name.clone());
+            }
+            Candidate::new(item, CommandKind::Windows)
+        })
+        .collect()
+}
+
+/// Build candidates for files found on disk.
+pub fn files(found: &[yal_index::FoundFile]) -> Vec<Candidate> {
+    found
+        .iter()
+        .map(|file| {
+            let item = Item::new(file.name.clone())
+                .with_id(format!("file:{}", file.path.display()))
+                .with_subtitle(file.directory.display().to_string())
+                .with_action(Action::open_path(file.path.clone()));
+            Candidate::new(item, CommandKind::Files)
+        })
+        .collect()
+}
+
+/// Build the snippet expansion candidate when the query is exactly a snippet
+/// keyword.
+///
+/// The expansion is offered as its own result so it can be chosen without
+/// leaving the palette.
+pub fn snippet_expansion(
+    store: &Store,
+    query: &str,
+) -> yal_store::StoreResult<Option<Candidate>> {
+    let needle = query.trim().to_lowercase();
+    if needle.is_empty() {
+        return Ok(None);
+    }
+    for snippet in store.snippets()? {
+        if snippet.keyword.to_lowercase() == needle {
+            let item = Item::new(snippet.expansion.clone())
+                .with_id(format!("snippet-expansion:{}", snippet.id))
+                .with_subtitle(format!("{} — snippet", snippet.name))
+                .with_action(Action::copy(snippet.expansion.clone()));
+            return Ok(Some(Candidate::new(item, CommandKind::Snippets)));
+        }
+    }
+    Ok(None)
+}
+
+/// Percent-encode a string for use in a URL.
+fn url_encode(text: &str) -> String {
+    let mut encoded = String::with_capacity(text.len());
+    for byte in text.as_bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(*byte as char)
+            }
+            _ => encoded.push_str(&format!("%{byte:02X}")),
+        }
+    }
+    encoded
+}
+
+/// Standard base64 encoding, used to carry the QR image in a payload.
+fn base64_encode(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut encoded = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let b0 = chunk[0] as u32;
+        let b1 = *chunk.get(1).unwrap_or(&0) as u32;
+        let b2 = *chunk.get(2).unwrap_or(&0) as u32;
+        let triple = (b0 << 16) | (b1 << 8) | b2;
+        encoded.push(ALPHABET[((triple >> 18) & 0x3f) as usize] as char);
+        encoded.push(ALPHABET[((triple >> 12) & 0x3f) as usize] as char);
+        encoded.push(if chunk.len() > 1 {
+            ALPHABET[((triple >> 6) & 0x3f) as usize] as char
+        } else {
+            '='
+        });
+        encoded.push(if chunk.len() > 2 {
+            ALPHABET[(triple & 0x3f) as usize] as char
+        } else {
+            '='
+        });
+    }
+    encoded
+}
+
 /// Whether a calculator value is worth showing.
 ///
 /// A bare `0` is almost never what the user meant to compute, and `2` is more

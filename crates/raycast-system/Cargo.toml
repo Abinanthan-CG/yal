@@ -9,6 +9,8 @@ publish.workspace = true
 
 [dependencies]
 yal-core.workspace = true
+yal-store.workspace = true
+chrono.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -18,6 +20,7 @@ arboard = "3"
 sysinfo = "0.37"
 
 [target.'cfg(windows)'.dependencies]
+tray-icon = "0.24"
 windows = { version = "0.62", features = [
   "Win32_Foundation",
   "Win32_System_LibraryLoader",

@@ -27,4 +27,5 @@ serde_json.workspace = true
 tracing.workspace = true
 egui.workspace = true
 eframe.workspace = true
+image = { version = "0.25", default-features = false, features = ["png"] }
 

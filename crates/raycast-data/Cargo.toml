@@ -15,6 +15,11 @@ serde_json.workspace = true
 chrono.workspace = true
 chrono-tz.workspace = true
 rand.workspace = true
+regex.workspace = true
+qrcode = "0.14"
+hmac = "0.13"
+sha1 = "0.11"
+image = { version = "0.25", default-features = false, features = ["png"] }
 
 [dev-dependencies]
 approx = "0.5"

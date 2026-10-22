@@ -37,6 +37,8 @@ pub struct Engine {
     matcher: Matcher,
     frecency_model: FrecencyModel,
     limit: usize,
+    /// The last window list, and when it was taken.
+    window_cache: Option<(DateTime<Utc>, Vec<yal_system::Window>)>,
 }
 
 impl Default for Engine {
@@ -52,6 +54,7 @@ impl Engine {
             matcher: Matcher::new(),
             frecency_model: FrecencyModel::default(),
             limit: DEFAULT_LIMIT,
+            window_cache: None,
         }
     }
 
@@ -101,7 +104,7 @@ impl Engine {
     /// history is read once for all candidates, so the number of queries
     /// against the store does not grow with the number of results.
     pub fn search(
-        &self,
+        &mut self,
         store: &Store,
         applications: &[Discovered],
         query: &str,
@@ -113,12 +116,35 @@ impl Engine {
         candidates.extend(sources::bookmarks(store)?);
         candidates.extend(sources::clipboard(store, 100)?);
 
-        if !query.trim().is_empty() {
-            candidates.extend(sources::emoji(query, 20));
-            if let Some(calculator) = sources::calculator(query) {
+        let trimmed = query.trim();
+        if !trimmed.is_empty() {
+            candidates.extend(sources::emoji(trimmed, 20));
+            if let Some(calculator) = sources::calculator(trimmed) {
                 candidates.push(calculator);
             }
+            if let Some(expansion) = sources::snippet_expansion(store, trimmed)? {
+                candidates.push(expansion);
+            }
+            if let Some(code) = sources::qr_code(trimmed) {
+                candidates.push(code);
+            }
+            if let Some(code) = sources::totp(trimmed) {
+                candidates.push(code);
+            }
+            if let Some(matched) = sources::regex(trimmed, "") {
+                candidates.push(matched);
+            }
+            if let Some(search) = sources::web_search(trimmed) {
+                candidates.push(search);
+            }
+            if trimmed.chars().count() >= 3 {
+                let roots = yal_index::default_search_roots();
+                let found = yal_index::search_files(&roots, trimmed, 30, 2_000);
+                candidates.extend(sources::files(&found));
+            }
         }
+
+        candidates.extend(sources::windows(&self.open_windows(now)));
 
         // Read usage history for every candidate in one query.
         let keys: Vec<String> = candidates
@@ -147,9 +173,24 @@ impl Engine {
         Ok(self.rank_candidates(&enriched, query, now))
     }
 
+    /// The open windows, refreshed at most every couple of seconds.
+    ///
+    /// Enumerating windows is a system call per window, so doing it on every
+    /// keystroke would cost more than the result is worth.
+    fn open_windows(&mut self, now: DateTime<Utc>) -> Vec<yal_system::Window> {
+        const TTL_SECONDS: i64 = 2;
+        if let Some((at, windows)) = &self.window_cache {
+            if (now - *at).num_seconds() < TTL_SECONDS {
+                return windows.clone();
+            }
+        }
+        let windows = yal_system::list_windows().unwrap_or_default();
+        self.window_cache = Some((now, windows.clone()));
+        windows
+    }
+
     /// Rank candidates by how often they are used, then by title.
-    fn rank_by_usage(&self, candidates: Vec<Candidate>, now: DateTime<Utc>) -> Vec<Scored> {
-        let mut scored: Vec<Scored> = candidates
+    fn rank_by_usage(&self, candidates: Vec<Candidate>, now: DateTime<Utc>) -> Vec<Scored> {        let mut scored: Vec<Scored> = candidates
             .into_iter()
             .map(|candidate| {
                 let score = self.frecency_model.multiplier(candidate.frecency, now);

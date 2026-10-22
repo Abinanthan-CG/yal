@@ -1,4 +1,4 @@
-//! `rc` — the headless front end.
+﻿//! `rc` — the headless front end.
 //!
 //! Every command the palette can answer is also answerable from the terminal.
 //! That is not a convenience: it is how the behaviour is tested, and how the
@@ -104,6 +104,74 @@ enum Command {
         output: PathBuf,
     },
 
+    /// Check which launcher hotkeys are free on this machine.
+    Hotkeys,
+
+    /// Generate a QR code.
+    Qr {
+        /// The text to encode.
+        text: String,
+        /// Where to write the image.
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+
+    /// Show a time-based one-time password.
+    Totp {
+        /// The base32 secret.
+        secret: String,
+    },
+
+    /// Match a regular expression.
+    Regex {
+        /// The pattern.
+        pattern: String,
+        /// The text to match against.
+        #[arg(default_value = "")]
+        subject: String,
+    },
+
+    /// List the open windows.
+    Windows,
+
+    /// Search for files.
+    Files {
+        /// The text to look for in a file name.
+        query: String,
+    },
+
+    /// Show or set the launcher hotkey.
+    Hotkey {
+        /// The hotkey to use, such as `ctrl+space`.
+        spec: Option<String>,
+    },
+
+    /// Watch the clipboard and record what it sees.
+    Watch {
+        /// How long to watch, in seconds.
+        #[arg(long, default_value_t = 30)]
+        seconds: u64,
+    },
+
+    /// Register the launcher hotkey and report each press, for testing.
+    HotkeyWait {
+        /// How long to listen, in seconds.
+        #[arg(long, default_value_t = 30)]
+        seconds: u64,
+        /// The virtual key code to listen for.
+        #[arg(long, default_value_t = 0x20)]
+        virtual_key: u32,
+        /// Require the control key.
+        #[arg(long)]
+        control: bool,
+        /// Require the alt key.
+        #[arg(long)]
+        alt: bool,
+        /// Require the shift key.
+        #[arg(long)]
+        shift: bool,
+    },
+
     /// Report on the state of the local environment.
     Doctor,
 }
@@ -165,7 +233,7 @@ fn run(cli: &Cli) -> Result<()> {
         Command::Search { query, limit } => {
             let store = open_store(cli)?;
             let applications = discover();
-            let engine = Engine::new().with_limit(*limit);
+            let mut engine = Engine::new().with_limit(*limit);
             let results = engine.search(&store, &applications, query, chrono::Utc::now())?;
             if cli.json {
                 let payload: Vec<_> = results
@@ -347,6 +415,255 @@ fn run(cli: &Cli) -> Result<()> {
                 capture.height,
                 output.display()
             );
+        }
+
+        Command::Hotkeys => {
+            // Registration is per thread and needs a message queue, so the
+            // checks run on their own thread.
+            let candidates: Vec<(&str, u32, yal_system::hotkey::HotkeyModifiers)> = vec![
+                (
+                    "Ctrl+Space",
+                    0x20,
+                    yal_system::hotkey::HotkeyModifiers {
+                        control: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Ctrl+Alt+Space",
+                    0x20,
+                    yal_system::hotkey::HotkeyModifiers {
+                        control: true,
+                        alt: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Alt+Space",
+                    0x20,
+                    yal_system::hotkey::HotkeyModifiers {
+                        alt: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Ctrl+Shift+Space",
+                    0x20,
+                    yal_system::hotkey::HotkeyModifiers {
+                        control: true,
+                        shift: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Ctrl+Alt+K",
+                    0x4B,
+                    yal_system::hotkey::HotkeyModifiers {
+                        control: true,
+                        alt: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Ctrl+Shift+K",
+                    0x4B,
+                    yal_system::hotkey::HotkeyModifiers {
+                        control: true,
+                        shift: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Win+Space",
+                    0x20,
+                    yal_system::hotkey::HotkeyModifiers {
+                        super_key: true,
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "Ctrl+Shift+Space (2)",
+                    0x20,
+                    yal_system::hotkey::HotkeyModifiers {
+                        control: true,
+                        shift: true,
+                        ..Default::default()
+                    },
+                ),
+            ];
+
+            for (label, key, modifiers) in candidates {
+                let ok = std::thread::spawn(move || {
+                    yal_system::hotkey::Hotkey::register(key, modifiers, 4242).is_ok()
+                })
+                .join()
+                .unwrap_or(false);
+                println!(
+                    "{:<22} {}",
+                    label,
+                    if ok { "available" } else { "taken" }
+                );
+            }
+        }
+
+        Command::Qr { text, output } => {
+            let code = yal_data::qr::generate(text, 8)
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+            match output {
+                Some(path) => {
+                    let (width, height) = (code.width, code.height);
+                    let destination = path.display().to_string();
+                    std::fs::write(path, code.png)
+                        .map_err(|err| anyhow::anyhow!("{err}"))?;
+                    println!("wrote {width}x{height} QR code to {destination}");
+                }
+                None => {
+                    // Without a file to write to, the code is printed as the
+                    // text it encodes so the command stays useful.
+                    println!("{}", code.png.len());
+                    println!("text: {text}");
+                }
+            }
+        }
+
+        Command::Totp { secret } => {
+            let parsed = yal_data::totp::TotpSecret::parse(secret)
+                .ok_or_else(|| anyhow::anyhow!("`{secret}` is not a base32 secret"))?;
+            let now = chrono::Utc::now().timestamp() as u64;
+            let (code, remaining) = parsed.code_and_remaining(
+                now,
+                yal_data::totp::DEFAULT_DIGITS,
+                yal_data::totp::DEFAULT_PERIOD,
+            );
+            println!("{code}  ({remaining}s remaining)");
+        }
+
+        Command::Regex { pattern, subject } => {
+            let result = yal_data::regex::match_pattern(pattern, subject);
+            if let Some(error) = result.error {
+                anyhow::bail!("{error}");
+            }
+            for matched in &result.matches {
+                let groups: Vec<String> = matched
+                    .groups
+                    .iter()
+                    .map(|group| match group {
+                        Some(value) => value.clone(),
+                        None => "-".to_string(),
+                    })
+                    .collect();
+                println!(
+                    "{:>4}..{:<4}  {:<30}  [{}]",
+                    matched.start,
+                    matched.end,
+                    matched.text,
+                    groups.join(", ")
+                );
+            }
+            println!("{}", yal_data::regex::summarise(&result));
+        }
+
+        Command::Windows => {
+            let windows = yal_system::list_windows()
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+            for window in &windows {
+                println!(
+                    "{:<8} {:<24} {}",
+                    window.process_id,
+                    window.process_name.as_deref().unwrap_or("?"),
+                    window.title
+                );
+            }
+            println!("{} windows", windows.len());
+        }
+
+        Command::Files { query } => {
+            let roots = yal_index::default_search_roots();
+            let found = yal_index::search_files(&roots, query, 50, 20_000);
+            for file in &found {
+                println!("{:<40} {}", file.name, file.directory.display());
+            }
+            println!("{} files", found.len());
+        }
+
+        Command::Hotkey { spec } => {
+            let store = open_store(cli)?;
+            match spec {
+                Some(text) => {
+                    let parsed = yal_system::hotkey::HotkeySpec::parse(text)
+                        .ok_or_else(|| {
+                            anyhow::anyhow!("`{text}` is not a hotkey, such as `ctrl+space`")
+                        })?;
+                    let text = parsed.to_text();
+                    store.set_setting("hotkey", &text)?;
+                    println!("hotkey set to {text}");
+                }
+                None => {
+                    let current = store
+                        .setting("hotkey")
+                        .ok()
+                        .flatten()
+                        .unwrap_or_else(|| {
+                            yal_system::hotkey::HotkeySpec::default_spec().to_text()
+                        });
+                    println!("hotkey: {current}");
+                }
+            }
+        }
+
+        Command::Watch { seconds } => {
+            let path = cli
+                .database
+                .clone()
+                .or_else(yal_store::default_path)
+                .context("could not determine a database location")?;
+            let watcher = yal_system::watcher::ClipboardWatcher::start(
+                Some(path),
+                std::time::Duration::from_millis(400),
+                500,
+                |entry| {
+                    let first = entry.text.lines().next().unwrap_or("");
+                    let first: String = first.chars().take(80).collect();
+                    println!("clipboard: {first}");
+                },
+            );
+            if watcher.is_none() {
+                anyhow::bail!("the clipboard could not be opened");
+            }
+            println!("watching the clipboard for {seconds}s");
+            std::thread::sleep(std::time::Duration::from_secs(*seconds));
+        }
+
+        Command::HotkeyWait {
+            seconds,
+            virtual_key,
+            control,
+            alt,
+            shift,
+        } => {
+            use yal_system::hotkey::{HotkeyListener, HotkeyModifiers};
+            let listener = HotkeyListener::spawn(
+                *virtual_key,
+                HotkeyModifiers {
+                    control: *control,
+                    alt: *alt,
+                    shift: *shift,
+                    super_key: false,
+                },
+                0x5241,
+            );
+            println!("registered: {}", listener.is_available());
+            let deadline = std::time::Instant::now()
+                + std::time::Duration::from_secs(*seconds);
+            let mut presses = 0u32;
+            while std::time::Instant::now() < deadline {
+                if listener.poll() {
+                    presses += 1;
+                    println!("press {presses}");
+                }
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+            println!("total presses: {presses}");
         }
 
         Command::Doctor => {
