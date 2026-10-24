@@ -20,6 +20,7 @@ arboard = "3"
 sysinfo = "0.37"
 winreg = "0.55"
 dirs = "6"
+kamadak-exif = "0.6.1"
 
 [target.'cfg(windows)'.dependencies]
 tray-icon = "0.24"

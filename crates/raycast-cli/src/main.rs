@@ -264,6 +264,12 @@ enum Command {
         path: Option<String>,
     },
 
+    /// Show the EXIF metadata a photograph carries.
+    Exif {
+        /// The photograph.
+        path: std::path::PathBuf,
+    },
+
     /// List the stored timers with the time left on them.
     Timers,
 
@@ -1147,6 +1153,23 @@ fn run(cli: &Cli) -> Result<()> {
                     store.clear_setting("scripts_folder")?;
                     println!("restored the default scripts folder");
                 }
+            }
+        }
+
+        Command::Exif { path } => {
+            let Some(metadata) = yal_system::exif::read(path) else {
+                anyhow::bail!(
+                    "{} carries no EXIF metadata this launcher can read",
+                    path.display()
+                );
+            };
+            let lines = metadata.lines();
+            if lines.is_empty() {
+                println!("{}: the file is a JPEG without metadata fields", path.display());
+                return Ok(());
+            }
+            for (label, value) in &lines {
+                println!("{:<14} {}", format!("{label}:"), value);
             }
         }
 

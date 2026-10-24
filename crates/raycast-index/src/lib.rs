@@ -40,8 +40,12 @@ pub fn default_search_roots() -> Vec<PathBuf> {
 /// Search directories for files matching a name.
 ///
 /// The walk is bounded: at most `limit` results are collected and at most
-/// `max_entries` directory entries are visited, so a pathological tree
-/// cannot stall the palette.
+/// `max_entries` directory entries are visited *per root*, so a
+/// pathological tree cannot stall the palette. Each root is walked in
+/// passes: first its immediate files, then its whole subtree — that way a
+/// deep directory that eats the whole budget cannot starve the files
+/// sitting next to it, which the depth-first order would otherwise leave
+/// unvisited after a busy sibling is done.
 pub fn search_files(
     roots: &[PathBuf],
     query: &str,
@@ -53,41 +57,54 @@ pub fn search_files(
     }
     let needle = query.to_lowercase();
     let mut found = Vec::new();
-    let mut visited = 0usize;
 
     for root in roots {
         if !root.is_dir() {
             continue;
         }
-        let walker = ignore::WalkBuilder::new(root)
-            .hidden(true)
-            .ignore(true)
-            .git_ignore(true)
-            .max_depth(Some(8))
-            .build();
-        for entry in walker.flatten() {
-            visited += 1;
-            if visited > max_entries {
-                break;
+        let mut seen: std::collections::HashSet<PathBuf> = std::collections::HashSet::new();
+        // The first pass is the root's own files; the second is everything
+        // below it, bounded by the same walk depth as before.
+        for depth in [1, 8] {
+            let walker = ignore::WalkBuilder::new(root)
+                .hidden(true)
+                .ignore(true)
+                .git_ignore(true)
+                .max_depth(Some(depth))
+                .build();
+            let mut visited = 0usize;
+            for entry in walker.flatten() {
+                visited += 1;
+                if visited > max_entries {
+                    break;
+                }
+                if !entry.file_type().is_some_and(|kind| kind.is_file()) {
+                    continue;
+                }
+                let path = entry.path();
+                if !seen.insert(path.to_path_buf()) {
+                    continue;
+                }
+                let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
+                    continue;
+                };
+                if !name.to_lowercase().contains(&needle) {
+                    continue;
+                }
+                found.push(FoundFile {
+                    name: name.to_string(),
+                    path: path.to_path_buf(),
+                    directory: path
+                        .parent()
+                        .map(Path::to_path_buf)
+                        .unwrap_or_default(),
+                });
+                if found.len() >= limit {
+                    return found;
+                }
             }
-            if !entry.file_type().is_some_and(|kind| kind.is_file()) {
-                continue;
-            }
-            let path = entry.path();
-            let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
-                continue;
-            };
-            if !name.to_lowercase().contains(&needle) {
-                continue;
-            }
-            found.push(FoundFile {
-                name: name.to_string(),
-                path: path.to_path_buf(),
-                directory: path
-                    .parent()
-                    .map(Path::to_path_buf)
-                    .unwrap_or_default(),
-            });
+            // The root's own files are done walking in depth 1; whenever
+            // the limit filled that pass the search is over.
             if found.len() >= limit {
                 return found;
             }
@@ -113,6 +130,39 @@ mod tests {
         let found = search_files(std::slice::from_ref(&dir), "needle", 10, 1000);
         assert_eq!(found.len(), 1);
         assert_eq!(found[0].name, "needle.txt");
+
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    /// A root whose first subdirectory eats the whole walk budget must not
+    /// starve the files sitting next to it: the root's own files are walked
+    /// in their own pass.
+    #[test]
+    fn a_busy_subtree_cannot_starve_the_root_files() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-index-starve-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(dir.join("big")).unwrap();
+        std::fs::write(dir.join("wanted.txt"), b"x").unwrap();
+        for index in 0..50 {
+            std::fs::create_dir_all(dir.join("big").join(format!("leaf{index}"))).unwrap();
+        }
+
+        // A budget far smaller than the busy subtree forces the old walk to
+        // give up before the wanted file; the two-pass walk gets there.
+        let found = search_files(
+            std::slice::from_ref(&dir),
+            "wanted",
+            10,
+            30,
+        );
+        assert_eq!(
+            found.len(),
+            1,
+            "the root's own file is found within a tiny budget"
+        );
+        assert_eq!(found[0].name, "wanted.txt");
 
         std::fs::remove_dir_all(&dir).ok();
     }

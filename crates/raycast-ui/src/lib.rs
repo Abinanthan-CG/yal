@@ -209,11 +209,45 @@ impl Palette {
     }
 
     /// The image carried by the selected result, if it has one.
+    /// The image bytes of the selected result, when one is shown.
+    ///
+    /// Two sources carry an image: a payload the candidate built (the QR
+    /// code, for one), and a file result whose name ends in an image
+    /// extension. A file is read wholly into memory, because the palette
+    /// draws it scaled down; files beyond ten megabytes are left alone, so
+    /// a stray giant image cannot stall the window.
     fn selected_image(&self) -> Option<Vec<u8>> {
         let result = self.results.get(self.selected)?;
-        let payload = result.item.payload.as_ref()?;
-        let encoded = payload.get("png_base64")?.as_str()?;
-        decode_base64(encoded)
+
+        if let Some(payload) = result.item.payload.as_ref() {
+            if let Some(encoded) = payload.get("png_base64").and_then(|value| value.as_str()) {
+                return decode_base64(encoded);
+            }
+        }
+
+        if result.kind != yal_core::CommandKind::Files {
+            return None;
+        }
+        let path = result.item.id.0.strip_prefix("file:")?;
+        if !is_image_file_name(path) {
+            return None;
+        }
+        let path = std::path::PathBuf::from(path);
+        let size = std::fs::metadata(&path).ok()?.len();
+        if size > 10_000_000 {
+            return None;
+        }
+        std::fs::read(&path).ok()
+    }
+
+    /// The selected result's photograph metadata, when it carries any.
+    fn selected_photo_metadata(&self) -> Option<yal_system::exif::PhotoMetadata> {
+        let result = self.results.get(self.selected)?;
+        if result.kind != yal_core::CommandKind::Files {
+            return None;
+        }
+        let path = result.item.id.0.strip_prefix("file:")?;
+        yal_system::exif::read(std::path::Path::new(path))
     }
 
     /// Turn the selected result's image into a texture.
@@ -956,19 +990,45 @@ impl eframe::App for Palette {
             .stroke(Stroke::new(1.0_f32, palette_style.border))
             .corner_radius(8.0);
 
-        // A result that carries an image gets a panel of its own. Drawing it
-        // below the list would put it off the screen, because the list takes
-        // all the space that is left.
-        if let Some(bytes) = self.selected_image() {
-            if let Some(texture) = self.image_texture(ctx, &bytes) {
-                let size = texture.size_vec2();
-                let scale = 170.0 / size.x.max(1.0);
-                egui::TopBottomPanel::bottom("detail").show(ctx, |ui| {
-                    ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                        ui.add(egui::Image::new(&texture).fit_to_exact_size(size * scale));
-                    });
+        // A result that carries an image or photograph metadata gets a
+        // panel of its own. Drawing it below the list would put it off the
+        // screen, because the list takes all the space that is left, so the
+        // results list scrolls in what remains: the window keeps its size.
+        let photo_metadata = self.selected_photo_metadata();
+        let detail_panel = self.selected_image().is_some() || photo_metadata.is_some();
+        if detail_panel {
+            let image = self
+                .selected_image()
+                .and_then(|bytes| self.image_texture(ctx, &bytes))
+                .filter(|texture| texture.size()[0] > 0);
+            egui::TopBottomPanel::bottom("detail").show(ctx, |ui| {
+                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                    if let Some(texture) = &image {
+                        let size = texture.size_vec2();
+                        let height = 150.0_f32.min(size.y);
+                        let scale = height / size.y.max(1.0);
+                        ui.add(
+                            egui::Image::new(texture)
+                                .fit_to_exact_size(
+                                    egui::vec2(size.x * scale, size.y * scale),
+                                )
+                                .corner_radius(4.0),
+                        );
+                        ui.add_space(10.0);
+                    }
+                    if let Some(metadata) = &photo_metadata {
+                        ui.vertical(|ui| {
+                            for (label, value) in metadata.lines() {
+                                ui.label(
+                                    RichText::new(format!("{label}: {value}"))
+                                        .color(palette_style.dim_text)
+                                        .size(13.0),
+                                );
+                            }
+                        });
+                    }
                 });
-            }
+            });
         }
 
         egui::CentralPanel::default()
@@ -1173,6 +1233,19 @@ fn hotkey_spec_from(
             super_key: false,
         },
     })
+}
+
+/// Whether a file name is one the preview panel draws.
+fn is_image_file_name(name: &str) -> bool {
+    std::path::Path::new(name)
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            matches!(
+                extension.to_ascii_lowercase().as_str(),
+                "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp"
+            )
+        })
 }
 
 /// Draw one result row.
@@ -1541,5 +1614,15 @@ mod tests {
             Some(spec),
             "the text form reads back to the same combination"
         );
+    }
+
+    #[test]
+    fn image_names_decide_the_preview_panel() {
+        assert!(is_image_file_name("C:/pics/photo.jpg"));
+        assert!(is_image_file_name("C:/pics/photo.PNG"));
+        assert!(is_image_file_name("C:/pics/photo.webp"));
+        assert!(!is_image_file_name("C:/pics/notes.txt"));
+        assert!(!is_image_file_name("C:/pics/photo"));
+        assert!(!is_image_file_name("C:/pics/archive.jpg.bak"));
     }
 }

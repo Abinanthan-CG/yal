@@ -16,6 +16,7 @@ pub mod identity;
 pub mod notify;
 pub mod processes;
 pub mod scripts;
+pub mod exif;
 pub mod system;
 pub mod tabs;
 pub mod window_controls;

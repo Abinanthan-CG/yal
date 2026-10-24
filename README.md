@@ -23,7 +23,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Clipboard** | History, kept by a background watcher. |
 | **Snippets** | Saved text, expanded straight from the palette. |
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
-| **Files** | Search your documents, desktop and downloads. |
+| **Files** | Search your documents, desktop and downloads; pictures get a preview and their photo metadata (EXIF, JPEG). |
 | **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or snap it to a half of the screen. |
 | **Script commands** | The little programs you keep in `~\\.legacy-store\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
@@ -89,6 +89,7 @@ cargo run --bin rc -- timer 10m pomodoro
 cargo run --bin rc -- scripts
 cargo run --bin rc -- script-run hello-clean
 cargo run --bin rc -- script-run "Clean-room batch probe" --detached
+cargo run --bin rc -- exif "C:\path\to\photo.jpg"
 cargo run --bin rc -- doctor
 ```
 
@@ -196,11 +197,18 @@ This is an honest list, not a disclaimer.
   an addition, not the guarantee.
 - **Reminders, notes, calendar and book links** — the parts of launcher that
   are really small apps rather than launcher features — are not built.
-- **The image preview and EXIF reader** are not built.
+- **The image preview covers pictures and their photo metadata (`rc exif`)**,
+  read from JPEG files. Other formats rarely carry EXIF on Windows, and the
+  files on the machine this was built on carry only the date and pixel
+  size, so camera fields — ISO, exposure, aperture — read through the same
+  code path but were not seen on a real camera file here.
 - **Script command output in "full" mode** lands on the clipboard with a
   toast naming the outcome; launcher's launcher shows the full output inside
   its window. The script itself, its header language and the two other
   modes work the same way.
+- **The preferences pane is click-verified only through its parts**: gear,
+  recording, theme and folder saving each exercise stores and listeners
+  that were verified live, but the pane's own drawing was not clicked.
 
 ### Things worth knowing
 
