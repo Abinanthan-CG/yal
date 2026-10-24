@@ -340,6 +340,11 @@ impl Palette {
                     "minimize" => yal_system::window_controls::WindowAction::Minimize,
                     "maximize" => yal_system::window_controls::WindowAction::Maximize,
                     "restore" => yal_system::window_controls::WindowAction::Restore,
+                    "left-half" => yal_system::window_controls::WindowAction::LeftHalf,
+                    "right-half" => yal_system::window_controls::WindowAction::RightHalf,
+                    "top-half" => yal_system::window_controls::WindowAction::TopHalf,
+                    "bottom-half" => yal_system::window_controls::WindowAction::BottomHalf,
+                    "fullscreen" => yal_system::window_controls::WindowAction::Fullscreen,
                     _ => yal_system::window_controls::WindowAction::Focus,
                 };
                 yal_system::window_controls::perform(handle, action)

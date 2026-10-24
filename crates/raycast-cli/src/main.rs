@@ -134,6 +134,15 @@ enum Command {
     /// List the open windows.
     Windows,
 
+    /// Carry out an action on one window, by its handle from `rc windows`.
+    Window {
+        /// The window handle.
+        handle: u64,
+        /// `close`, `minimize`, `maximize`, `restore`, `focus`, `left-half`,
+        /// `right-half`, `top-half`, `bottom-half` or `fullscreen`.
+        action: String,
+    },
+
     /// Search for files.
     Files {
         /// The text to look for in a file name.
@@ -277,6 +286,35 @@ enum Command {
 
     /// Seed the bundled search templates into the store, once.
     SeedQuicklinks,
+
+    /// Rename an application with a short word of yours.
+    ///
+    /// Typing the term in the palette then finds the application by its
+    /// alias. The target is matched against the installed applications
+    /// by name.
+    Alias {
+        #[command(subcommand)]
+        action: AliasAction,
+    },
+}
+
+/// Alias operations.
+#[derive(Subcommand, Debug)]
+enum AliasAction {
+    /// Set `term` to launch the application named `target`.
+    Set {
+        /// The word that finds it.
+        term: String,
+        /// The application's name.
+        target: String,
+    },
+    /// List your aliases.
+    List,
+    /// Remove an alias.
+    Remove {
+        /// The word to forget.
+        term: String,
+    },
 }
 
 /// Volume operations.
@@ -705,13 +743,43 @@ fn run(cli: &Cli) -> Result<()> {
                 .map_err(|err| anyhow::anyhow!("{err}"))?;
             for window in &windows {
                 println!(
-                    "{:<8} {:<24} {}",
+                    "{:<10} {:<8} {:<24} {}",
+                    window.handle,
                     window.process_id,
                     window.process_name.as_deref().unwrap_or("?"),
                     window.title
                 );
             }
             println!("{} windows", windows.len());
+        }
+
+        Command::Window { handle, action } => {
+            use yal_system::window_controls::{self, WindowAction};
+            if action.to_lowercase() == "rect" {
+                let (x, y, width, height) = window_controls::rect(*handle)
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!("x {x}  y {y}  width {width}  height {height}");
+                return Ok(());
+            }
+            let action = match action.to_lowercase().as_str() {
+                "close" => WindowAction::Close,
+                "minimize" => WindowAction::Minimize,
+                "maximize" => WindowAction::Maximize,
+                "restore" => WindowAction::Restore,
+                "focus" => WindowAction::Focus,
+                "left-half" => WindowAction::LeftHalf,
+                "right-half" => WindowAction::RightHalf,
+                "top-half" => WindowAction::TopHalf,
+                "bottom-half" => WindowAction::BottomHalf,
+                "fullscreen" => WindowAction::Fullscreen,
+                other => anyhow::bail!(
+                    "`{other}` is not a window action (close, minimize, maximize, restore, \
+                     focus, left-half, right-half, top-half, bottom-half, fullscreen)"
+                ),
+            };
+            window_controls::perform(*handle, action)
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+            println!("{action:?} carried out on window {handle}");
         }
 
         Command::Files { query } => {
@@ -1061,6 +1129,37 @@ fn run(cli: &Cli) -> Result<()> {
             let store = open_store(cli)?;
             store.seed_default_quicklinks()?;
             println!("quicklinks bundled with the launcher are stored");
+        }
+
+        Command::Alias { action } => {
+            use yal_store::records::Alias;
+            match action {
+                AliasAction::Set { term, target } => {
+                    anyhow::ensure!(
+                        !term.is_empty() && !target.is_empty(),
+                        "both the term and the target are needed"
+                    );
+                    let store = open_store(cli)?;
+                    store.upsert_alias(&Alias {
+                        id: format!("alias-{}", term.to_lowercase()),
+                        term: term.clone(),
+                        target: target.clone(),
+                        created_at: chrono::Utc::now(),
+                    })?;
+                    println!("`{term}` now opens the application named `{target}`");
+                }
+                AliasAction::List => {
+                    let store = open_store(cli)?;
+                    for alias in store.aliases()? {
+                        println!("{:<16} -> {}", alias.term, alias.target);
+                    }
+                }
+                AliasAction::Remove { term } => {
+                    let store = open_store(cli)?;
+                    store.clear_alias(&format!("alias-{}", term.to_lowercase()))?;
+                    println!("alias `{term}` removed");
+                }
+            }
         }
     }
     Ok(())

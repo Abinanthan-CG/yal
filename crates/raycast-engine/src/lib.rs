@@ -127,6 +127,7 @@ impl Engine {
 
         if !trimmed.is_empty() {
             candidates.extend(sources::emoji(trimmed, 20));
+            candidates.extend(sources::aliases(store, applications, trimmed)?);
             if let Some(calculator) = sources::calculator(trimmed) {
                 candidates.push(calculator);
             }

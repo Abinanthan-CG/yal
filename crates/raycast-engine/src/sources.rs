@@ -66,6 +66,48 @@ pub fn applications(discovered: &[Discovered]) -> Vec<Candidate> {
         .collect()
 }
 
+/// Build candidates for the aliases that rename applications.
+///
+/// A user's alias is a short word for an application they use constantly:
+/// `gh` for GitHub Desktop, for example. When the query *is* the term, the
+/// renamed application is offered, with the alias credited in the subtitle
+/// so it is clear why it appeared. The target is resolved by name against
+/// the same application list the plain search uses, so an alias for an
+/// uninstalled application offers nothing.
+pub fn aliases(
+    store: &Store,
+    discovered: &[Discovered],
+    query: &str,
+) -> yal_store::StoreResult<Vec<Candidate>> {
+    let needle = query.trim().to_lowercase();
+    if needle.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut found = Vec::new();
+    for alias in store.aliases()? {
+        if alias.term.to_lowercase() != needle {
+            continue;
+        }
+        for application in discovered {
+            if application.name.to_lowercase() == alias.target.to_lowercase() {
+                let item = Item::new(application.name.clone())
+                    .with_id(application.id.clone())
+                    .with_subtitle(format!(
+                        "{} — an alias of yours ({})",
+                        application.path.display(),
+                        alias.term
+                    ))
+                    .with_keyword(alias.term.clone())
+                    .with_action(Action::open_path(application.path.clone()));
+                found.push(Candidate::new(item, CommandKind::Applications));
+                break;
+            }
+        }
+    }
+    Ok(found)
+}
+
 /// Build candidates for snippets.
 pub fn snippets(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
     Ok(store
@@ -314,6 +356,11 @@ fn action_slug(action: yal_system::window_controls::WindowAction) -> &'static st
         WindowAction::Maximize => "maximize",
         WindowAction::Restore => "restore",
         WindowAction::Focus => "focus",
+        WindowAction::LeftHalf => "left-half",
+        WindowAction::RightHalf => "right-half",
+        WindowAction::TopHalf => "top-half",
+        WindowAction::BottomHalf => "bottom-half",
+        WindowAction::Fullscreen => "fullscreen",
     }
 }
 

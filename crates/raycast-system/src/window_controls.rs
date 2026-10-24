@@ -27,6 +27,62 @@ pub enum WindowAction {
     Restore,
     /// Bring it to the front and give it the keyboard.
     Focus,
+    /// Fill the left half of the screen.
+    LeftHalf,
+    /// Fill the right half of the screen.
+    RightHalf,
+    /// Fill the top half of the screen.
+    TopHalf,
+    /// Fill the bottom half of the screen.
+    BottomHalf,
+    /// Fill the screen without changing the z-order.
+    Fullscreen,
+}
+
+/// Carry out a size-and-position action.
+#[cfg(windows)]
+fn perform_place(handle: u64, action: WindowAction) -> Result<(), ControlError> {
+    // The work area is the part of the monitor the user can use, which
+    // leaves out the taskbar. The window is measured against the monitor
+    // it mostly sits on, not always the primary one.
+    let (left, top, width, height) = {
+        use windows::Win32::Foundation::{HWND, RECT};
+        use windows::Win32::Graphics::Gdi::{
+            GetMonitorInfoW, MonitorFromWindow, HMONITOR, MONITORINFO,
+            MONITOR_DEFAULTTONEAREST,
+        };
+
+        let window = HWND(handle as *mut core::ffi::c_void);
+        let monitor = unsafe { MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST) };
+        let mut info = MONITORINFO {
+            cbSize: core::mem::size_of::<MONITORINFO>() as u32,
+            ..Default::default()
+        };
+        if unsafe { GetMonitorInfoW(monitor, &mut info) }.as_bool() {
+            let work: &RECT = &info.rcWork;
+            (
+                work.left,
+                work.top,
+                work.right - work.left,
+                work.bottom - work.top,
+            )
+        } else {
+            (0, 0, 1920, 1080)
+        }
+    };
+
+    match action {
+        WindowAction::LeftHalf => place(handle, Some(left), Some(top), Some(width / 2), Some(height)),
+        WindowAction::RightHalf => {
+            place(handle, Some(left + width / 2), Some(top), Some(width - width / 2), Some(height))
+        }
+        WindowAction::TopHalf => place(handle, Some(left), Some(top), Some(width), Some(height / 2)),
+        WindowAction::BottomHalf => {
+            place(handle, Some(left), Some(top + height / 2), Some(width), Some(height - height / 2))
+        }
+        WindowAction::Fullscreen => place(handle, Some(left), Some(top), Some(width), Some(height)),
+        _ => unreachable!("perform_place is only called for size-and-position actions"),
+    }
 }
 
 /// Carry out an action on a window.
@@ -34,7 +90,8 @@ pub enum WindowAction {
 pub fn perform(handle: u64, action: WindowAction) -> Result<(), ControlError> {
     use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
     use windows::Win32::UI::WindowsAndMessaging::{
-        PostMessageW, ShowWindow, SW_MAXIMIZE, SW_MINIMIZE, SW_RESTORE, SW_SHOW, WM_CLOSE,
+        PostMessageW, SetForegroundWindow, ShowWindow, SW_MAXIMIZE, SW_MINIMIZE, SW_RESTORE,
+        SW_SHOW, WM_CLOSE,
     };
 
     let window = HWND(handle as *mut core::ffi::c_void);
@@ -57,7 +114,26 @@ pub fn perform(handle: u64, action: WindowAction) -> Result<(), ControlError> {
                 let _ = ShowWindow(window, SW_RESTORE);
             }
             WindowAction::Focus => {
+                // Showing alone does not take the keyboard; the foreground
+                // system call does. It is refused when neither the caller
+                // nor the user set it up, which is reported as an error
+                // rather than silently ignored.
                 let _ = ShowWindow(window, SW_SHOW);
+                SetForegroundWindow(window)
+                    .ok()
+                    .map_err(|_| ControlError::Failed(
+                        "the system refused to give the window the foreground".into(),
+                    ))?;
+            }
+            WindowAction::LeftHalf
+            | WindowAction::RightHalf
+            | WindowAction::TopHalf
+            | WindowAction::BottomHalf
+            | WindowAction::Fullscreen => {
+                // A window that is minimised cannot be sized; restore first
+                // so the geometry applies to a real window.
+                let _ = ShowWindow(window, SW_RESTORE);
+                return perform_place(handle, action);
             }
         }
         Ok(())
@@ -70,6 +146,24 @@ pub fn perform(_handle: u64, _action: WindowAction) -> Result<(), ControlError> 
     Err(ControlError::Failed(
         "window control is not implemented on this platform".into(),
     ))
+}
+
+/// Read a window's position and size, for tests and tools.
+#[cfg(windows)]
+pub fn rect(handle: u64) -> Result<(i32, i32, i32, i32), ControlError> {
+    use windows::Win32::Foundation::{HWND, RECT};
+    use windows::Win32::UI::WindowsAndMessaging::GetWindowRect;
+
+    let window = HWND(handle as *mut core::ffi::c_void);
+    let mut r = RECT::default();
+    unsafe { GetWindowRect(window, &mut r) }.map_err(|_| ControlError::Gone)?;
+    Ok((r.left, r.top, r.right - r.left, r.bottom - r.top))
+}
+
+/// Read a window's position and size on a host without window handles.
+#[cfg(not(windows))]
+pub fn rect(_handle: u64) -> Result<(i32, i32, i32, i32), ControlError> {
+    Err(ControlError::Gone)
 }
 
 /// Move a window, optionally resizing it.
@@ -162,6 +256,31 @@ pub const WINDOW_MENU: &[WindowMenuItem] = &[
         keywords: &["maximize", "fullscreen", "grow"],
     },
     WindowMenuItem {
+        action: WindowAction::LeftHalf,
+        title: "Move to left half",
+        keywords: &["left", "half", "split", "side by side"],
+    },
+    WindowMenuItem {
+        action: WindowAction::RightHalf,
+        title: "Move to right half",
+        keywords: &["right", "half", "split", "side by side"],
+    },
+    WindowMenuItem {
+        action: WindowAction::TopHalf,
+        title: "Move to top half",
+        keywords: &["top", "upper", "half"],
+    },
+    WindowMenuItem {
+        action: WindowAction::BottomHalf,
+        title: "Move to bottom half",
+        keywords: &["bottom", "lower", "half"],
+    },
+    WindowMenuItem {
+        action: WindowAction::Fullscreen,
+        title: "Fill the screen",
+        keywords: &["fill", "full"],
+    },
+    WindowMenuItem {
         action: WindowAction::Restore,
         title: "Restore",
         keywords: &["restore", "back", "original"],
@@ -190,6 +309,11 @@ mod tests {
             WindowAction::Maximize,
             WindowAction::Restore,
             WindowAction::Focus,
+            WindowAction::LeftHalf,
+            WindowAction::RightHalf,
+            WindowAction::TopHalf,
+            WindowAction::BottomHalf,
+            WindowAction::Fullscreen,
         ] {
             assert!(WINDOW_MENU.iter().any(|menu| menu.action == action));
         }

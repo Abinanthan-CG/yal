@@ -374,9 +374,15 @@ impl Store {
         Ok(())
     }
 
+    /// Remove an alias.
+    pub fn clear_alias(&self, id: &str) -> StoreResult<()> {
+        self.conn
+            .execute("DELETE FROM aliases WHERE id = ?1", params![id])?;
+        Ok(())
+    }
+
     /// Every alias.
-    pub fn aliases(&self) -> StoreResult<Vec<Alias>> {
-        let mut statement = self
+    pub fn aliases(&self) -> StoreResult<Vec<Alias>> {        let mut statement = self
             .conn
             .prepare("SELECT id, term, target, created_at FROM aliases ORDER BY term")?;
         let rows = statement.query_map([], |row| {
