@@ -257,15 +257,20 @@ impl Drop for HotkeyListener {
 
 /// Wait for a hotkey press.
 ///
-/// The press is detected by reading the keyboard state directly rather than
-/// by waiting for the window manager's hotkey notification. The
-/// notification is the tidier mechanism, but it is delivered to whichever
-/// thread owns the registering window's queue, and a window whose event
-/// loop is busy — or a launcher that registers before its window exists — can
-/// miss it. Reading the key state has no such dependency.
+/// Two detections run together, because each one alone misses presses on a
+/// real machine:
 ///
-/// The combination fires on the rising edge, so holding it down produces one
-/// press rather than a stream of them.
+/// - The window manager's `WM_HOTKEY` notification, queued onto this very
+///   thread, is the primary source. It fires while the key is down, so a
+///   quick press-and-release between two state reads is never lost. The
+///   state read below is what it falls back for; a thread whose
+///   notification is somehow silent still sees the key.
+/// - A direct read of the keyboard state, which has no dependency on
+///   anything but the key itself. It fires on the rising edge, so holding
+///   the combination down produces one press rather than a stream.
+///
+/// Stopping happens by flag; a posted quit message is drained with the
+/// same pump, so the closing path stays responsive too.
 #[cfg(windows)]
 fn wait_for_hotkey(
     virtual_key: u32,
@@ -273,10 +278,36 @@ fn wait_for_hotkey(
     pressed: &AtomicBool,
     stop: &AtomicBool,
 ) {
+    use windows::Win32::Foundation::{LPARAM, WPARAM};
     use windows::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
+    use windows::Win32::UI::WindowsAndMessaging::{MSG, PEEK_MESSAGE_REMOVE_TYPE, PeekMessageW, WM_QUIT};
 
     let mut was_down = false;
     while !stop.load(Ordering::Relaxed) {
+        // Every queued notification is read out before the state read; a
+        // queue that is never pumped would hold the presses forever.
+        let mut message = MSG::default();
+        while unsafe {
+            PeekMessageW(
+                &mut message,
+                None,
+                0,
+                0,
+                PEEK_MESSAGE_REMOVE_TYPE(1), // PM_REMOVE
+            )
+        }
+        .as_bool()
+        {
+            if message.message == WM_QUIT {
+                return;
+            }
+            // WM_HOTKEY: this thread owns exactly one hotkey, so every
+            // notification belongs to it.
+            if message.message == 0x0312 {
+                pressed.store(true, Ordering::Relaxed);
+            }
+        }
+
         let down = combination_down(virtual_key, modifiers);
         if down && !was_down {
             pressed.store(true, Ordering::Relaxed);
@@ -286,7 +317,7 @@ fn wait_for_hotkey(
     }
 
     // Keep the import used on hosts where the state read is the only path.
-    let _ = GetAsyncKeyState;
+    let _ = (GetAsyncKeyState, LPARAM(0), WPARAM(0));
 }
 
 /// Whether the key and every required modifier are currently held.

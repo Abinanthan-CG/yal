@@ -168,6 +168,43 @@ pub fn rect(_handle: u64) -> Result<(i32, i32, i32, i32), ControlError> {
 
 /// Move a window, optionally resizing it.
 ///
+/// Pin a window above every other window, whatever rank they hold.
+///
+/// A launcher window that hides and shows again can come back without its
+/// topmost rank — the window manager drops the flag when the window is
+/// removed from the screen — and then it rises behind a maximised
+/// application, exactly where a launcher is useless. The pin is re-issued
+/// with every show; it claims no focus, which the caller arranges.
+#[cfg(windows)]
+pub fn pin_above_everything(handle: u64) -> bool {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_SHOWWINDOW, SET_WINDOW_POS_FLAGS,
+    };
+
+    // The topmost band, expressed as the window the position is relative
+    // to; the banner is the documented constant for "above everything".
+    let topmost = HWND(-1isize as *mut core::ffi::c_void);
+    unsafe {
+        SetWindowPos(
+            HWND(handle as *mut core::ffi::c_void),
+            Some(topmost),
+            0,
+            0,
+            0,
+            0,
+            SET_WINDOW_POS_FLAGS(SWP_NOMOVE.0 | SWP_NOSIZE.0 | SWP_SHOWWINDOW.0),
+        )
+        .is_ok()
+    }
+}
+
+/// Pin a window above every other window.
+#[cfg(not(windows))]
+pub fn pin_above_everything(_handle: u64) -> bool {
+    false
+}
+
 /// `x` and `y` of `None` leave the position alone. Width and height of
 /// `None` leave the size alone.
 #[cfg(windows)]

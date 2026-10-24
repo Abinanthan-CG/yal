@@ -5,6 +5,7 @@
 
 pub mod clipboard;
 pub mod hotkey;
+pub mod keyboard;
 pub mod launch;
 pub mod screenshot;
 pub mod tray;

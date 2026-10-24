@@ -21,7 +21,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Search** | Tiered fuzzy matching that understands word boundaries, camelCase acronyms and scattered subsequences. |
 | **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else. |
 | **Clipboard** | History, kept by a background watcher. |
-| **Snippets** | Saved text, expanded straight from the palette. |
+| **Snippets** | Saved text: summon the palette, type the keyword, Enter — the expansion is typed into the application you came from, with the clipboard as the fallback. |
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads; pictures get a preview and their photo metadata (EXIF, JPEG). |
 | **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or snap it to a half of the screen. |
@@ -179,9 +179,6 @@ This is an honest list, not a disclaimer.
   TypeScript running against `@launcher/api`; a Rust rebuild needs a different
   extension model, and the domain reserves a slot for it but nothing ships.
 - **AI and cloud.** Excluded at the requester's instruction.
-- **Snippet expansion replaces text in place.** A snippet whose keyword
-  matches the query is offered as a result and copies to the clipboard; it
-  does not expand inside another application the way launcher's does.
 - **Window move and resize from the palette.** Close, minimise, maximise,
   restore and focus are carried out; giving a window an arbitrary rectangle
   is CLI-only (`window-controls::place` is not wired to the palette).
@@ -209,18 +206,32 @@ This is an honest list, not a disclaimer.
 - **The preferences pane is click-verified only through its parts**: gear,
   recording, theme and folder saving each exercise stores and listeners
   that were verified live, but the pane's own drawing was not clicked.
+- **Snippet expansion in place is verified in one live manual test.** A
+  snippet result hides the palette, returns the focus to the window the
+  user came from, and types the expansion through Unicode key injection —
+  confirmed end to end once on the build machine (the text appeared in
+  Notepad). The injection is only sent after that window is confirmed to
+  hold the focus; if the focus cannot be verified or the system refuses
+  the events, the text lands on the clipboard with a toast instead.
+  Delivery inside every kind of application — elevated windows, terminals
+  with custom input handling, remote sessions — is plausible but not
+  exhaustively verified.
 
 ### Things worth knowing
 
 The hotkey registers successfully and the palette takes the keyboard focus
-when it appears — both were verified by launching the app and asking Windows
-which window was in front. **The keypress itself could not be verified end to
-end**, because synthetic keyboard injection is blocked in the session this was
-built in, so no automated check could produce a real key press. The press is
-detected by reading the keyboard state directly rather than by waiting for
-the window manager's hotkey notification, which is the more robust of the two
-approaches. Press Ctrl+Space and it will either work or it will not — that is
-a one-second check, and `rc hotkey-wait` will tell you either way.
+when it appears — both verified on the build machine, and the press itself
+has been verified live since this paragraph last claimed otherwise. The
+press is detected two ways at once: the window manager's `WM_HOTKEY`
+notification is the primary source, and a direct read of the keyboard state
+backs it up — a state poll alone loses quick press-and-release cycles, which
+was observed with synthetic taps. `rc hotkey-wait --control` reports what
+your combination produces. **Verified live**: Ctrl+Space hides the palette
+and brings it back above every other window. The hide parks the window
+off-screen instead of hiding it, because a hidden window stops painting and
+then nothing — not even the polling that waits for the hotkey — ever wakes
+it again; that was observed live and is the reason the palette never
+vanishes from the window manager's view.
 
 **Verified live on the build machine**: volume read, set and mute through the
 audio endpoint; the theme round-trip through the registry and its broadcast;

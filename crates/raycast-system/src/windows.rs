@@ -262,6 +262,28 @@ pub fn focus_window_with_permission(handle: u64) -> bool {
     }
 }
 
+/// The handle of the window that holds the keyboard focus right now.
+///
+/// The launcher records this when it opens, so an action that types on the
+/// user's behalf knows which application to give the focus back to.
+#[cfg(windows)]
+pub fn foreground_window() -> Option<u64> {
+    use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+
+    let handle = unsafe { GetForegroundWindow() };
+    if handle.0.is_null() {
+        None
+    } else {
+        Some(handle.0 as u64)
+    }
+}
+
+/// The handle of the window that holds the keyboard focus right now.
+#[cfg(not(windows))]
+pub fn foreground_window() -> Option<u64> {
+    None
+}
+
 /// Bring a window to the front and give it the keyboard focus.
 #[cfg(not(windows))]
 pub fn focus_window(_handle: u64) -> bool {

@@ -56,6 +56,14 @@ pub struct Palette {
     hide_requested: bool,
     /// Set when the palette still needs the keyboard focus.
     needs_focus: bool,
+    /// The window that held the keyboard focus when the palette opened,
+    /// so snippets can expand back into it.
+    previous_window: Option<u64>,
+    /// An expansion waiting to be typed once the palette is gone.
+    pending_paste: Option<String>,
+    /// Where the palette sits when it is shown, so the park-and-return
+    /// cycle can put it back exactly where it was.
+    shown_location: Option<(i32, i32)>,
     /// The image bytes of the result whose texture is cached.
     cached_image: Option<Vec<u8>>,
     /// The cached texture.
@@ -153,6 +161,9 @@ impl Palette {
             close_requested: false,
             hide_requested: false,
             needs_focus: true,
+            previous_window: None,
+            pending_paste: None,
+            shown_location: None,
             cached_image: None,
             cached_texture: None,
             status: None,
@@ -278,13 +289,51 @@ impl Palette {
     }
 
     /// Show the palette and give it the keyboard focus.
-    fn show(&mut self, ctx: &egui::Context) {
+    fn show(&mut self, _ctx: &egui::Context) {
+        // Remember which window the user came from: a snippet expands
+        // there, not here.
+        if let Some(own) = yal_system::windows::own_window_handle() {
+            self.previous_window = yal_system::windows::foreground_window()
+                .filter(|handle| *handle != own);
+        }
         self.visible = true;
-        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+        // The parked window comes back to exactly where it was, and its
+        // rank above every other window is claimed again — a window that
+        // parked once can rise behind a maximised application, exactly
+        // where a launcher is useless.
+        if let Some(handle) = yal_system::windows::own_window_handle() {
+            if let Some((x, y)) = self.shown_location {
+                let _ = yal_system::window_controls::place(handle, Some(x), Some(y), None, None);
+            }
+            yal_system::window_controls::pin_above_everything(handle);
+        }
         self.query.clear();
         self.ring = None;
         self.run_search();
         self.needs_focus = true;
+    }
+
+    /// Park the palette off-screen instead of hiding it.
+    ///
+    /// A hidden Windows window stops painting, and with it the whole
+    /// event loop goes quiet: the hotkey that would bring the palette
+    /// back is never polled again. That was verified live — a hidden
+    /// palette never returned. Parked off-screen the window keeps
+    /// repainting, so the hotkey polling, the timers and the staged
+    /// expansions stay alive whatever the palette's visibility.
+    ///
+    /// The keyboard focus moves to the window the user came from before
+    /// the palette parked, because a window that sits off-screen and
+    /// still owns the keyboard would silently eat every keystroke.
+    fn park(&mut self, ctx: &egui::Context) {
+        self.visible = false;
+        ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(egui::pos2(
+            -16000.0,
+            -16000.0,
+        )));
+        if let Some(handle) = self.previous_window {
+            yal_system::windows::focus_window_with_permission(handle);
+        }
     }
 
     /// Take the keyboard focus if the palette does not have it.
@@ -338,6 +387,16 @@ impl Palette {
             return;
         };
 
+        // A snippet expansion types into the application the user came
+        // from, so it cannot run while the palette is here; it is staged
+        // for after the hide.
+        if action.kind == ActionKind::PasteToClipboard {
+            if let OpenTarget::Text(text) = &action.target {
+                self.perform_paste(text.clone());
+                return;
+            }
+        }
+
         if let Err(error) = self.perform(&action) {
             self.status = Some(error.to_string());
             return;
@@ -352,6 +411,73 @@ impl Palette {
         // The palette gets out of the way once a result is chosen.
         self.visible = false;
         self.hide_requested = true;
+    }
+
+    /// Stage a snippet expansion: remember it and get out of the way.
+    fn perform_paste(&mut self, text: String) {
+        // Remember the choice so frecency can prefer it next time.
+        if let Some(result) = self.results.get(self.selected) {
+            let key = result.item.id.0.clone();
+            let _ = self.store.record_use(&key, chrono::Utc::now());
+        }
+        self.pending_paste = Some(text);
+        self.visible = false;
+        self.hide_requested = true;
+    }
+
+    /// Expand a staged snippet in the application the user came from.
+    ///
+    /// The palette is hidden by the time this runs. The previous window is
+    /// raised again and the text typed into it — but only after the
+    /// system confirms that window really holds the focus: blind typing
+    /// can land in whatever happens to be in front, which is worse than
+    /// not expanding. When the focus cannot be verified or the system
+    /// refuses the injection, the expansion lands on the clipboard and a
+    /// toast says so: the honest fallback, not a wrong-window typo.
+    fn expand_in_the_background(&self, text: String) {
+        let previous = self.previous_window;
+        let own = yal_system::windows::own_window_handle();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(250));
+
+            // The window that must hold the focus before a character is
+            // sent: the one the user came from. Anything else — our own
+            // window, an unspecified one, a window the system would not
+            // raise — is not trusted with the injection.
+            let verified = match previous {
+                Some(handle) if Some(handle) != own => {
+                    if yal_system::windows::foreground_window() == Some(handle) {
+                        true
+                    } else if yal_system::windows::focus_window_with_permission(handle) {
+                        std::thread::sleep(std::time::Duration::from_millis(80));
+                        yal_system::windows::foreground_window() == Some(handle)
+                    } else {
+                        false
+                    }
+                }
+                _ => false,
+            };
+            if !verified {
+                if let Ok(mut clipboard) = yal_system::clipboard::Clipboard::new() {
+                    let _ = clipboard.write_text(&text);
+                }
+                let _ = yal_system::notify::toast(
+                    "Snippet",
+                    "Could not return to the previous window; the text is on the clipboard instead.",
+                );
+                return;
+            }
+
+            if yal_system::keyboard::type_text(&text).is_err() {
+                if let Ok(mut clipboard) = yal_system::clipboard::Clipboard::new() {
+                    let _ = clipboard.write_text(&text);
+                }
+                let _ = yal_system::notify::toast(
+                    "Snippet",
+                    "Typing in place was refused; the text is on the clipboard instead.",
+                );
+            }
+        });
     }
 }
 
@@ -372,8 +498,7 @@ impl Palette {
             (ActionKind::RevealInFileManager, OpenTarget::Path(path)) => {
                 yal_system::launch::reveal_in_file_manager(path).map_err(|err| err.to_string())
             }
-            (ActionKind::CopyToClipboard, OpenTarget::Text(text))
-            | (ActionKind::PasteToClipboard, OpenTarget::Text(text)) => {
+            (ActionKind::CopyToClipboard, OpenTarget::Text(text)) => {
                 let mut clipboard = yal_system::clipboard::Clipboard::new()
                     .map_err(|err| err.to_string())?;
                 clipboard.write_text(text).map_err(|err| err.to_string())
@@ -560,8 +685,7 @@ impl Palette {
                 Ok(()) => {}
                 Err(_) => {
                     self.ring = Some(announcement);
-                    self.visible = true;
-                    ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+                    self.show(ctx);
                     ctx.request_repaint();
                 }
             }
@@ -864,14 +988,26 @@ impl PaletteStyle {
 
 impl eframe::App for Palette {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // The show location is remembered while the palette sits on
+        // screen, so a park-and-return cycle can put it back exactly
+        // where it was.
+        if self.shown_location.is_none() {
+            if let Some(handle) = yal_system::windows::own_window_handle() {
+                if let Ok((x, y, _, _)) = yal_system::window_controls::rect(handle) {
+                    if x >= 0 && y >= 0 {
+                        self.shown_location = Some((x, y));
+                    }
+                }
+            }
+        }
+
         // The global hotkey toggles the palette. It is polled before
         // anything else so that the toggle is never lost between frames.
         if self.hotkey.poll() {
-            self.visible = !self.visible;
             if self.visible {
-                self.show(ctx);
+                self.park(ctx);
             } else {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+                self.show(ctx);
             }
         }
 
@@ -962,10 +1098,9 @@ impl eframe::App for Palette {
             dismiss = false;
         }
         if dismiss {
-            // Escape hides the palette rather than closing it, so that the
+            // Escape parks the palette rather than closing it, so that the
             // hotkey can bring it back.
-            self.visible = false;
-            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+            self.park(ctx);
         }
 
         if self.mode == Mode::Search {
@@ -1147,14 +1282,17 @@ impl eframe::App for Palette {
 
         if self.hide_requested {
             self.hide_requested = false;
-            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+            if let Some(text) = self.pending_paste.take() {
+                self.expand_in_the_background(text);
+            }
+            self.park(ctx);
         }
 
         self.take_focus(ctx);
 
-        // A hidden window does not produce events, so the event loop would
-        // sleep and never notice the hotkey. Asking for a repaint on an
-        // interval keeps the loop ticking while the palette is away.
+        // A parked window is visible to the window manager, so the frames
+        // keep coming; the paint request keeps the loop ticking in any
+        // case.
         if !self.visible {
             ctx.request_repaint_after(std::time::Duration::from_millis(30));
         }

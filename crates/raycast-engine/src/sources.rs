@@ -179,7 +179,7 @@ pub fn snippets(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
                 .with_id(format!("snippet:{}", snippet.id))
                 .with_subtitle(snippet.expansion.clone())
                 .with_keyword(snippet.keyword.clone())
-                .with_action(Action::copy(snippet.expansion.clone()));
+                .with_action(Action::paste(snippet.expansion.clone()));
             Candidate::new(item, CommandKind::Snippets)
         })
         .collect())
@@ -833,7 +833,7 @@ pub fn snippet_expansion(
             let item = Item::new(snippet.expansion.clone())
                 .with_id(format!("snippet-expansion:{}", snippet.id))
                 .with_subtitle(format!("{} — snippet", snippet.name))
-                .with_action(Action::copy(snippet.expansion.clone()));
+                .with_action(Action::paste(snippet.expansion.clone()));
             return Ok(Some(Candidate::new(item, CommandKind::Snippets)));
         }
     }
