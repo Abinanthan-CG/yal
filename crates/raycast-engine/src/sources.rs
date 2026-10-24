@@ -108,6 +108,67 @@ pub fn aliases(
     Ok(found)
 }
 
+/// Build candidates for the user's script commands.
+///
+/// Every script in the folder is offered every search: the ranking decides
+/// what the query matches against titles and keywords, the same way it does
+/// for the applications. The folder is the user's; an unreadable or absent
+/// folder offers nothing rather than erroring, since a missing folder is a
+/// way a user can choose not to have script commands at all.
+pub fn scripts(scripts_folder: Option<std::path::PathBuf>) -> Vec<Candidate> {
+    let Some(folder) = yal_system::scripts::resolve_folder(
+        scripts_folder.filter(|path| !path.as_os_str().is_empty()),
+    ) else {
+        return Vec::new();
+    };
+
+    yal_system::scripts::list(&folder)
+        .into_iter()
+        .map(|script| {
+            use yal_system::scripts::Mode;
+
+            let slug = script.mode.slug();
+            let action = match script.mode {
+                Mode::Silent => {
+                    // Detached: the palette hands the runner off and
+                    // forgets about it.
+                    let (program, args) = yal_system::scripts::runner_command(&script);
+                    Action::run(program, args)
+                }
+                _ => {
+                    // The palette task runs it in the background and
+                    // announces the outcome, so the window does not wait.
+                    Action::task(
+                        "script",
+                        vec![
+                            script.path.to_string_lossy().into_owned(),
+                            slug.to_string(),
+                        ],
+                    )
+                }
+            };
+
+            let runner = match script.runner {
+                yal_system::scripts::Runner::PowerShell => "PowerShell",
+                yal_system::scripts::Runner::Batch => "batch",
+                yal_system::scripts::Runner::Python => "Python",
+            };
+            let subtitle = match (&script.description, script.mode) {
+                (Some(description), _) => format!("{runner} script — {description} ({slug})"),
+                (None, _) => format!("{runner} script ({slug})"),
+            };
+
+            let mut item = Item::new(script.title.clone())
+                .with_id(format!("script:{}", script.path.display()))
+                .with_subtitle(subtitle)
+                .with_action(action);
+            for keyword in &script.keywords {
+                item = item.with_keyword(keyword.clone());
+            }
+            Candidate::new(item, CommandKind::Scripts)
+        })
+        .collect()
+}
 /// Build candidates for snippets.
 pub fn snippets(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
     Ok(store

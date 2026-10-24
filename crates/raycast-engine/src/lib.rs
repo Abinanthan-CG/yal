@@ -172,6 +172,11 @@ impl Engine {
         }
 
         candidates.extend(sources::timers(store, now)?);
+        candidates.extend(sources::scripts(
+            store
+                .setting("scripts_folder")?
+                .map(std::path::PathBuf::from),
+        ));
 
         // Read usage history for every candidate in one query.
         let keys: Vec<String> = candidates
@@ -298,6 +303,87 @@ mod tests {
             .collect();
         let results = engine.rank_candidates(&candidates, "item", Utc::now());
         assert_eq!(results.len(), 2);
+    }
+
+    /// A scratch scripts folder holding one PowerShell script.
+    fn script_folder_with_one() -> std::path::PathBuf {
+        let folder = std::env::temp_dir()
+            .join(format!(
+                "rc-engine-script-{}",
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+        std::fs::create_dir_all(&folder).unwrap();
+        std::fs::write(
+            folder.join("restart-audio.ps1"),
+            "# @title Restart the audio\n\
+             # @keywords audio, sound\n\
+             Write-Output done\n",
+        )
+        .unwrap();
+        folder
+    }
+
+    #[test]
+    fn script_commands_surface_from_the_folder() {
+        let mut engine = Engine::new();
+        let store = yal_store::Store::open_in_memory().unwrap();
+        let folder = script_folder_with_one();
+        store
+            .set_setting("scripts_folder", &folder.to_string_lossy())
+            .unwrap();
+
+        let results = engine
+            .search(&store, &[], "restart", Utc::now())
+            .unwrap();
+
+        let found = results
+            .iter()
+            .find(|scored| scored.item.title == "Restart the audio")
+            .expect("the script command should surface for its title");
+        assert!(
+            found
+                .item
+                .subtitle
+                .as_ref()
+                .is_some_and(|subtitle| subtitle.contains("PowerShell script")),
+            "the subtitle should say the script is a PowerShell script"
+        );
+
+        std::fs::remove_dir_all(folder).unwrap();
+    }
+
+    #[test]
+    fn script_actions_match_their_mode() {
+        let folder = script_folder_with_one();
+        std::fs::write(
+            folder.join("silent.cmd"),
+            ":: @title silent thing\n:: @mode silent\n@echo off\n",
+        )
+        .unwrap();
+
+        let candidates = sources::scripts(Some(folder));
+        let candidate = candidates
+            .iter()
+            .find(|candidate| candidate.item.id.0.ends_with("silent.cmd"))
+            .expect("the silent script should be among the offered");
+        assert_eq!(candidate.kind, CommandKind::Scripts);
+        // A silent script runs detached via the plain command action; a
+        // backgrounded one goes through the palette's script task.
+        assert_eq!(
+            candidate.item.action.as_ref().unwrap().kind,
+            yal_core::action::ActionKind::RunCommand
+        );
+        let compact = candidates
+            .iter()
+            .find(|candidate| candidate.item.title == "Restart the audio")
+            .expect("the compact script should be among the offered");
+        assert_eq!(
+            compact.item.action.as_ref().unwrap().kind,
+            yal_core::action::ActionKind::LauncherTask
+        );
     }
 
     #[test]

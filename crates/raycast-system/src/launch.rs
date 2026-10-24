@@ -27,6 +27,28 @@ pub fn launch(program: &Path) -> Result<(), LaunchError> {
         .map_err(|err| LaunchError::Failed(program.display().to_string(), err.to_string()))
 }
 
+/// Launch a program and its arguments, with no window of its own.
+///
+/// For console programs launched on the user's behalf from the palette:
+/// the child runs detached from the palette, and no host console is
+/// created for it, so a PowerShell command does not flash a window over
+/// the palette for the moment of its run.
+pub fn launch_program(program: &str, args: &[String]) -> Result<(), LaunchError> {
+    let mut command = Command::new(program);
+    command.args(args);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // CREATE_NO_WINDOW: 0x08000000, stable since Windows NT 4 and
+        // published in the Process Creation documentation.
+        command.creation_flags(0x08000000);
+    }
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|err| LaunchError::Failed(program.to_string(), err.to_string()))
+}
+
 /// Open a path with its default handler.
 pub fn open_path(path: &Path) -> Result<(), LaunchError> {
     if !path.exists() {

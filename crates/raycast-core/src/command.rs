@@ -74,6 +74,8 @@ pub enum CommandKind {
     BrowserTabs,
     /// Countdown timers.
     Timer,
+    /// The user's script commands, run from their scripts folder.
+    Scripts,
     /// A third-party extension.
     ///
     /// Reserved. No extension runtime ships in this milestone
@@ -108,6 +110,7 @@ impl CommandKind {
             CommandKind::Process => "Processes",
             CommandKind::BrowserTabs => "Browser Tabs",
             CommandKind::Timer => "Timers",
+            CommandKind::Scripts => "Script Commands",
             CommandKind::Extension => "Extensions",
         }
     }

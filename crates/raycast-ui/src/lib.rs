@@ -290,13 +290,14 @@ impl Palette {
                 yal_system::launch::launch(&resolved.path).map_err(|err| err.to_string())
             }
             (ActionKind::RunCommand, OpenTarget::Command { program, args }) => {
-                // Detached: the palette does not wait and does not keep a
-                // console for the child.
-                std::process::Command::new(program)
-                    .args(args)
-                    .spawn()
-                    .map(|_| ())
-                    .map_err(|err| format!("{program:?} could not be started: {err}"))
+                // Detached, with no host console: the palette does not
+                // wait and does not flash a window the user did not ask
+                // for.
+                yal_system::launch::launch_program(
+                    &program.to_string_lossy(),
+                    args,
+                )
+                    .map_err(|err| err.to_string())
             }
             (ActionKind::LauncherTask, OpenTarget::Task { name, arguments }) => {
                 self.perform_task(name, arguments)
@@ -373,6 +374,23 @@ impl Palette {
                 self.store
                     .clear_setting(&format!("timer:{id}"))
                     .map_err(|err| err.to_string())
+            }
+            "script" => {
+                // Arguments: the script's path, then its mode slug. The run
+                // happens in a thread the palette does not wait on, so a
+                // slow script never holds the window; the outcome arrives
+                // as a toast when it is known.
+                let path = arguments
+                    .first()
+                    .ok_or_else(|| "the script path is missing".to_string())?
+                    .clone();
+                let mode = arguments
+                    .get(1)
+                    .map(String::as_str)
+                    .unwrap_or("compact")
+                    .to_string();
+                std::thread::spawn(move || finish_script(&path, &mode));
+                Ok(())
             }
             unknown => {
                 let _ = unknown;
@@ -487,9 +505,76 @@ fn perform_system(command: &str) -> Result<(), String> {
     }
 }
 
+/// Run a script command in the background and announce the outcome.
+///
+/// Called from a thread the palette does not wait on, so the window
+/// stays responsive while the script runs. `compact` mode toasts what
+/// happened; `full` mode additionally puts the output on the clipboard.
+/// The toast declaring an unreadable runner honestly reports the refusal
+/// the machine gives.
+fn finish_script(path: &str, mode: &str) {
+    let full_path = std::path::PathBuf::from(path);
+    let named = yal_system::scripts::read(&full_path);
+    let title = named
+        .as_ref()
+        .map(|script| script.title.clone())
+        .unwrap_or_else(|| full_path.to_string_lossy().into_owned());
+
+    // An absent runner — python without python, say — surfaces here as a
+    // run error rather than of silence.
+    let outcome = match yal_system::scripts::read(&full_path) {
+        None => Err(format!("\"{path}\" is no longer a script this launcher can read")),
+        Some(script) => yal_system::scripts::run(&script).map_err(|err| err.to_string()),
+    };
+
+    match outcome {
+        Err(reason) => {
+            let _ = yal_system::notify::toast(&title, &reason);
+        }
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let failure = !output.status.success();
+
+            if mode == "full" {
+                let combined: String = if stdout.trim().is_empty() {
+                    stderr.trim().to_string()
+                } else {
+                    stdout.trim().to_string()
+                };
+                if !combined.is_empty() {
+                    // Full output mode: the launcher keeps the whole thing in the
+                    // clipboard; the toast summarizes it.
+                    if let Ok(mut clipboard) =
+                        yal_system::clipboard::Clipboard::new()
+                    {
+                        let _ = clipboard.write_text(&combined);
+                    }
+                }
+            }
+
+            // The toast's second line shows one line of what the script
+            // said: the first line of the output, or of the output on
+            // stderr when that is all there is.
+            let first_stdout = stdout.lines().next().unwrap_or("").trim();
+            let words: String = if first_stdout.is_empty() {
+                stderr
+                    .lines()
+                    .next()
+                    .unwrap_or("")
+                    .trim()
+                    .to_string()
+            } else {
+                first_stdout.to_string()
+            };
+            let state = if failure { "failed" } else { "finished" };
+            let _ = yal_system::notify::toast(&format!("{title} {state}"), &words);
+        }
+    }
+}
+
 /// The first controllable monitor's brightness, for nudging it.
-fn current_brightness() -> Option<f64> {
-    yal_system::display::read_brightness()
+fn current_brightness() -> Option<f64> {    yal_system::display::read_brightness()
         .ok()?
         .first()
         .map(|(_monitor, level)| *level)

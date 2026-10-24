@@ -25,6 +25,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads. |
 | **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or snap it to a half of the screen. |
+| **Script commands** | The little programs you keep in `~\\.legacy-store\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
 | **Kill process** | The running processes, heaviest first; end one from the list. |
 | **System commands** | Lock, sleep, shutdown, restart, log out, empty the recycle bin. |
@@ -81,6 +82,9 @@ cargo run --bin rc -- transform snake "Clean Room Rebuild"
 cargo run --bin rc -- hash abc
 cargo run --bin rc -- uuid
 cargo run --bin rc -- timer 10m pomodoro
+cargo run --bin rc -- scripts
+cargo run --bin rc -- script-run hello-clean
+cargo run --bin rc -- script-run "Clean-room batch probe" --detached
 cargo run --bin rc -- doctor
 ```
 
@@ -189,6 +193,10 @@ This is an honest list, not a disclaimer.
 - **Reminders, notes, calendar and book links** — the parts of launcher that
   are really small apps rather than launcher features — are not built.
 - **The image preview and EXIF reader** are not built.
+- **Script command output in "full" mode** lands on the clipboard with a
+  toast naming the outcome; launcher's launcher shows the full output inside
+  its window. The script itself, its header language and the two other
+  modes work the same way.
 
 ### Things worth knowing
 

@@ -242,6 +242,28 @@ enum Command {
         label: String,
     },
 
+    /// List the script commands in your scripts folder.
+    Scripts,
+
+    /// Run one script command, by its file name or full path.
+    ///
+    /// The header's mode decides what happens with the output, exactly as
+    /// the palette would: in `compact` and `full` the outcome is toasted
+    /// as well as printed.
+    ScriptRun {
+        /// The script's file name, or its path.
+        name: String,
+        /// Run it detached, the way a `silent` script always runs.
+        #[arg(long)]
+        detached: bool,
+    },
+
+    /// Point the launcher at your scripts folder.
+    ScriptsFolder {
+        /// The folder path; without one, the default is restored.
+        path: Option<String>,
+    },
+
     /// List the stored timers with the time left on them.
     Timers,
 
@@ -1031,6 +1053,101 @@ fn run(cli: &Cli) -> Result<()> {
             }
             .map_err(|err| anyhow::anyhow!("{err}"))?;
             println!("toast accepted: {title}");
+        }
+
+        Command::ScriptRun { name, detached } => {
+            let folder = yal_system::scripts::resolve_folder(
+                open_store(cli)?
+                    .setting("scripts_folder")?
+                    .map(std::path::PathBuf::from),
+            );
+            // By full path when it reads as one; otherwise by file stem or
+            // title among the folder's own scripts.
+            let script = yal_system::scripts::read(&std::path::PathBuf::from(name))
+                .or_else(|| {
+                    folder.and_then(|folder| {
+                        yal_system::scripts::list(&folder)
+                            .into_iter()
+                            .find(|script| {
+                                script
+                                    .path
+                                    .file_stem()
+                                    .is_some_and(|stem| stem.to_string_lossy().eq_ignore_ascii_case(name))
+                                    || script.title.eq_ignore_ascii_case(name)
+                            })
+                    })
+                })
+                .ok_or_else(|| anyhow::anyhow!("`{name}` is not a script command in your scripts folder"))?;
+
+            if *detached || script.mode == yal_system::scripts::Mode::Silent {
+                let (program, args) = yal_system::scripts::runner_command(&script);
+                yal_system::launch::launch_program(&program.to_string_lossy(), &args)
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!("{} started detached", script.title);
+                return Ok(());
+            }
+
+            let output = yal_system::scripts::run(&script)
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+            let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            if !stdout.is_empty() {
+                println!("{stdout}");
+            }
+            if !stderr.is_empty() {
+                println!("(on stderr) {stderr}");
+            }
+            println!("exit status: {:?}", output.status.code());
+
+            let summary = if output.status.success() {
+                format!("{} finished", script.title)
+            } else {
+                format!("{} failed", script.title)
+            };
+            let detail = stdout
+                .lines()
+                .next()
+                .unwrap_or("")
+                .trim()
+                .to_string();
+            let _ = yal_system::notify::toast(&summary, &detail);
+        }
+
+        Command::Scripts => {
+            let store = open_store(cli)?;
+            let folder = yal_system::scripts::resolve_folder(
+                store
+                    .setting("scripts_folder")?
+                    .map(std::path::PathBuf::from),
+            );
+            let Some(folder) = folder else {
+                anyhow::bail!("there is no scripts folder on this machine");
+            };
+            let scripts = yal_system::scripts::list(&folder);
+            for script in &scripts {
+                println!(
+                    "{:<24} {:<8} {}",
+                    script.title,
+                    script.mode.slug(),
+                    script.path.display()
+                );
+            }
+            println!("{} script commands in {}", scripts.len(), folder.display());
+        }
+
+        Command::ScriptsFolder { path } => {
+            let store = open_store(cli)?;
+            match path {
+                Some(path) => {
+                    std::fs::create_dir_all(path)?;
+                    store.set_setting("scripts_folder", path)?;
+                    println!("script commands are read from {path} from now on");
+                }
+                None => {
+                    store.clear_setting("scripts_folder")?;
+                    println!("restored the default scripts folder");
+                }
+            }
         }
 
         Command::Timer { duration, label } => {
