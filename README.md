@@ -44,7 +44,11 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Web search** | Hands the query to the search engine. |
 | **System tray** | The menu bar extra, in its Windows form. |
 
-The hotkey is **Ctrl+Space** by default and can be changed:
+The hotkey is **Ctrl+Space** by default and can be changed from the palette
+itself — the gear button beside the query opens the preferences pane, where
+the hotkey can be recorded, the theme picked (system, dark or light, kept
+between runs), and the script commands' folder pointed somewhere else.
+The CLI reaches the hotkey as well:
 
 ```sh
 rc hotkey                      # show the current hotkey

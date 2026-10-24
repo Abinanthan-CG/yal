@@ -66,6 +66,54 @@ pub struct Palette {
     last_timer_check: Option<Instant>,
     /// A timer that rang while the palette was away.
     ring: Option<String>,
+    /// Whether the palette is searching or showing its preferences.
+    mode: Mode,
+    /// The appearance the palette is drawn with.
+    theme: Theme,
+    /// Whether the next key press becomes the new palette hotkey.
+    recording_hotkey: bool,
+    /// The scripts folder path being edited in the preferences pane.
+    scripts_draft: String,
+}
+
+/// What the palette is showing.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Mode {
+    /// The search results.
+    Search,
+    /// The settings pane.
+    Preferences,
+}
+
+/// The palette's appearance.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Theme {
+    /// Follow the system theme.
+    System,
+    /// Draw dark, whatever the system says.
+    Dark,
+    /// Draw light, whatever the system says.
+    Light,
+}
+
+impl Theme {
+    /// The theme named in the settings, when it is one of the three.
+    fn parse(text: &str) -> Option<Self> {
+        match text {
+            "system" => Some(Theme::System),
+            "dark" => Some(Theme::Dark),
+            "light" => Some(Theme::Light),
+            _ => None,
+        }
+    }
+
+    fn slug(self) -> &'static str {
+        match self {
+            Theme::System => "system",
+            Theme::Dark => "dark",
+            Theme::Light => "light",
+        }
+    }
 }
 
 /// The identifier the launcher hotkey is registered under.
@@ -110,7 +158,24 @@ impl Palette {
             status: None,
             last_timer_check: None,
             ring: None,
+            mode: Mode::Search,
+            theme: Theme::System,
+            recording_hotkey: false,
+            scripts_draft: String::new(),
         };
+        palette.theme = palette
+            .store
+            .setting("theme")
+            .ok()
+            .flatten()
+            .and_then(|text| Theme::parse(&text))
+            .unwrap_or(Theme::System);
+        palette.scripts_draft = palette
+            .store
+            .setting("scripts_folder")
+            .ok()
+            .flatten()
+            .unwrap_or_default();
         palette.register_hotkey();
         // The built-in search templates are seeded once, on install.
         if let Err(error) = palette.store.seed_default_quicklinks() {
@@ -573,8 +638,152 @@ fn finish_script(path: &str, mode: &str) {
     }
 }
 
+impl Palette {
+    /// The dark/light decision behind the palette's colours.
+    fn theme_dark(&self, ctx: &egui::Context) -> bool {
+        match self.theme {
+            Theme::Dark => true,
+            Theme::Light => false,
+            Theme::System => ctx.style().visuals.dark_mode,
+        }
+    }
+
+    /// Persist the palette hotkey and bind the listener to it again.
+    fn save_hotkey(&mut self, spec: yal_system::hotkey::HotkeySpec, text: String) {
+        if let Err(error) = self.store.set_setting("hotkey", &text) {
+            self.status = Some(format!("the hotkey could not be saved: {error}"));
+            return;
+        }
+        self.hotkey.stop();
+        self.hotkey = yal_system::hotkey::HotkeyListener::spawn(
+            spec.virtual_key,
+            spec.modifiers,
+            HOTKEY_ID,
+        );
+        self.register_hotkey();
+    }
+
+    /// The hotkey currently configured, or the default.
+    fn hotkey_spec(&self) -> yal_system::hotkey::HotkeySpec {
+        self.store
+            .setting("hotkey")
+            .ok()
+            .flatten()
+            .and_then(|text| yal_system::hotkey::HotkeySpec::parse(&text))
+            .unwrap_or_else(yal_system::hotkey::HotkeySpec::default_spec)
+    }
+
+    /// The preferences pane, drawn instead of the search results.
+    fn draw_preferences(&mut self, ui: &mut egui::Ui, style: &PaletteStyle) {
+        ui.label(RichText::new("Preferences").color(style.text).size(20.0));
+        ui.add_space(6.0);
+
+        // Appearance.
+        ui.label(
+            RichText::new("Appearance")
+                .color(style.dim_text)
+                .size(13.0),
+        );
+        ui.horizontal(|ui| {
+            for (theme, label) in [
+                (Theme::System, "System"),
+                (Theme::Dark, "Dark"),
+                (Theme::Light, "Light"),
+            ] {
+                let chosen = self.theme == theme;
+                if ui.selectable_label(chosen, label).clicked() {
+                    self.theme = theme;
+                    if let Err(error) = self.store.set_setting("theme", theme.slug()) {
+                        self.status =
+                            Some(format!("the theme could not be saved: {error}"));
+                    }
+                }
+            }
+        });
+        ui.add_space(8.0);
+
+        // The palette hotkey.
+        ui.label(
+            RichText::new("Palette hotkey")
+                .color(style.dim_text)
+                .size(13.0),
+        );
+        if self.recording_hotkey {
+            ui.label(
+                RichText::new("press a key — with ctrl, alt or shift — Esc cancels")
+                    .color(style.accent)
+                    .size(14.0),
+            );
+        } else {
+            let spec = self.hotkey_spec();
+            ui.horizontal(|ui| {
+                ui.label(
+                    RichText::new(spec.to_text())
+                        .color(style.text)
+                        .size(14.0),
+                );
+                if ui.button("Record…").clicked() {
+                    self.recording_hotkey = true;
+                }
+            });
+        }
+        ui.add_space(8.0);
+
+        // The script commands folder.
+        ui.label(
+            RichText::new("Script commands folder")
+                .color(style.dim_text)
+                .size(13.0),
+        );
+        ui.horizontal(|ui| {
+            let draft_width = ui.available_width() - 90.0;
+            ui.add(
+                egui::TextEdit::singleline(&mut self.scripts_draft)
+                    .hint_text(r"%USERPROFILE%\.legacy-store\scripts")
+                    .font(FontId::proportional(14.0))
+                    .desired_width(draft_width),
+            );
+            if ui.button("Save").clicked() {
+                let outcome = if self.scripts_draft.trim().is_empty() {
+                    self.store
+                        .clear_setting("scripts_folder")
+                        .map(|_| "restored the default scripts folder".to_string())
+                } else {
+                    self.store
+                        .set_setting("scripts_folder", &self.scripts_draft)
+                        .map(|_| "script commands are read from the new folder".to_string())
+                };
+                match outcome {
+                    Ok(message) => {
+                        self.status = Some(message);
+                        self.pending = true;
+                        self.last_search = Some(Instant::now());
+                        self.mode = Mode::Search;
+                    }
+                    Err(error) => {
+                        self.status =
+                            Some(format!("the folder could not be saved: {error}"));
+                    }
+                }
+            }
+        });
+        ui.add_space(8.0);
+
+        if let Some(status) = &self.status {
+            ui.label(RichText::new(status).color(style.dim_text).size(13.0));
+        }
+        ui.add_space(4.0);
+        ui.label(
+            RichText::new("Esc goes back to the search")
+                .color(style.dim_text)
+                .size(12.0),
+        );
+    }
+}
+
 /// The first controllable monitor's brightness, for nudging it.
-fn current_brightness() -> Option<f64> {    yal_system::display::read_brightness()
+fn current_brightness() -> Option<f64> {
+    yal_system::display::read_brightness()
         .ok()?
         .first()
         .map(|(_monitor, level)| *level)
@@ -646,7 +855,7 @@ impl eframe::App for Palette {
             }
         }
 
-        let palette_style = PaletteStyle::new(ctx.style().visuals.dark_mode);
+        let palette_style = PaletteStyle::new(self.theme_dark(ctx));
 
         ctx.style_mut(|visuals| {
             visuals.visuals.window_fill = palette_style.background;
@@ -679,8 +888,45 @@ impl eframe::App for Palette {
             if input.key_pressed(Key::Escape) {
                 dismiss = true;
             }
+            // While the preferences pane waits for a hotkey, the first
+            // key pressed together with a modifier becomes it. Escape
+            // does not count: it means "never mind".
+            if self.recording_hotkey && !input.key_pressed(Key::Escape) {
+                let pressed = [
+                    Key::A, Key::B, Key::C, Key::D, Key::E, Key::F, Key::G, Key::H,
+                    Key::I, Key::J, Key::K, Key::L, Key::M, Key::N, Key::O, Key::P,
+                    Key::Q, Key::R, Key::S, Key::T, Key::U, Key::V, Key::W, Key::X,
+                    Key::Y, Key::Z,
+                ]
+                .into_iter()
+                .find(|key| input.key_pressed(*key));
+                if let Some(key) = pressed {
+                    if let Some(spec) = hotkey_spec_from(key, input.modifiers) {
+                        // The spec is small and copied, so deriving its
+                        // text before persisting is the plain order.
+                        let text = yal_system::hotkey::HotkeySpec::to_text(spec);
+                        self.status = Some(format!("hotkey saved: {text}"));
+                        self.save_hotkey(spec, text);
+                        self.recording_hotkey = false;
+                    } else {
+                        self.status = Some(
+                            "a modifier is needed: hold ctrl, alt or shift with the key".into(),
+                        );
+                    }
+                    move_down = false;
+                    move_up = false;
+                    activate = false;
+                }
+            }
         });
 
+        if dismiss && self.mode == Mode::Preferences {
+            // Escape in the preferences pane goes back to the search; the
+            // palette itself stays open.
+            self.mode = Mode::Search;
+            self.recording_hotkey = false;
+            dismiss = false;
+        }
         if dismiss {
             // Escape hides the palette rather than closing it, so that the
             // hotkey can bring it back.
@@ -688,18 +934,20 @@ impl eframe::App for Palette {
             ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
         }
 
-        if move_down && !self.results.is_empty() {
-            self.selected = (self.selected + 1) % self.results.len();
-        }
-        if move_up && !self.results.is_empty() {
-            self.selected = if self.selected == 0 {
-                self.results.len() - 1
-            } else {
-                self.selected - 1
-            };
-        }
-        if activate {
-            self.perform_selected();
+        if self.mode == Mode::Search {
+            if move_down && !self.results.is_empty() {
+                self.selected = (self.selected + 1) % self.results.len();
+            }
+            if move_up && !self.results.is_empty() {
+                self.selected = if self.selected == 0 {
+                    self.results.len() - 1
+                } else {
+                    self.selected - 1
+                };
+            }
+            if activate {
+                self.perform_selected();
+            }
         }
 
         let frame = egui::Frame::new()
@@ -726,23 +974,62 @@ impl eframe::App for Palette {
         egui::CentralPanel::default()
             .frame(frame)
             .show(ctx, |ui| {
-                // The query field.
-                let response = ui.add(
-                    egui::TextEdit::singleline(&mut self.query)
-                        .hint_text("Search applications, snippets, and more…")
-                        .font(FontId::proportional(22.0))
-                        .desired_width(f32::INFINITY),
-                );
-                if response.changed() {
-                    self.pending = true;
-                    self.last_search = Some(Instant::now());
-                    self.selected = 0;
-                }
-                response.request_focus();
+                // The query field, plus the preferences button beside it.
+                ui.horizontal(|ui| {
+                    let response = ui.add(
+                        egui::TextEdit::singleline(&mut self.query)
+                            .hint_text("Search applications, snippets, and more…")
+                            .font(FontId::proportional(22.0))
+                            .desired_width(ui.available_width() - 46.0),
+                    );
+                    if response.changed() {
+                        self.pending = true;
+                        self.last_search = Some(Instant::now());
+                        self.selected = 0;
+                    }
+                    response.request_focus();
+
+                    let gear = if self.mode == Mode::Preferences {
+                        "⬅"
+                    } else {
+                        "⚙"
+                    };
+                    let gear_button = egui::Button::new(RichText::new(gear).size(18.0))
+                        .frame(false)
+                        .small();
+                    if ui
+                        .add(gear_button)
+                        .on_hover_text(if self.mode == Mode::Preferences {
+                            "Back to the search"
+                        } else {
+                            "Preferences"
+                        })
+                        .clicked()
+                    {
+                        self.mode = match self.mode {
+                            Mode::Search => {
+                                self.scripts_draft = self
+                                    .store
+                                    .setting("scripts_folder")
+                                    .ok()
+                                    .flatten()
+                                    .unwrap_or_default();
+                                self.recording_hotkey = false;
+                                Mode::Preferences
+                            }
+                            Mode::Preferences => Mode::Search,
+                        };
+                    }
+                });
 
                 ui.add_space(6.0);
                 ui.separator();
                 ui.add_space(4.0);
+
+                if self.mode == Mode::Preferences {
+                    self.draw_preferences(ui, &palette_style);
+                    return;
+                }
 
                 // The results.
                 egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
@@ -816,6 +1103,76 @@ impl eframe::App for Palette {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
     }
+}
+
+/// The hotkey a recorded key press names, when the launcher can own it.
+///
+/// A hotkey needs at least one modifier — without one, every keystroke
+/// would summon the palette, so a plain key is refused here. The Windows
+/// key is not recorded, because the system reserves it for the Start menu
+/// on this platform.
+fn hotkey_spec_from(
+    key: egui::Key,
+    modifiers: egui::Modifiers,
+) -> Option<yal_system::hotkey::HotkeySpec> {
+    use egui::Key;
+
+    // Letters and digits are at their Windows virtual-key codes; the
+    // function keys start at 0x70 with F1.
+    let virtual_key = match key {
+        Key::A => 0x41,
+        Key::B => 0x42,
+        Key::C => 0x43,
+        Key::D => 0x44,
+        Key::E => 0x45,
+        Key::F => 0x46,
+        Key::G => 0x47,
+        Key::H => 0x48,
+        Key::I => 0x49,
+        Key::J => 0x4A,
+        Key::K => 0x4B,
+        Key::L => 0x4C,
+        Key::M => 0x4D,
+        Key::N => 0x4E,
+        Key::O => 0x4F,
+        Key::P => 0x50,
+        Key::Q => 0x51,
+        Key::R => 0x52,
+        Key::S => 0x53,
+        Key::T => 0x54,
+        Key::U => 0x55,
+        Key::V => 0x56,
+        Key::W => 0x57,
+        Key::X => 0x58,
+        Key::Y => 0x59,
+        Key::Z => 0x5A,
+        Key::Num0 => 0x30,
+        Key::Num1 => 0x31,
+        Key::Num2 => 0x32,
+        Key::Num3 => 0x33,
+        Key::Num4 => 0x34,
+        Key::Num5 => 0x35,
+        Key::Num6 => 0x36,
+        Key::Num7 => 0x37,
+        Key::Num8 => 0x38,
+        Key::Num9 => 0x39,
+        Key::Space => 0x20,
+        _ => return None,
+    };
+
+    if !(modifiers.ctrl || modifiers.alt || modifiers.shift) {
+        return None;
+    }
+
+    Some(yal_system::hotkey::HotkeySpec {
+        virtual_key,
+        modifiers: yal_system::hotkey::HotkeyModifiers {
+            control: modifiers.ctrl,
+            alt: modifiers.alt,
+            shift: modifiers.shift,
+            super_key: false,
+        },
+    })
 }
 
 /// Draw one result row.
@@ -1121,5 +1478,68 @@ mod tests {
         let segments = split_by_ranges("日本語", std::slice::from_ref(&(1..2)));
         assert_eq!(segments.len(), 3);
         assert_eq!(segments[1], ("本".to_string(), true));
+    }
+
+    #[test]
+    fn a_recorded_key_becomes_a_spec_with_the_its_modifiers() {
+        use egui::Key;
+
+        let spec = hotkey_spec_from(
+            Key::L,
+            egui::Modifiers {
+                ctrl: true,
+                ..Default::default()
+            },
+        )
+        .expect("ctrl+letter is a legal palette hotkey");
+        assert_eq!(spec.virtual_key, 0x4C);
+        assert!(spec.modifiers.control);
+        assert!(!spec.modifiers.alt);
+
+        // The function key and digit mappings are at their Windows codes.
+        let spec = hotkey_spec_from(
+            Key::Num1,
+            egui::Modifiers {
+                shift: true,
+                ..Default::default()
+            },
+        )
+        .expect("shift+digit is legal");
+        assert_eq!(spec.virtual_key, 0x31);
+        assert!(spec.modifiers.shift);
+        assert!(!spec.modifiers.control);
+    }
+
+    #[test]
+    fn a_key_without_a_modifier_is_refused() {
+        use egui::Key;
+
+        assert!(hotkey_spec_from(Key::A, egui::Modifiers::default()).is_none());
+    }
+
+    #[test]
+    fn theme_preferences_survive_their_setting_names() {
+        assert_eq!(Theme::parse("dark"), Some(Theme::Dark));
+        assert_eq!(Theme::parse("light"), Some(Theme::Light));
+        assert_eq!(Theme::parse("system"), Some(Theme::System));
+        assert_eq!(Theme::parse("neon"), None);
+        assert_eq!(Theme::Dark.slug(), "dark");
+        assert_eq!(Theme::Light.slug(), "light");
+        assert_eq!(Theme::System.slug(), "system");
+    }
+
+    #[test]
+    fn a_digit_hotkey_round_trips_through_its_setting_text() {
+        // The hotkey setting is written as text, so a digit combination
+        // has to read back out of it.
+        let spec = yal_system::hotkey::HotkeySpec::parse("ctrl+5")
+            .expect("digits parse as keys");
+        assert_eq!(spec.virtual_key, 0x35);
+        assert!(spec.modifiers.control);
+        assert_eq!(
+            yal_system::hotkey::HotkeySpec::parse(&spec.to_text()),
+            Some(spec),
+            "the text form reads back to the same combination"
+        );
     }
 }

@@ -382,7 +382,7 @@ fn current_thread_id() -> Option<u32> {
 ///
 /// The launcher stores its hotkey in this form so that the user can change
 /// it without recompiling.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HotkeySpec {
     /// The virtual key code.
     pub virtual_key: u32,
@@ -494,10 +494,10 @@ fn named_key(name: &str) -> Option<u32> {
         "f11" => 0x7A,
         "f12" => 0x7B,
         other => {
-            // A single letter.
+            // A single letter or digit.
             let mut chars = other.chars();
             match (chars.next(), chars.next()) {
-                (Some(c), None) if c.is_ascii_alphabetic() => {
+                (Some(c), None) if c.is_ascii_alphanumeric() => {
                     c.to_ascii_uppercase() as u32
                 }
                 _ => return None,
