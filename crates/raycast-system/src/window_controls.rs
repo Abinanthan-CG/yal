@@ -48,7 +48,7 @@ fn perform_place(handle: u64, action: WindowAction) -> Result<(), ControlError> 
     let (left, top, width, height) = {
         use windows::Win32::Foundation::{HWND, RECT};
         use windows::Win32::Graphics::Gdi::{
-            GetMonitorInfoW, MonitorFromWindow, HMONITOR, MONITORINFO,
+            GetMonitorInfoW, MonitorFromWindow, MONITORINFO,
             MONITOR_DEFAULTTONEAREST,
         };
 

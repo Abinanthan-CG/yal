@@ -12,6 +12,7 @@ pub mod watcher;
 pub mod windows;
 pub mod audio;
 pub mod display;
+pub mod identity;
 pub mod notify;
 pub mod processes;
 pub mod system;

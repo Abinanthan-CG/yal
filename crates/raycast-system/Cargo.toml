@@ -19,6 +19,7 @@ image = { version = "0.25", default-features = false, features = ["png", "jpeg"]
 arboard = "3"
 sysinfo = "0.37"
 winreg = "0.55"
+dirs = "6"
 
 [target.'cfg(windows)'.dependencies]
 tray-icon = "0.24"
@@ -42,7 +43,9 @@ windows = { version = "0.62", features = [
   "Win32_Media_Audio",
   "Win32_Media_Audio_Endpoints",
   "Win32_Devices_Display",
+  "Win32_Storage_EnhancedStorage",
   "Win32_UI_Shell",
+  "Win32_UI_Shell_PropertiesSystem",
   "UI_Notifications",
   "Data_Xml_Dom",
 ] }

@@ -287,6 +287,13 @@ enum Command {
     /// Seed the bundled search templates into the store, once.
     SeedQuicklinks,
 
+    /// Register the launcher's Start Menu identity, once.
+    ///
+    /// A shortcut to this program, with its user model identifier set, is
+    /// how the shell learns the launcher's notifications. After this, the
+    /// toast banners are delivered the way a packaged application's are.
+    Identify,
+
     /// Rename an application with a short word of yours.
     ///
     /// Typing the term in the palette then finds the application by its
@@ -1129,6 +1136,22 @@ fn run(cli: &Cli) -> Result<()> {
             let store = open_store(cli)?;
             store.seed_default_quicklinks()?;
             println!("quicklinks bundled with the launcher are stored");
+        }
+
+        Command::Identify => {
+            let target = std::env::current_exe()
+                .map_err(|err| anyhow::anyhow!("the running program could not be located: {err}"))?;
+            yal_system::identity::register_shortcut(
+                yal_system::notify::APPLICATION_ID,
+                "legacy-store",
+                &target,
+            )
+            .map_err(|err| anyhow::anyhow!("{err}"))?;
+            println!(
+                "the Start Menu shortcut for {} is written from {}",
+                yal_system::notify::APPLICATION_ID,
+                target.display()
+            );
         }
 
         Command::Alias { action } => {

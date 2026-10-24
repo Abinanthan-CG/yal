@@ -24,7 +24,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Snippets** | Saved text, expanded straight from the palette. |
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads. |
-| **Windows** | Every open window, by title — then close, minimise, maximise or restore it. |
+| **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or snap it to a half of the screen. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
 | **Kill process** | The running processes, heaviest first; end one from the list. |
 | **System commands** | Lock, sleep, shutdown, restart, log out, empty the recycle bin. |
@@ -69,6 +69,9 @@ cargo run --bin rc -- totp JBSWY3DPEHPK3PXP
 cargo run --bin rc -- regex "(\w+)@(\w+)" "user@example"
 cargo run --bin rc -- qr "hello" --output code.png
 cargo run --bin rc -- windows
+cargo run --bin rc -- window <handle> left-half
+cargo run --bin rc -- alias set pwsh "Windows PowerShell"
+cargo run --bin rc -- identify
 cargo run --bin rc -- tabs grok
 cargo run --bin rc -- processes
 cargo run --bin rc -- audio get
@@ -176,10 +179,11 @@ This is an honest list, not a disclaimer.
 - **Currency rates are static.** The bundled rates are indicative reference
   values with a recorded vintage, not live quotes. The launcher is local
   only and does not fetch anything.
-- **Timer toasts are not banner-verified.** The toast is accepted by the
-  notification system, but no banner was observed on the machine this was
-  built on — an unpackaged program may need a registered user model
-  identifier before Windows raises a banner. A timer that finishes always
+- **Timer toasts deliver a banner after identity registration.** `rc identify`
+  writes a Start Menu shortcut carrying the launcher's user model identifier,
+  which is what makes Windows raise a banner for an unpackaged program.
+  Verified on the machine this was built on: the platform log records the
+  delivery and the banner was seen on screen. A timer that finishes always
   raises the palette itself with a banner, which cannot fail; the toast is
   an addition, not the guarantee.
 - **Reminders, notes, calendar and book links** — the parts of launcher that
