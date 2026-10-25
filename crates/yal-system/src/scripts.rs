@@ -100,7 +100,7 @@ impl Mode {
 /// a functional on-disk path, not branding, and is kept as-is.
 pub fn default_folder() -> Option<std::path::PathBuf> {
     dirs::home_dir().map(|home| {
-        let legacy = home.join(".legacy-store");
+        let legacy = home.join(".raycast-rs");
         let current = home.join(".yal");
         if !current.exists() && legacy.exists() {
             std::fs::rename(&legacy, &current).ok();

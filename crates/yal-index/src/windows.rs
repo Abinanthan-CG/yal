@@ -577,10 +577,13 @@ mod tests {
 
     #[test]
     fn extracts_the_executable_from_a_manifest() {
-        let manifest = r#"<Application Executable="launcher\launcher.exe" EntryPoint="Windows.FullTrustApplication"/>"#;
+        // Shapes after the real installed product's manifest, observed
+        // during indexing. This file documents that the extraction covers
+        // that exact form, so a regression is caught before it matters.
+        let manifest = r#"<Application Executable="Raycast\Raycast.exe" EntryPoint="Windows.FullTrustApplication"/>"#;
         assert_eq!(
             extract_executable(manifest).as_deref(),
-            Some(r"launcher\launcher.exe")
+            Some(r"Raycast\Raycast.exe")
         );
     }
 

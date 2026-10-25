@@ -44,14 +44,14 @@ pub fn default_path() -> Option<PathBuf> {
         // the legacy one is gone. A data folder that was already migrated,
         // or was never created, is left alone. The legacy names below are
         // functional on-disk paths, not branding, and are kept as-is.
-        let legacy_dir = dir.join("legacy-store");
+        let legacy_dir = dir.join("raycast-rs");
         let current_dir = dir.join("yal");
         if !current_dir.exists() && legacy_dir.exists() {
             std::fs::rename(&legacy_dir, &current_dir).ok();
         }
         // The folder came over whole, and carries the database file under
         // its old name; the file follows the folder.
-        let legacy_file = current_dir.join("legacy.db");
+        let legacy_file = current_dir.join("raycast.db");
         let current_file = current_dir.join("yal.db");
         if !current_file.exists() && legacy_file.exists() {
             std::fs::rename(&legacy_file, &current_file).ok();
