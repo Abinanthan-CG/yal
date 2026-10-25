@@ -9,6 +9,7 @@ pub mod emoji;
 pub mod password;
 pub mod qr;
 pub mod regex;
+pub mod remind;
 pub mod text;
 pub mod timezones;
 pub mod totp;

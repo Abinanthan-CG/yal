@@ -32,6 +32,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Volume and mute** | Master volume read and set through the audio endpoint. |
 | **Display** | Brightness where the monitor can report it, light or dark theme everywhere. |
 | **Timer** | Countdowns that ring with a toast, with a palette banner as the guaranteed fallback. |
+| **Reminders** | `remind me to check the oven in 40m` in the palette, `rc reminder` and `rc reminders` from the command line; both share one parser, and both raise the same toast. |
 | **Text transforms** | Case, camel/snake/kebab, base64, percent, hexadecimal, JSON, Morse; digests SHA-256, SHA-1, MD5; UUIDs; placeholder text. |
 | **QR codes** | Generated from any text and shown in the palette. |
 | **One-time passwords** | RFC 6238 codes with a live countdown. |
@@ -86,6 +87,9 @@ cargo run --bin rc -- transform snake "Clean Room Rebuild"
 cargo run --bin rc -- hash abc
 cargo run --bin rc -- uuid
 cargo run --bin rc -- timer 10m pomodoro
+cargo run --bin rc -- reminder "call the dentist" "in 20m"
+cargo run --bin rc -- reminders
+cargo run --bin rc -- reminder-done 1792851433728
 cargo run --bin rc -- scripts
 cargo run --bin rc -- script-run hello-clean
 cargo run --bin rc -- script-run "Clean-room batch probe" --detached
@@ -192,8 +196,15 @@ This is an honest list, not a disclaimer.
   delivery and the banner was seen on screen. A timer that finishes always
   raises the palette itself with a banner, which cannot fail; the toast is
   an addition, not the guarantee.
-- **Reminders, notes, calendar and book links** — the parts of launcher that
-  are really small apps rather than launcher features — are not built.
+- **Notes, calendar and book links** — the parts of launcher that are really
+  small apps rather than launcher features — are not built.
+- **Reminders live in the local store, not in a cloud account.** launcher's
+  reminders are backed by Apple Reminders, which does not exist on Windows;
+  this launchers' reminders stand alone: stored locally, raised by a toast
+  with the palette banner as the guaranteed fallback, shown soonest first
+  with `rc reminders`. The wording (`in 40m`, `tomorrow at 9:30`, `12am`,
+  am/pm) is parsed by one documented function the palette and the CLI both
+  use, and spans are capped at ninety days.
 - **The image preview covers pictures and their photo metadata (`rc exif`)**,
   read from JPEG files. Other formats rarely carry EXIF on Windows, and the
   files on the machine this was built on carry only the date and pixel
@@ -240,6 +251,15 @@ text transformations and the digests against published test vectors. **Never
 run**: shutdown, restart, log out, sleep, lock and emptying the recycle bin —
 they are implemented exactly as the system documents them, and each acts only
 when someone explicitly asks.
+
+Timers and reminders are read by a watcher thread with its own database
+connection, not from the palette's frame loop — an idle palette only runs an
+update when something wakes its window, and an overdue reminder that sat
+unnoticed for half a minute past its time was observed live because of that.
+The watcher was verified with a timed probe: a reminder due ten seconds out
+left the store on the dot while the palette sat idle. Its toast delivery goes
+the same identity-registered route as a timer's, and the banner fallback
+applies to it identically; the toast itself was not seen for a reminder yet.
 
 ---
 

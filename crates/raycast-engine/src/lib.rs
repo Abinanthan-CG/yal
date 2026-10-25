@@ -150,6 +150,9 @@ impl Engine {
             if let Some(timer) = sources::timer_specification(trimmed) {
                 candidates.push(timer);
             }
+            if let Some(reminder) = sources::reminder_specification(trimmed, now) {
+                candidates.push(reminder);
+            }
             if trimmed.chars().count() >= 3 {
                 let roots = yal_index::default_search_roots();
                 let found = yal_index::search_files(&roots, trimmed, 30, 2_000);
@@ -172,6 +175,7 @@ impl Engine {
         }
 
         candidates.extend(sources::timers(store, now)?);
+        candidates.extend(sources::reminders(store, now)?);
         candidates.extend(sources::scripts(
             store
                 .setting("scripts_folder")?

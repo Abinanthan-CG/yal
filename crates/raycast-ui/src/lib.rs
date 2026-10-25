@@ -32,6 +32,9 @@ pub enum PaletteMessage {
     Close,
     /// The user asked for the palette to show again.
     Show,
+    /// Something due could not be toasted; the palette is asked to raise
+    /// its own banner, which cannot fail.
+    Ring(String),
 }
 
 /// The palette application.
@@ -70,8 +73,6 @@ pub struct Palette {
     cached_texture: Option<egui::TextureHandle>,
     /// The last error shown to the user.
     status: Option<String>,
-    /// The last timer check, so timers are only read once a second.
-    last_timer_check: Option<Instant>,
     /// A timer that rang while the palette was away.
     ring: Option<String>,
     /// Whether the palette is searching or showing its preferences.
@@ -132,6 +133,15 @@ impl Palette {
     pub fn new(store: Store) -> Self {
         let (sender, receiver) = channel();
 
+        // The due watcher runs against its own connection to the same
+        // store, because the palette's frame loop is not a clock; it only
+        // starts for a store on disk, whose due times matter beyond this
+        // process.
+        if let Some(path) = store.path().map(|path| path.to_path_buf()) {
+            let watcher_sender = sender.clone();
+            spawn_due_watcher(path, watcher_sender);
+        }
+
         // The hotkey is a setting, so the user can change it without
         // recompiling.
         let spec = store
@@ -167,7 +177,6 @@ impl Palette {
             cached_image: None,
             cached_texture: None,
             status: None,
-            last_timer_check: None,
             ring: None,
             mode: Mode::Search,
             theme: Theme::System,
@@ -599,6 +608,27 @@ impl Palette {
                     .clear_setting(&format!("timer:{id}"))
                     .map_err(|err| err.to_string())
             }
+            "reminder" => {
+                // Arguments: the due time as a Unix timestamp in seconds,
+                // then the reminder's text.
+                let due_at = head
+                    .ok_or_else(|| "the reminder's time is missing".to_string())?
+                    .parse::<i64>()
+                    .map_err(|err| format!("the reminder's time is not a timestamp: {err}"))?;
+                let text = arguments.get(1).cloned().unwrap_or_default();
+                if text.is_empty() {
+                    return Err("the reminder's text is missing".to_string());
+                }
+                self.create_reminder(due_at, &text)
+                    .map_err(|err| err.to_string())
+            }
+            "reminder-done" => {
+                let id = head
+                    .ok_or_else(|| "the reminder identifier is missing".to_string())?;
+                self.store
+                    .clear_setting(&format!("reminder:{id}"))
+                    .map_err(|err| err.to_string())
+            }
             "script" => {
                 // Arguments: the script's path, then its mode slug. The run
                 // happens in a thread the palette does not wait on, so a
@@ -639,57 +669,22 @@ impl Palette {
         self.store.set_setting(&format!("timer:{id}"), &record.to_string())
     }
 
-    /// Check the stored timers once a second.
+    /// Store a reminder, to be raised when its time comes.
     ///
-    /// A timer that has run out is announced with a toast when the system
-    /// allows it, and always removed. When the toast is refused — an
-    /// unpackaged program may be without a registered user model — the
-    /// palette raises itself with a banner instead, which cannot fail.
-    fn check_timers(&mut self, ctx: &egui::Context) {
-        const CHECK_INTERVAL: std::time::Duration = std::time::Duration::from_secs(1);
-        if let Some(last) = self.last_timer_check {
-            if last.elapsed() < CHECK_INTERVAL {
-                return;
-            }
-        }
-        self.last_timer_check = Some(Instant::now());
-
-        let Ok(settings) = self.store.settings() else {
-            return;
-        };
-        let now = chrono::Utc::now();
-        for (key, value) in settings {
-            if !key.starts_with("timer:") || value.is_empty() {
-                continue;
-            }
-            let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
-                continue;
-            };
-            let Some(label) = parsed.get("label").and_then(|label| label.as_str()) else {
-                continue;
-            };
-            let Some(ends_at) = parsed
-                .get("ends_at")
-                .and_then(|ends| ends.as_i64())
-                .and_then(|timestamp| chrono::DateTime::<chrono::Utc>::from_timestamp(timestamp, 0))
-            else {
-                continue;
-            };
-            if ends_at > now {
-                continue;
-            }
-
-            let _ = self.store.clear_setting(&key);
-            let announcement = format!("{label}: the timer has finished");
-            match yal_system::notify::toast(label, "The timer has finished.") {
-                Ok(()) => {}
-                Err(_) => {
-                    self.ring = Some(announcement);
-                    self.show(ctx);
-                    ctx.request_repaint();
-                }
-            }
-        }
+    /// The store keeps it beside the timers: a settings key
+    /// `reminder:<id>` carrying the text and the due timestamp.
+    fn create_reminder(
+        &self,
+        due_at: i64,
+        text: &str,
+    ) -> Result<(), yal_store::StoreError> {
+        let id = chrono::Utc::now().timestamp_millis().to_string();
+        let record = serde_json::json!({
+            "text": text,
+            "due_at": due_at,
+        });
+        self.store
+            .set_setting(&format!("reminder:{id}"), &record.to_string())
     }
 }
 
@@ -726,6 +721,80 @@ fn perform_system(command: &str) -> Result<(), String> {
         }
         other => Err(format!("the system command \"{other}\" is not one this launcher carries out")),
     }
+}
+
+/// The palette's due watcher: timers and reminders raised from off-thread.
+///
+/// The palette's frame loop is not a clock. An idle palette only runs an
+/// update when something wakes its window — a key, a mouse, a message —
+/// so a due time could sit unnoticed through a whole quiet afternoon,
+/// which was verified live: an overdue reminder was still offering
+/// itself half a minute past its time. The schedule belongs to this
+/// thread instead. It keeps its own connection to the same store,
+/// completes whatever has come due, and toasts; a toast the system
+/// refuses is sent back as a `Ring`, for the banner the palette raises
+/// the moment it next runs an update.
+fn spawn_due_watcher(store_path: std::path::PathBuf, sender: Sender<PaletteMessage>) {
+    std::thread::Builder::new()
+        .name("due-watcher".into())
+        .spawn(move || {
+            let Ok(store) = yal_store::Store::open(&store_path) else {
+                // No store to watch; the palette keeps running without a
+                // schedule rather than spinning on a lost cause.
+                return;
+            };
+            loop {
+                std::thread::sleep(std::time::Duration::from_millis(500));
+                for announcement in sweep_due(&store, chrono::Utc::now(), &toast_or_err) {
+                    sender.send(PaletteMessage::Ring(announcement)).ok();
+                }
+            }
+        })
+        .ok();
+}
+
+/// Complete every timer and reminder whose time has come.
+///
+/// Returns the announcements whose toast was refused, so the caller can
+/// have the palette banner them. The raising itself is injected, so
+/// tests observe the sweep without involving the platform's
+/// notification centre.
+fn sweep_due(
+    store: &yal_store::Store,
+    now: chrono::DateTime<chrono::Utc>,
+    notify: &dyn Fn(&str, &str) -> Result<(), String>,
+) -> Vec<String> {
+    let mut refused = Vec::new();
+    let Ok(timers) = yal_engine::sources::saved_timers(store) else {
+        return refused;
+    };
+    for timer in timers {
+        if timer.ends_at > now {
+            continue;
+        }
+        let _ = store.clear_setting(&format!("timer:{}", timer.id));
+        if notify(&timer.label, "The timer has finished.").is_err() {
+            refused.push(format!("{}: the timer has finished", timer.label));
+        }
+    }
+    let Ok(reminders) = yal_engine::sources::saved_reminders(store) else {
+        return refused;
+    };
+    for reminder in reminders {
+        if reminder.due_at > now {
+            continue;
+        }
+        let _ = store.clear_setting(&format!("reminder:{}", reminder.id));
+        if notify(&reminder.text, "The reminder is due.").is_err() {
+            refused.push(format!("{}: the reminder is due", reminder.text));
+        }
+    }
+    refused
+}
+
+/// The platform toast, shaped for the sweep's injected raising.
+fn toast_or_err(title: &str, body: &str) -> Result<(), String> {
+    yal_system::notify::toast(title, body).map_err(|err| err.to_string())
 }
 
 /// Run a script command in the background and announce the outcome.
@@ -1011,9 +1080,8 @@ impl eframe::App for Palette {
             }
         }
 
-        // Timers are checked every second, even while the palette is away,
-        // because a finished one raises a banner here.
-        self.check_timers(ctx);
+        // Timers and reminders are watched from their own thread, because
+        // the frame loop is not a clock.
 
         // Deliver messages sent from other threads.
         while let Ok(message) = self.receiver.try_recv() {
@@ -1021,6 +1089,12 @@ impl eframe::App for Palette {
                 PaletteMessage::Close => self.close_requested = true,
                 PaletteMessage::Show => {
                     self.show(ctx);
+                }
+                PaletteMessage::Ring(announcement) => {
+                    self.ring = Some(announcement);
+                    if !self.visible {
+                        self.show(ctx);
+                    }
                 }
             }
         }
@@ -1669,6 +1743,71 @@ pub fn default_store_path() -> Option<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_sweep_clears_what_is_due_and_reports_refused_toasts() {
+        let store = yal_store::Store::open_in_memory().unwrap();
+        let now = chrono::Utc::now();
+        let past = (now - chrono::Duration::minutes(5)).timestamp();
+        let future = (now + chrono::Duration::minutes(5)).timestamp();
+        for (key, record) in [
+            (
+                "timer:due",
+                serde_json::json!({"label": "old timer", "ends_at": past, "seconds": 10}),
+            ),
+            (
+                "reminder:due",
+                serde_json::json!({"text": "late reminder", "due_at": past}),
+            ),
+            (
+                "timer:waiting",
+                serde_json::json!({"label": "running timer", "ends_at": future, "seconds": 500}),
+            ),
+            (
+                "reminder:waiting",
+                serde_json::json!({"text": "later reminder", "due_at": future}),
+            ),
+            ("snippet:keep", serde_json::json!({"text": "untouched"})),
+        ] {
+            store.set_setting(key, &record.to_string()).unwrap();
+        }
+
+        // A notify that refuses everything: every due item must come
+        // back as an announcement for the banner.
+        let refused = |_: &str, _: &str| Err("refused".to_string());
+        let announcements = sweep_due(&store, now, &refused);
+        assert_eq!(
+            announcements,
+            vec![
+                "old timer: the timer has finished".to_string(),
+                "late reminder: the reminder is due".to_string(),
+            ]
+        );
+
+        let keys: Vec<String> = store
+            .settings()
+            .unwrap()
+            .into_iter()
+            .map(|(key, _)| key)
+            .collect();
+        assert!(!keys.iter().any(|key| key == "timer:due"));
+        assert!(!keys.iter().any(|key| key == "reminder:due"));
+        assert!(keys.iter().any(|key| key == "timer:waiting"));
+        assert!(keys.iter().any(|key| key == "reminder:waiting"));
+        assert!(keys.iter().any(|key| key == "snippet:keep"));
+
+        // A notify that succeeds announces nothing.
+        let accepted = |_: &str, _: &str| Ok(());
+        let announcements = sweep_due(&store, now + chrono::Duration::minutes(10), &accepted);
+        assert!(announcements.is_empty());
+        let keys: Vec<String> = store
+            .settings()
+            .unwrap()
+            .into_iter()
+            .map(|(key, _)| key)
+            .collect();
+        assert!(!keys.iter().any(|key| key.contains("waiting")));
+    }
 
     #[test]
     fn splits_a_title_into_matched_and_unmatched_segments() {

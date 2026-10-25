@@ -281,6 +281,28 @@ enum Command {
         id: String,
     },
 
+    /// Create a reminder.
+    ///
+    /// The `when` takes the same words the palette does: `in 40m`,
+    /// `at 17:30`, `tomorrow at 9:30`.
+    Reminder {
+        /// What the reminder is for.
+        text: String,
+        /// When it comes due. Quoted, so spaces survive: `"in 1h 30m"`.
+        when: String,
+    },
+
+    /// List the open reminders, soonest first.
+    Reminders,
+
+    /// Complete a reminder.
+    ///
+    /// The identifier is the key the reminder is stored under.
+    ReminderDone {
+        /// The identifier from `rc reminders`.
+        id: String,
+    },
+
     /// Apply a text transform, such as `upper` or `base64encode`.
     Transform {
         /// The transform slug; `rc transforms` lists them.
@@ -1200,46 +1222,86 @@ fn run(cli: &Cli) -> Result<()> {
         Command::Timers => {
             let store = open_store(cli)?;
             let now = chrono::Utc::now();
-            let mut shown = 0usize;
-            for (key, value) in store.settings()? {
-                if !key.starts_with("timer:") || value.is_empty() {
-                    continue;
-                }
-                let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
-                    continue;
-                };
-                let label = parsed
-                    .get("label")
-                    .and_then(|label| label.as_str())
-                    .unwrap_or("Timer");
-                let Some(ends_at) = parsed
-                    .get("ends_at")
-                    .and_then(|ends| ends.as_i64())
-                    .and_then(|timestamp| chrono::DateTime::<chrono::Utc>::from_timestamp(timestamp, 0))
-                else {
-                    continue;
-                };
-                let id = key.trim_start_matches("timer:");
-                if ends_at > now {
+            let timers = yal_engine::sources::saved_timers(&store)?;
+            for timer in &timers {
+                if timer.ends_at > now {
                     println!(
                         "{:<20} {:<20} {}s remaining",
-                        id,
-                        label,
-                        (ends_at - now).num_seconds()
+                        timer.id,
+                        timer.label,
+                        (timer.ends_at - now).num_seconds()
                     );
                 } else {
-                    println!("{:<20} {:<20} finished", id, label);
-                    let _ = store.clear_setting(&key);
+                    println!("{:<20} {:<20} finished", timer.id, timer.label);
+                    // The run is over; nothing can un-finish it, so the
+                    // record leaves with the listing.
+                    let _ = store.clear_setting(&format!("timer:{}", timer.id));
                 }
-                shown += 1;
             }
-            println!("{shown} stored timers");
+            println!("{} stored timers", timers.len());
         }
 
         Command::TimerCancel { id } => {
             let store = open_store(cli)?;
             store.clear_setting(&format!("timer:{id}"))?;
             println!("timer {id} cancelled");
+        }
+
+        Command::Reminder { text, when } => {
+            let store = open_store(cli)?;
+            let words = format!("remind {text} {when}");
+            let spec = yal_data::remind::parse(&words, chrono::Utc::now()).ok_or_else(
+                || {
+                    anyhow::anyhow!(
+                        "`{words}` is not a reminder, such as `rc reminder \"call the dentist\" \"in 20m\"`"
+                    )
+                },
+            )?;
+            let id = chrono::Utc::now().timestamp_millis().to_string();
+            let record = serde_json::json!({
+                "text": spec.text,
+                "due_at": spec.due_at.timestamp(),
+            });
+            store.set_setting(&format!("reminder:{id}"), &record.to_string())?;
+            let raised = spec
+                .due_at
+                .with_timezone(&chrono::Local)
+                .format("%a %H:%M");
+            println!("reminder `{}` stored as {id}", spec.text);
+            println!("raised {raised}");
+            yal_system::notify::toast("Reminder", &format!("A reminder is set for {raised}."))
+                .map_err(|err| anyhow::anyhow!("{err}"))?;
+        }
+
+        Command::Reminders => {
+            let store = open_store(cli)?;
+            let now = chrono::Utc::now();
+            let mut reminders = yal_engine::sources::saved_reminders(&store)?;
+            reminders.sort_by_key(|reminder| reminder.due_at);
+            for reminder in &reminders {
+                let raised = reminder
+                    .due_at
+                    .with_timezone(&chrono::Local)
+                    .format("%a %H:%M");
+                if reminder.due_at > now {
+                    println!("{:<20} {:<26} due {raised}", reminder.id, reminder.text);
+                } else {
+                    println!(
+                        "{:<20} {:<26} overdue (due {raised})",
+                        reminder.id, reminder.text
+                    );
+                    // Past its time, the reminder leaves with the
+                    // listing, the same act the palette's watcher does.
+                    let _ = store.clear_setting(&format!("reminder:{}", reminder.id));
+                }
+            }
+            println!("{} open reminders", reminders.len());
+        }
+
+        Command::ReminderDone { id } => {
+            let store = open_store(cli)?;
+            store.clear_setting(&format!("reminder:{id}"))?;
+            println!("reminder {id} completed");
         }
 
         Command::Transform { slug, text } => {

@@ -43,6 +43,7 @@ pub fn default_path() -> Option<PathBuf> {
 /// The local store.
 pub struct Store {
     conn: Connection,
+    path: Option<std::path::PathBuf>,
 }
 
 impl Store {
@@ -52,15 +53,27 @@ impl Store {
             std::fs::create_dir_all(parent)?;
         }
         let conn = Connection::open(path)?;
-        let store = Self { conn };
+        let store = Self {
+            conn,
+            path: Some(path.to_path_buf()),
+        };
         store.migrate()?;
         Ok(store)
+    }
+
+    /// Where the store lives.
+    ///
+    /// `None` for the in-memory store, which has nothing worth connecting
+    /// to twice: the due watcher skips it, because an in-memory store has
+    /// no other process to hear about anyway.
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
     }
 
     /// Open a store that lives only in memory, for tests.
     pub fn open_in_memory() -> StoreResult<Self> {
         let conn = Connection::open_in_memory()?;
-        let store = Self { conn };
+        let store = Self { conn, path: None };
         store.migrate()?;
         Ok(store)
     }

@@ -4,7 +4,7 @@
 //! Sources never rank; they only produce. The engine ranks across all of
 //! them so that a snippet and an application compete on equal terms.
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use yal_calc::{Value, evaluate, format as format_value};
 use yal_core::action::Action;
 use yal_core::command::CommandKind;
@@ -661,14 +661,20 @@ pub fn browser_tabs(
 }
 
 /// A saved timer, decoded from the store.
-struct SavedTimer {
-    id: String,
-    label: String,
-    ends_at: chrono::DateTime<chrono::Utc>,
+pub struct SavedTimer {
+    /// The identifier, as stored under `timer:<id>`.
+    pub id: String,
+    /// What the timer counts down to.
+    pub label: String,
+    /// When the timer runs out.
+    pub ends_at: chrono::DateTime<chrono::Utc>,
 }
 
 /// Decode the timers stored in settings.
-fn saved_timers(store: &Store) -> yal_store::StoreResult<Vec<SavedTimer>> {
+///
+/// This is the one interpretation of a stored timer record; the engine's
+/// listing, the CLI and the palette's due watcher all read through it.
+pub fn saved_timers(store: &Store) -> yal_store::StoreResult<Vec<SavedTimer>> {
     let mut found = Vec::new();
     for (key, value) in store.settings()? {
         let Some(id) = key.strip_prefix("timer:") else {
@@ -799,6 +805,108 @@ fn shown_duration(total: u64) -> String {
     } else {
         format!("{seconds}s")
     }
+}
+
+/// A reminder read out of the stored settings.
+pub struct SavedReminder {
+    /// The identifier, as stored under `reminder:<id>`.
+    pub id: String,
+    /// What the reminder says.
+    pub text: String,
+    /// When the reminder comes due.
+    pub due_at: DateTime<Utc>,
+}
+
+/// Decode the reminders stored in settings.
+///
+/// The one interpretation of a stored reminder record, shared by the
+/// engine's listing, the CLI and the palette's due watcher.
+pub fn saved_reminders(store: &Store) -> yal_store::StoreResult<Vec<SavedReminder>> {
+    let mut found = Vec::new();
+    for (key, value) in store.settings()? {
+        let Some(id) = key.strip_prefix("reminder:") else {
+            continue;
+        };
+        if value.is_empty() {
+            continue;
+        }
+        let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
+            continue;
+        };
+        let Some(text) = parsed.get("text").and_then(|text| text.as_str()) else {
+            continue;
+        };
+        let Some(due_at) = parsed
+            .get("due_at")
+            .and_then(|due| due.as_i64())
+            .and_then(|timestamp| chrono::DateTime::<Utc>::from_timestamp(timestamp, 0))
+        else {
+            continue;
+        };
+        found.push(SavedReminder {
+            id: id.to_string(),
+            text: text.to_string(),
+            due_at,
+        });
+    }
+    Ok(found)
+}
+
+/// Build candidates for the reminders still open, soonest first.
+///
+/// Completing a reminder removes it — the same act the due path performs
+/// when the time comes.
+pub fn reminders(
+    store: &Store,
+    now: chrono::DateTime<Utc>,
+) -> yal_store::StoreResult<Vec<Candidate>> {
+    let mut found = saved_reminders(store)?;
+    found.sort_by_key(|reminder| reminder.due_at);
+    Ok(found
+        .into_iter()
+        .map(|reminder| {
+            let due_in = (reminder.due_at - now).num_seconds();
+            let shown = shown_duration(due_in.unsigned_abs());
+            let subtitle = if due_in >= 0 {
+                format!("due in {shown}")
+            } else {
+                format!("overdue by {shown}")
+            };
+            Candidate::new(
+                Item::new(reminder.text.clone())
+                    .with_id(format!("reminder:{}", reminder.id))
+                    .with_subtitle(subtitle)
+                    .with_action(Action::task(
+                        "reminder-done",
+                        vec![reminder.id.clone()],
+                    )),
+                CommandKind::Reminders,
+            )
+        })
+        .collect())
+}
+
+/// The reminder candidate for a query like `remind check the oven in 40m`.
+///
+/// The words are read by one parser the CLI shares, so the palette and
+/// the command line agree on what a reminder is. `None` when the words
+/// are not one.
+pub fn reminder_specification(query: &str, now: DateTime<Utc>) -> Option<Candidate> {
+    let spec = yal_data::remind::parse(query, now)?;
+    let raised = spec
+        .due_at
+        .with_timezone(&chrono::Local)
+        .format("%a %H:%M");
+    Some(Candidate::new(
+        Item::new(format!("Reminder - {}", spec.text))
+            .with_id("reminder:new")
+            .with_subtitle(format!("raised {raised}, starts when chosen"))
+            .with_action(Action::task(
+                "reminder",
+                vec![spec.due_at.timestamp().to_string(), spec.text.clone()],
+            )),
+        CommandKind::Reminders,
+    ))
 }
 
 /// Build candidates for files found on disk.
@@ -939,5 +1047,89 @@ mod tests {
         let candidate = calculator("2 + 2").unwrap();
         assert_eq!(candidate.item.title, "4");
         assert_eq!(candidate.item.subtitle.as_deref(), Some("2 + 2 = 4"));
+    }
+
+    #[test]
+    fn a_reminder_query_offers_a_creation_candidate() {
+        let now = Utc::now();
+        let candidate = reminder_specification("remind check the oven in 40m", now).unwrap();
+        assert_eq!(candidate.item.title, "Reminder - check the oven");
+        assert_eq!(candidate.kind, CommandKind::Reminders);
+        let action = candidate.item.action.as_ref().unwrap();
+        assert_eq!(action.kind, yal_core::action::ActionKind::LauncherTask);
+        let yal_core::action::OpenTarget::Task { name, arguments } = &action.target else {
+            panic!("the creation candidate should carry the reminder task");
+        };
+        assert_eq!(name, "reminder");
+        let due_at = arguments[0].parse::<i64>().unwrap();
+        assert_eq!(
+            chrono::DateTime::<Utc>::from_timestamp(due_at, 0)
+                .unwrap()
+                .timestamp(),
+            (now + chrono::Duration::seconds(40 * 60)).timestamp(),
+            "the due time lands forty minutes from the words, to the second"
+        );
+        assert_eq!(arguments[1], "check the oven");
+    }
+
+    #[test]
+    fn a_query_that_is_not_a_reminder_offers_no_creation() {
+        assert!(reminder_specification("remind me later", Utc::now()).is_none());
+        assert!(reminder_specification("reset the router", Utc::now()).is_none());
+    }
+
+    #[test]
+    fn stored_reminders_surface_soonest_first() {
+        let store = Store::open_in_memory().unwrap();
+        let now = Utc::now();
+        for (text, minutes) in [("later thing", 60), ("sooner thing", 10)] {
+            let record = serde_json::json!({
+                "text": text,
+                "due_at": (now + chrono::Duration::minutes(minutes)).timestamp(),
+            });
+            store
+                .set_setting(&format!("reminder:test-{text}"), &record.to_string())
+                .unwrap();
+        }
+
+        let reminders = reminders(&store, now).unwrap();
+        let texts: Vec<&str> = reminders
+            .iter()
+            .map(|candidate| candidate.item.title.as_str())
+            .collect();
+        assert_eq!(texts, vec!["sooner thing", "later thing"]);
+        assert!(
+            reminders[0].item.subtitle.as_deref().unwrap().contains("due in"),
+            "the subtitle should say how far away the reminder sits"
+        );
+        assert_eq!(
+            reminders[0].item.action.as_ref().unwrap().kind,
+            yal_core::action::ActionKind::LauncherTask,
+            "completing a reminder is a launcher task"
+        );
+    }
+
+    #[test]
+    fn an_overdue_reminder_says_so() {
+        let store = Store::open_in_memory().unwrap();
+        let now = Utc::now();
+        let record = serde_json::json!({
+            "text": "left behind",
+            "due_at": (now - chrono::Duration::minutes(5)).timestamp(),
+        });
+        store
+            .set_setting("reminder:overdue", &record.to_string())
+            .unwrap();
+
+        let reminders = reminders(&store, now).unwrap();
+        assert!(
+            reminders[0]
+                .item
+                .subtitle
+                .as_deref()
+                .unwrap()
+                .contains("overdue"),
+            "a reminder behind its time says so instead of hiding"
+        );
     }
 }
