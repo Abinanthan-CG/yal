@@ -435,7 +435,7 @@ fn action_slug(action: yal_system::window_controls::WindowAction) -> &'static st
 
 /// Build candidates for the system commands.
 ///
-/// The destructive actions are here because launcher offers them; carrying
+/// The destructive actions are here because the observed launcher offers them; carrying
 /// them out is guarded by the user choosing them deliberately. The volume
 /// and theme actions read the current state for their subtitle, so a muted
 /// machine offers "Restore the volume" rather than a guess.

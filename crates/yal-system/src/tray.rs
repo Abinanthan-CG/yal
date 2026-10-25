@@ -1,6 +1,6 @@
 //! The system tray icon.
 //!
-//! launcher's "menu bar extra" is a macOS concept. Its Windows equivalent is
+//! The "menu bar extra" is a macOS concept. Its Windows equivalent is
 //! a notification-area icon, which is what this module provides: a tray icon
 //! with a menu of the launcher's own commands.
 

@@ -1,6 +1,6 @@
 //! Item icons.
 //!
-//! launcher renders a per-item icon that can be an emoji, a file on disk, or a
+//! The observed launcher renders a per-item icon that can be an emoji, a file on disk, or a
 //! named symbol. The observed frontend carries both `.svg` symbol assets and
 //! `.png` raster assets, so the model keeps the distinction between "symbol
 //! drawn by the app" and "image loaded from disk".

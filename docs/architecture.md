@@ -134,8 +134,8 @@ found by running the palette and looking at it, not by reading the code.
 ## The store
 
 One SQLite database holds everything the launcher remembers. The schema is
-the rebuild's own; launcher's databases use a page cipher and are not read or
-written here.
+the rebuild's own; the observed launcher's databases use a page cipher and
+are not read or written here.
 
 Migrations are numbered and recorded in `schema_version`, so an existing
 database upgrades in place. Each migration runs exactly once.

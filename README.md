@@ -3,19 +3,21 @@
 A keyboard launcher for Windows, written in Rust, rebuilt from observed
 behaviour rather than from any source code.
 
-It was named `legacy-store` while it was being assembled, and is named **YAL**,
-"yet another launcher", now that it walks. One rename carried the data
-across: on its first run under the new name the launcher folds the old
-`%APPDATA%\legacy-store` store and the old `~\.legacy-store\scripts` folder into
-their `%APPDATA%\yal` and `~\.yal` homes, leaving nothing behind. The Start
-Menu identity that toasts need is keyed to the new binary, so `yal identify`
-is worth running once — the old shortcut keeps working until it is.
+It was assembled under an earlier working name and is named **YAL**, "yet
+another launcher", now that it walks. One rename carried the data across: on
+its first run under the new name the launcher folds the earlier data store
+and the earlier scripts folder into their `%APPDATA%\yal` and `~\.yal` homes,
+leaving nothing behind. The Start Menu identity that toasts need is keyed to
+the new binary, so `yal identify` is worth running once — the old shortcut
+keeps working until it is.
 
 This is a clean-room reimplementation. It was written by observing a running
-copy of launcher for Windows — its process topology, its data model, its
-extension surface — and rebuilding the product behaviour from those
-observations. No launcher source was read, decompiled or copied. The
-provenance record is in [`docs/observations.md`](docs/observations.md).
+copy of a proprietary launcher for Windows — its process topology, its data
+model, its extension surface — and rebuilding the product behaviour from
+those observations. No third-party source was read, decompiled or copied.
+The provenance record is in [`docs/observations.md`](docs/observations.md),
+which names the observed product indirectly on purpose; the facts it records
+are unchanged.
 
 ---
 
@@ -77,7 +79,7 @@ cargo build --release
 cargo run --bin yal
 
 # The headless front end, which is also how the behaviour is tested.
-cargo run --bin yal -- search "launcher"
+cargo run --bin yal -- search "notes"
 cargo run --bin yal -- calc "100 km in miles"
 cargo run --bin yal -- apps --filter visual
 cargo run --bin yal -- totp JBSWY3DPEHPK3PXP
@@ -180,8 +182,8 @@ is neither penalised nor boosted.
 Store apps are enumerated through the package manager rather than by listing
 `Program Files\WindowsApps`, because that folder is not readable by an
 ordinary user but the package manager is. On the machine this was built on,
-that one change took the index from 1010 applications to 1087 and made launcher
-itself discoverable.
+that one change took the index from 1010 applications to 1087 and made the
+observed launcher itself discoverable.
 
 ---
 
@@ -190,13 +192,14 @@ itself discoverable.
 This is an honest list, not a disclaimer.
 
 [docs/parity.md](docs/parity.md) is the full-feature recount behind this
-section: every area of the observed launcher feature surface, what the build
+section: every area of the observed launcher's feature surface, what the build
 carries, and the missing slice, with the next waves ordered by that
 evidence.
 
-- **Extension runtime.** Deliberately deferred. launcher extensions are
-  TypeScript running against `@launcher/api`; a Rust rebuild needs a different
-  extension model, and the domain reserves a slot for it but nothing ships.
+- **Extension runtime.** Deliberately deferred. The observed launcher's
+  extensions are TypeScript running against its TypeScript API; a Rust rebuild
+  needs a different extension model, and the domain reserves a slot for it but
+  nothing ships.
 - **AI and cloud.** Excluded at the requester's instruction.
 - **An arbitrary window rectangle is CLI-only.** The palette's window menu
   carries the placement presets — halves, quarters, thirds, centre, full —
@@ -212,11 +215,12 @@ evidence.
   delivery and the banner was seen on screen. A timer that finishes always
   raises the palette itself with a banner, which cannot fail; the toast is
   an addition, not the guarantee.
-- **Notes, calendar and book links** — the parts of launcher that are really
-  small apps rather than launcher features — are not built.
-- **Reminders live in the local store, not in a cloud account.** launcher's
-  reminders are backed by Apple Reminders, which does not exist on Windows;
-  this launchers' reminders stand alone: stored locally, raised by a toast
+- **Notes, calendar and book links** — the parts of the observed launcher
+  that are really small apps rather than launcher features — are not built.
+- **Reminders live in the local store, not in a cloud account.** The observed
+  product's reminders are backed by Apple Reminders, which does not exist on
+  Windows; this launchers' reminders stand alone: stored locally, raised by a
+  toast
   with the palette banner as the guaranteed fallback, shown soonest first
   with `yal reminders`. The wording (`in 40m`, `tomorrow at 9:30`, `12am`,
   am/pm) is parsed by one documented function the palette and the CLI both
@@ -227,8 +231,8 @@ evidence.
   size, so camera fields — ISO, exposure, aperture — read through the same
   code path but were not seen on a real camera file here.
 - **Script command output in "full" mode** lands on the clipboard with a
-  toast naming the outcome; launcher's launcher shows the full output inside
-  its window. The script itself, its header language and the two other
+  toast naming the outcome; the observed launcher shows the full output
+  inside its window. The script itself, its header language and the two other
   modes work the same way.
 - **The preferences pane is click-verified only through its parts**: gear,
   recording, theme and folder saving each exercise stores and listeners
@@ -287,11 +291,11 @@ from what was inferred from it and what remains unknown.
 
 Two boundaries were held deliberately:
 
-1. launcher's local databases are protected by a page cipher. The cipher was
-   **not** broken; the rebuild defines its own schema instead.
-2. No launcher implementation was decompiled or copied. The rebuild follows
-   the observed *contract* — the feature set, the extension surface, the
-   data model — and writes its own implementation of it.
+1. The observed launcher's local databases are protected by a page cipher.
+   The cipher was **not** broken; the rebuild defines its own schema instead.
+2. No third-party implementation was decompiled or copied. The rebuild
+   follows the observed *contract* — the feature set, the extension surface,
+   the data model — and writes its own implementation of it.
 
 REA was used to produce the observations. See the evidence index in the
 ledger.

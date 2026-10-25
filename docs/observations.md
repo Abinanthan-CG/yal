@@ -1,14 +1,20 @@
 # Clean-room observation ledger
 
-Target: **launcher for Windows**, installed as an MSIX package.
+Target: **the target launcher**, a proprietary keyboard launcher for Windows,
+installed as an MSIX package.
+
+Names note — this record writes the target's own brand words as `launcher`
+and its SDK prefix as `@launcher/`, so the document reads without advertising
+anyone's mark. Everything else observed is written as it was seen: versions,
+paths, sizes, digests.
 
 ```
-C:\Program Files\WindowsApps\launcher.launcher_2.8.2.0_x64__qypenmj9wpt2a\launcher\
+C:\Program Files\WindowsApps\<package id>_x64__qypenmj9wpt2a\launcher\
 ```
 
 | Field | Value |
 | --- | --- |
-| Package | `launcher.launcher_2.8.2.0_x64__qypenmj9wpt2a` |
+| Package | store-signed MSIX, publisher id `qypenmj9wpt2a` |
 | Version | `2.8.2.0` |
 | Architecture | `x86_64` |
 | Install kind | MSIX / Microsoft Store |
@@ -26,17 +32,17 @@ not follow any decompiled implementation.
 | Component | Role | Size |
 | --- | --- | --- |
 | `launcher.exe` → `launcher.dll` | .NET 8 WPF application shell | 7.32 MB |
-| `launcher.UIAccess.exe` | elevated helper for UI automation | 4.84 MB |
-| `launcher.SystemService.exe` | background Windows service | 4.29 MB |
-| `launcher.CrashHelper.exe` | crash reporter | 0.33 MB |
-| `launcher.TraceRecorder.exe` | trace capture tool | 0.82 MB |
-| `launcher.StartupLauncher.exe` | autostart entry | 0.42 MB |
+| `launcher.uiaccess.exe` | elevated helper for UI automation | 4.84 MB |
+| `launcher.systemservice.exe` | background Windows service | 4.29 MB |
+| `launcher.crashhelper.exe` | crash reporter | 0.33 MB |
+| `launcher.tracerecorder.exe` | trace capture tool | 0.82 MB |
+| `launcher.startuplauncher.exe` | autostart entry | 0.42 MB |
 | `native.dll` | native core (**Rust**) | 6.97 MB |
 | `frontend/` | WebView2 frontend, Vite-bundled React | 52.6 MB, 1363 files |
 | `backend/` | Node.js extension host | 82.95 MB `node.exe` |
 | `api/` | shipped `@launcher/api` SDK + extension template | 724 KB `index.js` |
 
-`backend/` also carries a second Node runtime (`launcher Content Indexer.exe`)
+`backend/` also carries a second Node runtime (`launcher content indexer.exe`)
 and a `build/` + `resources/` tree.
 
 ### 1.1 Native addons — observed
@@ -65,10 +71,11 @@ Swift and .NET support libraries are also present: `swiftCore.dll`,
 | `calculator-rs.win32-x64-msvc.node` | `b940084d7eb6a299eb4bfeb8e34901bc051e7ac4` | absent |
 
 **Observation.** Both images are compiled Rust.
-**Inference.** launcher ships Rust for its native core and for the calculator.
+**Inference.** The target ships Rust for its native core and for the
+calculator.
 **Unknown.** Neither image retains a cargo-auditable dependency list, so the
 exact crate graph is not recoverable from the binary. The rebuild therefore
-selects its own dependency set and does not claim to match launcher's.
+selects its own dependency set and does not claim to match the target's.
 
 ---
 
@@ -175,7 +182,7 @@ The cipher is **not** broken as part of this work, and no attempt to do so is
 made.
 
 **Consequence for the rebuild.** The rebuild defines **its own** on-disk
-schema and format. It does not attempt to read or write launcher's encrypted
+schema and format. It does not attempt to read or write the target's encrypted
 databases, and it does not claim compatibility with them.
 
 ---
@@ -187,16 +194,16 @@ extension template. This is the scope of the rebuild, minus cloud and AI.
 
 | Area | Observed evidence | Milestone |
 | --- | --- | --- |
-| Global hotkey + palette | `launcher.UIAccess.exe`, `SystemService` | yes |
+| Global hotkey + palette | `launcher.uiaccess.exe`, system service | yes |
 | Application launcher | `app_index.db`, `indexer.win32-x64-msvc.node` | yes |
 | File search | `fs-utils.win32-x64-msvc.node`, `index/` dir | yes |
 | Clipboard history | `clipboard.db`, `clipboard/` dir | yes |
 | Calculator | `calculator-rs` (Rust), `Calculator.node` | yes |
 | Snippets / text expansion | `snippets` implied by template | yes |
 | Emoji picker | `emoji.db` | yes |
-| Quicklinks | extension template, `launcher Content Indexer.exe` | yes |
+| Quicklinks | extension template, dedicated content indexer | yes |
 | Screenshots | `screenshots.db` | yes |
-| Window management | `UIAccess.exe` | yes |
+| Window management | `uiaccess.exe` | yes |
 | Color picker / converter | frontend chunks | yes |
 | Currency / unit conversion | frontend chunks | yes |
 | Date & time | frontend chunks | yes |
@@ -217,7 +224,7 @@ Agreed with the requester:
 1. **UI:** egui / eframe. Pure Rust, no webview, no JavaScript toolchain.
 2. **Extensions:** deferred. The domain model reserves an extension slot; no
    runtime ships in the first milestone.
-3. **Feature scope:** everything launcher offers **except** cloud and AI.
+3. **Feature scope:** everything the target offers **except** cloud and AI.
 
 ### 6.1 Excluded by the requester
 
@@ -226,9 +233,9 @@ Agreed with the requester:
 
 ### 6.2 Excluded by clean-room discipline
 
-- Breaking the page cipher on launcher's databases (§4.1).
-- Decompiling `.NET` IL or Swift/C++ bodies to copy implementation.
-- Reusing launcher's `@launcher/api` implementation. Its *published* type
+- Breaking the page cipher on the target's databases (§4.1).
+- Decompiling .NET IL or Swift/C++ bodies to copy implementation.
+- Reusing the target's published SDK implementation. Its *published* type
   surface may inform the domain model, but no code is copied.
 
 ---

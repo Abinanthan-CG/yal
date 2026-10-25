@@ -1,7 +1,7 @@
 //! Text transforms: the small conversions a launcher is asked for a dozen
 //! times a day.
 //!
-//! launcher's text transform commands have no network and no database; they
+//! The target's text transform commands have no network and no database; they
 //! are pure functions, which is what this module is.
 
 /// A failure while transforming text.

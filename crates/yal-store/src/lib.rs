@@ -38,11 +38,12 @@ pub type StoreResult<T> = Result<T, StoreError>;
 /// The default location of the store, under the user's data directory.
 pub fn default_path() -> Option<PathBuf> {
     dirs::data_dir().map(|dir| {
-        // The launcher was named legacy-store before it was named yal, and
-        // this is its first store under the new name. One rename carries
-        // the whole data folder across, and runs only once: after it, the
-        // new folder exists and the legacy one is gone. A data folder that
-        // was already migrated, or was never created, is left alone.
+        // The launcher had an earlier working name, and this is its first
+        // store under the new name. One rename carries the whole data folder
+        // across, and runs only once: after it, the new folder exists and
+        // the legacy one is gone. A data folder that was already migrated,
+        // or was never created, is left alone. The legacy names below are
+        // functional on-disk paths, not branding, and are kept as-is.
         let legacy_dir = dir.join("legacy-store");
         let current_dir = dir.join("yal");
         if !current_dir.exists() && legacy_dir.exists() {

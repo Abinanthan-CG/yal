@@ -93,10 +93,11 @@ impl Mode {
 /// `%USERPROFILE%\.yal\scripts` — the launcher's data folder with a
 /// `scripts` directory joined on. It is created on demand by `ensure_folder`.
 ///
-/// A scripts folder left behind by the launcher's earlier name
-/// (`%USERPROFILE%\.legacy-store\scripts`) is folded into the new one the
+/// A scripts folder left behind under the launcher's earlier working name
+/// (a `~\.<earlier name>\scripts` directory) is folded into the new one the
 /// first time the default is read: the rename moves the folder whole, and
-/// only runs when the new folder has nothing yet.
+/// only runs when the new folder has nothing yet. The legacy name below is
+/// a functional on-disk path, not branding, and is kept as-is.
 pub fn default_folder() -> Option<std::path::PathBuf> {
     dirs::home_dir().map(|home| {
         let legacy = home.join(".legacy-store");
