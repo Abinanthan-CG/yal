@@ -179,6 +179,11 @@ itself discoverable.
 
 This is an honest list, not a disclaimer.
 
+[docs/parity.md](docs/parity.md) is the full-feature recount behind this
+section: every area of the observed launcher feature surface, what the build
+carries, and the missing slice, with the next waves ordered by that
+evidence.
+
 - **Extension runtime.** Deliberately deferred. launcher extensions are
   TypeScript running against `@launcher/api`; a Rust rebuild needs a different
   extension model, and the domain reserves a slot for it but nothing ships.
