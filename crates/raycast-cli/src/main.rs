@@ -139,7 +139,9 @@ enum Command {
         /// The window handle.
         handle: u64,
         /// `close`, `minimize`, `maximize`, `restore`, `focus`, `left-half`,
-        /// `right-half`, `top-half`, `bottom-half` or `fullscreen`.
+        /// `right-half`, `top-half`, `bottom-half`, a quarter (`top-left-quarter`
+        /// and friends), a third (`left-third` and friends), `center` or
+        /// `fullscreen`.
         action: String,
     },
 
@@ -828,10 +830,19 @@ fn run(cli: &Cli) -> Result<()> {
                 "right-half" => WindowAction::RightHalf,
                 "top-half" => WindowAction::TopHalf,
                 "bottom-half" => WindowAction::BottomHalf,
+                "top-left-quarter" => WindowAction::TopLeftQuarter,
+                "top-right-quarter" => WindowAction::TopRightQuarter,
+                "bottom-left-quarter" => WindowAction::BottomLeftQuarter,
+                "bottom-right-quarter" => WindowAction::BottomRightQuarter,
+                "left-third" => WindowAction::LeftThird,
+                "middle-third" => WindowAction::CenterThird,
+                "right-third" => WindowAction::RightThird,
+                "center" => WindowAction::Center,
                 "fullscreen" => WindowAction::Fullscreen,
                 other => anyhow::bail!(
                     "`{other}` is not a window action (close, minimize, maximize, restore, \
-                     focus, left-half, right-half, top-half, bottom-half, fullscreen)"
+                     focus, left-half, right-half, top-half, bottom-half, a quarter or third, \
+                     center, fullscreen)"
                 ),
             };
             window_controls::perform(*handle, action)

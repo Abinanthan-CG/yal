@@ -35,11 +35,78 @@ pub enum WindowAction {
     TopHalf,
     /// Fill the bottom half of the screen.
     BottomHalf,
+    /// Fill the top left quarter of the screen.
+    TopLeftQuarter,
+    /// Fill the top right quarter of the screen.
+    TopRightQuarter,
+    /// Fill the bottom left quarter of the screen.
+    BottomLeftQuarter,
+    /// Fill the bottom right quarter of the screen.
+    BottomRightQuarter,
+    /// Fill the left third of the screen.
+    LeftThird,
+    /// Fill the middle third of the screen.
+    CenterThird,
+    /// Fill the right third of the screen.
+    RightThird,
+    /// Centre the window where it is, unchanged in size.
+    Center,
     /// Fill the screen without changing the z-order.
     Fullscreen,
 }
 
 /// Carry out a size-and-position action.
+/// The rectangle a size-and-position action puts a window in.
+///
+/// The area is the work rectangle `(left, top, width, height)`; the window's
+/// own size matters only to `Center`, which moves the window whole. Pure so
+/// the shapes can be tested without a window. Division remainders stay on
+/// the far edge, so the inner edge of every slice is exact and no pixel is
+/// orphaned between neighbours.
+fn placed_rect(
+    action: WindowAction,
+    left: i32,
+    top: i32,
+    width: i32,
+    height: i32,
+    window_width: i32,
+    window_height: i32,
+) -> (i32, i32, i32, i32) {
+    let half_width = width / 2;
+    let half_height = height / 2;
+    let third_width = width / 3;
+    match action {
+        WindowAction::LeftHalf => (left, top, half_width, height),
+        WindowAction::RightHalf => (left + half_width, top, width - half_width, height),
+        WindowAction::TopHalf => (left, top, width, half_height),
+        WindowAction::BottomHalf => (left, top + half_height, width, height - half_height),
+        WindowAction::TopLeftQuarter => (left, top, half_width, half_height),
+        WindowAction::TopRightQuarter => (left + half_width, top, width - half_width, half_height),
+        WindowAction::BottomLeftQuarter => (left, top + half_height, half_width, height - half_height),
+        WindowAction::BottomRightQuarter => (
+            left + half_width,
+            top + half_height,
+            width - half_width,
+            height - half_height,
+        ),
+        WindowAction::LeftThird => (left, top, third_width, height),
+        WindowAction::CenterThird => (left + third_width, top, third_width, height),
+        WindowAction::RightThird => {
+            (left + 2 * third_width, top, width - 2 * third_width, height)
+        }
+        WindowAction::Center => {
+            // A window the size of the work area, or larger, sits where it
+            // is: a negative centering offset would walk it off the screen.
+            let offset_x = ((width - window_width) / 2).max(0);
+            let offset_y = ((height - window_height) / 2).max(0);
+            (left + offset_x, top + offset_y, window_width, window_height)
+        }
+        _ => unreachable!(
+            "placed_rect is only called for size-and-position actions"
+        ),
+    }
+}
+
 #[cfg(windows)]
 fn perform_place(handle: u64, action: WindowAction) -> Result<(), ControlError> {
     // The work area is the part of the monitor the user can use, which
@@ -71,18 +138,16 @@ fn perform_place(handle: u64, action: WindowAction) -> Result<(), ControlError> 
         }
     };
 
-    match action {
-        WindowAction::LeftHalf => place(handle, Some(left), Some(top), Some(width / 2), Some(height)),
-        WindowAction::RightHalf => {
-            place(handle, Some(left + width / 2), Some(top), Some(width - width / 2), Some(height))
+    // Centre needs the window's own size; the others ignore it.
+    let (window_width, window_height) = match action {
+        WindowAction::Center => {
+            let (_, _, w, h) = rect(handle)?;
+            (w, h)
         }
-        WindowAction::TopHalf => place(handle, Some(left), Some(top), Some(width), Some(height / 2)),
-        WindowAction::BottomHalf => {
-            place(handle, Some(left), Some(top + height / 2), Some(width), Some(height - height / 2))
-        }
-        WindowAction::Fullscreen => place(handle, Some(left), Some(top), Some(width), Some(height)),
-        _ => unreachable!("perform_place is only called for size-and-position actions"),
-    }
+        _ => (0, 0),
+    };
+    let (x, y, w, h) = placed_rect(action, left, top, width, height, window_width, window_height);
+    place(handle, Some(x), Some(y), Some(w), Some(h))
 }
 
 /// Carry out an action on a window.
@@ -129,6 +194,14 @@ pub fn perform(handle: u64, action: WindowAction) -> Result<(), ControlError> {
             | WindowAction::RightHalf
             | WindowAction::TopHalf
             | WindowAction::BottomHalf
+            | WindowAction::TopLeftQuarter
+            | WindowAction::TopRightQuarter
+            | WindowAction::BottomLeftQuarter
+            | WindowAction::BottomRightQuarter
+            | WindowAction::LeftThird
+            | WindowAction::CenterThird
+            | WindowAction::RightThird
+            | WindowAction::Center
             | WindowAction::Fullscreen => {
                 // A window that is minimised cannot be sized; restore first
                 // so the geometry applies to a real window.
@@ -313,6 +386,46 @@ pub const WINDOW_MENU: &[WindowMenuItem] = &[
         keywords: &["bottom", "lower", "half"],
     },
     WindowMenuItem {
+        action: WindowAction::TopLeftQuarter,
+        title: "Move to top left corner",
+        keywords: &["quarter", "corner", "top left"],
+    },
+    WindowMenuItem {
+        action: WindowAction::TopRightQuarter,
+        title: "Move to top right corner",
+        keywords: &["quarter", "corner", "top right"],
+    },
+    WindowMenuItem {
+        action: WindowAction::BottomLeftQuarter,
+        title: "Move to bottom left corner",
+        keywords: &["quarter", "corner", "bottom left"],
+    },
+    WindowMenuItem {
+        action: WindowAction::BottomRightQuarter,
+        title: "Move to bottom right corner",
+        keywords: &["quarter", "corner", "bottom right"],
+    },
+    WindowMenuItem {
+        action: WindowAction::LeftThird,
+        title: "Move to left third",
+        keywords: &["third", "left"],
+    },
+    WindowMenuItem {
+        action: WindowAction::CenterThird,
+        title: "Move to middle third",
+        keywords: &["third", "middle", "centre", "center"],
+    },
+    WindowMenuItem {
+        action: WindowAction::RightThird,
+        title: "Move to right third",
+        keywords: &["third", "right"],
+    },
+    WindowMenuItem {
+        action: WindowAction::Center,
+        title: "Centre the window",
+        keywords: &["center", "centre", "middle", "distribute"],
+    },
+    WindowMenuItem {
         action: WindowAction::Fullscreen,
         title: "Fill the screen",
         keywords: &["fill", "full"],
@@ -350,9 +463,141 @@ mod tests {
             WindowAction::RightHalf,
             WindowAction::TopHalf,
             WindowAction::BottomHalf,
+            WindowAction::TopLeftQuarter,
+            WindowAction::TopRightQuarter,
+            WindowAction::BottomLeftQuarter,
+            WindowAction::BottomRightQuarter,
+            WindowAction::LeftThird,
+            WindowAction::CenterThird,
+            WindowAction::RightThird,
+            WindowAction::Center,
             WindowAction::Fullscreen,
         ] {
             assert!(WINDOW_MENU.iter().any(|menu| menu.action == action));
         }
+    }
+
+    const WORK: (i32, i32, i32, i32) = (0, 0, 1920, 1080);
+
+    #[test]
+    fn halves_and_thirds_tile_the_screen_without_gaps() {
+        // Neighbours share an inner edge exactly, and the last slice
+        // carries the division remainder, so nothing is orphaned.
+        let (x, y, w, h) = placed_rect(
+            WindowAction::LeftHalf,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, y, w, h), (0, 0, 960, 1080));
+        let (x, _, w, _) = placed_rect(
+            WindowAction::RightHalf,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, w), (960, 960));
+        let (x, _, w, _) = placed_rect(
+            WindowAction::LeftThird,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, w), (0, 640));
+        let (x, _, w, _) = placed_rect(
+            WindowAction::CenterThird,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, w), (640, 640));
+        let (x, _, w, _) = placed_rect(
+            WindowAction::RightThird,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, w), (1280, 640));
+    }
+
+    #[test]
+    fn quarters_split_both_axes() {
+        let (x, y, w, h) = placed_rect(
+            WindowAction::TopLeftQuarter,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, y, w, h), (0, 0, 960, 540));
+        let (x, y, w, h) = placed_rect(
+            WindowAction::BottomRightQuarter,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            0,
+            0,
+        );
+        assert_eq!((x, y, w, h), (960, 540, 960, 540));
+    }
+
+    #[test]
+    fn centring_keeps_the_window_whole_and_on_screen() {
+        // A smaller window sits in the middle.
+        let (x, y, w, h) = placed_rect(
+            WindowAction::Center,
+            WORK.0,
+            WORK.1,
+            WORK.2,
+            WORK.3,
+            800,
+            600,
+        );
+        assert_eq!((x, y, w, h), (560, 240, 800, 600));
+        // A window larger than the work area does not walk off the edge.
+        let (x, y, w, h) = placed_rect(
+            WindowAction::Center,
+            0,
+            0,
+            1920,
+            1080,
+            2400,
+            1200,
+        );
+        assert_eq!((x, y), (0, 0));
+        assert_eq!((w, h), (2400, 1200));
+    }
+
+    #[test]
+    fn odd_widths_leave_the_remainder_on_the_far_edge() {
+        // A 1901-pixel screen splits into 950 and 951: the boundary is at
+        // 950 either way, and the right slice absorbs the spare pixel.
+        let (_, _, lw, _) = placed_rect(WindowAction::LeftHalf, 0, 0, 1901, 1080, 0, 0);
+        let (rx, _, rw, _) = placed_rect(WindowAction::RightHalf, 0, 0, 1901, 1080, 0, 0);
+        assert_eq!(lw + rw, 1901);
+        assert_eq!(lw, rx);
+        let (_, _, fw, _) = placed_rect(WindowAction::LeftThird, 0, 0, 1901, 1080, 0, 0);
+        let (_, _, mw, _) = placed_rect(WindowAction::CenterThird, 0, 0, 1901, 1080, 0, 0);
+        let (r3x, _, r3w, _) = placed_rect(WindowAction::RightThird, 0, 0, 1901, 1080, 0, 0);
+        assert_eq!(fw + mw + r3w, 1901);
+        assert_eq!(r3x, 2 * (1901 / 3));
     }
 }

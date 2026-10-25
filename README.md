@@ -24,7 +24,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Snippets** | Saved text: summon the palette, type the keyword, Enter — the expansion is typed into the application you came from, with the clipboard as the fallback. |
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads; pictures get a preview and their photo metadata (EXIF, JPEG). |
-| **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or snap it to a half of the screen. |
+| **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or place it: halves, quarters, thirds, centre or the full screen. |
 | **Script commands** | The little programs you keep in `~\\.legacy-store\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
 | **Kill process** | The running processes, heaviest first; end one from the list. |
@@ -188,9 +188,10 @@ evidence.
   TypeScript running against `@launcher/api`; a Rust rebuild needs a different
   extension model, and the domain reserves a slot for it but nothing ships.
 - **AI and cloud.** Excluded at the requester's instruction.
-- **Window move and resize from the palette.** Close, minimise, maximise,
-  restore and focus are carried out; giving a window an arbitrary rectangle
-  is CLI-only (`window-controls::place` is not wired to the palette).
+- **An arbitrary window rectangle is CLI-only.** The palette's window menu
+  carries the placement presets — halves, quarters, thirds, centre, full —
+  and giving a window exact coordinates stays with
+  `rc window <handle>` on the command line, where the numbers make sense.
 - **Currency rates are static.** The bundled rates are indicative reference
   values with a recorded vintage, not live quotes. The launcher is local
   only and does not fetch anything.

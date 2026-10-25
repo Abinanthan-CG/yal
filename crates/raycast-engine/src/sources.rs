@@ -421,6 +421,14 @@ fn action_slug(action: yal_system::window_controls::WindowAction) -> &'static st
         WindowAction::RightHalf => "right-half",
         WindowAction::TopHalf => "top-half",
         WindowAction::BottomHalf => "bottom-half",
+        WindowAction::TopLeftQuarter => "top-left-quarter",
+        WindowAction::TopRightQuarter => "top-right-quarter",
+        WindowAction::BottomLeftQuarter => "bottom-left-quarter",
+        WindowAction::BottomRightQuarter => "bottom-right-quarter",
+        WindowAction::LeftThird => "left-third",
+        WindowAction::CenterThird => "middle-third",
+        WindowAction::RightThird => "right-third",
+        WindowAction::Center => "center",
         WindowAction::Fullscreen => "fullscreen",
     }
 }

@@ -33,7 +33,7 @@ re-argues those.
 | Quicklinks | Built | `{query}` templates plus bundled search domains. |
 | Screenshots | Partial | Whole-primary-screen framebuffer read (`rc screenshot`,
   screenshot.rs); launcher's area-select and per-window capture are absent. |
-| Window management | Partial | Focus, close, minimise, maximise, restore, half-snap from the palette, verified through `window-controls`; an arbitrary rectangle is CLI-only — `window-controls::place` is not wired to the palette. |
+| Window management | Built, verified | Focus, close, minimise, maximise, restore and the placement presets — halves, quarters, thirds, centre, full — from palette or CLI. Quarter/third/centre geometry verified live on the build machine by reading the moved window's rectangle back (`top-left-quarter` 853×462 at the corner, `middle-third` 569 wide, `center` from a corner lands at (1707−853)/2 = 427 with size unchanged). An arbitrary rectangle stays CLI-only, which matches the presets a launcher menu is for. |
 | Colour picker / converter | Partial | Conversion both ways (named, hex, RGB, HSL) with tests; the screen eyedropper — pick a colour off the screen — is absent. |
 | Currency / unit conversion | Built | Units full; currencies static by design (offline rule), vintage recorded. |
 | Date & time | Partial | Time zones by IANA name with live offsets, date arithmetic in the calculator; launcher's calendar command (reading one's events) is a design question this build has not taken. |
@@ -60,8 +60,10 @@ re-argues those.
 
 Soonest-first by scope, highest leverage:
 
-1. Wire `window-controls::place` into the palette — closes the window-management
-   partial with code that is already verified elsewhere.
+1. ~~Wire `window-controls::place` into the palette~~ — done as the richer
+   preset set (quarters, thirds, centre), geometry extracted into one pure,
+   tested function and verified live by reading the moved window's rectangle
+   back; see the window-management row above.
 2. Show script `full` output inside the palette — small, before any new surfaces.
 3. Full Unicode emoji dataset — mechanical, offline, removes the curious
    smallness of the picker.

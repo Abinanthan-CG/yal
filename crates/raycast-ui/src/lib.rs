@@ -578,6 +578,18 @@ impl Palette {
                     "right-half" => yal_system::window_controls::WindowAction::RightHalf,
                     "top-half" => yal_system::window_controls::WindowAction::TopHalf,
                     "bottom-half" => yal_system::window_controls::WindowAction::BottomHalf,
+                    "top-left-quarter" => yal_system::window_controls::WindowAction::TopLeftQuarter,
+                    "top-right-quarter" => yal_system::window_controls::WindowAction::TopRightQuarter,
+                    "bottom-left-quarter" => {
+                        yal_system::window_controls::WindowAction::BottomLeftQuarter
+                    }
+                    "bottom-right-quarter" => {
+                        yal_system::window_controls::WindowAction::BottomRightQuarter
+                    }
+                    "left-third" => yal_system::window_controls::WindowAction::LeftThird,
+                    "middle-third" => yal_system::window_controls::WindowAction::CenterThird,
+                    "right-third" => yal_system::window_controls::WindowAction::RightThird,
+                    "center" => yal_system::window_controls::WindowAction::Center,
                     "fullscreen" => yal_system::window_controls::WindowAction::Fullscreen,
                     _ => yal_system::window_controls::WindowAction::Focus,
                 };
