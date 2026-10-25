@@ -1,4 +1,4 @@
-﻿//! The palette window.
+//! The palette window.
 //!
 //! The palette is a single always-on-top window: a query field at the top and
 //! a flat list of ranked results below it. There are no modes and no pages —
@@ -978,7 +978,7 @@ impl Palette {
             let draft_width = ui.available_width() - 90.0;
             ui.add(
                 egui::TextEdit::singleline(&mut self.scripts_draft)
-                    .hint_text(r"%USERPROFILE%\.legacy-store\scripts")
+                    .hint_text(r"%USERPROFILE%\.yal\scripts")
                     .font(FontId::proportional(14.0))
                     .desired_width(draft_width),
             );
@@ -1741,7 +1741,7 @@ pub fn run(store: Store) -> eframe::Result<()> {
     };
 
     eframe::run_native(
-        "launcher",
+        "YAL",
         options,
         Box::new(move |_cc| Ok(Box::new(Palette::new(store)))),
     )

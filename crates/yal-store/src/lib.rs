@@ -37,7 +37,26 @@ pub type StoreResult<T> = Result<T, StoreError>;
 
 /// The default location of the store, under the user's data directory.
 pub fn default_path() -> Option<PathBuf> {
-    dirs::data_dir().map(|dir| dir.join("legacy-store").join("legacy.db"))
+    dirs::data_dir().map(|dir| {
+        // The launcher was named legacy-store before it was named yal, and
+        // this is its first store under the new name. One rename carries
+        // the whole data folder across, and runs only once: after it, the
+        // new folder exists and the legacy one is gone. A data folder that
+        // was already migrated, or was never created, is left alone.
+        let legacy_dir = dir.join("legacy-store");
+        let current_dir = dir.join("yal");
+        if !current_dir.exists() && legacy_dir.exists() {
+            std::fs::rename(&legacy_dir, &current_dir).ok();
+        }
+        // The folder came over whole, and carries the database file under
+        // its old name; the file follows the folder.
+        let legacy_file = current_dir.join("legacy.db");
+        let current_file = current_dir.join("yal.db");
+        if !current_file.exists() && legacy_file.exists() {
+            std::fs::rename(&legacy_file, &current_file).ok();
+        }
+        current_file
+    })
 }
 
 /// The local store.

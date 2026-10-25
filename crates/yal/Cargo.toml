@@ -1,6 +1,6 @@
 [package]
-name = "yal-cli"
-description = "Headless command line front end for scripting, testing and automation."
+name = "yal"
+description = "The launcher: the palette window when run without arguments, and the headless front end for scripting and automation in its commands."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,10 +8,11 @@ license.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "rc"
+name = "yal"
 path = "src/main.rs"
 
 [dependencies]
+yal-ui.workspace = true
 yal-core.workspace = true
 yal-search.workspace = true
 yal-calc.workspace = true

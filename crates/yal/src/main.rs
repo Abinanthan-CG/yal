@@ -1,8 +1,9 @@
-﻿//! `rc` — the headless front end.
+﻿//! `yal` — yet another launcher.
 //!
-//! Every command the palette can answer is also answerable from the terminal.
-//! That is not a convenience: it is how the behaviour is tested, and how the
-//! launcher can be scripted.
+//! Run it plain and it is the launcher: the palette window over the local
+//! store. Run any of its commands and it is headless, printing what the
+//! palette would offer. That is not a convenience: it is how the behaviour
+//! is tested, and how the launcher can be scripted.
 
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -16,9 +17,13 @@ use yal_engine::Engine;
 use yal_index::discover;
 use yal_store::Store;
 
-/// The launcher, driven from the terminal.
+/// The launcher: the palette window, or its headless commands.
 #[derive(Parser, Debug)]
-#[command(name = "rc", version, about = "A keyboard launcher for Windows")]
+#[command(
+    name = "yal",
+    version,
+    about = "YAL — yet another launcher. Run without arguments for the palette window."
+)]
 struct Cli {
     /// The database to use. Defaults to the per-user store.
     #[arg(long, global = true, value_name = "PATH")]
@@ -28,8 +33,9 @@ struct Cli {
     #[arg(long, global = true)]
     json: bool,
 
+    /// Omitted when the launcher should open its palette window.
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 /// The available commands.
@@ -134,7 +140,7 @@ enum Command {
     /// List the open windows.
     Windows,
 
-    /// Carry out an action on one window, by its handle from `rc windows`.
+    /// Carry out an action on one window, by its handle from `yal windows`.
     Window {
         /// The window handle.
         handle: u64,
@@ -279,7 +285,7 @@ enum Command {
     ///
     /// The identifier is the key the timer is stored under.
     TimerCancel {
-        /// The identifier from `rc timers`.
+        /// The identifier from `yal timers`.
         id: String,
     },
 
@@ -301,13 +307,13 @@ enum Command {
     ///
     /// The identifier is the key the reminder is stored under.
     ReminderDone {
-        /// The identifier from `rc reminders`.
+        /// The identifier from `yal reminders`.
         id: String,
     },
 
     /// Apply a text transform, such as `upper` or `base64encode`.
     Transform {
-        /// The transform slug; `rc transforms` lists them.
+        /// The transform slug; `yal transforms` lists them.
         slug: String,
         /// The text to transform.
         text: String,
@@ -461,9 +467,12 @@ fn main() -> ExitCode {
     }
 }
 
-/// Run the requested command.
+/// Run the requested command. With none, open the palette window.
 fn run(cli: &Cli) -> Result<()> {
-    match &cli.command {
+    let Some(command) = &cli.command else {
+        return run_palette();
+    };
+    match command {
         Command::Search { query, limit } => {
             let store = open_store(cli)?;
             let applications = discover();
@@ -945,7 +954,7 @@ fn run(cli: &Cli) -> Result<()> {
                 .database
                 .clone()
                 .or_else(yal_store::default_path)
-                .unwrap_or_else(|| PathBuf::from("legacy.db"));
+                .unwrap_or_else(|| PathBuf::from("yal.db"));
             println!("platform       {}", std::env::consts::OS);
             println!("database       {}", database.display());
             println!("applications   {}", applications.len());
@@ -1264,7 +1273,7 @@ fn run(cli: &Cli) -> Result<()> {
             let spec = yal_data::remind::parse(&words, chrono::Utc::now()).ok_or_else(
                 || {
                     anyhow::anyhow!(
-                        "`{words}` is not a reminder, such as `rc reminder \"call the dentist\" \"in 20m\"`"
+                        "`{words}` is not a reminder, such as `yal reminder \"call the dentist\" \"in 20m\"`"
                     )
                 },
             )?;
@@ -1356,7 +1365,7 @@ fn run(cli: &Cli) -> Result<()> {
                 .map_err(|err| anyhow::anyhow!("the running program could not be located: {err}"))?;
             yal_system::identity::register_shortcut(
                 yal_system::notify::APPLICATION_ID,
-                "legacy-store",
+                "yal",
                 &target,
             )
             .map_err(|err| anyhow::anyhow!("{err}"))?;
@@ -1398,6 +1407,18 @@ fn run(cli: &Cli) -> Result<()> {
             }
         }
     }
+    Ok(())
+}
+
+/// Open the palette window over the per-user store.
+fn run_palette() -> Result<()> {
+    let store = match yal_store::default_path() {
+        Some(path) => Store::open(&path),
+        None => Store::open_in_memory(),
+    }?;
+    // eframe's error carries a `Box<dyn Error>` that is not `Send`, so it
+    // cannot fold into `anyhow` with `?`; the text is all a caller needs.
+    yal_ui::run(store).map_err(|err| anyhow::anyhow!(err.to_string()))?;
     Ok(())
 }
 

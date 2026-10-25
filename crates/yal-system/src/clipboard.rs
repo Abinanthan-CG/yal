@@ -61,12 +61,12 @@ mod tests {
         let Ok(mut clipboard) = Clipboard::new() else {
             return;
         };
-        if clipboard.write_text("legacy-store clipboard test").is_err() {
+        if clipboard.write_text("yal clipboard test").is_err() {
             return;
         }
         assert_eq!(
             clipboard.text().as_deref(),
-            Some("legacy-store clipboard test")
+            Some("yal clipboard test")
         );
     }
 }

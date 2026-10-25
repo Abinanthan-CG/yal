@@ -7,10 +7,6 @@ rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
-[[bin]]
-name = "launcher"
-path = "src/bin/launcher.rs"
-
 [dependencies]
 yal-core.workspace = true
 yal-search.workspace = true

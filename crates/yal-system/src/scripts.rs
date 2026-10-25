@@ -6,7 +6,7 @@
 //! carry metadata the launcher reads. Three things are defined precisely so
 //! folder, parser and runner stay in step.
 //!
-//! The folder is `%USERPROFILE%\.legacy-store\scripts`, or wherever the
+//! The folder is `%USERPROFILE%\.yal\scripts`, or wherever the
 //! `scripts_folder` setting points.
 //!
 //! The metadata is one directive per line, in the file's own comment style
@@ -90,10 +90,22 @@ impl Mode {
 
 /// The folder the scripts live in, outside the launcher's own settings.
 ///
-/// `%USERPROFILE%\.legacy-store\scripts` — the launcher's data folder with a
+/// `%USERPROFILE%\.yal\scripts` — the launcher's data folder with a
 /// `scripts` directory joined on. It is created on demand by `ensure_folder`.
+///
+/// A scripts folder left behind by the launcher's earlier name
+/// (`%USERPROFILE%\.legacy-store\scripts`) is folded into the new one the
+/// first time the default is read: the rename moves the folder whole, and
+/// only runs when the new folder has nothing yet.
 pub fn default_folder() -> Option<std::path::PathBuf> {
-    dirs::home_dir().map(|home| home.join(".legacy-store").join("scripts"))
+    dirs::home_dir().map(|home| {
+        let legacy = home.join(".legacy-store");
+        let current = home.join(".yal");
+        if !current.exists() && legacy.exists() {
+            std::fs::rename(&legacy, &current).ok();
+        }
+        current.join("scripts")
+    })
 }
 
 /// Resolve the scripts folder: an explicit path first, the default after.
@@ -258,7 +270,7 @@ mod tests {
     /// A scratch scripts folder, made fresh for each test.
     fn scratch() -> std::path::PathBuf {
         let folder = std::env::temp_dir()
-            .join("rc-script-tests")
+            .join("yal-script-tests")
             .join(chrono_seconds());
         std::fs::create_dir_all(&folder).unwrap();
         folder

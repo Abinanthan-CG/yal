@@ -1,7 +1,15 @@
-# legacy-store
+# yal
 
 A keyboard launcher for Windows, written in Rust, rebuilt from observed
 behaviour rather than from any source code.
+
+It was named `legacy-store` while it was being assembled, and is named **YAL**,
+"yet another launcher", now that it walks. One rename carried the data
+across: on its first run under the new name the launcher folds the old
+`%APPDATA%\legacy-store` store and the old `~\.legacy-store\scripts` folder into
+their `%APPDATA%\yal` and `~\.yal` homes, leaving nothing behind. The Start
+Menu identity that toasts need is keyed to the new binary, so `yal identify`
+is worth running once — the old shortcut keeps working until it is.
 
 This is a clean-room reimplementation. It was written by observing a running
 copy of launcher for Windows — its process topology, its data model, its
@@ -25,14 +33,14 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads; pictures get a preview and their photo metadata (EXIF, JPEG). |
 | **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or place it: halves, quarters, thirds, centre or the full screen. |
-| **Script commands** | The little programs you keep in `~\\.legacy-store\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted. |
+| **Script commands** | The little programs you keep in `~\\.yal\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
 | **Kill process** | The running processes, heaviest first; end one from the list. |
 | **System commands** | Lock, sleep, shutdown, restart, log out, empty the recycle bin. |
 | **Volume and mute** | Master volume read and set through the audio endpoint. |
 | **Display** | Brightness where the monitor can report it, light or dark theme everywhere. |
 | **Timer** | Countdowns that ring with a toast, with a palette banner as the guaranteed fallback. |
-| **Reminders** | `remind me to check the oven in 40m` in the palette, `rc reminder` and `rc reminders` from the command line; both share one parser, and both raise the same toast. |
+| **Reminders** | `remind me to check the oven in 40m` in the palette, `yal reminder` and `yal reminders` from the command line; both share one parser, and both raise the same toast. |
 | **Text transforms** | Case, camel/snake/kebab, base64, percent, hexadecimal, JSON, Morse; digests SHA-256, SHA-1, MD5; UUIDs; placeholder text. |
 | **QR codes** | Generated from any text and shown in the palette. |
 | **One-time passwords** | RFC 6238 codes with a live countdown. |
@@ -52,9 +60,9 @@ between runs), and the script commands' folder pointed somewhere else.
 The CLI reaches the hotkey as well:
 
 ```sh
-rc hotkey                      # show the current hotkey
-rc hotkey ctrl+alt+k           # change it
-rc hotkeys                     # see which combinations are free
+yal hotkey                      # show the current hotkey
+yal hotkey ctrl+alt+k           # change it
+yal hotkeys                     # see which combinations are free
 ```
 
 ---
@@ -64,37 +72,38 @@ rc hotkeys                     # see which combinations are free
 ```sh
 cargo build --release
 
-# The palette window.
-cargo run --bin launcher
+# The palette window; a command is the headless front end, so the single
+# binary is the launcher and the script-driven tester at once.
+cargo run --bin yal
 
 # The headless front end, which is also how the behaviour is tested.
-cargo run --bin rc -- search "launcher"
-cargo run --bin rc -- calc "100 km in miles"
-cargo run --bin rc -- apps --filter visual
-cargo run --bin rc -- totp JBSWY3DPEHPK3PXP
-cargo run --bin rc -- regex "(\w+)@(\w+)" "user@example"
-cargo run --bin rc -- qr "hello" --output code.png
-cargo run --bin rc -- windows
-cargo run --bin rc -- window <handle> left-half
-cargo run --bin rc -- alias set pwsh "Windows PowerShell"
-cargo run --bin rc -- identify
-cargo run --bin rc -- tabs grok
-cargo run --bin rc -- processes
-cargo run --bin rc -- audio get
-cargo run --bin rc -- display dark
-cargo run --bin rc -- transform upper "hello"
-cargo run --bin rc -- transform snake "Clean Room Rebuild"
-cargo run --bin rc -- hash abc
-cargo run --bin rc -- uuid
-cargo run --bin rc -- timer 10m pomodoro
-cargo run --bin rc -- reminder "call the dentist" "in 20m"
-cargo run --bin rc -- reminders
-cargo run --bin rc -- reminder-done 1792851433728
-cargo run --bin rc -- scripts
-cargo run --bin rc -- script-run hello-clean
-cargo run --bin rc -- script-run "Clean-room batch probe" --detached
-cargo run --bin rc -- exif "C:\path\to\photo.jpg"
-cargo run --bin rc -- doctor
+cargo run --bin yal -- search "launcher"
+cargo run --bin yal -- calc "100 km in miles"
+cargo run --bin yal -- apps --filter visual
+cargo run --bin yal -- totp JBSWY3DPEHPK3PXP
+cargo run --bin yal -- regex "(\w+)@(\w+)" "user@example"
+cargo run --bin yal -- qr "hello" --output code.png
+cargo run --bin yal -- windows
+cargo run --bin yal -- window <handle> left-half
+cargo run --bin yal -- alias set pwsh "Windows PowerShell"
+cargo run --bin yal -- identify
+cargo run --bin yal -- tabs grok
+cargo run --bin yal -- processes
+cargo run --bin yal -- audio get
+cargo run --bin yal -- display dark
+cargo run --bin yal -- transform upper "hello"
+cargo run --bin yal -- transform snake "Clean Room Rebuild"
+cargo run --bin yal -- hash abc
+cargo run --bin yal -- uuid
+cargo run --bin yal -- timer 10m pomodoro
+cargo run --bin yal -- reminder "call the dentist" "in 20m"
+cargo run --bin yal -- reminders
+cargo run --bin yal -- reminder-done 1792851433728
+cargo run --bin yal -- scripts
+cargo run --bin yal -- script-run hello-clean
+cargo run --bin yal -- script-run "Clean-room batch probe" --detached
+cargo run --bin yal -- exif "C:\path\to\photo.jpg"
+cargo run --bin yal -- doctor
 ```
 
 ```sh
@@ -118,7 +127,8 @@ yal-store     local persistence: SQLite
 yal-system    host integration: hotkey, clipboard, windows, capture
 yal-engine    application layer: assembles commands into ranked results
 yal-ui        the egui palette
-yal-cli       the `rc` headless front end
+yal           the launcher: the palette window, or these same commands
+              driven headlong from the terminal
 ```
 
 Dependencies point inward. `yal-core` depends on nothing but `serde` and
@@ -191,11 +201,11 @@ evidence.
 - **An arbitrary window rectangle is CLI-only.** The palette's window menu
   carries the placement presets — halves, quarters, thirds, centre, full —
   and giving a window exact coordinates stays with
-  `rc window <handle>` on the command line, where the numbers make sense.
+  `yal window <handle>` on the command line, where the numbers make sense.
 - **Currency rates are static.** The bundled rates are indicative reference
   values with a recorded vintage, not live quotes. The launcher is local
   only and does not fetch anything.
-- **Timer toasts deliver a banner after identity registration.** `rc identify`
+- **Timer toasts deliver a banner after identity registration.** `yal identify`
   writes a Start Menu shortcut carrying the launcher's user model identifier,
   which is what makes Windows raise a banner for an unpackaged program.
   Verified on the machine this was built on: the platform log records the
@@ -208,10 +218,10 @@ evidence.
   reminders are backed by Apple Reminders, which does not exist on Windows;
   this launchers' reminders stand alone: stored locally, raised by a toast
   with the palette banner as the guaranteed fallback, shown soonest first
-  with `rc reminders`. The wording (`in 40m`, `tomorrow at 9:30`, `12am`,
+  with `yal reminders`. The wording (`in 40m`, `tomorrow at 9:30`, `12am`,
   am/pm) is parsed by one documented function the palette and the CLI both
   use, and spans are capped at ninety days.
-- **The image preview covers pictures and their photo metadata (`rc exif`)**,
+- **The image preview covers pictures and their photo metadata (`yal exif`)**,
   read from JPEG files. Other formats rarely carry EXIF on Windows, and the
   files on the machine this was built on carry only the date and pixel
   size, so camera fields — ISO, exposure, aperture — read through the same
@@ -242,7 +252,7 @@ has been verified live since this paragraph last claimed otherwise. The
 press is detected two ways at once: the window manager's `WM_HOTKEY`
 notification is the primary source, and a direct read of the keyboard state
 backs it up — a state poll alone loses quick press-and-release cycles, which
-was observed with synthetic taps. `rc hotkey-wait --control` reports what
+was observed with synthetic taps. `yal hotkey-wait --control` reports what
 your combination produces. **Verified live**: Ctrl+Space hides the palette
 and brings it back above every other window. The hide parks the window
 off-screen instead of hiding it, because a hidden window stops painting and

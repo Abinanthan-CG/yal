@@ -10,7 +10,7 @@ of code in it, and mixing them makes every change harder than it needs to be.
 | Domain | `yal-core` | Knows nothing about the operating system, the database or the screen. |
 | Adapters | `yal-index`, `yal-store`, `yal-system`, `yal-calc`, `yal-data` | Know the host. Know nothing about each other. |
 | Application | `yal-engine` | Knows the adapters and the domain. Knows nothing about presentation. |
-| Presentation | `yal-ui`, `yal-cli` | Know the engine. Know nothing about the host. |
+| Presentation | `yal-ui`, `yal` | Know the engine. Know nothing about the host. |
 
 `yal-engine` is the only crate that knows both a store and an index, and
 it is the only place where the decision "which commands answer this query"

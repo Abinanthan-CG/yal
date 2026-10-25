@@ -14,7 +14,7 @@ pub enum NotifyError {
 
 /// The user model identifier the launcher's toasts are sent from.
 #[cfg(windows)]
-pub const APPLICATION_ID: &str = "local.legacy-store";
+pub const APPLICATION_ID: &str = "local.yal";
 
 /// Show a toast with a title and a body.
 #[cfg(windows)]

@@ -34,7 +34,7 @@ public static class Inj {
 }
 "@
 
-$root = "C:\Users\dabin\development\legacy-store"
+$root = "C:\Users\dabin\development\yal"
 $vk = [Convert]::ToInt32("4B", 16)
 $key = [byte]$vk
 $ctrl = if ($Control) { [byte]0x11 } else { [byte]0 }
@@ -48,8 +48,8 @@ if ($Shift) { $args += "--shift" }
 
 $job = Start-Job -ArgumentList (,$args) -ScriptBlock {
   param($a)
-  Set-Location "C:\Users\dabin\development\legacy-store"
-  & ".\target\debug\rc.exe" @a
+  Set-Location "C:\Users\dabin\development\yal"
+  & ".\target\debug\yal.exe" @a
 }
 
 Start-Sleep -Seconds 4

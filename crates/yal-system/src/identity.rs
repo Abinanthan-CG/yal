@@ -169,8 +169,8 @@ mod tests {
     #[test]
     fn the_shortcut_lands_in_the_start_menu() {
         // Without writing anything: the path is derived, not used.
-        let path = shortcut_path("launcher (clean-room)").unwrap();
+        let path = shortcut_path("YAL (clean-room)").unwrap();
         assert!(path.to_string_lossy().to_lowercase().contains("start menu"));
-        assert!(path.to_string_lossy().ends_with("launcher (clean-room).lnk"));
+        assert!(path.to_string_lossy().ends_with("YAL (clean-room).lnk"));
     }
 }

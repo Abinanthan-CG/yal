@@ -313,7 +313,7 @@ mod tests {
     fn script_folder_with_one() -> std::path::PathBuf {
         let folder = std::env::temp_dir()
             .join(format!(
-                "rc-engine-script-{}",
+                "yal-engine-script-{}",
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
                     .unwrap()
