@@ -57,7 +57,11 @@ pub fn applications(discovered: &[Discovered]) -> Vec<Candidate> {
             let mut item = Item::new(application.name.clone())
                 .with_id(application.id.clone())
                 .with_subtitle(application.path.display().to_string())
-                .with_action(Action::open_path(application.path.clone()));
+                .with_action(Action::open_path(application.path.clone()))
+                .with_secondary_action(Action::reveal(application.path.clone()))
+                .with_secondary_action(Action::copy(
+                    application.path.display().to_string(),
+                ));
             if let Some(icon) = icon_for(&application.path) {
                 item = item.with_icon(icon);
             }
@@ -99,7 +103,11 @@ pub fn aliases(
                         alias.term
                     ))
                     .with_keyword(alias.term.clone())
-                    .with_action(Action::open_path(application.path.clone()));
+                    .with_action(Action::open_path(application.path.clone()))
+                    .with_secondary_action(Action::reveal(application.path.clone()))
+                    .with_secondary_action(Action::copy(
+                        application.path.display().to_string(),
+                    ));
                 found.push(Candidate::new(item, CommandKind::Applications));
                 break;
             }
@@ -161,7 +169,8 @@ pub fn scripts(scripts_folder: Option<std::path::PathBuf>) -> Vec<Candidate> {
             let mut item = Item::new(script.title.clone())
                 .with_id(format!("script:{}", script.path.display()))
                 .with_subtitle(subtitle)
-                .with_action(action);
+                .with_action(action)
+                .with_secondary_action(Action::reveal(script.path.clone()));
             for keyword in &script.keywords {
                 item = item.with_keyword(keyword.clone());
             }
@@ -179,7 +188,8 @@ pub fn snippets(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
                 .with_id(format!("snippet:{}", snippet.id))
                 .with_subtitle(snippet.expansion.clone())
                 .with_keyword(snippet.keyword.clone())
-                .with_action(Action::paste(snippet.expansion.clone()));
+                .with_action(Action::paste(snippet.expansion.clone()))
+                .with_secondary_action(Action::copy(snippet.expansion.clone()));
             Candidate::new(item, CommandKind::Snippets)
         })
         .collect())
@@ -205,7 +215,14 @@ pub fn quicklinks(store: &Store, query: &str) -> yal_store::StoreResult<Vec<Cand
             let item = Item::new(quicklink.name.clone())
                 .with_id(format!("quicklink:{}", quicklink.id))
                 .with_subtitle(url.clone())
-                .with_action(Action::open_url(url));
+                .with_action(Action::open_url(url))
+                .with_secondary_action(Action::copy(
+                    if query.is_empty() {
+                        quicklink.url.clone()
+                    } else {
+                        quicklink.url.replace("{}", &url_encode(query))
+                    },
+                ));
             Candidate::new(item, CommandKind::Quicklinks)
         })
         .collect())
@@ -235,7 +252,11 @@ pub fn clipboard(store: &Store, limit: usize) -> yal_store::StoreResult<Vec<Cand
             let item = Item::new(first_line(&entry.text))
                 .with_id(format!("clipboard:{}", entry.id))
                 .with_subtitle(entry.text.clone())
-                .with_action(Action::copy(entry.text.clone()));
+                .with_action(Action::copy(entry.text.clone()))
+                .with_secondary_action(Action::task(
+                    "clipboard-remove",
+                    vec![entry.id.to_string()],
+                ));
             Candidate::new(item, CommandKind::Clipboard)
         })
         .collect())
@@ -375,20 +396,6 @@ pub fn regex(query: &str, subject: &str) -> Option<Candidate> {
         item = item.with_action(Action::copy(first.text.clone()));
     }
     Some(Candidate::new(item, CommandKind::Regex))
-}
-
-/// Build the web search candidate for a query.
-pub fn web_search(query: &str) -> Option<Candidate> {
-    let trimmed = query.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    let url = format!("https://duckduckgo.com/?q={}", url_encode(trimmed));
-    let item = Item::new(format!("Search the web for “{trimmed}”"))
-        .with_id("websearch:result".to_string())
-        .with_subtitle(url.clone())
-        .with_action(Action::open_url(url));
-    Some(Candidate::new(item, CommandKind::WebSearch))
 }
 
 /// Build candidates for the open windows.
@@ -960,10 +967,83 @@ pub fn files(found: &[yal_index::FoundFile]) -> Vec<Candidate> {
             let item = Item::new(file.name.clone())
                 .with_id(format!("file:{}", file.path.display()))
                 .with_subtitle(file.directory.display().to_string())
-                .with_action(Action::open_path(file.path.clone()));
+                .with_action(Action::open_path(file.path.clone()))
+                .with_secondary_action(Action::reveal(file.path.clone()))
+                .with_secondary_action(Action::copy(
+                    file.path.display().to_string(),
+                ));
             Candidate::new(item, CommandKind::Files)
         })
         .collect()
+}
+
+/// Build the fallback acts for a query that matched nothing.
+///
+/// The words themselves are all there is to offer: they can travel to a
+/// search engine in the browser, or — when they have the shape of an
+/// address — be opened as one. Both acts carry the words in the subtitle
+/// so the composition is visible before anything opens, and both copy the
+/// words as a secondary act, the thing a user most often wants next.
+pub fn fallback(query: &str) -> Vec<Candidate> {
+    let trimmed = query.trim();
+    if trimmed.is_empty() {
+        return Vec::new();
+    }
+
+    let mut found = Vec::new();
+
+    let url = format!("https://duckduckgo.com/?q={}", url_encode(trimmed));
+    found.push(Candidate::new(
+        Item::new(format!("Search the web for “{trimmed}”"))
+            .with_id("fallback:websearch".to_string())
+            .with_subtitle(url.clone())
+            .with_action(Action::open_url(url))
+            .with_secondary_action(Action::copy(trimmed.to_string())),
+        CommandKind::Fallback,
+    ));
+
+    if looks_like_an_address(trimmed) {
+        let composed = format!("https://{trimmed}");
+        found.push(Candidate::new(
+            Item::new(format!("Open “{trimmed}” as an address"))
+                .with_id("fallback:address".to_string())
+                .with_subtitle(composed.clone())
+                .with_action(Action::open_url(composed))
+                .with_secondary_action(Action::copy(trimmed.to_string())),
+            CommandKind::Fallback,
+        ));
+    }
+
+    found
+}
+
+/// Whether a query has the shape of an address a browser is willing to open.
+///
+/// Honest and narrow: no whitespace, simple host labels with a dot between
+/// them — `example.com` yes, `rust closures` no. The subtitle always shows
+/// exactly what will open, so a wrong guess is a wrong guess the user can
+/// refuse with a glance.
+fn looks_like_an_address(query: &str) -> bool {
+    let trimmed = query.trim();
+    if trimmed.is_empty()
+        || trimmed.chars().count() > 100
+        || trimmed.chars().any(char::is_whitespace)
+        || trimmed.chars().any(char::is_control)
+    {
+        return false;
+    }
+    let host = trimmed
+        .split(['/', '?', '#', '@', ':'])
+        .next()
+        .unwrap_or("");
+    let labels: Vec<&str> = host.split('.').collect();
+    labels.len() >= 2
+        && labels.iter().all(|label| {
+            !label.is_empty()
+                && label
+                    .chars()
+                    .all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')
+        })
 }
 
 /// Build the snippet expansion candidate when the query is exactly a snippet

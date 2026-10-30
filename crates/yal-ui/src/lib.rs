@@ -102,6 +102,16 @@ pub struct Palette {
     /// The frame context, remembered so background threads can wake the
     /// palette when they have something to show.
     frame_ctx: Option<egui::Context>,
+    /// The secondary acts of the selected result, when the panel is open.
+    ///
+    /// Keyed to the list as it stood when the panel was opened: the panel
+    /// is a sheet the user acts from, not a live view.
+    action_panel: Option<Vec<Action>>,
+    /// The highlighted act inside the panel.
+    panel_selected: usize,
+    /// Where the selected result row sat when it was last drawn, so the
+    /// panel can open beside its row.
+    selected_rect: Option<egui::Rect>,
 }
 
 /// What the palette is showing.
@@ -203,6 +213,9 @@ impl Palette {
             scripts_draft: String::new(),
             script_outcome: None,
             frame_ctx: None,
+            action_panel: None,
+            panel_selected: 0,
+            selected_rect: None,
         };
         palette.theme = palette
             .store
@@ -339,6 +352,9 @@ impl Palette {
         }
         self.query.clear();
         self.ring = None;
+        self.action_panel = None;
+        self.panel_selected = 0;
+        self.selected_rect = None;
         self.run_search();
         self.needs_focus = true;
     }
@@ -416,7 +432,16 @@ impl Palette {
         else {
             return;
         };
+        self.carry_out(&action);
+    }
 
+    /// Carry out one action and put the palette away for it.
+    ///
+    /// Both the primary act (Enter on a result) and a secondary act chosen
+    /// from the panel travel through here, so they behave identically: the
+    /// snippet expansion is staged, the frecency record is credited to the
+    /// selected result either way, and the palette gets out of the way.
+    fn carry_out(&mut self, action: &Action) {
         // A snippet expansion types into the application the user came
         // from, so it cannot run while the palette is here; it is staged
         // for after the hide.
@@ -427,7 +452,7 @@ impl Palette {
             }
         }
 
-        if let Err(error) = self.perform(&action) {
+        if let Err(error) = self.perform(action) {
             self.status = Some(error.to_string());
             return;
         }
@@ -441,6 +466,25 @@ impl Palette {
         // The palette gets out of the way once a result is chosen.
         self.visible = false;
         self.hide_requested = true;
+    }
+
+    /// Carry out the act highlighted in the secondary panel.
+    ///
+    /// The panel acts on the selected result — the same result the
+    /// frecency record credits — and closes itself; the palette then
+    /// leaves the screen as it does for the primary act.
+    fn perform_panel_action(&mut self) {
+        let chosen = self
+            .action_panel
+            .as_ref()
+            .and_then(|panel| panel.get(self.panel_selected).cloned());
+        match chosen {
+            Some(action) => {
+                self.action_panel = None;
+                self.carry_out(&action);
+            }
+            None => self.action_panel = None,
+        }
     }
 
     /// Stage a snippet expansion: remember it and get out of the way.
@@ -579,6 +623,16 @@ impl Palette {
                     .parse::<u32>()
                     .map_err(|err| format!("\"{}\" is not a process id: {err}", arguments[0]))?;
                 yal_system::processes::terminate(pid).map_err(|err| err.to_string())
+            }
+            "clipboard-remove" => {
+                let id = arguments
+                    .first()
+                    .ok_or_else(|| "the clipboard entry is missing".to_string())?
+                    .parse::<i64>()
+                    .map_err(|err| format!("the clipboard entry is not an identifier: {err}"))?;
+                self.store
+                    .delete_clipboard(id)
+                    .map_err(|err| err.to_string())
             }
             "window" => {
                 let handle = arguments
@@ -1215,6 +1269,13 @@ impl eframe::App for Palette {
         let mut activate = false;
         let mut dismiss = false;
         let mut copy_outcome = false;
+        // The secondary panel opens on ctrl+K when a result with further
+        // acts is selected. Typed text closes it — read here, before the
+        // field consumes the events — because the list under it is about
+        // to change and the acts were keyed to what was selected when it
+        // opened.
+        let mut wants_panel = false;
+        let mut typed_text = false;
 
         ctx.input_mut(|input| {
             if input.key_pressed(Key::ArrowDown) {
@@ -1231,6 +1292,21 @@ impl eframe::App for Palette {
             }
             if self.script_outcome.is_some() && input.key_pressed(Key::C) {
                 copy_outcome = true;
+            }
+            if !self.recording_hotkey
+                && self.script_outcome.is_none()
+                && self.mode == Mode::Search
+                && input.key_pressed(Key::K)
+                && input.modifiers.ctrl
+            {
+                wants_panel = true;
+            }
+            if input
+                .events
+                .iter()
+                .any(|event| matches!(event, egui::Event::Text(_)))
+            {
+                typed_text = true;
             }
             // While the preferences pane waits for a hotkey, the first
             // key pressed together with a modifier becomes it. Escape
@@ -1282,6 +1358,60 @@ impl eframe::App for Palette {
             move_down = false;
             move_up = false;
             dismiss = false;
+        }
+
+        // The secondary panel, while open, owns the keys: arrows move its
+        // highlight, enter acts in it, escape returns to the search, typed
+        // text closes it ahead of a re-search. It opened on ctrl+K only
+        // when the selected result carried further acts; a result with
+        // none says so.
+        let mut panel_opening = false;
+        if wants_panel {
+            let acts = self
+                .results
+                .get(self.selected)
+                .map(|result| result.item.secondary_actions.clone())
+                .unwrap_or_default();
+            if acts.is_empty() {
+                self.status =
+                    Some("the chosen result carries nothing beyond its first act".into());
+            } else {
+                self.action_panel = Some(acts);
+                self.panel_selected = 0;
+                panel_opening = true;
+            }
+        }
+        if self.action_panel.is_some() {
+            if panel_opening {
+                move_down = false;
+                move_up = false;
+                activate = false;
+                dismiss = false;
+            } else {
+                let panel_len = self.action_panel.as_ref().map(Vec::len);
+                if let Some(len) = panel_len {
+                    if move_down {
+                        self.panel_selected = (self.panel_selected + 1) % len;
+                    }
+                    if move_up {
+                        self.panel_selected = if self.panel_selected == 0 {
+                            len - 1
+                        } else {
+                            self.panel_selected - 1
+                        };
+                    }
+                }
+                if activate {
+                    self.perform_panel_action();
+                }
+                if dismiss || typed_text {
+                    self.action_panel = None;
+                }
+                move_down = false;
+                move_up = false;
+                activate = false;
+                dismiss = false;
+            }
         }
 
         if dismiss && self.mode == Mode::Preferences {
@@ -1442,6 +1572,12 @@ impl eframe::App for Palette {
                             egui::Sense::click(),
                         );
                         draw_result(ui, rect, result, selected, &palette_style);
+                        // The panel positions itself beside the selected
+                        // row; the rect is from the frame that last drew
+                        // it, which is one frame of lag at most.
+                        if selected {
+                            self.selected_rect = Some(rect);
+                        }
                         if response.clicked() {
                             self.selected = index;
                             self.perform_selected();
@@ -1494,6 +1630,80 @@ impl eframe::App for Palette {
                         })
                         .small()
                         .color(palette_style.dim_text),
+                    );
+                });
+        }
+
+        // The secondary acts of the selected result, opened with ctrl+K.
+        // The panel sits beside the row it acts on — below it, or above
+        // when the row is near the screen floor.
+        if self.action_panel.is_some() {
+            let acts: Vec<Action> =
+                self.action_panel.clone().unwrap_or_default();
+            let header = self
+                .results
+                .get(self.selected)
+                .map(|result| result.item.title.clone())
+                .unwrap_or_default();
+            let row_height = 30.0;
+            let estimate = acts.len() as f32 * row_height + 46.0;
+
+            let position = match self.selected_rect {
+                Some(rect) => {
+                    let floor = ctx.screen_rect().bottom();
+                    let mut y = rect.bottom() + 4.0;
+                    if y + estimate > floor {
+                        y = (rect.top() - estimate - 4.0).max(ctx.screen_rect().top() + 8.0);
+                    }
+                    let x = rect.left().max(ctx.screen_rect().left() + 8.0);
+                    egui::pos2(x, y)
+                }
+                None => ctx.screen_rect().center() + egui::vec2(140.0, -estimate / 2.0),
+            };
+
+            egui::Window::new("the acts of the chosen result")
+                .title_bar(false)
+                .collapsible(false)
+                .resizable(false)
+                .current_pos(position)
+                .default_width(300.0)
+                .max_width(300.0)
+                .min_width(300.0)
+                .show(ctx, |ui| {
+                    ui.label(
+                        RichText::new(header)
+                            .small()
+                            .strong()
+                            .color(palette_style.dim_text),
+                    );
+                    ui.separator();
+                    for (index, action) in acts.iter().enumerate() {
+                        let selected = index == self.panel_selected;
+                        let (row_rect, response) = ui.allocate_exact_size(
+                            egui::vec2(ui.available_width(), row_height),
+                            egui::Sense::click(),
+                        );
+                        if selected {
+                            ui.painter()
+                                .rect_filled(row_rect, 4.0, palette_style.selection);
+                        }
+                        ui.painter().text(
+                            row_rect.left_center() + egui::vec2(8.0, 0.0),
+                            egui::Align2::LEFT_CENTER,
+                            action_label(action),
+                            FontId::proportional(14.0),
+                            palette_style.text,
+                        );
+                        if response.clicked() {
+                            self.panel_selected = index;
+                            self.perform_panel_action();
+                        }
+                    }
+                    ui.add_space(2.0);
+                    ui.label(
+                        RichText::new("↑ ↓ choose · ↵ do it · esc back")
+                            .small()
+                            .color(palette_style.dim_text),
                     );
                 });
         }
@@ -1613,6 +1823,45 @@ fn is_image_file_name(name: &str) -> bool {
                 "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp"
             )
         })
+}
+
+/// A short readable sentence for an act, for the secondary panel.
+///
+/// The panel does not carry the raw action kinds the CLI and the engine
+/// speak; a user acts on words.
+fn action_label(action: &Action) -> String {
+    match (&action.kind, &action.target) {
+        (ActionKind::RevealInFileManager, _) => "show it in the file manager".to_string(),
+        (ActionKind::CopyToClipboard, OpenTarget::Path(_)) => "copy the path".to_string(),
+        (ActionKind::CopyToClipboard, _) => "copy it to the clipboard".to_string(),
+        (ActionKind::OpenUrl, OpenTarget::Url(url)) => format!("open {url} in the browser"),
+        (ActionKind::PasteToClipboard, _) => "type it where I came from".to_string(),
+        (ActionKind::OpenPath, OpenTarget::Path(path)) => format!(
+            "open {}",
+            path.file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| path.to_string_lossy().into_owned())
+        ),
+        (ActionKind::OpenApplication, _) => "open the application".to_string(),
+        (ActionKind::RunCommand, OpenTarget::Command { program, .. }) => format!(
+            "run {}",
+            program
+                .file_stem()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| program.to_string_lossy().into_owned())
+        ),
+        (ActionKind::OpenInApplication, OpenTarget::ApplicationAndText { application, .. }) => {
+            format!("open it with {application}")
+        }
+        (ActionKind::LauncherTask, OpenTarget::Task { name, .. }) => match name.as_str() {
+            "clipboard-remove" => "remove it from the history".to_string(),
+            _ => format!("carry out {name}"),
+        },
+        (ActionKind::WriteFile, _) => "write it to a file".to_string(),
+        // Every other combination of kind and target is not produced by
+        // the sources; it would be a lie to describe it in detail.
+        _ => "carry it out".to_string(),
+    }
 }
 
 /// Draw one result row.

@@ -80,6 +80,11 @@ pub enum CommandKind {
     Scripts,
     /// The installed font families.
     Fonts,
+    /// The acts offered when a query matched nothing else.
+    ///
+    /// The fallback surface: the words are not a result, they are material
+    /// for a next step chosen deliberately.
+    Fallback,
     /// A third-party extension.
     ///
     /// Reserved. No extension runtime ships in this milestone
@@ -117,6 +122,7 @@ impl CommandKind {
             CommandKind::Reminders => "Reminders",
             CommandKind::Scripts => "Script Commands",
             CommandKind::Fonts => "Fonts",
+            CommandKind::Fallback => "Nothing matched",
             CommandKind::Extension => "Extensions",
         }
     }

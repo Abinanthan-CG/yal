@@ -146,9 +146,6 @@ impl Engine {
             if let Some(matched) = sources::regex(trimmed, "") {
                 candidates.push(matched);
             }
-            if let Some(search) = sources::web_search(trimmed) {
-                candidates.push(search);
-            }
             candidates.extend(sources::text_transforms(trimmed));
             if let Some(timer) = sources::timer_specification(trimmed) {
                 candidates.push(timer);
@@ -213,7 +210,28 @@ impl Engine {
             return Ok(self.rank_by_usage(enriched, now));
         }
 
-        Ok(self.rank_candidates(&enriched, query, now))
+        let ranked = self.rank_candidates(&enriched, query, now);
+
+        // The fallback: when nothing the user keeps — applications, files,
+        // snippets, windows, the rest of the machine's state — matched, and
+        // the only offers are the generators that act on any words (the
+        // QR code, the calculator, the regex), the words themselves become
+        // the material of a deliberate act: a web search, or an address
+        // when they have the shape of one. The prefix searches are left
+        // out: `kill zzzz` asking the web is noise, not help.
+        let looked_in = !query.trim().is_empty()
+            && !query.trim().starts_with("kill ")
+            && !query.trim().starts_with("tabs ")
+            && !query.trim().starts_with("font ");
+        let only_acts_on_the_words = ranked
+            .iter()
+            .all(|scored| is_query_act(scored.kind));
+        if looked_in && only_acts_on_the_words {
+            let acts = self.rank_candidates(&sources::fallback(query), query, now);
+            return Ok([ranked, acts].concat());
+        }
+
+        Ok(ranked)
     }
 
     /// The open windows, refreshed at most every couple of seconds.
@@ -301,9 +319,26 @@ impl Engine {
     }
 }
 
+/// Whether a result kind carries substance of its own or merely acts on
+/// the query.
+///
+/// A calculator value and a QR code of the typed words exist for *any*
+/// query; they are offers, not matches. The fallback fires only when the
+/// offers were all the search could scrape together.
+fn is_query_act(kind: CommandKind) -> bool {
+    matches!(
+        kind,
+        CommandKind::Calculator
+            | CommandKind::QrCode
+            | CommandKind::Regex
+            | CommandKind::Text
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use yal_core::action::ActionKind;
 
     #[test]
     fn ranks_candidates_by_query() {
@@ -331,6 +366,137 @@ mod tests {
             .collect();
         let results = engine.rank_candidates(&candidates, "item", Utc::now());
         assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn nothing_backed_offers_the_fallback_acts() {
+        // A gibberish query that nothing on the machine carries: the only
+        // offers are the generators that act on any words — and the
+        // fallback acts on the words themselves.
+        let mut engine = Engine::new();
+        let store = yal_store::Store::open_in_memory().unwrap();
+        let results = engine.search(&store, &[], "zqxjkw", Utc::now()).unwrap();
+
+        assert!(
+            results.iter().any(|scored| scored.kind == CommandKind::Fallback
+                && scored.item.title.starts_with("Search the web")),
+            "the web act should be among the fallback, got {:?}",
+            results.iter().map(|scored| scored.kind).collect::<Vec<_>>()
+        );
+        assert!(
+            results
+                .iter()
+                .all(|scored| is_query_act(scored.kind) || scored.kind == CommandKind::Fallback),
+            "fallback grade means nothing of the user's matched"
+        );
+    }
+
+    #[test]
+    fn the_address_fallback_joins_when_the_words_have_the_shape() {
+        let offered = sources::fallback("zqxhostsiteexample.com");
+        let address = offered
+            .iter()
+            .find(|candidate| candidate.item.id.0 == "fallback:address")
+            .expect("an address-shaped query should offer the address act");
+        assert_eq!(address.kind, CommandKind::Fallback);
+        let composed = match &address.item.action.as_ref().unwrap().target {
+            yal_core::action::OpenTarget::Url(url) => url.clone(),
+            other => panic!("the address act should open a url, not {other:?}"),
+        };
+        assert_eq!(composed, "https://zqxhostsiteexample.com");
+
+        let ordinary = sources::fallback("rust closures");
+        assert!(
+            ordinary
+                .iter()
+                .all(|candidate| candidate.item.id.0 != "fallback:address"),
+            "a sentence is not an address"
+        );
+    }
+
+    #[test]
+    fn prefix_searches_do_not_ask_the_web() {
+        let mut engine = Engine::new();
+        let store = yal_store::Store::open_in_memory().unwrap();
+        let results = engine
+            .search(&store, &[], "font zzzzqqxj", Utc::now())
+            .unwrap();
+        assert!(
+            results
+                .iter()
+                .all(|scored| scored.kind != CommandKind::Fallback),
+            "a prefix search with no match offers no fallback: {:?}",
+            results.iter().map(|scored| scored.kind).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn state_backed_results_keep_the_web_out() {
+        // When a real result matches, the fallback must not join it: the
+        // web act belonged to the nothing, not to the something.
+        let mut engine = Engine::new();
+        let store = yal_store::Store::open_in_memory().unwrap();
+        let file = yal_index::Discovered {
+            id: "app:test".into(),
+            name: "Zqxonly Wonderbrew".into(),
+            path: "C:/nowhere/wonderbrew.exe".into(),
+            source: yal_index::Source::StartMenu,
+            keywords: vec![],
+        };
+        let results = engine.search(&store, &[file], "wonderbrew", Utc::now()).unwrap();
+        assert!(
+            results.iter().all(|scored| scored.kind != CommandKind::Fallback),
+            "a matched application leaves the fallback out"
+        );
+    }
+
+    #[test]
+    fn state_backed_sources_carry_secondary_acts() {
+        let file = yal_index::Discovered {
+            id: "app:test".into(),
+            name: "Wonderbrew".into(),
+            path: "C:/nowhere/wonderbrew.exe".into(),
+            source: yal_index::Source::StartMenu,
+            keywords: vec![],
+        };
+        let apps = sources::applications(&[file]);
+        let kinds: Vec<_> = apps[0]
+            .item
+            .secondary_actions
+            .iter()
+            .map(|action| action.kind.clone())
+            .collect();
+        assert_eq!(
+            kinds,
+            vec![ActionKind::RevealInFileManager, ActionKind::CopyToClipboard],
+            "an application reveals its shortcut and copies its path"
+        );
+
+        let found = vec![yal_index::FoundFile {
+            name: "picture.png".into(),
+            path: "C:/pictures/picture.png".into(),
+            directory: "C:/pictures".into(),
+        }];
+        let files = sources::files(&found);
+        assert_eq!(files[0].item.secondary_actions.len(), 2);
+
+        let store = yal_store::Store::open_in_memory().unwrap();
+        store
+            .upsert_snippet(&yal_store::Snippet {
+                id: "s1".into(),
+                name: "Regards".into(),
+                keyword: "regr".into(),
+                expansion: "Best regards".into(),
+                created_at: Utc::now(),
+                updated_at: Utc::now(),
+            })
+            .unwrap();
+        let snippets = sources::snippets(&store).unwrap();
+        assert_eq!(
+            snippets[0].item.secondary_actions[0].kind,
+            ActionKind::CopyToClipboard,
+            "a snippet pastes by default; its panel offers the copy"
+        );
     }
 
     /// A scratch scripts folder holding one PowerShell script.

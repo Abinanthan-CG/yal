@@ -69,6 +69,12 @@ pub struct Item {
     pub icon: Option<Icon>,
     /// What to do when the item is chosen.
     pub action: Option<Action>,
+    /// Further acts offered in the secondary action panel.
+    ///
+    /// Primary action first — `action` carries it; everything here is an
+    /// extra the panel lists when asked for. An item with none simply can
+    /// never open the panel.
+    pub secondary_actions: Vec<Action>,
     /// Opaque payload carried through to the action executor.
     ///
     /// The domain layer does not interpret this. It exists so an item can
@@ -89,6 +95,7 @@ impl Item {
             accessories: Vec::new(),
             icon: None,
             action: None,
+            secondary_actions: Vec::new(),
             payload: None,
         }
     }
@@ -129,6 +136,12 @@ impl Item {
         self
     }
 
+    /// Add an act to the secondary action panel.
+    pub fn with_secondary_action(mut self, action: Action) -> Self {
+        self.secondary_actions.push(action);
+        self
+    }
+
     /// Set the opaque payload.
     pub fn with_payload(mut self, payload: serde_json::Value) -> Self {
         self.payload = Some(payload);
@@ -141,5 +154,34 @@ impl Item {
     /// separately so that a hidden alias can never outrank a visible title.
     pub fn search_terms(&self) -> impl Iterator<Item = &str> {
         self.keywords.iter().map(String::as_str)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::action::ActionKind;
+
+    #[test]
+    fn secondary_actions_keep_their_order() {
+        let item = Item::new("a picture")
+            .with_action(Action::open_path("C:\\a\\picture.png"))
+            .with_secondary_action(Action::reveal("C:\\a\\picture.png"))
+            .with_secondary_action(Action::copy("C:\\a\\picture.png"));
+
+        assert_eq!(item.secondary_actions.len(), 2);
+        assert_eq!(
+            item.secondary_actions[0].kind,
+            ActionKind::RevealInFileManager,
+            "the first secondary added is the first offered"
+        );
+        assert_eq!(item.secondary_actions[1].kind, ActionKind::CopyToClipboard);
+        // The primary act is untouched by the panel: the same call as ever.
+        assert_eq!(item.action.unwrap().kind, ActionKind::OpenPath);
+    }
+
+    #[test]
+    fn a_plain_item_opens_no_panel() {
+        assert!(Item::new("bare").secondary_actions.is_empty());
     }
 }

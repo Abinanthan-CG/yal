@@ -63,11 +63,24 @@ per wave and recorded with the wave.
   over the CLI with filters. Lives under the `font ` prefix with Enter copying
   the family name; the palette does not yet render a family's name *in* that
   family, which the target's font pane does.
-- **No fallback queries:** the target offers an app-wide fallback (a choice act
-  when nothing matches); the build offers none. Related to the absent
-  secondary-action surface above.
-- **One action per result:** confirmed by reading the UI this audit — there
-  is no Cmd+K-style second list anywhere in the palette.
+- **Secondary action menu + app-wide fallback:** ~~no fallback queries~~ and
+  ~~one action per result~~ — both done as one Oct-2026 wave. Every result
+  with a second act now offers a panel opened with `Ctrl+K`
+  (applications, files, quicklinks, snippets, scripts and clipboard entries
+  carry secondaries; on clipboard entries the act removes the entry from
+  the history via a new per-entry store delete). The web-search candidate
+  is no longer an always-ranked row: it became the fallback act, offered
+  under "Nothing matched" — together with "open it as an address" when the
+  words have that shape — only when nothing the user keeps matched and the
+  offers were all query-act generators (QR code, regex, calculator, text
+  transforms). Recorded honestly: on this build machine's store the seeded
+  quicklink templates match every query through their filled URLs, so they
+  play the fallback in practice and the fallback section stays out of the
+  way; the surface exists for fresh stores and for stores without seeds.
+  The window list keeps one candidate per act rather than folding acts
+  into a panel — a design choice that keeps window acts searchable and is
+  still open to revisiting. The panel's drawing and key path, like the
+  preferences pane's, have not yet been driven by a live hand.
 
 ## Order recommended by this audit
 
@@ -82,9 +95,10 @@ Soonest-first by scope, highest leverage:
    with a repaint wake.
 3. ~~Full Unicode emoji dataset~~ — done: 1,906 entries generated from Unicode
    upstream with Vicinae's keyword approach; see the emoji row above.
-4. Secondary action menu — a design wave: one surface improves parity for
-   quicklinks, files, processes, windows at once, and enables the app-wide
-   fallback act.
+4. ~~Secondary action menu + app-wide fallback~~ — done as one wave: the
+   `Ctrl+K` panel beside the selected row and the "Nothing matched"
+   fallback section; the interplay with the seeded search templates and
+   the unfolded window acts are recorded in the gaps list above.
 5. Notes in the local store — reminders' pattern again: local, no Apple
    counterpart on Windows, parser-less so simpler.
 6. Area/window screenshot — screen sampling exists in the shape of the

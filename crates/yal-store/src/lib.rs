@@ -474,6 +474,12 @@ impl Store {
         Ok(())
     }
 
+    /// Remove one entry from the clipboard history.
+    pub fn delete_clipboard(&self, id: i64) -> StoreResult<()> {
+        self.conn.execute("DELETE FROM clipboard WHERE id = ?1", params![id])?;
+        Ok(())
+    }
+
     // ---- application index ----------------------------------------------
 
     /// Insert or replace an indexed application.
@@ -651,6 +657,38 @@ mod tests {
         let history = store.clipboard(100).unwrap();
         assert_eq!(history.len(), 5);
         assert_eq!(history[0].text, "entry 9");
+    }
+
+    #[test]
+    fn one_clipboard_entry_can_be_removed() {
+        let store = store();
+        let base = Utc::now();
+        for index in 0..3 {
+            store
+                .push_clipboard(
+                    &ClipboardEntry {
+                        id: 0,
+                        text: format!("entry {index}"),
+                        kind: ClipboardKind::Text,
+                        source_app: None,
+                        created_at: base + chrono::Duration::seconds(index),
+                    },
+                    10,
+                )
+                .unwrap();
+        }
+
+        let doomed = store.clipboard(100).unwrap()[1].clone();
+        store.delete_clipboard(doomed.id).unwrap();
+
+        let left = store.clipboard(100).unwrap();
+        assert_eq!(left.len(), 2);
+        assert!(
+            left.iter().all(|entry| entry.text != doomed.text),
+            "the removed entry is gone, its neighbours stay"
+        );
+        // Removing an absent id is honest, not an error.
+        assert!(store.delete_clipboard(999_999).is_ok());
     }
 
     #[test]

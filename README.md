@@ -49,6 +49,8 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Regular expressions** | Matched with capture groups. |
 | **Emoji** | The full Unicode catalogue - 1,906 entries, generated from Unicode's emoji-test.txt with the CLDR annotations - searchable by name, keyword and meaning; flags and ZWJ sequences included. |
 | **Fonts** | Every installed font family, under the `font ` prefix, with `Enter` copying the family name. The palette draws its own interface in its own font, so a family's look is described, not rendered. |
+| **Secondary acts** | `Ctrl+K` on a result that carries more acts opens a panel beside its row: an application reveals its shortcut or copies its path, a snippet also offers the plain copy, a clipboard entry can be removed from the history, a script reveals its file. The first act stays `Enter`. |
+| **When nothing matched** | A query that matched nothing of the user's - only the offers that act on any words - becomes a fallback section: search the web for it, or open it as an address when it has that shape. With the bundled search templates seeded, those rows play the fallback for this store and the section stays out of the way. |
 | **Colours** | Named, hexadecimal, RGB and HSL, both ways. |
 | **Passwords** | Generated to length and character-class rules. |
 | **Time zones** | Every IANA zone with its current offset. |
