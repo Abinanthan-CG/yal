@@ -299,3 +299,18 @@ Two boundaries were held deliberately:
 
 REA was used to produce the observations. See the evidence index in the
 ledger.
+
+---
+
+## License and provenance
+
+The project is licensed **GPL-3.0-only**. It began under
+`MIT OR Apache-2.0`; when the licensing posture changed (October 2026), the
+sole author relicensed their own code — see the reason below.
+
+Code may be derived from [Vicinae](https://github.com/vicinaehq/vicinae)
+(GPL-3.0): where a file is derived from it, the file's header says so, and
+the port is recorded in [the parity audit](docs/parity.md). The proprietary
+product observed in the ledger is **not** a code source, published or
+decompiled — its provenance rule (§6.2 of the ledger) is unchanged; it
+remains an observation target and a published-contract reference only.

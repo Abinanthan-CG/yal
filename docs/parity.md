@@ -19,6 +19,11 @@ sync/account, the extension runtime (deferred, slot reserved), and any
 network fetch, per the requester and clean-room rules. Nothing below
 re-argues those.
 
+Posture note (October 2026): the project is now GPL-3.0-only, so gaps below
+may be filled by porting from [Vicinae](https://github.com/vicinaehq/vicinae)
+(§6.3 of the ledger) or by reading its published docs — the method is chosen
+per wave and recorded with the wave.
+
 ## The recount
 
 | Ledger area (§5) | Status | Evidence and missing slice |

@@ -238,6 +238,15 @@ Agreed with the requester:
 - Reusing the target's published SDK implementation. Its *published* type
   surface may inform the domain model, but no code is copied.
 
+### 6.3 Sources permitted after October 2026
+
+The project relicensed to GPL-3.0-only in October 2026 to permit
+derivation from open-source launchers. [Vicinae](https://github.com/vicinaehq/vicinae)
+is the first such source: its code may be ported into this project under
+its GPL-3.0 terms, with derived files marked at the top and the parity
+audit noting the port. The rule above for the proprietary target —
+observation only, no decompilation ever — does not change.
+
 ---
 
 ## 7. Evidence index
