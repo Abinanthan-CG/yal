@@ -85,6 +85,8 @@ pub enum CommandKind {
     /// The fallback surface: the words are not a result, they are material
     /// for a next step chosen deliberately.
     Fallback,
+    /// The user's notes, kept in the local store.
+    Notes,
     /// A third-party extension.
     ///
     /// Reserved. No extension runtime ships in this milestone
@@ -123,6 +125,7 @@ impl CommandKind {
             CommandKind::Scripts => "Script Commands",
             CommandKind::Fonts => "Fonts",
             CommandKind::Fallback => "Nothing matched",
+            CommandKind::Notes => "Notes",
             CommandKind::Extension => "Extensions",
         }
     }

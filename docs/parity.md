@@ -42,7 +42,7 @@ per wave and recorded with the wave.
 | Colour picker / converter | Partial | Conversion both ways (named, hex, RGB, HSL) with tests; the screen eyedropper — pick a colour off the screen — is absent. |
 | Currency / unit conversion | Built | Units full; currencies static by design (offline rule), vintage recorded. |
 | Date & time | Partial | Time zones by IANA name with live offsets, date arithmetic in the calculator; The target's calendar command (reading one's events) is a design question this build has not taken. |
-| Bookmarks / notes | Partial | Bookmarks built and searchable together with quicklinks; note-taking is absent — a local store question, designable like reminders. |
+| Bookmarks / notes | **Built** | Bookmarks built and searchable together with quicklinks; the note-taking gap closed as an Oct-2026 wave — `note <text>` from the palette or the CLI, one record interpretation shared by both, listed newest first, copied with Enter, removed from the secondary panel (and `yal note-remove`). The reminders' key pattern (`note:<id>` in settings), no parser needed. |
 | QR generation | Built | `yal-data::qr`, rendered in the palette and by `yal qr`. |
 | Password generation | Built | Length and character-class rules. |
 | Regular expressions | Built | Capture groups shown. |
@@ -99,8 +99,9 @@ Soonest-first by scope, highest leverage:
    `Ctrl+K` panel beside the selected row and the "Nothing matched"
    fallback section; the interplay with the seeded search templates and
    the unfolded window acts are recorded in the gaps list above.
-5. Notes in the local store — reminders' pattern again: local, no Apple
-   counterpart on Windows, parser-less so simpler.
+5. ~~Notes in the local store~~ — done: the reminders' pattern again; listed
+   newest first, copied, removed; no parser because a note needs nothing
+   but its text. See the bookmarks/notes row above.
 6. Area/window screenshot — screen sampling exists in the shape of the
    framebuffer read; needs the region-selection interaction.
 7. Colour eyedropper — same screen-read foundation.

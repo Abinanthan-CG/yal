@@ -293,6 +293,121 @@ pub fn emoji(query: &str, limit: usize) -> Vec<Candidate> {
         .collect()
 }
 
+/// A note read out of the stored settings.
+pub struct SavedNote {
+    /// The identifier, as stored under `note:<id>`.
+    pub id: String,
+    /// What the note says, possibly over several lines.
+    pub text: String,
+    /// When the note was taken.
+    pub created_at: DateTime<Utc>,
+}
+
+/// Decode the notes stored in settings.
+///
+/// The one interpretation of a stored note record, shared by the engine's
+/// listing, the CLI and the palette's task that takes one.
+pub fn saved_notes(store: &Store) -> yal_store::StoreResult<Vec<SavedNote>> {
+    let mut found = Vec::new();
+    for (key, value) in store.settings()? {
+        let Some(id) = key.strip_prefix("note:") else {
+            continue;
+        };
+        if value.is_empty() {
+            continue;
+        }
+        let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&value) else {
+            continue;
+        };
+        let Some(text) = parsed.get("text").and_then(|text| text.as_str()) else {
+            continue;
+        };
+        let Some(created_at) = parsed
+            .get("created_at")
+            .and_then(|at| at.as_i64())
+            .and_then(|timestamp| DateTime::<Utc>::from_timestamp(timestamp, 0))
+        else {
+            continue;
+        };
+        found.push(SavedNote {
+            id: id.to_string(),
+            text: text.to_string(),
+            created_at,
+        });
+    }
+    Ok(found)
+}
+
+/// Build candidates for the notes, newest first.
+///
+/// The note's first line is the title; when the note carries more lines
+/// the rest rides in the subtitle. The primary act copies the whole text
+/// — a note is written to be taken somewhere — and the panel removes it.
+pub fn notes(store: &Store) -> yal_store::StoreResult<Vec<Candidate>> {
+    let mut found = saved_notes(store)?;
+    found.sort_by_key(|note| note.created_at);
+    found.reverse();
+    Ok(found
+        .into_iter()
+        .map(|note| {
+            let first = first_line(&note.text);
+            let rest: String = note
+                .text
+                .lines()
+                .skip(1)
+                .collect::<Vec<_>>()
+                .join(" ");
+            let subtitle = if rest.is_empty() {
+                note.created_at
+                    .with_timezone(&chrono::Local)
+                    .format("taken %d %b %H:%M")
+                    .to_string()
+            } else {
+                format!(
+                    "{} — {}",
+                    rest,
+                    note.created_at
+                        .with_timezone(&chrono::Local)
+                        .format("taken %d %b %H:%M")
+                )
+            };
+            let text = note.text.clone();
+            Candidate::new(
+                Item::new(first)
+                    .with_id(format!("note:{}", note.id))
+                    .with_subtitle(subtitle)
+                    .with_keyword("notes")
+                    .with_action(Action::copy(text))
+                    .with_secondary_action(Action::task(
+                        "note-remove",
+                        vec![note.id.clone()],
+                    )),
+                CommandKind::Notes,
+            )
+        })
+        .collect())
+}
+
+/// The note candidate for a query like `note pick up the print out`.
+///
+/// There is no parser: a reminder needs its due time, a note needs
+/// nothing but its text. `None` when the query is not a note at all.
+pub fn note_specification(query: &str) -> Option<Candidate> {
+    let rest = query.strip_prefix("note ")?.trim();
+    if rest.is_empty() {
+        return None;
+    }
+    let text = rest.to_string();
+    Some(Candidate::new(
+        Item::new(first_line(&format!("Take a note — {text}")))
+            .with_id("note:new".to_string())
+            .with_subtitle("kept in the local store; listed among the notes")
+            .with_keyword("note")
+            .with_action(Action::task("note-add", vec![text])),
+        CommandKind::Notes,
+    ))
+}
+
 /// Build the QR code candidate for a query.
 ///
 /// The rendered PNG travels in the item payload so the palette can draw it
@@ -1199,6 +1314,78 @@ mod tests {
     fn a_query_that_is_not_a_reminder_offers_no_creation() {
         assert!(reminder_specification("remind me later", Utc::now()).is_none());
         assert!(reminder_specification("reset the router", Utc::now()).is_none());
+    }
+
+    #[test]
+    fn a_note_needs_only_its_text() {
+        let candidate = note_specification("note pick up the print out").unwrap();
+        assert_eq!(candidate.kind, CommandKind::Notes);
+        assert!(candidate.item.title.contains("Take a note"));
+        let action = candidate.item.action.as_ref().unwrap();
+        assert_eq!(action.kind, yal_core::action::ActionKind::LauncherTask);
+        let yal_core::action::OpenTarget::Task { name, arguments } = &action.target else {
+            panic!("the note candidate should carry the note task");
+        };
+        assert_eq!(name, "note-add");
+        assert_eq!(arguments[0], "pick up the print out");
+    }
+
+    #[test]
+    fn a_query_that_is_not_a_note_offers_no_creation() {
+        assert!(note_specification("not really a note").is_none());
+        assert!(note_specification("note ").is_none());
+    }
+
+    #[test]
+    fn stored_notes_surface_newest_first_with_a_remove_act() {
+        let store = Store::open_in_memory().unwrap();
+        let now = Utc::now();
+        for (text, minutes) in [("older note", 60), ("newest note", 5)] {
+            let record = serde_json::json!({
+                "text": text,
+                "created_at": (now - chrono::Duration::minutes(minutes)).timestamp(),
+            });
+            store
+                .set_setting(&format!("note:test-{text}"), &record.to_string())
+                .unwrap();
+        }
+
+        let notes = notes(&store).unwrap();
+        assert_eq!(notes.len(), 2);
+        assert_eq!(notes[0].item.title, "newest note", "newest first");
+        assert_eq!(
+            notes[0].item.action.as_ref().unwrap().kind,
+            yal_core::action::ActionKind::CopyToClipboard
+        );
+        assert_eq!(
+            notes[0].item.secondary_actions[0].kind,
+            yal_core::action::ActionKind::LauncherTask,
+            "the panel offers the removal"
+        );
+    }
+
+    #[test]
+    fn a_multiline_note_tits_itself_by_its_first_line() {
+        let store = Store::open_in_memory().unwrap();
+        let record = serde_json::json!({
+            "text": "shopping list\neggs\nmilk",
+            "created_at": Utc::now().timestamp(),
+        });
+        store.set_setting("note:shopping", &record.to_string()).unwrap();
+
+        let notes = notes(&store).unwrap();
+        assert_eq!(notes[0].item.title, "shopping list");
+        assert!(
+            notes[0].item.subtitle.as_deref().unwrap().contains("eggs milk"),
+            "the later lines ride in the subtitle"
+        );
+        // The copy act carries the WHOLE note, not its first line.
+        let yal_core::action::OpenTarget::Text(text) =
+            &notes[0].item.action.as_ref().unwrap().target
+        else {
+            panic!("the note's act should copy text");
+        };
+        assert_eq!(text, "shopping list\neggs\nmilk");
     }
 
     #[test]

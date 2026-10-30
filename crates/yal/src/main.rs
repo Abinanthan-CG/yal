@@ -318,6 +318,23 @@ enum Command {
         id: String,
     },
 
+    /// Take a note into the local store.
+    ///
+    /// A reminder needs its due time; a note needs nothing but its text.
+    Note {
+        /// What the note says. Quote it, so spaces survive.
+        text: String,
+    },
+
+    /// List the notes in the local store, newest first.
+    Notes,
+
+    /// Remove a note.
+    NoteRemove {
+        /// The identifier from `yal notes`.
+        id: String,
+    },
+
     /// Apply a text transform, such as `upper` or `base64encode`.
     Transform {
         /// The transform slug; `yal transforms` lists them.
@@ -1344,6 +1361,39 @@ fn run(cli: &Cli) -> Result<()> {
             let store = open_store(cli)?;
             store.clear_setting(&format!("reminder:{id}"))?;
             println!("reminder {id} completed");
+        }
+
+        Command::Note { text } => {
+            let store = open_store(cli)?;
+            let id = chrono::Utc::now().timestamp_millis().to_string();
+            let record = serde_json::json!({
+                "text": text,
+                "created_at": chrono::Utc::now().timestamp(),
+            });
+            store.set_setting(&format!("note:{id}"), &record.to_string())?;
+            println!("note {id} taken");
+        }
+
+        Command::Notes => {
+            let store = open_store(cli)?;
+            let mut notes = yal_engine::sources::saved_notes(&store)?;
+            notes.sort_by_key(|note| note.created_at);
+            notes.reverse();
+            for note in &notes {
+                let taken = note
+                    .created_at
+                    .with_timezone(&chrono::Local)
+                    .format("%d %b %H:%M");
+                let first = note.text.lines().next().unwrap_or("");
+                println!("{:<20} {:<18} {first}", note.id, taken);
+            }
+            println!("{} notes", notes.len());
+        }
+
+        Command::NoteRemove { id } => {
+            let store = open_store(cli)?;
+            store.clear_setting(&format!("note:{id}"))?;
+            println!("note {id} removed");
         }
 
         Command::Transform { slug, text } => {

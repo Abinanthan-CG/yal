@@ -716,6 +716,25 @@ impl Palette {
                     .clear_setting(&format!("reminder:{id}"))
                     .map_err(|err| err.to_string())
             }
+            "note-add" => {
+                let text = arguments
+                    .first()
+                    .ok_or_else(|| "the note text is missing".to_string())?;
+                let id = chrono::Utc::now().timestamp_millis().to_string();
+                let record = serde_json::json!({
+                    "text": text,
+                    "created_at": chrono::Utc::now().timestamp(),
+                });
+                self.store
+                    .set_setting(&format!("note:{id}"), &record.to_string())
+                    .map_err(|err| err.to_string())
+            }
+            "note-remove" => {
+                let id = head.ok_or_else(|| "the note identifier is missing".to_string())?;
+                self.store
+                    .clear_setting(&format!("note:{id}"))
+                    .map_err(|err| err.to_string())
+            }
             "script" => {
                 // Arguments: the script's path, then its mode slug. The run
                 // happens in a thread the palette does not wait on, so a
