@@ -35,7 +35,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
 | **Files** | Search your documents, desktop and downloads; pictures get a preview and their photo metadata (EXIF, JPEG). |
 | **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or place it: halves, quarters, thirds, centre or the full screen. |
-| **Script commands** | The little programs you keep in `~\\.yal\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted. |
+| **Script commands** | The little programs you keep in `~\\.yal\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted - and with `@mode full` the whole output is kept on the clipboard and drawn inside the palette, where `C` copies it again and `Esc` returns to the search you left behind. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
 | **Kill process** | The running processes, heaviest first; end one from the list. |
 | **System commands** | Lock, sleep, shutdown, restart, log out, empty the recycle bin. |
@@ -47,7 +47,8 @@ Press the palette, type a few characters, and get the thing you meant.
 | **QR codes** | Generated from any text and shown in the palette. |
 | **One-time passwords** | RFC 6238 codes with a live countdown. |
 | **Regular expressions** | Matched with capture groups. |
-| **Emoji** | 363 entries, searchable by name and by meaning. |
+| **Emoji** | The full Unicode catalogue - 1,906 entries, generated from Unicode's emoji-test.txt with the CLDR annotations - searchable by name, keyword and meaning; flags and ZWJ sequences included. |
+| **Fonts** | Every installed font family, under the `font ` prefix, with `Enter` copying the family name. The palette draws its own interface in its own font, so a family's look is described, not rendered. |
 | **Colours** | Named, hexadecimal, RGB and HSL, both ways. |
 | **Passwords** | Generated to length and character-class rules. |
 | **Time zones** | Every IANA zone with its current offset. |

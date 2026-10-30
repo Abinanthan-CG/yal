@@ -34,7 +34,7 @@ per wave and recorded with the wave.
 | Clipboard history | Partial | Background watcher keeps text history searchable; image entries are detected but not stored (yal-system/clipboard reads text only). |
 | Calculator | Built | Arithmetic, units, static currencies with recorded vintage, dates; verified against test vectors. |
 | Snippets / text expansion | Built, verified | Live once end to end: expansion typed into Notepad after a focus check, clipboard fallback on refusal. |
-| Emoji picker | Partial | 363 curated entries with meaning keywords; the target ships the full Unicode set. Mechanical gap, no design needed. |
+| Emoji picker | **Built** | Oct-2026 wave. The full Unicode 16.0 fully-qualified catalogue — 1,906 entries — generated at build time from Unicode's `emoji-test.txt` plus the CLDR English annotations, with Vicinae's keyword-building algorithm ported (`gen/emoji-gen.mjs`, GPL-cited; §6.3). Live: the doctor reports `emoji 1906`. |
 | Quicklinks | Built | `{query}` templates plus bundled search domains. |
 | Screenshots | Partial | Whole-primary-screen framebuffer read (`yal screenshot`,
   screenshot.rs); the target's area-select and per-window capture are absent. |
@@ -52,9 +52,17 @@ per wave and recorded with the wave.
 
 ## Gaps the ledger does not list, checked in code
 
-- **Script full output in the palette:** `compact`/`silent` toast as designed;
-  `full` copies the output with a toast naming it. the target shows the output
-  inside its window. Self-contained UI slice.
+- **Script full output in the palette:** ~~`compact`/`silent` toast as designed;
+  `full` copies the output with a toast naming it; the target shows the output
+  inside its window.~~ Done as an Oct-2026 wave: a `full` script's whole output
+  is now drawn in an overlay above the search (clipboard keeps its copy duty,
+  `C` copies again, `Esc`/`Enter` return to the list), with the palette brought
+  back if it had parked while the script ran.
+- **Fonts (Vicinae-inspired, not ported):** built from GDI's
+  `EnumFontFamiliesExW` enumeration — 233 families on the build machine, live-verified
+  over the CLI with filters. Lives under the `font ` prefix with Enter copying
+  the family name; the palette does not yet render a family's name *in* that
+  family, which the target's font pane does.
 - **No fallback queries:** the target offers an app-wide fallback (a choice act
   when nothing matches); the build offers none. Related to the absent
   secondary-action surface above.
@@ -69,9 +77,11 @@ Soonest-first by scope, highest leverage:
    preset set (quarters, thirds, centre), geometry extracted into one pure,
    tested function and verified live by reading the moved window's rectangle
    back; see the window-management row above.
-2. Show script `full` output inside the palette — small, before any new surfaces.
-3. Full Unicode emoji dataset — mechanical, offline, removes the curious
-   smallness of the picker.
+2. ~~Show script `full` output inside the palette~~ — done: overlay sheet above
+   the search, delivered from the script thread through the palette channel
+   with a repaint wake.
+3. ~~Full Unicode emoji dataset~~ — done: 1,906 entries generated from Unicode
+   upstream with Vicinae's keyword approach; see the emoji row above.
 4. Secondary action menu — a design wave: one surface improves parity for
    quicklinks, files, processes, windows at once, and enables the app-wide
    fallback act.
