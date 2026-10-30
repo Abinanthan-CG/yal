@@ -43,6 +43,8 @@ pub struct Engine {
     tab_cache: Option<(DateTime<Utc>, Vec<yal_system::tabs::BrowserTab>)>,
     /// The last process snapshot, and when it was taken.
     process_cache: Option<(DateTime<Utc>, Vec<yal_system::processes::Running>)>,
+    /// The last font-family enumeration, and when it was taken.
+    font_cache: Option<(DateTime<Utc>, Vec<yal_system::fonts::FontFamily>)>,
 }
 
 impl Default for Engine {
@@ -61,6 +63,7 @@ impl Engine {
             window_cache: None,
             tab_cache: None,
             process_cache: None,
+            font_cache: None,
         }
     }
 
@@ -173,6 +176,10 @@ impl Engine {
             let tabs = self.open_tabs(now);
             candidates.extend(sources::browser_tabs(&tabs, needle.trim(), 30));
         }
+        if let Some(needle) = trimmed.strip_prefix("font ") {
+            let families = self.font_families(now);
+            candidates.extend(sources::fonts(&families, needle.trim(), 20));
+        }
 
         candidates.extend(sources::timers(store, now)?);
         candidates.extend(sources::reminders(store, now)?);
@@ -249,6 +256,23 @@ impl Engine {
         let running = yal_system::processes::running();
         self.process_cache = Some((now, running.clone()));
         running
+    }
+
+    /// The installed font families, refreshed like the window list.
+    ///
+    /// The install state of fonts does not change within a session the
+    /// way a running process list does, but caching uniformly (with the
+    /// same TTL) keeps one rule for "expensive host state".
+    fn font_families(&mut self, now: DateTime<Utc>) -> Vec<yal_system::fonts::FontFamily> {
+        const TTL_SECONDS: i64 = 3;
+        if let Some((at, families)) = &self.font_cache {
+            if (now - *at).num_seconds() < TTL_SECONDS {
+                return families.clone();
+            }
+        }
+        let families = yal_system::fonts::families();
+        self.font_cache = Some((now, families.clone()));
+        families
     }
 
     /// Rank candidates by how often they are used, then by title.

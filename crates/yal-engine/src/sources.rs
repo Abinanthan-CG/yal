@@ -296,6 +296,41 @@ pub fn qr_code(query: &str) -> Option<Candidate> {
     Some(Candidate::new(item, CommandKind::QrCode))
 }
 
+/// Build candidates for the installed font families.
+///
+/// The family name is what a font-choosing program asks for, so copying it
+/// is the one action that cannot disappoint. The subtitle carries a preview
+/// phrase: the palette draws it in its own font (a limitation stated in the
+/// README), so the phrase is here as what the family will look like when
+/// the user later applies it, not as a rendering.
+pub fn fonts(
+    families: &[yal_system::fonts::FontFamily],
+    query: &str,
+    limit: usize,
+) -> Vec<Candidate> {
+    families
+        .iter()
+        .filter(|font| {
+            if query.is_empty() {
+                return true;
+            }
+            let needle = query.to_lowercase();
+            font.family.to_lowercase().contains(&needle)
+        })
+        .take(limit)
+        .map(|font| {
+            Candidate::new(
+                Item::new(font.family.clone())
+                    .with_id(format!("font:{}", font.family))
+                    .with_subtitle("the quick brown fox jumps over the lazy dog · Enter copies the name")
+                    .with_keyword(format!("font {}", font.family.to_lowercase()))
+                    .with_action(Action::copy(font.family.clone())),
+                CommandKind::Fonts,
+            )
+        })
+        .collect()
+}
+
 /// Build the one-time password candidate for a query.
 ///
 /// The query is a base32 secret. The subtitle carries the seconds remaining

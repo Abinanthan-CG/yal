@@ -228,6 +228,13 @@ enum Command {
         query: String,
     },
 
+    /// List the installed font families.
+    Fonts {
+        /// A family name to look for.
+        #[arg(default_value = "")]
+        query: String,
+    },
+
     /// Show a toast notification.
     Notice {
         /// The heading.
@@ -1090,6 +1097,21 @@ fn run(cli: &Cli) -> Result<()> {
                 }
             }
             println!("{} tabs", tabs.len());
+        }
+
+        Command::Fonts { query } => {
+            let families = yal_system::fonts::families();
+            let needle = query.to_lowercase();
+            let shown: Vec<_> = families
+                .iter()
+                .filter(|font| {
+                    needle.is_empty() || font.family.to_lowercase().contains(&needle)
+                })
+                .collect();
+            for font in &shown {
+                println!("{}", font.family);
+            }
+            println!("{} font families of {}", shown.len(), families.len());
         }
 
         Command::Notice { title, body, app_id } => {

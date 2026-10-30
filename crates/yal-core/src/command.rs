@@ -78,6 +78,8 @@ pub enum CommandKind {
     Reminders,
     /// The user's script commands, run from their scripts folder.
     Scripts,
+    /// The installed font families.
+    Fonts,
     /// A third-party extension.
     ///
     /// Reserved. No extension runtime ships in this milestone
@@ -114,6 +116,7 @@ impl CommandKind {
             CommandKind::Timer => "Timers",
             CommandKind::Reminders => "Reminders",
             CommandKind::Scripts => "Script Commands",
+            CommandKind::Fonts => "Fonts",
             CommandKind::Extension => "Extensions",
         }
     }
