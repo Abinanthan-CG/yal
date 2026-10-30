@@ -35,6 +35,20 @@ pub enum PaletteMessage {
     /// Something due could not be toasted; the palette is asked to raise
     /// its own banner, which cannot fail.
     Ring(String),
+    /// A script in `full` mode finished; its output is delivered to the
+    /// palette instead of only living in the clipboard.
+    Script(ScriptAnnouncement),
+}
+
+/// A script's full output, shown inside the palette.
+#[derive(Debug, Clone)]
+pub struct ScriptAnnouncement {
+    /// The script's title.
+    pub title: String,
+    /// The whole output, or a note that there was none.
+    pub text: String,
+    /// Whether the script exited non-zero.
+    pub failed: bool,
 }
 
 /// The palette application.
@@ -83,6 +97,11 @@ pub struct Palette {
     recording_hotkey: bool,
     /// The scripts folder path being edited in the preferences pane.
     scripts_draft: String,
+    /// A script's full output, shown on top of the search while present.
+    script_outcome: Option<ScriptAnnouncement>,
+    /// The frame context, remembered so background threads can wake the
+    /// palette when they have something to show.
+    frame_ctx: Option<egui::Context>,
 }
 
 /// What the palette is showing.
@@ -182,6 +201,8 @@ impl Palette {
             theme: Theme::System,
             recording_hotkey: false,
             scripts_draft: String::new(),
+            script_outcome: None,
+            frame_ctx: None,
         };
         palette.theme = palette
             .store
@@ -655,7 +676,11 @@ impl Palette {
                     .map(String::as_str)
                     .unwrap_or("compact")
                     .to_string();
-                std::thread::spawn(move || finish_script(&path, &mode));
+                let sender = self.sender.clone();
+                let frame_ctx = self.frame_ctx.clone();
+                std::thread::spawn(move || {
+                    finish_script(&path, &mode, sender, frame_ctx)
+                });
                 Ok(())
             }
             unknown => {
@@ -813,10 +838,19 @@ fn toast_or_err(title: &str, body: &str) -> Result<(), String> {
 ///
 /// Called from a thread the palette does not wait on, so the window
 /// stays responsive while the script runs. `compact` mode toasts what
-/// happened; `full` mode additionally puts the output on the clipboard.
+/// happened; `full` mode additionally delivers the whole output to the
+/// palette — where it is shown on top of the search — with the clipboard
+/// as the copy the user can paste elsewhere. When both transports share
+/// the same content, the palette is the readable one and the clipboard
+/// keeps its paste-elsewhere duty.
 /// The toast declaring an unreadable runner honestly reports the refusal
 /// the machine gives.
-fn finish_script(path: &str, mode: &str) {
+fn finish_script(
+    path: &str,
+    mode: &str,
+    sender: Sender<PaletteMessage>,
+    frame_ctx: Option<egui::Context>,
+) {
     let full_path = std::path::PathBuf::from(path);
     let named = yal_system::scripts::read(&full_path);
     let title = named
@@ -834,6 +868,17 @@ fn finish_script(path: &str, mode: &str) {
     match outcome {
         Err(reason) => {
             let _ = yal_system::notify::toast(&title, &reason);
+            if mode == "full" {
+                deliver_script(
+                    sender,
+                    frame_ctx,
+                    ScriptAnnouncement {
+                        title: title.clone(),
+                        text: reason,
+                        failed: true,
+                    },
+                );
+            }
         }
         Ok(output) => {
             let stdout = String::from_utf8_lossy(&output.stdout);
@@ -848,13 +893,26 @@ fn finish_script(path: &str, mode: &str) {
                 };
                 if !combined.is_empty() {
                     // Full output mode: the launcher keeps the whole thing in the
-                    // clipboard; the toast summarizes it.
+                    // clipboard; the palette shows it.
                     if let Ok(mut clipboard) =
                         yal_system::clipboard::Clipboard::new()
                     {
                         let _ = clipboard.write_text(&combined);
                     }
                 }
+                deliver_script(
+                    sender,
+                    frame_ctx,
+                    ScriptAnnouncement {
+                        title: title.clone(),
+                        text: if combined.is_empty() {
+                            "(the script wrote nothing)".to_string()
+                        } else {
+                            combined
+                        },
+                        failed: failure,
+                    },
+                );
             }
 
             // The toast's second line shows one line of what the script
@@ -874,6 +932,18 @@ fn finish_script(path: &str, mode: &str) {
             let state = if failure { "failed" } else { "finished" };
             let _ = yal_system::notify::toast(&format!("{title} {state}"), &words);
         }
+    }
+}
+
+/// Hand a script's output to the palette and wake its frame loop.
+fn deliver_script(
+    sender: Sender<PaletteMessage>,
+    frame_ctx: Option<egui::Context>,
+    announcement: ScriptAnnouncement,
+) {
+    let _ = sender.send(PaletteMessage::Script(announcement));
+    if let Some(ctx) = frame_ctx {
+        ctx.request_repaint();
     }
 }
 
@@ -1108,10 +1178,24 @@ impl eframe::App for Palette {
                         self.show(ctx);
                     }
                 }
+                PaletteMessage::Script(announcement) => {
+                    // A full-mode script finished with output: show it on
+                    // top of the search, bringing the palette back if it
+                    // had parked while the script ran.
+                    self.script_outcome = Some(announcement);
+                    if !self.visible {
+                        self.show(ctx);
+                    }
+                }
             }
         }
 
         let palette_style = PaletteStyle::new(self.theme_dark(ctx));
+
+        // Remembered for the script threads: they cannot wake the frame
+        // loop without it, and without the wake the output would arrive
+        // only after the next unrelated repaint.
+        self.frame_ctx = Some(ctx.clone());
 
         ctx.style_mut(|visuals| {
             visuals.visuals.window_fill = palette_style.background;
@@ -1130,6 +1214,7 @@ impl eframe::App for Palette {
         let mut move_up = false;
         let mut activate = false;
         let mut dismiss = false;
+        let mut copy_outcome = false;
 
         ctx.input_mut(|input| {
             if input.key_pressed(Key::ArrowDown) {
@@ -1143,6 +1228,9 @@ impl eframe::App for Palette {
             }
             if input.key_pressed(Key::Escape) {
                 dismiss = true;
+            }
+            if self.script_outcome.is_some() && input.key_pressed(Key::C) {
+                copy_outcome = true;
             }
             // While the preferences pane waits for a hotkey, the first
             // key pressed together with a modifier becomes it. Escape
@@ -1175,6 +1263,26 @@ impl eframe::App for Palette {
                 }
             }
         });
+
+        // While a script's full output is on screen the keys belong to it:
+        // C copies, Enter and Escape close the sheet back to the search the
+        // user left behind. The results underneath are not driven.
+        if self.script_outcome.is_some() {
+            if copy_outcome {
+                if let Some(outcome) = &self.script_outcome {
+                    if let Ok(mut clipboard) = yal_system::clipboard::Clipboard::new() {
+                        let _ = clipboard.write_text(&outcome.text);
+                    }
+                }
+            }
+            if activate || dismiss {
+                self.script_outcome = None;
+            }
+            activate = false;
+            move_down = false;
+            move_up = false;
+            dismiss = false;
+        }
 
         if dismiss && self.mode == Mode::Preferences {
             // Escape in the preferences pane goes back to the search; the
@@ -1354,6 +1462,41 @@ impl eframe::App for Palette {
                     ui.label(RichText::new(status).color(Color32::from_rgb(230, 120, 120)));
                 }
             });
+
+        // A script's full output, drawn on top of the palette. The search
+        // beneath it is the list the user left behind; Enter or Escape
+        // returns to it.
+        if let Some(outcome) = &self.script_outcome {
+            let failed = outcome.failed;
+            egui::Window::new(RichText::new(outcome.title.clone()).strong())
+                .anchor(egui::Align2::CENTER_CENTER, [0.0, -20.0])
+                .collapsible(false)
+                .resizable(true)
+                .default_width(540.0)
+                .default_height(260.0)
+                .max_width(660.0)
+                .max_height(380.0)
+                .show(ctx, |ui| {
+                    ui.set_min_height(200.0);
+                    egui::ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
+                        ui.label(
+                            RichText::new(&outcome.text)
+                                .monospace()
+                                .color(palette_style.text),
+                        );
+                    });
+                    ui.add_space(6.0);
+                    ui.label(
+                        RichText::new(if failed {
+                            format!("{} · Esc closes · C copies", "the script exited with an error")
+                        } else {
+                            "Esc closes · C copies the output".to_string()
+                        })
+                        .small()
+                        .color(palette_style.dim_text),
+                    );
+                });
+        }
 
         // Run the search once the debounce window has passed.
         if self.pending {
