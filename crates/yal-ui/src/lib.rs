@@ -39,6 +39,9 @@ pub enum PaletteMessage {
     /// A script in `full` mode finished; its output is delivered to the
     /// palette instead of only living in the clipboard.
     Script(ScriptAnnouncement),
+    /// The whole-drive file index's walker published a fresh snapshot of
+    /// every indexed path; the next search answers from it.
+    Files(std::sync::Arc<Vec<std::path::PathBuf>>),
 }
 
 /// A script's full output, shown inside the palette.
@@ -60,6 +63,10 @@ pub struct Palette {
     results: Vec<Scored>,
     selected: usize,
     applications: Vec<yal_index::Discovered>,
+    /// The whole-drive file index's paths, as the walker last published
+    /// them. Empty until the index's first snapshot lands; the searches
+    /// stay fresh through the live walk meanwhile.
+    indexed: std::sync::Arc<Vec<std::path::PathBuf>>,
     last_search: Option<Instant>,
     pending: bool,
     receiver: Receiver<PaletteMessage>,
@@ -220,6 +227,20 @@ impl Palette {
             spawn_due_watcher(path, watcher_sender);
         }
 
+        // The whole-drive index's walker runs the same way: its own
+        // store connection, its own thread, snapshot published to the
+        // palette by message. An in-memory store has nothing to index
+        // into; a turned-off index is not walked at all.
+        {
+            let path = store.path().map(|path| path.to_path_buf());
+            if let Some(path) = path {
+                if yal_engine::bridge::file_index_enabled(&store) {
+                    let walker_sender = sender.clone();
+                    spawn_index_walker(path, walker_sender);
+                }
+            }
+        }
+
         // The hotkey is a setting, so the user can change it without
         // recompiling.
         let spec = store
@@ -236,6 +257,7 @@ impl Palette {
             results: Vec::new(),
             selected: 0,
             applications: yal_index::discover(),
+            indexed: std::sync::Arc::new(Vec::new()),
             last_search: None,
             pending: false,
             receiver,
@@ -458,6 +480,7 @@ impl Palette {
         match self.engine.search(
             &self.store,
             &self.applications,
+            &self.indexed,
             &self.query,
             chrono::Utc::now(),
         ) {
@@ -1292,6 +1315,62 @@ fn spawn_due_watcher(store_path: std::path::PathBuf, sender: Sender<PaletteMessa
         .ok();
 }
 
+/// The interval the whole-drive index walker keeps between passes.
+///
+/// Half an hour: the pass itself costs a burst of stat calls and one
+/// listing per changed directory, and it runs on its own thread, so even
+/// a busy pass costs the disk, not the interface.
+const INDEX_REFRESH_PERIOD: std::time::Duration =
+    std::time::Duration::from_secs(30 * 60);
+
+/// The whole-drive index's walker thread.
+///
+/// It opens its own store connection — the palette's is not shareable —
+/// publishes the snapshot that is already in the database before the
+/// first pass (so a restart answers whole-drive queries within a moment,
+/// not within a walk), runs a refresh pass over the fixed drives, and
+/// republishes only when the pass changed something. The setting is read
+/// every cycle, so turning the index off stops the passes and the next
+/// start of the palette takes the walker down with it.
+fn spawn_index_walker(store_path: std::path::PathBuf, sender: Sender<PaletteMessage>) {
+    std::thread::Builder::new()
+        .name("file-index".into())
+        .spawn(move || {
+            let Ok(store) = yal_store::Store::open(&store_path) else {
+                return;
+            };
+            loop {
+                if !yal_engine::bridge::file_index_enabled(&store) {
+                    std::thread::sleep(INDEX_REFRESH_PERIOD);
+                    continue;
+                }
+
+                // Publish what is already known, before any work.
+                sender
+                    .send(PaletteMessage::Files(std::sync::Arc::new(
+                        yal_engine::bridge::snapshot(&store),
+                    )))
+                    .ok();
+
+                let report = yal_engine::bridge::refresh_once(&store);
+                if report.changed {
+                    sender
+                        .send(PaletteMessage::Files(std::sync::Arc::new(
+                            yal_engine::bridge::snapshot(&store),
+                        )))
+                        .ok();
+                }
+                tracing::debug!(
+                    "the index pass listed {} directories and forgot {}",
+                    report.listed,
+                    report.removed
+                );
+                std::thread::sleep(INDEX_REFRESH_PERIOD);
+            }
+        })
+        .ok();
+}
+
 /// Complete every timer and reminder whose time has come.
 ///
 /// Returns the announcements whose toast was refused, so the caller can
@@ -1696,6 +1775,13 @@ impl eframe::App for Palette {
                     if !self.visible {
                         self.show(ctx);
                     }
+                }
+                PaletteMessage::Files(paths) => {
+                    // A fresh snapshot of the whole-drive index. The
+                    // search the palette sits in is not re-run: the next
+                    // keystroke's search answers from it, which keeps a
+                    // big refresh from fighting the user's typing.
+                    self.indexed = paths;
                 }
             }
         }

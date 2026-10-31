@@ -175,9 +175,27 @@ enum Command {
     },
 
     /// Search for files.
+    ///
+    /// The home folders are walked live first; the whole-drive index
+    /// supplements it from where it stands.
     Files {
         /// The text to look for in a file name.
         query: String,
+    },
+
+    /// Show the whole-drive file index's state, or run a pass.
+    FileIndex {
+        /// Run one refresh pass now and report what it did.
+        #[arg(long)]
+        refresh: bool,
+
+        /// Turn the index on.
+        #[arg(long)]
+        on: bool,
+
+        /// Turn the index off.
+        #[arg(long)]
+        off: bool,
     },
 
     /// Show or set the launcher hotkey.
@@ -524,7 +542,10 @@ fn run(cli: &Cli) -> Result<()> {
             let store = open_store(cli)?;
             let applications = discover();
             let mut engine = Engine::new().with_limit(*limit);
-            let results = engine.search(&store, &applications, query, chrono::Utc::now())?;
+            // The whole-drive supplement answers from the index's last
+            // snapshot; a cold database simply supplements nothing.
+            let indexed = yal_engine::bridge::snapshot(&store);
+            let results = engine.search(&store, &applications, &indexed, query, chrono::Utc::now())?;
             if cli.json {
                 let payload: Vec<_> = results
                     .iter()
@@ -956,12 +977,78 @@ fn run(cli: &Cli) -> Result<()> {
         }
 
         Command::Files { query } => {
+            let store = open_store(cli)?;
             let roots = yal_index::default_search_roots();
             let found = yal_index::search_files(&roots, query, 50, 20_000);
             for file in &found {
                 println!("{:<40} {}", file.name, file.directory.display());
             }
-            println!("{} files", found.len());
+            let mut count = found.len();
+
+            // The whole-drive index supplements what the walk found,
+            // once and only for the rows it has not seen.
+            if yal_engine::bridge::file_index_enabled(&store) {
+                let snapshot = yal_engine::bridge::snapshot(&store);
+                let exclude = found
+                    .iter()
+                    .map(|file| &file.path)
+                    .collect::<std::collections::HashSet<_>>();
+                let extra = yal_index::walk::match_paths(&snapshot, query, &exclude, 20);
+                for path in &extra {
+                    let directory = path
+                        .parent()
+                        .map(|dir| dir.display().to_string())
+                        .unwrap_or_default();
+                    let name = path
+                        .file_name()
+                        .map(|name| name.to_string_lossy().to_string())
+                        .unwrap_or_default();
+                    println!("{name:<40} {directory}");
+                }
+                count += extra.len();
+            }
+            println!("{count} files");
+        }
+
+        Command::FileIndex { refresh, on, off } => {
+            if *on && *off {
+                return Err(anyhow::anyhow!("`--on` and `--off` cannot both be asked"));
+            }
+            let store = open_store(cli)?;
+            if *on {
+                store.set_setting("file_index", "on")?;
+                println!("the whole-drive index is on");
+            } else if *off {
+                store.set_setting("file_index", "off")?;
+                store.clear_file_index()?;
+                println!("the whole-drive index is off, and its rows are gone");
+            }
+
+            if *refresh {
+                if !yal_engine::bridge::file_index_enabled(&store) {
+                    return Err(anyhow::anyhow!(
+                        "the whole-drive index is turned off (`--on` brings it back)"
+                    ));
+                }
+                let started = std::time::Instant::now();
+                let report = yal_engine::bridge::refresh_once(&store);
+                let (files, dirs) = store.indexed_counts()?;
+                println!(
+                    "the pass listed {} directories and forgot {} in {:.1?}",
+                    report.listed,
+                    report.removed,
+                    started.elapsed()
+                );
+                println!("the index holds {files} files over {dirs} directories");
+            } else {
+                let (files, dirs) = store.indexed_counts()?;
+                let state = if yal_engine::bridge::file_index_enabled(&store) {
+                    "on"
+                } else {
+                    "off"
+                };
+                println!("the whole-drive index is {state}, holding {files} files over {dirs} directories");
+            }
         }
 
         Command::Hotkey { spec } => {

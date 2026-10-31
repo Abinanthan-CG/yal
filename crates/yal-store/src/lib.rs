@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 use chrono::{DateTime, Utc};
 use rusqlite::{Connection, OptionalExtension, params};
 
+pub mod file_index;
 pub mod records;
 pub mod schema;
 
@@ -73,6 +74,10 @@ impl Store {
             std::fs::create_dir_all(parent)?;
         }
         let conn = Connection::open(path)?;
+        // Two writers are real here — the index walker thread and the
+        // command line can both run a pass — so a contended write waits
+        // its turn for a moment instead of failing on the spot.
+        conn.busy_timeout(std::time::Duration::from_secs(2))?;
         let store = Self {
             conn,
             path: Some(path.to_path_buf()),

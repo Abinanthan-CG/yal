@@ -162,6 +162,85 @@ The executable is read from the package's `AppxManifest.xml`. The attribute is
 `Executable="path\to\app.exe"` and may appear several times — once for the
 application and once per extension — so the first occurrence is taken.
 
+### The whole-drive file index
+
+The combined query-time walk (`search_files`) is bounded and covers only the
+three home work folders; it stays exactly as it is. Beside it sits a *whole
+fixed drives* index, whose design is driven by two facts about this build:
+
+1. `Engine::search` runs synchronously on the palette's UI thread, so the
+   answer to a query must never wait on the filesystem.
+2. `Store` owns a SQLite connection, which is not shareable across threads,
+   so anything that must touch the database while the palette runs opens its
+   own connection.
+
+The design, then:
+
+**Storage.** Migration 2 adds two tables to the same local store:
+`file_index(path PRIMARY KEY, dir, name)` and `index_dirs(path PRIMARY KEY,
+mtime_ns)` — `name` and `dir` are denormalised from `path` for query and
+per-directory rewrite cost; `mtime_ns` is the directory's modification time
+in nanoseconds since the epoch, because a millisecond floor can bury a write
+that lands in the same millisecond the pass recorded the directory.
+
+**Freshness is per-directory modification times.** Windows changes a
+directory's mtime when its listing changes, and *only* then. The indexer
+records one mtime per listed directory and every refresh:
+
+1. stats **every recorded directory** (a few tens of thousands of stat
+   calls — seconds on an SSD, no listing) — a directory that no longer
+   exists is deleted together with everything recorded under it; a
+   directory whose mtime moved is queued for re-listing;
+2. re-lists only the changed dirs (one `read_dir` each), upserts the files
+   seen at that level, and queues every newly discovered directory for
+   listing too;
+3. discards the files rows of a changed directory and rewrites them from
+   the listing, so removals and renames are caught without a global diff.
+
+This catches every creation, removal and rename: any change to a listing
+updates that directory's mtime, and every recorded directory is stat'd on
+every refresh — a deeper change is always visible at its own directory, even
+though its ancestors' mtimes never moved. The cost per refresh is the stat
+burst plus one listing per changed directory, not a walk.
+
+**Scope and the no-walk list.** Roots are the fixed drives only. At any
+level, these directories are not entered and not recorded, as build trees,
+system junk and caches are noise for a launcher and dominate disk silences:
+`$Recycle.Bin`, `System Volume Information`, `$WinREAgent`, `Recovery`,
+`Windows`, `ProgramData`, `AppData`, `node_modules`, `target`, `venv`,
+`.venv`, `__pycache__`, `.cargo`, `.rustup`, `cache`, and every name starting with a
+dot. Directories marked with a reparse point (junctions, which can loop the
+walk) are skipped the same way. Recorded honestly: skipping is by name, so a
+project that deliberately names a folder `target` has its index miss it; and
+`Program Files`' contents are covered by the application discovery, not the
+file index. The skip list applies at walk time: a directory recorded under
+one name and renamed into a skip-listed one is evicted the pass after its
+mtime moves, but a whole already-recorded subtree whose *ancestors* became
+skip-listed after the fact is cleaned the supported way — `file-index --off`
+empties both tables and `--refresh` walks them cold again.
+
+**Cost.** The walk and the database writes run on their own thread, which
+opens its own `Store` — the never hangs the palette, and the index's cold
+start costs the disk, not the interface. The thread refreshes immediately at
+start and then every thirty minutes. The snapshot for queries is a
+`Arc<Vec<PathBuf>>` of every indexed path, reloaded only when a refresh
+changed something: a query scans names in memory (a few milliseconds for a
+few hundred thousand paths) instead of a database scan or a filesystem walk,
+because the interface cannot afford either. The snapshot is one list of
+paths; `name`/`dir` are recomputed at query time for the few hits.
+
+**Where it answers.** The engine's file source still answers first from the
+fresher `search_files` walk over the home folders, and then supplements with
+index hits that are not already present, so the index can never shadow what
+the live walk sees and a stale index row can only ever add a second best
+result, never replace a live one. A setting `file_index` defaults to `on`;
+`off` empties the supplement and stops the walker. In-memory stores have no
+walker (nothing to write into, nothing to reload).
+
+The command line gets `yal file-index` to read the state and `--refresh`
+to run a pass in the foreground, which is also how the walk's cost is
+measured and recorded.
+
 ---
 
 ## The palette

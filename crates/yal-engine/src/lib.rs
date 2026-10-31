@@ -12,6 +12,7 @@ use yal_index::Discovered;
 use yal_search::{Candidate, Frecency, FrecencyModel, Matcher, Scored, rank};
 use yal_store::Store;
 
+pub mod bridge;
 pub mod sources;
 
 pub use sources::Source;
@@ -112,10 +113,16 @@ impl Engine {
     /// Candidates are gathered from every source, then ranked together. Usage
     /// history is read once for all candidates, so the number of queries
     /// against the store does not grow with the number of results.
+    ///
+    /// `indexed` is the snapshot of the whole-drive file index, as it was
+    /// last loaded; the file results it supplements are the live walk
+    /// over the home folders, which stays first, so the index can only
+    /// ever add a row, never shadow one.
     pub fn search(
         &mut self,
         store: &Store,
         applications: &[Discovered],
+        indexed: &[std::path::PathBuf],
         query: &str,
         now: DateTime<Utc>,
     ) -> EngineResult<Vec<Scored>> {
@@ -160,6 +167,29 @@ impl Engine {
                 let roots = yal_index::default_search_roots();
                 let found = yal_index::search_files(&roots, trimmed, 30, 2_000);
                 candidates.extend(sources::files(&found));
+
+                // The whole-drive index supplements the live walk.
+                if !indexed.is_empty() {
+                    let exclude: std::collections::HashSet<&std::path::PathBuf> =
+                        found.iter().map(|file| &file.path).collect();
+                    let extra = yal_index::walk::match_paths(indexed, trimmed, &exclude, 20);
+                    let gathered: Vec<yal_index::FoundFile> = extra
+                        .into_iter()
+                        .filter_map(|path| {
+                            let name = path.file_name()?.to_str()?.to_string();
+                            let directory = path
+                                .parent()
+                                .map(|dir| dir.to_path_buf())
+                                .unwrap_or_default();
+                            Some(yal_index::FoundFile {
+                                name,
+                                path: path.clone(),
+                                directory,
+                            })
+                        })
+                        .collect();
+                    candidates.extend(sources::files(&gathered));
+                }
             }
         }
 
@@ -379,7 +409,7 @@ mod tests {
         // fallback acts on the words themselves.
         let mut engine = Engine::new();
         let store = yal_store::Store::open_in_memory().unwrap();
-        let results = engine.search(&store, &[], "zqxjkw", Utc::now()).unwrap();
+        let results = engine.search(&store, &[], &[], "zqxjkw", Utc::now()).unwrap();
 
         assert!(
             results.iter().any(|scored| scored.kind == CommandKind::Fallback
@@ -423,7 +453,7 @@ mod tests {
         let mut engine = Engine::new();
         let store = yal_store::Store::open_in_memory().unwrap();
         let results = engine
-            .search(&store, &[], "font zzzzqqxj", Utc::now())
+            .search(&store, &[], &[], "font zzzzqqxj", Utc::now())
             .unwrap();
         assert!(
             results
@@ -447,10 +477,31 @@ mod tests {
             source: yal_index::Source::StartMenu,
             keywords: vec![],
         };
-        let results = engine.search(&store, &[file], "wonderbrew", Utc::now()).unwrap();
+        let results = engine.search(&store, std::slice::from_ref(&file), &[], "wonderbrew", Utc::now()).unwrap();
         assert!(
             results.iter().all(|scored| scored.kind != CommandKind::Fallback),
             "a matched application leaves the fallback out"
+        );
+    }
+
+    /// The whole-drive index supplements the live walk: a path only the
+    /// index holds still answers the query, after whatever the live
+    /// walk contributes.
+    #[test]
+    fn the_index_supplements_the_files_the_live_walk_finds() {
+        let mut engine = Engine::new();
+        let store = Store::open_in_memory().unwrap();
+        let query = "zqxjkw-story";
+        let indexed = vec![std::path::PathBuf::from(format!("Z:\\a tree\\{query}.md"))];
+
+        let results = engine.search(&store, &[], &indexed, query, Utc::now()).unwrap();
+        let file_rows: Vec<&Scored> = results
+            .iter()
+            .filter(|scored| scored.kind == CommandKind::Files)
+            .collect();
+        assert!(
+            file_rows.iter().any(|scored| scored.item.title == format!("{query}.md")),
+            "the indexed path answers the query: {file_rows:?}"
         );
     }
 
@@ -534,7 +585,7 @@ mod tests {
             .unwrap();
 
         let results = engine
-            .search(&store, &[], "restart", Utc::now())
+            .search(&store, &[], &[], "restart", Utc::now())
             .unwrap();
 
         let found = results

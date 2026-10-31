@@ -30,7 +30,7 @@ per wave and recorded with the wave.
 | --- | --- | --- |
 | Global hotkey + palette | Built, verified | Round trip live: park-and-return hides and restores above every window; `WM_HOTKEY` + state poll both carry the press. |
 | Application launcher | Built | `yal-index` over Start Menu shortcuts, Store packages, PATH; `yal apps` lists. |
-| File search | Partial | Documents, desktop and downloads with tiered search; image preview and EXIF wave-verified live drive. A whole-drive index — the target's `app_index.db` scale — is not carried. |
+| File search | **Built** | Documents, desktop and downloads with tiered search; image preview and EXIF wave-verified live drive. The whole-drive index — the target's `app_index.db` scale — closed as the second Oct-2026 wave: fixed drives only, walked by a thread of its own that keeps per-directory modification times (nanoseconds; a millisecond floor buried same-millisecond writes in the first test build) and re-lists only moved directories, with an exact per-row deletion — no `LIKE`-prefix sweeps. Live on this machine: a cold pass 52 s → 159,524 files over 16,674 directories; a warm pass 0.78–0.88 s; a file created in the home root (outside the three live-walk folders) was answerable only after the refresh and both `yal files` and `yal search` returned it; deleted, the next pass re-listed one directory and it was gone. The supplement never shadows the live walk, it only adds. Honest edges: skip list is by name (`node_modules`, `target`, caches, `AppData`, `ProgramData`, `Windows`, `Program Files`, dot-dirs; junctions treated absent — a recorded dir renamed into a skip name is evicted the pass after, but whole already-recorded subtrees under *newly* skip-listed ancestors reset via `--off`/`--refresh`), the snapshot is republished only after a pass that changed something so a query can see a stale directory when its change is under thirty minutes old, and the palette's walker counts on SQLite's two-second busy wait rather than a queue. |
 | Clipboard history | Partial | Background watcher keeps text history searchable; image entries are detected but not stored (yal-system/clipboard reads text only). |
 | Calculator | Built | Arithmetic, units, static currencies with recorded vintage, dates; verified against test vectors. |
 | Snippets / text expansion | Built, verified | Live once end to end: expansion typed into Notepad after a focus check, clipboard fallback on refusal. |
@@ -113,8 +113,14 @@ Soonest-first by scope, highest leverage:
    under the crosshair), hex to the clipboard, an rgb/hsl receipt row,
    and `yal color --at x,y` on the command line. Primary-screen only and
    frozen at the act's start; the click awaits a live hand.
-8. Whole-drive file index — largest index wave; needs a design for
-   freshness and cost before anything is written.
+8. ~~Whole-drive file index~~ — done as the second Oct-2026 wave, design
+   first (architecture.md, "The whole-drive file index"): fixed
+   drives, per-directory mtime freshness (nanosecond floors after the
+   first test build buried a same-millisecond write), exact per-row
+   deletion, a name-matched skip list, snapshots in memory for the
+   synchronous search. Measured honestly in the table above: cold 
+   52 s over 16,674 directories, warm under a second, creation and
+   removal both proven live through `file-index` / `files`.
 9. Preferences pane click-along — needs the user's hands, no code.
 
 Deferred pending a design decision: calendar event reading (what is the

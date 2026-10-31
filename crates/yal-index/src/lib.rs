@@ -4,6 +4,7 @@
 //! only; it never writes to it and never launches anything.
 
 pub mod lnk;
+pub mod walk;
 pub mod windows;
 
 pub use windows::{Discovered, Source, discover};

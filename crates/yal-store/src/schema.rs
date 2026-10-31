@@ -10,7 +10,7 @@
 //! place without losing data.
 
 /// The schema version this build expects.
-pub const CURRENT_VERSION: i64 = 1;
+pub const CURRENT_VERSION: i64 = 2;
 
 /// Every migration, in order.
 pub const MIGRATIONS: &[&str] = &[
@@ -78,6 +78,28 @@ pub const MIGRATIONS: &[&str] = &[
         last_indexed TEXT NOT NULL
     );
     CREATE INDEX applications_name ON applications(name);
+    "#,
+    // Version 2: the whole-drive file index. `name` and `dir` are
+    // denormalised from `path` because the query scans the display name and
+    // the per-directory rewrite wants to delete by dir; the directory
+    // mtimes decide what the refresh re-lists, kept in nanoseconds since
+    // the Unix epoch because a whole-millisecond truncation can bury a
+    // write that lands in the same millisecond the pass recorded the
+    // directory. `dir` has no unique constraint: one directory's listing
+    // is rewritten at a time.
+    r#"
+    CREATE TABLE file_index (
+        path TEXT PRIMARY KEY,
+        dir  TEXT NOT NULL,
+        name TEXT NOT NULL
+    );
+    CREATE INDEX file_index_dir ON file_index(dir);
+    CREATE INDEX file_index_name ON file_index(name);
+
+    CREATE TABLE index_dirs (
+        path     TEXT PRIMARY KEY,
+        mtime_ns INTEGER NOT NULL
+    );
     "#,
 ];
 

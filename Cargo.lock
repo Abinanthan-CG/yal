@@ -5351,7 +5351,6 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.21",
  "tracing",
- "walkdir",
  "windows 0.62.2",
  "yal-core",
 ]

@@ -33,7 +33,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Clipboard** | History, kept by a background watcher. |
 | **Snippets** | Saved text: summon the palette, type the keyword, Enter — the expansion is typed into the application you came from, with the clipboard as the fallback. |
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
-| **Files** | Search your documents, desktop and downloads; pictures get a preview and their photo metadata (EXIF, JPEG). |
+| **Files** | Search your documents, desktop and downloads live; pictures get a preview and their photo metadata (EXIF, JPEG). Behind that, a whole-drive index of the fixed drives supplements what the live walk finds — never shadows it — kept fresh by its own half-hourly pass (a warm pass is a sub-second stat burst). `yal file-index` reads the state, `--refresh` runs a pass now, `--off/--on`. |
 | **Windows** | Every open window, by title - then close, minimise, maximise or restore it, or place it: halves, quarters, thirds, centre or the full screen. |
 | **Script commands** | The little programs you keep in `~\\.yal\\scripts`, with their own `@title`, `@mode` and `@keywords` header: run detached, or in the background with the outcome toasted - and with `@mode full` the whole output is kept on the clipboard and drawn inside the palette, where `C` copies it again and `Esc` returns to the search you left behind. |
 | **Browser tabs** | The tabs each running browser holds, searchable. |
