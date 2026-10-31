@@ -85,9 +85,16 @@ enum Command {
     },
 
     /// Show the details of a colour.
+    ///
+    /// With `--at x,y` the colour is sampled from a pixel of the screen
+    /// instead of taken from a value.
     Color {
         /// A colour name or hexadecimal value.
-        value: String,
+        value: Option<String>,
+
+        /// Sample the colour at `x,y` of the screen.
+        #[arg(long = "at")]
+        at: Option<String>,
     },
 
     /// Generate a password.
@@ -658,11 +665,23 @@ fn run(cli: &Cli) -> Result<()> {
             }
         }
 
-        Command::Color { value } => {
-            let color = colors::parse(value)?;
-            let hsl = color.to_hsl();
-            println!("hex      #{}", color.to_hex());
-            println!("rgb      {}", color.to_rgb_string());
+        Command::Color { value, at } => {
+            let colour = if let Some(at) = at {
+                let (x, y) = parse_at(at)?;
+                let capture = yal_system::screenshot::capture_region(x, y, 1, 1)
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                let pixel = capture.image.get_pixel(0, 0);
+                colors::Color::new(pixel[0], pixel[1], pixel[2])
+            } else if let Some(value) = value {
+                colors::parse(value)?
+            } else {
+                return Err(anyhow::anyhow!(
+                    "give a colour to describe, or `--at x,y` to take one from the screen"
+                ));
+            };
+            let hsl = colour.to_hsl();
+            println!("hex      #{}", colour.to_hex());
+            println!("rgb      {}", colour.to_rgb_string());
             println!(
                 "hsl      hsl({:.0}, {:.0}%, {:.0}%)",
                 hsl.hue,
@@ -1555,6 +1574,22 @@ fn open_store(cli: &Cli) -> Result<Store> {
         .or_else(yal_store::default_path)
         .context("could not determine a database location")?;
     Store::open(&path).map_err(Into::into)
+}
+
+/// A screen point such as `x,y`.
+fn parse_at(text: &str) -> Result<(i32, i32)> {
+    let (x, y) = text
+        .split_once(',')
+        .ok_or_else(|| anyhow::anyhow!("`--at` wants `x,y`, got `{text}`"))?;
+    let x = x
+        .trim()
+        .parse::<i32>()
+        .map_err(|_| anyhow::anyhow!("`--at` wants `x,y`, got `{text}`"))?;
+    let y = y
+        .trim()
+        .parse::<i32>()
+        .map_err(|_| anyhow::anyhow!("`--at` wants `x,y`, got `{text}`"))?;
+    Ok((x, y))
 }
 
 /// A stable identifier derived from a string.

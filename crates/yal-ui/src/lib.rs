@@ -133,6 +133,8 @@ enum CaptureKind {
     WholeScreen,
     /// A band dragged over the frozen screen.
     Area,
+    /// A pixel taken from the frozen screen under a loupe.
+    Pick,
 }
 
 /// A capture act in flight.
@@ -140,7 +142,8 @@ enum CaptureKind {
 /// The little machine, in order: the palette leaves the screen, a beat
 /// later the frame is read (so the launcher is not in its own picture),
 /// and for the area act the window grows over the screen showing the
-/// frozen frame while the user drags a band.
+/// frozen frame while the user drags a band; for the pick act the same
+/// stopping of the world serves a loupe that follows the pointer.
 struct CaptureState {
     /// Which act opened the overlay.
     kind: CaptureKind,
@@ -163,6 +166,8 @@ enum CaptureOutcome {
     Continue,
     /// The band closed; the crop is in screen pixels.
     Banded { region: (i32, i32, u32, u32) },
+    /// A pixel was taken; the point is a pixel of the frozen frame.
+    Picked { x: i32, y: i32 },
     /// Escape or a click without a band: the act ends without a picture.
     Abandoned,
 }
@@ -514,6 +519,11 @@ impl Palette {
                         self.begin_capture(CaptureKind::Area);
                         return;
                     }
+                    "pick-colour" => {
+                        self.credit_selected();
+                        self.begin_capture(CaptureKind::Pick);
+                        return;
+                    }
                     _ => {}
                 }
             }
@@ -726,10 +736,12 @@ impl Palette {
                     return;
                 }
                 CaptureKind::Area => {}
+                CaptureKind::Pick => {}
             }
 
-            // The area act: the frame freezes into a texture, the window
-            // grows over the screen, and the drag begins.
+            // The overlay acts (the band, the loupe): the frame freezes
+            // into a texture, the window grows over the screen, and the
+            // pointer does the rest.
             let (screen_width, screen_height) = yal_system::screenshot::screen_extent();
             if screen_width == 0 || screen_height == 0 {
                 self.capture = None;
@@ -740,11 +752,18 @@ impl Palette {
                 self.park(ctx);
                 return;
             }
+            // The band wants smoothing over the whole screen at once;
+            // the loupe magnifies a fistful of pixels and wants them
+            // crisp, so it reads with the nearest texel.
+            let options = match state.kind {
+                CaptureKind::Pick => egui::TextureOptions::NEAREST,
+                _ => egui::TextureOptions::LINEAR,
+            };
             let image = egui::ColorImage::from_rgba_unmultiplied(
                 [capture.width as usize, capture.height as usize],
                 capture.image.as_raw(),
             );
-            let texture = ctx.load_texture("yal-frozen-screen", image, egui::TextureOptions::LINEAR);
+            let texture = ctx.load_texture("yal-frozen-screen", image, options);
             if let Some(handle) = yal_system::windows::own_window_handle() {
                 let _ = yal_system::window_controls::place(
                     handle,
@@ -761,16 +780,19 @@ impl Palette {
                 frame: Some(capture.image),
                 texture: Some(texture),
                 band_start: None,
-                kind: CaptureKind::Area,
+                kind: state.kind,
             });
             self.needs_focus = true;
             ctx.request_repaint();
             return;
         }
 
-        // Frame in hand: the overlay runs until the band closes or the
-        // act is abandoned.
-        let (outcome, state) = draw_capture(ctx, state);
+        // Frame in hand: the overlay runs until the band closes, a pixel
+        // is taken, or the act is abandoned.
+        let (outcome, state) = match state.kind {
+            CaptureKind::Pick => draw_pick(ctx, state),
+            _ => draw_capture(ctx, state),
+        };
         match outcome {
             CaptureOutcome::Continue => {
                 self.capture = Some(state);
@@ -783,6 +805,9 @@ impl Palette {
             }
             CaptureOutcome::Banded { region } => {
                 self.finish_area_capture(ctx, state, region);
+            }
+            CaptureOutcome::Picked { x, y } => {
+                self.finish_pick(ctx, state, x, y);
             }
         }
     }
@@ -874,6 +899,63 @@ impl Palette {
                     .with_action(Action::reveal(path))
                     .with_secondary_action(Action::copy(display))
                     .with_secondary_action(Action::task("capture-area", Vec::new())),
+                kind: yal_core::CommandKind::System,
+                matched: Match::none(),
+                score: 0.0,
+                frecency: Frecency::never(),
+            },
+        );
+        self.selected = 0;
+    }
+
+    /// Close a colour pick: read the pixel out of the frozen frame, say
+    /// the colour in its three ways, put the hex on the clipboard, and
+    /// leave a receipt row in front of the results.
+    fn finish_pick(&mut self, ctx: &egui::Context, state: CaptureState, x: i32, y: i32) {
+        let Some(frame) = &state.frame else {
+            return;
+        };
+        // The frame was swizzled on read, so the bytes here are RGBA as
+        // they showed on the screen.
+        let px = (x as u32).min(frame.width().saturating_sub(1));
+        let py = (y as u32).min(frame.height().saturating_sub(1));
+        let pixel = frame.get_pixel(px, py);
+        let colour = yal_data::colors::Color::new(pixel[0], pixel[1], pixel[2]);
+        let hex = format!("#{}", colour.to_hex());
+        let hsl = colour.to_hsl();
+        let hsl_text = format!(
+            "hsl({:.0}, {:.0}%, {:.0}%)",
+            hsl.hue,
+            hsl.saturation * 100.0,
+            hsl.lightness * 100.0
+        );
+
+        self.capture = None;
+        dismiss_capture_window(state.restore);
+
+        let word = match yal_system::clipboard::Clipboard::new()
+            .and_then(|mut board| board.write_text(&hex))
+        {
+            Ok(()) => {
+                self.insert_colour_row(&hex, &colour.to_rgb_string(), &hsl_text);
+                format!("picked {hex}\nit is on the clipboard")
+            }
+            Err(error) => error.to_string(),
+        };
+        let _ = yal_system::notify::toast("Colour", &word);
+        self.park(ctx);
+    }
+
+    /// Put the picked colour in front of the results.
+    ///
+    /// The row is the act's receipt, not machine state: it lives until
+    /// the next keystroke, when the search rebuilds the list. Its acts
+    /// say the colour again: hex, then rgb and hsl beside it.
+    fn insert_colour_row(&mut self, hex: &str, rgb: &str, hsl: &str) {
+        self.results.insert(
+            0,
+            Scored {
+                item: colour_row(hex, rgb, hsl),
                 kind: yal_core::CommandKind::System,
                 matched: Match::none(),
                 score: 0.0,
@@ -2144,6 +2226,20 @@ fn dismiss_capture_window(restore: (i32, i32, i32, i32)) {
     }
 }
 
+/// The receipt row for a picked colour.
+///
+/// The primary act puts the hex on the clipboard again; the panel offers
+/// the rgb and hsl sayings beside it. Built here, away from the palette,
+/// so the row's promises are testable in isolation.
+fn colour_row(hex: &str, rgb: &str, hsl: &str) -> yal_core::item::Item {
+    yal_core::item::Item::new(format!("The colour {hex}"))
+        .with_id(format!("colour:{hex}"))
+        .with_subtitle(format!("{rgb} · {hsl}"))
+        .with_action(Action::copy(hex.to_string()))
+        .with_secondary_action(Action::copy(rgb.to_string()))
+        .with_secondary_action(Action::copy(hsl.to_string()))
+}
+
 /// Draw one frame of the frozen-screen overlay and read the band.
 ///
 /// The frozen frame is drawn over the whole window; wherever a band is
@@ -2256,6 +2352,173 @@ fn draw_capture(ctx: &egui::Context, mut state: CaptureState) -> (CaptureOutcome
                 state,
             )
         }
+    } else {
+        (CaptureOutcome::Continue, state)
+    }
+}
+
+/// Draw one frame of the colour-pick overlay and read the taken pixel.
+///
+/// A loupe blown up out of the frozen texture follows the pointer — the
+/// nearest texel option keeps its magnified pixels crisp and unblended —
+/// with the pixel that would be taken marked, and its colour named. A
+/// click or Enter takes it, escape leaves.
+fn draw_pick(ctx: &egui::Context, state: CaptureState) -> (CaptureOutcome, CaptureState) {
+    let (Some(texture), Some(frame)) = (&state.texture, &state.frame) else {
+        return (CaptureOutcome::Abandoned, state);
+    };
+
+    // Escape ends the act before anything is drawn.
+    if ctx.input(|input| input.key_pressed(Key::Escape)) {
+        return (CaptureOutcome::Abandoned, state);
+    }
+
+    let scale = ctx.pixels_per_point();
+    let mut pointer_seen: Option<egui::Pos2> = None;
+    let mut taken: Option<egui::Pos2> = None;
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::NONE)
+        .show(ctx, |ui| {
+            let available = ui.available_rect_before_wrap();
+            let (_, response) =
+                ui.allocate_exact_size(available.size(), egui::Sense::click());
+            let response = response.on_hover_cursor(egui::CursorIcon::Crosshair);
+
+            // The frozen frame over every point of the window. Nothing
+            // is dimmed here: the loupe is drawn from the frame's own
+            // pixels, and a tint under the pointer would lie about the
+            // colour it is pointing at.
+            ui.painter().image(
+                texture.id(),
+                available,
+                egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                Color32::WHITE,
+            );
+
+            pointer_seen = response.hover_pos();
+            let Some(pointer) = pointer_seen else {
+                // No pointer over the window yet: a word only.
+                ui.painter().text(
+                    available.center(),
+                    egui::Align2::CENTER_CENTER,
+                    "move over what you want · click or enter takes the pixel · esc leaves",
+                    FontId::proportional(15.0),
+                    Color32::from_rgb(225, 232, 245),
+                );
+                return;
+            };
+
+            // The pixel under the pointer, in the frame's own pixels.
+            let cx = ((pointer.x * scale).floor() as i32).clamp(0, frame.width() as i32 - 1);
+            let cy = ((pointer.y * scale).floor() as i32).clamp(0, frame.height() as i32 - 1);
+            let pixel = frame.get_pixel(cx as u32, cy as u32);
+            let hex = format!("#{:02x}{:02x}{:02x}", pixel[0], pixel[1], pixel[2]);
+
+            // The loupe: the block of pixels around the pointer, blown
+            // up out of the texture. The block shifts rather than
+            // showing edges of nothing when the pointer is at a rim.
+            const HALF: i32 = 8; // a 17 × 17 block of frame pixels
+            const CELL: f32 = 6.0; // display points per frame pixel
+            let left = (cx - HALF).max(0);
+            let top = (cy - HALF).max(0);
+            let right = (cx + HALF + 1).min(frame.width() as i32);
+            let bottom = (cy + HALF + 1).min(frame.height() as i32);
+            let span = egui::vec2(
+                (right - left) as f32 * CELL,
+                (bottom - top) as f32 * CELL,
+            );
+            // Near the pointer, a little below and to the side, clamped
+            // into the window with room underneath for the colour's
+            // name.
+            let mut loupe_min =
+                pointer + egui::vec2(18.0, 18.0);
+            loupe_min.x = loupe_min
+                .x
+                .clamp(available.left() + 4.0, (available.right() - span.x - 4.0).max(available.left() + 4.0));
+            loupe_min.y = loupe_min
+                .y
+                .clamp(available.top() + 4.0, (available.bottom() - span.y - 30.0).max(available.top() + 4.0));
+            let loupe = egui::Rect::from_min_size(loupe_min, span);
+            let zero = egui::CornerRadius::ZERO;
+            let frame_width = frame.width() as f32;
+            let frame_height = frame.height() as f32;
+            ui.painter().rect_stroke(
+                loupe.expand(2.0),
+                zero,
+                Stroke::new(2.0_f32, Color32::from_rgb(18, 22, 30)),
+                egui::StrokeKind::Middle,
+            );
+            ui.painter().image(
+                texture.id(),
+                loupe,
+                egui::Rect::from_min_max(
+                    egui::pos2(left as f32 / frame_width, top as f32 / frame_height),
+                    egui::pos2(right as f32 / frame_width, bottom as f32 / frame_height),
+                ),
+                Color32::WHITE,
+            );
+            ui.painter().rect_stroke(
+                loupe,
+                zero,
+                Stroke::new(2.0_f32, Color32::from_rgb(233, 238, 248)),
+                egui::StrokeKind::Middle,
+            );
+
+            // The one pixel that would be taken, marked inside the
+            // loupe.
+            let at = loupe.min + egui::vec2((cx - left) as f32, (cy - top) as f32) * CELL;
+            let mark = egui::Rect::from_min_size(at, egui::vec2(CELL, CELL));
+            ui.painter().rect_stroke(
+                mark,
+                zero,
+                Stroke::new(1.4_f32, Color32::from_rgb(10, 12, 16)),
+                egui::StrokeKind::Inside,
+            );
+            ui.painter().rect_stroke(
+                mark,
+                zero,
+                Stroke::new(0.6_f32, Color32::WHITE),
+                egui::StrokeKind::Inside,
+            );
+
+            // The colour's name, beside its loupe.
+            let label = format!(
+                "{hex} · rgb({}, {}, {})",
+                pixel[0], pixel[1], pixel[2]
+            );
+            let place = egui::pos2(loupe.left() + 2.0, loupe.bottom() + 12.0);
+            ui.painter().text(
+                place + egui::vec2(1.0, 1.0),
+                egui::Align2::LEFT_TOP,
+                &label,
+                FontId::proportional(14.0),
+                Color32::from_rgb(10, 12, 16),
+            );
+            ui.painter().text(
+                place,
+                egui::Align2::LEFT_TOP,
+                &label,
+                FontId::proportional(14.0),
+                Color32::WHITE,
+            );
+
+            if response.clicked() {
+                taken = pointer_seen;
+            }
+        });
+
+    // Enter takes the pixel under the pointer too, for a hand that
+    // would rather not click.
+    if ctx.input(|input| input.key_pressed(Key::Enter)) {
+        taken = pointer_seen;
+    }
+
+    if let Some(pos) = taken {
+        // The pixel, clamped inside the frozen frame.
+        let x = ((pos.x * scale).floor() as i32).clamp(0, frame.width() as i32 - 1);
+        let y = ((pos.y * scale).floor() as i32).clamp(0, frame.height() as i32 - 1);
+        (CaptureOutcome::Picked { x, y }, state)
     } else {
         (CaptureOutcome::Continue, state)
     }
@@ -2788,6 +3051,34 @@ mod tests {
         use egui::Key;
 
         assert!(hotkey_spec_from(Key::A, egui::Modifiers::default()).is_none());
+    }
+
+    #[test]
+    fn the_colour_row_says_the_colour_in_its_three_ways() {
+        let row = colour_row("#1b2cfd", "rgb(27, 44, 253)", "hsl(231, 98%, 55%)");
+
+        assert_eq!(row.title, "The colour #1b2cfd");
+        assert_eq!(row.id.0, "colour:#1b2cfd");
+        assert!(row.subtitle.as_deref().unwrap().contains("rgb(27, 44, 253)"));
+        assert!(row.subtitle.as_deref().unwrap().contains("hsl(231, 98%, 55%)"));
+
+        let action = row.action.as_ref().expect("the row's act is copying the hex");
+        assert_eq!(action.kind, ActionKind::CopyToClipboard);
+        let yal_core::action::OpenTarget::Text(text) = &action.target else {
+            panic!("the act should carry the hex itself");
+        };
+        assert_eq!(text, "#1b2cfd");
+
+        assert_eq!(row.secondary_actions.len(), 2);
+        assert_eq!(row.secondary_actions[0].kind, ActionKind::CopyToClipboard);
+        let yal_core::action::OpenTarget::Text(rgb) = &row.secondary_actions[0].target else {
+            panic!("the first secondary should be the rgb saying");
+        };
+        assert_eq!(rgb, "rgb(27, 44, 253)");
+        let yal_core::action::OpenTarget::Text(hsl) = &row.secondary_actions[1].target else {
+            panic!("the second secondary should be the hsl saying");
+        };
+        assert_eq!(hsl, "hsl(231, 98%, 55%)");
     }
 
     #[test]

@@ -698,6 +698,16 @@ pub fn system_commands() -> Vec<Candidate> {
             .with_action(Action::task("capture-area", Vec::new())),
         CommandKind::System,
     ));
+    // The eyedropper: the screen freezes under the palette and a loupe
+    // follows the pointer; a click or Enter takes the pixel under it, and
+    // the colour is said as hex, rgb and hsl.
+    found.push(Candidate::new(
+        Item::new("Pick a colour")
+            .with_id("system:pick-colour")
+            .with_subtitle("a loupe over what is on screen; the colour lands on the clipboard")
+            .with_action(Action::task("pick-colour", Vec::new())),
+        CommandKind::System,
+    ));
 
     found
 }
@@ -1360,6 +1370,12 @@ mod tests {
             panic!("the whole-screen act should be a launcher task");
         };
         assert_eq!(name, "screenshot-screen");
+
+        let pick = action_of("system:pick-colour").expect("the colour pick is offered");
+        let yal_core::action::OpenTarget::Task { name, .. } = pick.target else {
+            panic!("the colour pick should be a launcher task");
+        };
+        assert_eq!(name, "pick-colour");
     }
 
     #[test]
