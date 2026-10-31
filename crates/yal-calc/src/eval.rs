@@ -4,8 +4,17 @@
 //! amount of currency, or an instant in time. Arithmetic between shapes is
 //! only defined where it is meaningful; anything else is reported as an
 //! error rather than silently producing a number.
+//!
+//! Month- and year-shaped date arithmetic is *calendar* arithmetic, done
+//! in the machine's local zone; the fixed-factor duration units (seconds
+//! through weeks) stay exact durations. Currency codes are resolved
+//! against the registry the evaluator was built with, so a registry the
+//! store's rates table extended answers just as the bundled one does.
 
-use chrono::{DateTime, Datelike, Duration, Local, TimeZone, Utc};
+use chrono::{
+    DateTime, Datelike, Days, Duration, Local, MappedLocalTime, Months, NaiveDate, NaiveDateTime,
+    TimeZone, Utc,
+};
 use chrono_tz::Tz;
 
 use crate::currency::{CurrencyRegistry, convert as convert_currency};
@@ -20,7 +29,7 @@ pub enum Value {
     /// A number with a unit, e.g. `10 km`.
     Quantity { amount: f64, unit: &'static crate::units::UnitDef },
     /// An amount of currency, e.g. `100 usd`.
-    Currency { amount: f64, code: &'static str },
+    Currency { amount: f64, code: String },
     /// A point in time.
     Instant(DateTime<Utc>),
 }
@@ -65,6 +74,16 @@ impl Evaluator {
         }
     }
 
+    /// An evaluator with a fixed notion of "now" and an explicit currency
+    /// registry — the one the store's rates table has been folded into.
+    pub fn with(now: DateTime<Utc>, currencies: CurrencyRegistry) -> Self {
+        Self {
+            units: UnitRegistry::new(),
+            currencies,
+            now,
+        }
+    }
+
     /// Evaluate an expression.
     pub fn eval(&self, expr: &Expr) -> Result<Value, EvalError> {
         match expr {
@@ -78,7 +97,7 @@ impl Evaluator {
 
             Expr::Currency { amount, code } => Ok(Value::Currency {
                 amount: *amount,
-                code,
+                code: code.clone(),
             }),
 
             Expr::Ident(name) => self.eval_ident(name),
@@ -101,7 +120,7 @@ impl Evaluator {
                     }),
                     Value::Currency { amount, code } => Ok(Value::Currency {
                         amount: amount / 100.0,
-                        code,
+                        code: code.clone(),
                     }),
                     Value::Instant(_) => Err(EvalError {
                         message: "a date cannot be a percentage".into(),
@@ -154,10 +173,15 @@ impl Evaluator {
                 ))
             }
             other => {
+                // A weekday spelled out is the ISO index the `next` and
+                // `last` functions take: Monday 0 through Sunday 6.
+                if let Some(index) = weekday_index(other) {
+                    return Ok(Value::Scalar(index));
+                }
                 if let Some(currency) = self.currencies.resolve(other) {
                     return Ok(Value::Currency {
                         amount: 1.0,
-                        code: currency.code,
+                        code: currency.code.clone(),
                     });
                 }
                 if let Some(unit) = self.units.resolve(other) {
@@ -179,7 +203,7 @@ impl Evaluator {
             }),
             Value::Currency { amount, code } => Ok(Value::Currency {
                 amount: -amount,
-                code,
+                code: code.clone(),
             }),
             Value::Instant(_) => Err(EvalError {
                 message: "a date cannot be negated".into(),
@@ -386,6 +410,17 @@ impl Evaluator {
     }
 
     fn call(&self, name: &str, args: Vec<Value>) -> Result<Value, EvalError> {
+        // The calendar functions are the only ones that accept an
+        // instant, so they are answered before the numbers-only scan that
+        // every other function shares.
+        match name {
+            "add_month" => return self.calendar_span("month", &args),
+            "add_year" => return self.calendar_span("year", &args),
+            "next" => return self.shift_weekday(true, "next", &args),
+            "last" => return self.shift_weekday(false, "last", &args),
+            _ => {}
+        }
+
         let mut numbers = Vec::with_capacity(args.len());
         for arg in &args {
             match arg {
@@ -474,6 +509,104 @@ impl Evaluator {
         Ok(Value::Scalar(value))
     }
 
+    /// Move an instant whole calendar months or years, in the local zone.
+    ///
+    /// `30 days` is the truth only two months out of the year; a month is
+    /// a calendar span, not a factor. The move is honest on both counts:
+    /// one month past the 31st of January lands on the last day of
+    /// February, and the wall time the user stood at is kept. A
+    /// fractional count is truncated toward zero — "one and a half
+    /// months" has no calendar reading.
+    fn calendar_span(&self, unit: &str, args: &[Value]) -> Result<Value, EvalError> {
+        if args.len() != 2 {
+            return Err(EvalError {
+                message: format!("`add_{unit}` expects an instant and a number of {unit}s"),
+            });
+        }
+        let (base, count) = match (&args[0], &args[1]) {
+            (Value::Instant(base), Value::Scalar(count)) => (*base, *count),
+            (Value::Instant(_), other) => {
+                return Err(EvalError {
+                    message: format!("`add_{unit}` expects a count, got {other:?}"),
+                });
+            }
+            _ => {
+                return Err(EvalError {
+                    message: format!("`add_{unit}` expects the instant as its first argument"),
+                });
+            }
+        };
+        let count = count.trunc() as i64;
+
+        // Whole months, counted on the local calendar: leap the year and
+        // clamp the day to the month the landing lands in.
+        let local = base.with_timezone(&Local);
+        let months = if unit == "month" { count } else { count * 12 };
+        let total = local.year() as i64 * 12 + local.month0() as i64 + months;
+        let year = total.div_euclid(12);
+        let month = total.rem_euclid(12) as u32 + 1;
+        let day = local.day().min(days_in_month(year as i32, month));
+        let date = NaiveDate::from_ymd_opt(year as i32, month, day).ok_or_else(|| EvalError {
+            message: "the calendar does not reach that date".into(),
+        })?;
+        localize(date.and_time(local.time()))
+            .map(Value::Instant)
+            .ok_or_else(|| EvalError {
+                message: "the wall time does not exist at that calendar date".into(),
+            })
+    }
+
+    /// The next or previous named weekday, judged on the local calendar.
+    ///
+    /// "Next" and "last" answer for a *different day*, never today:
+    /// typed on a Friday, `next friday` is next Friday. Whole days are
+    /// moved and the wall time is kept, so the landing reads as the
+    /// same moment cast forward a few days.
+    fn shift_weekday(&self, ahead: bool, name: &str, args: &[Value]) -> Result<Value, EvalError> {
+        if args.len() != 1 {
+            return Err(EvalError {
+                message: format!(
+                    "`{name}` expects one weekday, 0 (Monday) through 6 (Sunday)"
+                ),
+            });
+        }
+        let Value::Scalar(index) = args[0] else {
+            return Err(EvalError {
+                message: format!("`{name}` expects a weekday, spelled or numbered"),
+            });
+        };
+        let index = index.trunc();
+        if !(0.0..=6.0).contains(&index) {
+            return Err(EvalError {
+                message: "the weekday is 0 (Monday) through 6 (Sunday)".into(),
+            });
+        }
+
+        let local = self.now.with_timezone(&Local);
+        let current = local.weekday().num_days_from_monday() as i64;
+        let shift = if ahead {
+            let ahead = (index as i64 - current).rem_euclid(7);
+            if ahead == 0 { 7 } else { ahead }
+        } else {
+            let behind = (current - index as i64).rem_euclid(7);
+            if behind == 0 { 7 } else { behind }
+        };
+        let date = local.date_naive();
+        let date = if ahead {
+            date.checked_add_days(Days::new(shift as u64))
+        } else {
+            date.checked_sub_days(Days::new(shift as u64))
+        }
+        .ok_or_else(|| EvalError {
+            message: "the calendar does not reach that date".into(),
+        })?;
+        localize(date.and_time(local.time()))
+            .map(Value::Instant)
+            .ok_or_else(|| EvalError {
+                message: "the wall time does not exist at that calendar date".into(),
+            })
+    }
+
     fn convert(&self, left: Value, right: Value) -> Result<Value, EvalError> {
         use Value::{Currency, Instant, Quantity, Scalar};
 
@@ -488,10 +621,10 @@ impl Evaluator {
                 })
             }
             (Currency { amount, code: from }, Currency { code: to, .. }) => {
-                let from_def = self.currencies.resolve(from).ok_or_else(|| EvalError {
+                let from_def = self.currencies.resolve(&from).ok_or_else(|| EvalError {
                     message: format!("`{from}` is not a known currency"),
                 })?;
-                let to_def = self.currencies.resolve(to).ok_or_else(|| EvalError {
+                let to_def = self.currencies.resolve(&to).ok_or_else(|| EvalError {
                     message: format!("`{to}` is not a known currency"),
                 })?;
                 let converted = convert_currency(amount, from_def, to_def).ok_or_else(|| {
@@ -548,6 +681,44 @@ fn round_half_away(value: f64) -> f64 {
     }
 }
 
+/// The ISO index of a weekday spelled out: Monday is 0, Sunday is 6 —
+/// the number the `next` and `last` functions accept.
+fn weekday_index(name: &str) -> Option<f64> {
+    Some(match name {
+        "monday" => 0.0,
+        "tuesday" => 1.0,
+        "wednesday" => 2.0,
+        "thursday" => 3.0,
+        "friday" => 4.0,
+        "saturday" => 5.0,
+        "sunday" => 6.0,
+        _ => return None,
+    })
+}
+
+/// How many days a month has.
+///
+/// Reached by walking to the first of the next month and stepping back a
+/// day, which keeps the leap rule in chrono's hands. The year can only
+/// overflow past `i32`'s range, which no honest count reaches.
+fn days_in_month(year: i32, month: u32) -> u32 {
+    NaiveDate::from_ymd_opt(year, month, 1)
+        .and_then(|first| first.checked_add_months(Months::new(1)))
+        .and_then(|after| after.checked_sub_days(Days::new(1)))
+        .map_or(30, |last| last.day())
+}
+
+/// Resolve a local naive datetime into UTC: the earlier reading of a
+/// repeated wall time, and a refusal of one the zone skips — the
+/// machine's clock never shows such a time, so neither do we.
+fn localize(naive: NaiveDateTime) -> Option<DateTime<Utc>> {
+    match Local.from_local_datetime(&naive) {
+        MappedLocalTime::Single(at) => Some(Utc.from_utc_datetime(&at.naive_utc())),
+        MappedLocalTime::Ambiguous(earliest, _) => Some(Utc.from_utc_datetime(&earliest.naive_utc())),
+        MappedLocalTime::None => None,
+    }
+}
+
 /// Convenience: evaluate an expression string.
 pub fn evaluate(input: &str) -> Result<Value, EvalError> {
     let expr = crate::parser::parse(input)
@@ -555,6 +726,48 @@ pub fn evaluate(input: &str) -> Result<Value, EvalError> {
             message: err.message,
         })?;
     Evaluator::new().eval(&expr)
+}
+
+/// Convenience: answer a phrase or an expression.
+///
+/// The natural-language layer is tried first — `10 days from now` is an
+/// expression shaped like English — and a miss falls through to the
+/// ordinary grammar, so plain math is untouched.
+pub fn evaluate_smart(input: &str) -> Result<Value, EvalError> {
+    let expr = match crate::nl::parse(input) {
+        Some(expr) => expr,
+        None => crate::parser::parse(input).map_err(|err| EvalError {
+            message: err.message,
+        })?,
+    };
+    Evaluator::new().eval(&expr)
+}
+
+/// [`evaluate_smart`] with an explicit currency registry — the one the
+/// store's rates table has been folded into, when it holds a table.
+pub fn evaluate_smart_with(
+    input: &str,
+    currencies: CurrencyRegistry,
+) -> Result<Value, EvalError> {
+    let expr = match crate::nl::parse(input) {
+        Some(expr) => expr,
+        None => crate::parser::parse(input).map_err(|err| EvalError {
+            message: err.message,
+        })?,
+    };
+    Evaluator::with(Utc::now(), currencies).eval(&expr)
+}
+
+/// [`evaluate_smart`] with a fixed notion of "now", which is how the
+/// natural-language phrases are tested deterministically.
+pub fn evaluate_smart_at(input: &str, now: DateTime<Utc>) -> Result<Value, EvalError> {
+    let expr = match crate::nl::parse(input) {
+        Some(expr) => expr,
+        None => crate::parser::parse(input).map_err(|err| EvalError {
+            message: err.message,
+        })?,
+    };
+    Evaluator::at(now).eval(&expr)
 }
 
 /// Format a value for display.
@@ -625,6 +838,20 @@ mod tests {
     }
 
     #[test]
+    fn evaluates_the_percent_of_sugar() {
+        assert_relative_eq!(scalar("20% of 250"), 50.0);
+        // The `of` binds one factor; the addition is still additive.
+        assert_relative_eq!(scalar("20% of 250 + 10"), 60.0);
+        // Parentheses buy the other reading.
+        assert_relative_eq!(scalar("20% of (250 + 10)"), 52.0);
+    }
+
+    #[test]
+    fn modulo_survives_spaces_now() {
+        assert_relative_eq!(scalar("100 % 3"), 1.0);
+    }
+
+    #[test]
     fn evaluates_functions() {
         assert_relative_eq!(scalar("sqrt(16)"), 4.0);
         assert_relative_eq!(scalar("max(1, 7, 3)"), 7.0);
@@ -689,6 +916,24 @@ mod tests {
     }
 
     #[test]
+    fn stored_rates_extend_the_registry() {
+        let rates = crate::currency::RatesTable {
+            vintage: "2026-10-30".into(),
+            rates: std::collections::HashMap::from([("ZWL".into(), 5.0)]),
+        };
+        let registry = CurrencyRegistry::new().with_rates(&rates);
+        let expr = crate::parser::parse("100 usd in zwl").unwrap();
+        let evaluator = Evaluator::with(now_fixed(), registry);
+        match evaluator.eval(&expr).unwrap() {
+            Value::Currency { amount, code } => {
+                assert_eq!(code, "ZWL");
+                assert_relative_eq!(amount, 500.0);
+            }
+            other => panic!("expected currency, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn does_date_arithmetic() {
         let now = DateTime::from_timestamp(1_700_000_000, 0).unwrap();
         let evaluator = Evaluator::at(now);
@@ -699,6 +944,82 @@ mod tests {
             }
             other => panic!("expected an instant, got {other:?}"),
         }
+    }
+
+    /// Treated as 2026-01-31T12:00:00Z: the day chosen for the
+    /// calendar-clamp proofs below.
+    fn now_fixed() -> DateTime<Utc> {
+        DateTime::from_timestamp(1_769_860_800, 0).unwrap()
+    }
+
+    /// Answer a phrase with the fixed "now"; the answer must be an instant.
+    fn asked(input: &str) -> DateTime<Utc> {
+        match evaluate_smart_at(input, now_fixed()).unwrap() {
+            Value::Instant(at) => at,
+            other => panic!("expected an instant for `{input}`, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn answers_the_duration_phrases() {
+        let now = now_fixed();
+        let later = asked("10 days from now");
+        assert_eq!((later - now).num_seconds(), 10 * 86_400);
+        let later = asked("in 2 weeks");
+        assert_eq!((later - now).num_seconds(), 2 * 604_800);
+        let later = asked("in 3 hours");
+        assert_eq!((later - now).num_seconds(), 3 * 3_600);
+        let earlier = asked("90 minutes ago");
+        assert_eq!((earlier - now).num_seconds(), -90 * 60);
+    }
+
+    #[test]
+    fn answers_the_day_phrases() {
+        let now = now_fixed();
+        assert_eq!(asked("tomorrow") - now, Duration::days(1));
+        assert_eq!(asked("yesterday") - now, Duration::days(-1));
+    }
+
+    #[test]
+    fn a_month_moves_the_calendar_not_a_factor() {
+        let now = now_fixed();
+        // The local landing is the same wall time — a month is a calendar
+        // span, and its day clamps to February's last.
+        let landing = asked("in 1 month");
+        let landing = landing.with_timezone(&Local);
+        assert_eq!(landing.time(), now.with_timezone(&Local).time());
+        assert_eq!(landing.month(), 2);
+        assert_eq!(landing.day(), days_in_month(2026, 2));
+        // The 30-day fiction would already have walked into March.
+        let expr = crate::parser::parse("now + 30 days").unwrap();
+        let fiction = Evaluator::at(now).eval(&expr).unwrap();
+        assert_ne!(Value::Instant(landing.with_timezone(&Utc)), fiction);
+    }
+
+    #[test]
+    fn a_year_moves_the_calendar() {
+        let landing = asked("in 1 year");
+        assert_eq!(landing.with_timezone(&Local).year(), 2027);
+    }
+
+    #[test]
+    fn the_landing_keeps_the_wall_time_and_the_zone() {
+        // `next friday` answers for a *different* day, spells Friday, and
+        // keeps the wall-clock time it was asked at.
+        let next = asked("next friday");
+        let local = next.with_timezone(&Local);
+        assert_eq!(local.weekday(), chrono::Weekday::Fri);
+        let now = now_fixed().with_timezone(&Local);
+        assert!(local.date_naive() != now.date_naive());
+        assert_eq!(local.time(), now.time());
+    }
+
+    #[test]
+    fn last_weekday_walks_backwards() {
+        let last = asked("last monday");
+        let local = last.with_timezone(&Local);
+        assert_eq!(local.weekday(), chrono::Weekday::Mon);
+        assert!(last < now_fixed());
     }
 
     #[test]

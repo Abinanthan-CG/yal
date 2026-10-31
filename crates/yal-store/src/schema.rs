@@ -10,7 +10,7 @@
 //! place without losing data.
 
 /// The schema version this build expects.
-pub const CURRENT_VERSION: i64 = 2;
+pub const CURRENT_VERSION: i64 = 3;
 
 /// Every migration, in order.
 pub const MIGRATIONS: &[&str] = &[
@@ -99,6 +99,18 @@ pub const MIGRATIONS: &[&str] = &[
     CREATE TABLE index_dirs (
         path     TEXT PRIMARY KEY,
         mtime_ns INTEGER NOT NULL
+    );
+    "#,
+    // Version 3: fetched exchange rates. `per_usd` is units of `code`
+    // per one US dollar and `as_of` is the vintage day the source
+    // stamped. The rows are written whole, in one transaction, by an
+    // explicit act: an empty or half-fetched table is a lie about the
+    // world, so it is never made.
+    r#"
+    CREATE TABLE rates (
+        code    TEXT PRIMARY KEY,
+        per_usd REAL NOT NULL,
+        as_of   TEXT NOT NULL
     );
     "#,
 ];

@@ -29,7 +29,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | --- | --- |
 | **Launcher** | Searches Start Menu shortcuts, Store packages, installed programs and everything on `PATH`. |
 | **Search** | Tiered fuzzy matching that understands word boundaries, camelCase acronyms and scattered subsequences. |
-| **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else. |
+| **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else - and in plain words: `10 days from now`, `next friday`, `20% of 250`. Conversions answer from the stored rate table, stamped with the day it was fetched, and `Update exchange rates` fetches a fresh one when asked. |
 | **Clipboard** | History, kept by a background watcher. |
 | **Snippets** | Saved text: summon the palette, type the keyword, Enter — the expansion is typed into the application you came from, with the clipboard as the fallback. |
 | **Quicklinks, bookmarks** | Saved links, searchable, with `{query}` templates. Shut with the bundled search templates Google, YouTube, GitHub and friends. |
@@ -209,9 +209,13 @@ evidence.
   carries the placement presets — halves, quarters, thirds, centre, full —
   and giving a window exact coordinates stays with
   `yal window <handle>` on the command line, where the numbers make sense.
-- **Currency rates are static.** The bundled rates are indicative reference
-  values with a recorded vintage, not live quotes. The launcher is local
-  only and does not fetch anything.
+- **The one network act is the rate fetch.** The launcher is fully
+  functional with the machine unplugged: every feature answers from local
+  data. Exchange rates are the one place recency earns a request, and the
+  fetch runs only when you ask — `yal rates-update`, or the palette's
+  `Update exchange rates` act — never at startup, never on a schedule.
+  Until then the bundled snapshot answers, and every conversion names the
+  day its table is from, bundled or fetched.
 - **Timer toasts deliver a banner after identity registration.** `yal identify`
   writes a Start Menu shortcut carrying the launcher's user model identifier,
   which is what makes Windows raise a banner for an unpackaged program.

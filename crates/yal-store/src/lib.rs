@@ -12,6 +12,7 @@ use chrono::{DateTime, Utc};
 use rusqlite::{Connection, OptionalExtension, params};
 
 pub mod file_index;
+pub mod rates;
 pub mod records;
 pub mod schema;
 

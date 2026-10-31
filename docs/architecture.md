@@ -261,6 +261,74 @@ in an accent colour using a `LayoutJob`, and the match ranges are clamped to
 the truncated text so highlighting can never point past the end of the drawn
 title.
 
+### The network's place (revised Oct-2026)
+
+The original rule — *everything offline, no network at all* — was revised by
+the project owner: offline means **fully functional without the internet**,
+not *forbidden to ever connect*. What stays omitted is the observed product's
+online half: cloud accounts, sync, AI, telemetry and store-driven anything.
+The network is permitted where it earns its place and costs the user an
+explicit act. Current member of that class: **exchange-rate updates** — `yal
+rates-update`, and the "Update exchange rates" act in the palette, fetch
+today's reference rates once, store them, and the calculator then answers
+offline from the stored table until the next explicit ask. Everything else
+works with the machine unplugged.
+
+### The calculator's natural language (Oct-2026 wave 9)
+
+The calculator answered expressions (`now + 3 days`) but not the English
+phrasing people actually type. The phrase grammar below is adapted from
+[Numen] (BSD-3-Clause), Vicinae's built-in calculator backend — the
+permitted-source rules already cover ports, and BSD costs even less than the
+GPL one. It lives as a *pre-parser*: `yal_calc::nl` turns a few English
+shapes into expression trees the existing grammar already evaluates, so the
+date machinery, units and conversions add no second engine.
+
+- `<N> <time-unit>(s)? from now` / `in <N> <time unit>(s)?` → `now + N unit`
+- `<N> <time-unit>(s)? ago` → `now − N unit`
+- `yesterday` / `tomorrow` → `now − / + 1 day`
+- `next <weekday>` / `last <weekday>` → the `next`/`last` functions with the
+  weekday as an identifier (`friday` resolves to a number, ISO: Monday 0 …
+  Sunday 6). Calendar arithmetic is day-exact in the machine's local zone:
+  `next friday` on a Friday lands *next* Friday.
+- `<N> month(s)?` / `<N> year(s)?` in date phrases are **calendar**
+  spans, not 30-day fictions: they become `add_month(now, n)` /
+  `add_year(now, n)`, which move whole months and years on the calendar
+  and clamp end-of-month landings (Jan 31 + 1 month is Feb 28 in a leap
+  year). Plain *unit* arithmetic (seconds through weeks) stays exact
+  duration arithmetic.
+- `<N>% of <expr>` — percent-of sugar inside the expression grammar itself
+  (a trailing `%` was already division by one hundred; `% alone` remains
+  modulo).
+
+[Numen]: https://github.com/vicinaehq/numen
+
+### The exchange-rate table
+
+Migration 3 adds `rates(code PRIMARY KEY, per_usd, as_of)`. The evaluator's
+registry is still built from the bundled table; when the store holds rows
+they **override** per-code rates and may **add** codes the bundle lacks (a
+code the bundle has no symbol for is shown as its code — an honest plain
+form). Every conversion then labels its vintage in the row subtitle ("rate
+as of 2026-10-30"), which is the story the value can actually support. With
+no stored rows the bundled table answers with its own recorded vintage;
+
+```text
+yal rates-update            # fetch once, store, report count + vintage
+```
+
+and the palette act "Update exchange rates" carries out the same machine.
+The fetch lives in `yal-system::net` (one GET, fifteen-second timeout,
+two-megabyte cap, TLS certs from the system) and writes only whole,
+validated rows: three-letter codes, finite positive rates, one shared
+vintage — a half-fetched table is a lie, so it is never written.
+
+Observed live reply (2026-10-31): `{"amount": 1.0, "base": "USD",
+"date": "2026-10-30", "rates": {...}}`. The vintage field is `date`,
+not `base_date` as the endpoint's older examples spell it; both are
+accepted, the observed one first. The reply lists no USD row, so a
+`USD / 1.0` anchor is appended when storing.
+
 ---
 
 ## Testing

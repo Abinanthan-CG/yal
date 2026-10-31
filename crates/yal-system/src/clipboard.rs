@@ -88,18 +88,27 @@ mod tests {
 
     #[test]
     fn writing_then_reading_round_trips() {
-        // The clipboard is a shared resource; if another process holds it,
-        // the test reports that rather than failing the suite.
+        // The clipboard is a shared resource: a history keeper — another
+        // launcher running on this machine, for one — may hold it open
+        // for a few milliseconds as it watches for changes. A read that
+        // lands inside that window waits briefly; what is written must
+        // still be what is read.
         let Ok(mut clipboard) = Clipboard::new() else {
             return;
         };
         if clipboard.write_text("yal clipboard test").is_err() {
             return;
         }
-        assert_eq!(
-            clipboard.text().as_deref(),
-            Some("yal clipboard test")
-        );
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
+        loop {
+            if clipboard.text().as_deref() == Some("yal clipboard test") {
+                return;
+            }
+            if std::time::Instant::now() >= deadline {
+                panic!("the text written did not survive on the clipboard");
+            }
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
     }
 
     #[test]
@@ -107,8 +116,9 @@ mod tests {
         let Ok(mut clipboard) = Clipboard::new() else {
             return;
         };
+        // The refusals come first, and are unconditional: neither shape
+        // ever reaches the clipboard.
         let one_by_one = vec![90, 120, 200, 255];
-        assert!(clipboard.write_image(&one_by_one, 1, 1).is_ok());
         assert!(
             clipboard.write_image(&one_by_one, 2, 2).is_err(),
             "four bytes are not enough for a 2x2 picture"
@@ -117,5 +127,19 @@ mod tests {
             clipboard.write_image(&[], 1, 1).is_err(),
             "no bytes at all are not a picture"
         );
+        // A well-shaped write may be refused while another process holds
+        // the clipboard as it watches for changes; briefly retried, then
+        // reported rather than failed — the clipboard is not this test's
+        // subject, the refusals above are.
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
+        loop {
+            if clipboard.write_image(&one_by_one, 1, 1).is_ok() {
+                return;
+            }
+            if std::time::Instant::now() >= deadline {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
     }
 }

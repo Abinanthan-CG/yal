@@ -14,6 +14,7 @@ use yal_calc::format as format_value;
 use yal_data::colors;
 use yal_data::password::{PasswordOptions, generate};
 use yal_engine::Engine;
+use yal_engine::sources::pretty_value;
 use yal_index::discover;
 use yal_store::Store;
 
@@ -55,6 +56,12 @@ enum Command {
         /// The expression to evaluate.
         expression: String,
     },
+
+    /// Fetch a fresh exchange-rate table once and store it.
+    ///
+    /// The launcher's one network act: rates are fetched only when asked
+    /// and every conversion then says which day it answered from.
+    RatesUpdate,
 
     /// List the applications discovered on this host.
     Apps {
@@ -575,9 +582,51 @@ fn run(cli: &Cli) -> Result<()> {
         }
 
         Command::Calc { expression } => {
-            let value = yal_calc::evaluate(expression)
+            // The ask is answered from the current store: a money answer
+            // uses the stored table when the store holds one and says
+            // which day it answered from; without one the bundled
+            // snapshot answers, labelled as such. A store that cannot be
+            // opened is not an error here — the bundle still answers,
+            // labelled.
+            let table = cli
+                .database
+                .clone()
+                .or_else(yal_store::default_path)
+                .and_then(|path| yal_store::Store::open(&path).ok())
+                .and_then(|store| yal_engine::bridge::rates(&store));
+            let registry = match &table {
+                Some(table) => yal_calc::CurrencyRegistry::new().with_rates(table),
+                None => yal_calc::CurrencyRegistry::new(),
+            };
+            let value = yal_calc::evaluate_smart_with(expression, registry)
                 .map_err(|err| anyhow::anyhow!("{err}"))?;
-            println!("{}", format_value(&value));
+            // The head is said like a person; the storage form is the
+            // same string except for instants, which read in the local
+            // zone from a receipt in UTC.
+            let head = pretty_value(&value);
+            let receipt = format_value(&value);
+            println!("{head}");
+            if head != receipt {
+                println!("(= {receipt})");
+            }
+            // A money answer is only as fresh as its table, so it says
+            // which day it answered from — the same honesty the
+            // palette's row carries.
+            if matches!(value, yal_calc::Value::Currency { .. }) {
+                match &table {
+                    Some(table) => println!("rates as of {}", table.vintage),
+                    None => {
+                        println!("rates as of {} (bundled)", yal_calc::RATES_AS_OF)
+                    }
+                }
+            }
+        }
+
+        Command::RatesUpdate => {
+            let store = open_store(cli)?;
+            let (count, vintage) = yal_engine::bridge::update_rates(&store)
+                .map_err(|error| anyhow::anyhow!("{error}"))?;
+            println!("{count} currencies as of {vintage}");
         }
 
         Command::Apps { filter } => {

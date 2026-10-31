@@ -4,8 +4,10 @@
 //! Sources never rank; they only produce. The engine ranks across all of
 //! them so that a snippet and an application compete on equal terms.
 
-use chrono::{DateTime, Utc};
-use yal_calc::{Value, evaluate, format as format_value};
+use chrono::{DateTime, Local, Utc};
+use yal_calc::{
+    CurrencyRegistry, RatesTable, Value, format as format_value, format_number,
+};
 use yal_core::action::Action;
 use yal_core::command::CommandKind;
 use yal_core::icon::Icon;
@@ -262,17 +264,64 @@ pub fn clipboard(store: &Store, limit: usize) -> yal_store::StoreResult<Vec<Cand
         .collect())
 }
 
-/// Build the calculator candidate, if the query evaluates to a value.
-pub fn calculator(query: &str) -> Option<Candidate> {
-    let value = evaluate(query).ok()?;
+/// The headline text for a calculator row: the value said the way a
+/// person reads it. An instant asks for its local day, weekday and
+/// clock time — the UTC-with-seconds storage form is for the receipt
+/// subtitle, not the headline.
+pub fn pretty_value(value: &Value) -> String {
+    match value {
+        Value::Instant(at) => {
+            at.with_timezone(&Local).format("%Y-%m-%d %a %H:%M").to_string()
+        }
+        Value::Scalar(number) => format_number(*number),
+        other => format_value(other),
+    }
+}
+
+/// Build the calculator candidate, if the query answers.
+///
+/// The natural-language layer has first claim — `10 days from now` is
+/// an expression shaped like English — and a miss falls through to the
+/// ordinary grammar. The rates table, when the store holds one, extends
+/// the registry the evaluator resolves codes against, and every rate
+/// row says which vintage it answered from: honestly labelled, never
+/// mistaken for a live quote.
+pub fn calculator(
+    query: &str,
+    rates: Option<&RatesTable>,
+    now: DateTime<Utc>,
+) -> Option<Candidate> {
+    let expr = match yal_calc::nl::parse(query) {
+        Some(expr) => expr,
+        None => yal_calc::parse(query).ok()?,
+    };
+    let registry = match rates {
+        Some(table) => CurrencyRegistry::new().with_rates(table),
+        None => CurrencyRegistry::new(),
+    };
+    let value = yal_calc::Evaluator::with(now, registry).eval(&expr).ok()?;
     if !is_interesting(&value) {
         return None;
     }
+
+    // The head reads like a person; the receipt keeps the storage form,
+    // and both are the same shape for every value but the instants.
     let text = format_value(&value);
-    let item = Item::new(text.clone())
+    let head = pretty_value(&value);
+    let mut subtitle = format!("{query} = {text}");
+    if matches!(value, Value::Currency { .. }) {
+        let vintage = rates
+            .map(|table| table.vintage.as_str())
+            .unwrap_or(yal_calc::RATES_AS_OF);
+        subtitle.push_str(&format!(" · rate as of {vintage}"));
+    }
+
+    let item = Item::new(head.clone())
         .with_id("calculator:result".to_string())
-        .with_subtitle(format!("{query} = {text}"))
-        .with_action(Action::copy(text));
+        .with_subtitle(subtitle)
+        // What lands on the clipboard is the readable head: a date in
+        // UTC-with-seconds pastes as noise.
+        .with_action(Action::copy(head));
     Some(Candidate::new(item, CommandKind::Calculator))
 }
 
@@ -600,7 +649,7 @@ fn action_slug(action: yal_system::window_controls::WindowAction) -> &'static st
 /// them out is guarded by the user choosing them deliberately. The volume
 /// and theme actions read the current state for their subtitle, so a muted
 /// machine offers "Restore the volume" rather than a guess.
-pub fn system_commands() -> Vec<Candidate> {
+pub fn system_commands(vintage: Option<&str>) -> Vec<Candidate> {
     use yal_system::system::SystemCommand;
 
     let destructive = [
@@ -706,6 +755,22 @@ pub fn system_commands() -> Vec<Candidate> {
             .with_id("system:pick-colour")
             .with_subtitle("a loupe over what is on screen; the colour lands on the clipboard")
             .with_action(Action::task("pick-colour", Vec::new())),
+        CommandKind::System,
+    ));
+
+    // The exchange-rate door — the launcher's one network act, run when
+    // asked and never on a schedule. The subtitle states the vintage on
+    // hand, so the act is honest about what an update buys.
+    found.push(Candidate::new(
+        Item::new("Update exchange rates")
+            .with_id("system:rates-update")
+            .with_subtitle(match vintage {
+                Some(day) => format!("rate as of {day} on hand; fetch today's table"),
+                None => {
+                    format!("fetch a fresh table; the bundled snapshot as of {} answers until then", yal_calc::RATES_AS_OF)
+                }
+            })
+            .with_action(Action::task("rates-update", Vec::new())),
         CommandKind::System,
     ));
 
@@ -1309,15 +1374,50 @@ mod tests {
 
     #[test]
     fn calculator_ignores_trivial_values() {
-        assert!(calculator("0").is_none());
-        assert!(calculator("1 + 1").is_some());
+        assert!(calculator("0", None, now()).is_none());
+        assert!(calculator("1 + 1", None, now()).is_some());
     }
 
     #[test]
     fn calculator_reports_the_expression() {
-        let candidate = calculator("2 + 2").unwrap();
+        let candidate = calculator("2 + 2", None, now()).unwrap();
         assert_eq!(candidate.item.title, "4");
         assert_eq!(candidate.item.subtitle.as_deref(), Some("2 + 2 = 4"));
+    }
+
+    #[test]
+    fn a_phrase_answers_like_an_expression() {
+        let at = DateTime::from_timestamp(1_769_860_800, 0).unwrap();
+        let candidate = calculator("10 days from now", None, at).unwrap();
+        // The head reads in the local zone, so only the receipt shape
+        // is pinned here: the value came from `now`, stably.
+        assert!(candidate.item.subtitle.unwrap_or_default().starts_with("10 days from now = "));
+    }
+
+    #[test]
+    fn a_currency_row_says_its_vintage() {
+        let at = DateTime::from_timestamp(1_769_860_800, 0).unwrap();
+
+        // Stored rates are stamped with their own day.
+        let rates = RatesTable {
+            vintage: "2026-10-30".into(),
+            rates: std::collections::HashMap::from([
+                ("EUR".into(), 0.90),
+                ("USD".into(), 1.0),
+            ]),
+        };
+        let candidate = calculator("100 usd in eur", Some(&rates), at).unwrap();
+        let subtitle = candidate.item.subtitle.unwrap_or_default();
+        assert!(subtitle.ends_with("rate as of 2026-10-30"), "{subtitle}");
+        assert_eq!(candidate.item.title, "90 EUR");
+
+        // The bundled table says what shipped with the build.
+        let candidate = calculator("100 usd in eur", None, at).unwrap();
+        let subtitle = candidate.item.subtitle.unwrap_or_default();
+        assert!(
+            subtitle.ends_with(&format!("rate as of {}", yal_calc::RATES_AS_OF)),
+            "{subtitle}"
+        );
     }
 
     #[test]
@@ -1351,7 +1451,7 @@ mod tests {
 
     #[test]
     fn the_screen_is_there_to_be_captured() {
-        let commands = system_commands();
+        let commands = system_commands(None);
         let action_of = |id: &str| {
             commands
                 .iter()
@@ -1376,6 +1476,35 @@ mod tests {
             panic!("the colour pick should be a launcher task");
         };
         assert_eq!(name, "pick-colour");
+
+        let rates = action_of("system:rates-update").expect("the rates act is offered");
+        let yal_core::action::OpenTarget::Task { name, .. } = rates.target else {
+            panic!("the rates update should be a launcher task");
+        };
+        assert_eq!(name, "rates-update");
+    }
+
+    #[test]
+    fn the_rates_act_states_its_vintage() {
+        let bare = system_commands(None);
+        let offered = bare
+            .iter()
+            .find(|candidate| candidate.item.id.0 == "system:rates-update")
+            .unwrap();
+        assert!(
+            offered.item.subtitle.as_deref().unwrap().contains("bundled snapshot"),
+            "no stored table yet: the act says so"
+        );
+
+        let stamped = system_commands(Some("2026-10-30"));
+        let offered = stamped
+            .iter()
+            .find(|candidate| candidate.item.id.0 == "system:rates-update")
+            .unwrap();
+        assert!(
+            offered.item.subtitle.as_deref().unwrap().contains("2026-10-30"),
+            "the act states the vintage on hand"
+        );
     }
 
     #[test]

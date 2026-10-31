@@ -1208,6 +1208,40 @@ impl Palette {
                 });
                 Ok(())
             }
+            "rates-update" => {
+                // The launcher's one network act, at the user's ask. The
+                // fetch runs in its own thread with its own store
+                // connection, so a slow reply never holds the window;
+                // the outcome arrives as a toast, and the calculator
+                // picks the fresh table up on the next search.
+                let Some(store_path) = self.store.path().map(|path| path.to_path_buf()) else {
+                    return Err(
+                        "the palette runs without a store on disk, so there is nowhere to put a fresh table"
+                            .to_string(),
+                    );
+                };
+                std::thread::Builder::new()
+                    .name("rates-update".into())
+                    .spawn(move || {
+                        let outcome = match yal_store::Store::open(&store_path) {
+                            Ok(store) => yal_engine::bridge::update_rates(&store),
+                            Err(error) => Err(error.to_string()),
+                        };
+                        match outcome {
+                            Ok((count, vintage)) => {
+                                let _ = yal_system::notify::toast(
+                                    "Exchange rates",
+                                    &format!("{count} currencies as of {vintage}"),
+                                );
+                            }
+                            Err(error) => {
+                                let _ = yal_system::notify::toast("Exchange rates", &error);
+                            }
+                        }
+                    })
+                    .map_err(|error| format!("the update thread could not start: {error}"))?;
+                Ok(())
+            }
             unknown => {
                 let _ = unknown;
                 Err(format!("the task \"{name}\" is not one this launcher carries out"))

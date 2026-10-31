@@ -32,7 +32,7 @@ per wave and recorded with the wave.
 | Application launcher | Built | `yal-index` over Start Menu shortcuts, Store packages, PATH; `yal apps` lists. |
 | File search | **Built** | Documents, desktop and downloads with tiered search; image preview and EXIF wave-verified live drive. The whole-drive index — the target's `app_index.db` scale — closed as the second Oct-2026 wave: fixed drives only, walked by a thread of its own that keeps per-directory modification times (nanoseconds; a millisecond floor buried same-millisecond writes in the first test build) and re-lists only moved directories, with an exact per-row deletion — no `LIKE`-prefix sweeps. Live on this machine: a cold pass 52 s → 159,524 files over 16,674 directories; a warm pass 0.78–0.88 s; a file created in the home root (outside the three live-walk folders) was answerable only after the refresh and both `yal files` and `yal search` returned it; deleted, the next pass re-listed one directory and it was gone. The supplement never shadows the live walk, it only adds. Honest edges: skip list is by name (`node_modules`, `target`, caches, `AppData`, `ProgramData`, `Windows`, `Program Files`, dot-dirs; junctions treated absent — a recorded dir renamed into a skip name is evicted the pass after, but whole already-recorded subtrees under *newly* skip-listed ancestors reset via `--off`/`--refresh`), the snapshot is republished only after a pass that changed something so a query can see a stale directory when its change is under thirty minutes old, and the palette's walker counts on SQLite's two-second busy wait rather than a queue. |
 | Clipboard history | Partial | Background watcher keeps text history searchable; image entries are detected but not stored (yal-system/clipboard reads text only). |
-| Calculator | Built | Arithmetic, units, static currencies with recorded vintage, dates; verified against test vectors. |
+| Calculator | Built | Arithmetic, units, currencies and dates; the NL phrase layer closed as the Oct-2026 wave 9a — `10 days from now`, `in 2 weeks`, `90 minutes ago`, `tomorrow`, `yesterday`, `next friday`, `last monday`, `20 percent of 250` become ordinary expression trees over the one evaluator (phrase grammar ported from Vicinae's Numen backend, BSD-3-Clause notice carried in `yal-calc/src/nl.rs`). Months and years are calendar spans, not factors: a month past the 31st of January lands on February's last day, and the local wall time is kept; weekday shifts never answer for today. Answers verified live through `yal calc`. |
 | Snippets / text expansion | Built, verified | Live once end to end: expansion typed into Notepad after a focus check, clipboard fallback on refusal. |
 | Emoji picker | **Built** | Oct-2026 wave. The full Unicode 16.0 fully-qualified catalogue — 1,906 entries — generated at build time from Unicode's `emoji-test.txt` plus the CLDR English annotations, with Vicinae's keyword-building algorithm ported (`gen/emoji-gen.mjs`, GPL-cited; §6.3). Live: the doctor reports `emoji 1906`. |
 | Quicklinks | Built | `{query}` templates plus bundled search domains. |
@@ -40,8 +40,8 @@ per wave and recorded with the wave.
 | Window management | Built, verified | Focus, close, minimise, maximise, restore and the placement presets — halves, quarters, thirds, centre, full — from palette or CLI. Quarter/third/centre geometry verified live on the build machine by reading the moved window's rectangle back (`top-left-quarter` 853×462 at the corner, `middle-third` 569 wide, `center` from a corner lands at (1707−853)/2 = 427 with size unchanged). An arbitrary rectangle stays CLI-only, which matches the presets a launcher menu is for. |
 | Colour picker / converter | **Built** | Conversion both ways (named, hex, RGB, HSL) with tests; the eyedropper closed as the Oct-2026 wave — "Pick a colour" in the palette runs the same stop-the-world machine as the area capture: the screen freezes a beat after the palette leaves, a loupe (drawn straight out of the frozen texture, nearest-texel so magnified pixels stay crisp) follows the pointer with the to-be-taken pixel marked and the colour named, a click or Enter takes it, the hex goes to the clipboard with an `rgb`/`hsl` receipt row left in front of the results. verified live, its sample read back identical to an independent region
 capture of the same screen point (rgb(23, 23, 23) both ways). Honest edges: primary screen only, the screen is frozen at the act's start so the loupe does not show live updates, and the loupe click itself awaits a live hand like the other overlays. |
-| Currency / unit conversion | Built | Units full; currencies static by design (offline rule), vintage recorded. |
-| Date & time | Partial | Time zones by IANA name with live offsets, date arithmetic in the calculator; The target's calendar command (reading one's events) is a design question this build has not taken. |
+| Currency / unit conversion | **Built** | Units full. Currencies closed as the Oct-2026 wave 9a: the bundled snapshot (25 codes, indicative, its own vintage) is the offline default, and an explicit act — `yal rates-update`, or the palette's `Update exchange rates` row — fetches once from Frankfurter (ECB daily fixing, 15 s / 2 MB caps), validates the reply whole (three-letter codes, finite positive rates, a vintage day; one doubtful row throws the whole reply out) and stores it in one transaction. The store's table overrides and extends the bundle; a code the bundle has no symbol for is shown as its bare code. `base=USD` replies list no USD row, so a USD/1.0 anchor is appended. The revised offline rule in force: fully functional unplugged, network allowed where it earns its place by an explicit act — and this is the build's only network act. Live-verified: the store fetched 2026-10-30 (30 currencies) and `yal calc "100 usd in eur"` answers 89.509 EUR `rates as of 2026-10-30`; a fresh machine with no fetch yet answers 92 EUR `rates as of 2026-01-15 (bundled)` — both honest, both labelled. Rates keep their vintage in every consumer: the palette row's subtitle, the CLI's answer, and the update act's subtitle ("fetch a fresh table; the bundled snapshot as of … answers until then"). |
+| Date & time | Partial | Time zones by IANA name with live offsets; date arithmetic in the calculator: fixed-factor durations (seconds through weeks) and, since wave 9a, calendar month/year moves and next/last weekday — all judged on the local calendar. The target's calendar command (reading one's events) is a design question this build has not taken. |
 | Bookmarks / notes | **Built** | Bookmarks built and searchable together with quicklinks; the note-taking gap closed as an Oct-2026 wave — `note <text>` from the palette or the CLI, one record interpretation shared by both, listed newest first, copied with Enter, removed from the secondary panel (and `yal note-remove`). The reminders' key pattern (`note:<id>` in settings), no parser needed. |
 | QR generation | Built | `yal-data::qr`, rendered in the palette and by `yal qr`. |
 | Password generation | Built | Length and character-class rules. |
@@ -122,6 +122,24 @@ Soonest-first by scope, highest leverage:
    52 s over 16,674 directories, warm under a second, creation and
    removal both proven live through `file-index` / `files`.
 9. Preferences pane click-along — needs the user's hands, no code.
+10. ~~NL calculator + fetched exchange rates~~ — done as the first
+   half of the Oct-2026 wave 9, design first (architecture.md, "The
+   calculator that answers in plain words" and "The one network act"):
+   the phrase pre-parser over the one evaluator (Numen's shapes,
+   BSD-3-Clause cited in the module), calendar month/year arithmetic
+   day-clamped on the local zone, the `next`/`last` weekday functions
+   that never answer for today, and the percent-of sugar. Rates: the
+   store's third migration, whole-table writes only, a vintage stamped
+   on every row, the Frankfurter fetch behind 15 s / 2 MB caps run only
+   when asked — `yal rates-update` or the palette's update act, which
+   refuses to run for an in-memory store and answers by toast. Live:
+   30 currencies stored as of 2026-10-30, `100 usd in eur` → 89.509 EUR
+   with the stored vintage named; with no stored table the bundled
+   snapshot answers and is named as bundled. In passing, the clipboard
+   tests now retry the shared-resource race a history keeper imposes —
+   another launcher running on this machine watches writes — instead of
+   failing on it, with the shape refusals asserted before the clipboard
+   is touched at all.
 
 Deferred pending a design decision: calendar event reading (what is the
 local source on Windows?), the app-wide fallback beyond item 4's decision.

@@ -128,17 +128,24 @@ impl Engine {
     ) -> EngineResult<Vec<Scored>> {
         let trimmed = query.trim();
 
+        // The store's rates table, fetched by an explicit act, extends
+        // the calculator's bundled registry; every rate row says which
+        // day it answered from.
+        let rates = bridge::rates(store);
+
         let mut candidates = sources::applications(applications);
         candidates.extend(sources::snippets(store)?);
         candidates.extend(sources::quicklinks(store, trimmed)?);
         candidates.extend(sources::bookmarks(store)?);
         candidates.extend(sources::clipboard(store, 100)?);
-        candidates.extend(sources::system_commands());
+        candidates.extend(sources::system_commands(
+            rates.as_ref().map(|table| table.vintage.as_str()),
+        ));
 
         if !trimmed.is_empty() {
             candidates.extend(sources::emoji(trimmed, 20));
             candidates.extend(sources::aliases(store, applications, trimmed)?);
-            if let Some(calculator) = sources::calculator(trimmed) {
+            if let Some(calculator) = sources::calculator(trimmed, rates.as_ref(), now) {
                 candidates.push(calculator);
             }
             if let Some(expansion) = sources::snippet_expansion(store, trimmed)? {

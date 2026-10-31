@@ -212,6 +212,11 @@ pub enum UnaryOp {
 }
 
 /// The parsed expression tree.
+///
+/// A currency code is resolved at evaluation time, not here: the parser
+/// accepts any three-letter tag after a number as a currency, and the
+/// evaluator is the one that knows which codes the registry — bundled and
+/// stored — actually carries.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Number(f64),
@@ -220,7 +225,7 @@ pub enum Expr {
     /// A number carrying a unit, such as `10 km`.
     Quantity { amount: f64, unit: &'static UnitDef },
     /// An amount of currency, such as `100 usd`.
-    Currency { amount: f64, code: &'static str },
+    Currency { amount: f64, code: String },
     /// A named constant or unknown identifier.
     Ident(String),
     Unary { op: UnaryOp, expr: Box<Expr> },
@@ -283,6 +288,24 @@ impl Parser {
     /// The entry point: a full expression.
     fn parse_expr(&mut self) -> Result<Expr, ParseError> {
         let mut lhs = self.parse_term()?;
+
+        // The percent-of sugar: `20% of 250` reads as 20% times 250. The
+        // `of` only attaches to a leading percentage — elsewhere it
+        // remains an ordinary identifier, as it should.
+        if matches!(lhs, Expr::Percent(_)) {
+            if let Token::Ident(word) = self.peek() {
+                if word == "of" {
+                    self.next();
+                    let rhs = self.parse_term()?;
+                    lhs = Expr::Binary {
+                        op: BinOp::Mul,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    };
+                }
+            }
+        }
+
         loop {
             match self.peek() {
                 Token::Plus => {
@@ -395,10 +418,25 @@ impl Parser {
         Ok(base)
     }
 
-    /// A trailing `%` turns a value into a percentage.
+    /// A trailing `%` turns a value into a percentage, but only when the
+    /// mark is the whole story: a `%` followed by something that can start
+    /// a factor is the modulo operator instead (`100 % 3`). The `of`
+    /// exception keeps `20% of 250` reading as the sugar rather than as
+    /// `Rem(20, of)`.
     fn parse_postfix(&mut self) -> Result<Expr, ParseError> {
         let expr = self.parse_primary()?;
         if self.peek() == &Token::Percent {
+            if let Some(next) = self.tokens.get(self.index + 1) {
+                let is_binary = match next {
+                    Token::Number(_) | Token::LParen => true,
+                    Token::Ident(word) => word != "of",
+                    _ => false,
+                };
+                if is_binary {
+                    // Leave the `%` for `parse_term`'s remainder branch.
+                    return Ok(expr);
+                }
+            }
             self.next();
             return Ok(Expr::Percent(Box::new(expr)));
         }
@@ -409,20 +447,21 @@ impl Parser {
     fn parse_primary(&mut self) -> Result<Expr, ParseError> {
         match self.next() {
             Token::Number(value) => {
-                // A number directly followed by a unit or currency name is a
-                // quantity rather than a bare number.
+                // A number directly followed by a unit or a currency tag is
+                // a quantity rather than a bare number. A unit resolves
+                // against the table; a currency is any three-letter tag,
+                // and the evaluator — the side that holds the registry,
+                // bundled and stored — decides whether the code exists.
                 if let Token::Ident(name) = self.peek().clone() {
                     if let Some(unit) = crate::units::UnitRegistry::new().resolve(&name) {
                         self.next();
                         return Ok(Expr::Quantity { amount: value, unit });
                     }
-                    if let Some(currency) =
-                        crate::currency::CurrencyRegistry::new().resolve(&name)
-                    {
+                    if name.len() == 3 && name.chars().all(|c| c.is_ascii_alphabetic()) {
                         self.next();
                         return Ok(Expr::Currency {
                             amount: value,
-                            code: currency.code,
+                            code: name.to_uppercase(),
                         });
                     }
                 }
@@ -528,6 +567,44 @@ mod tests {
     fn parses_conversion() {
         let expr = parse("10 km in miles").unwrap();
         assert!(matches!(expr, Expr::Convert { .. }));
+    }
+
+    #[test]
+    fn parses_currency_tags_after_numbers() {
+        match parse("100 usd").unwrap() {
+            Expr::Currency { amount, code } => {
+                assert!((amount - 100.0).abs() < 1e-9);
+                assert_eq!(code, "USD");
+            }
+            other => panic!("expected currency, got {other:?}"),
+        }
+        // A currency is only the tag: whether the code exists is the
+        // evaluator's business. The parse answers for `100 tst` too.
+        assert!(matches!(parse("100 tst").unwrap(), Expr::Currency { .. }));
+    }
+
+    #[test]
+    fn parses_the_percent_of_sugar() {
+        match parse("20% of 250").unwrap() {
+            Expr::Binary { op: BinOp::Mul, lhs, rhs } => {
+                assert!(matches!(*lhs, Expr::Percent(_)));
+                assert!(matches!(*rhs, Expr::Number(n) if (n - 250.0).abs() < 1e-9));
+            }
+            other => panic!("expected the sugar's multiply, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn keeps_space_mixed_percent_marks_for_modulo() {
+        // `%` before a factor is the remainder operator, postfix or not.
+        assert!(matches!(
+            parse("100 % 3").unwrap(),
+            Expr::Binary { op: BinOp::Rem, .. }
+        ));
+        // A `%` that is the end of the story is still a percentage.
+        assert!(matches!(parse("50 %").unwrap(), Expr::Percent(_)));
+        // And `of` stays with the sugar, not with a modulus of an `of`.
+        assert!(matches!(parse("20% of 250").unwrap(), Expr::Binary { op: BinOp::Mul, .. }));
     }
 
     #[test]
