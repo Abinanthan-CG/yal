@@ -104,10 +104,26 @@ enum Command {
     },
 
     /// Capture the screen to a PNG file.
+    ///
+    /// `--region` and `--window` read a piece of the screen or one
+    /// window's own surface instead of the whole primary screen; with
+    /// `--clipboard` the pixels ride to the clipboard as a picture.
     Screenshot {
+        /// A piece of the screen as `x,y,w,h`, clamped onto the screen.
+        #[arg(long = "region")]
+        region: Option<String>,
+
+        /// Capture one window's own surface, by its handle from `yal windows`.
+        #[arg(long = "window")]
+        window: Option<u64>,
+
+        /// Also put the pixels on the clipboard as a picture.
+        #[arg(long)]
+        clipboard: bool,
+
         /// Where to write the image.
-        #[arg(long, default_value = "screen.png")]
-        output: PathBuf,
+        #[arg(long)]
+        output: Option<PathBuf>,
     },
 
     /// Check which launcher hotkeys are free on this machine.
@@ -671,11 +687,48 @@ fn run(cli: &Cli) -> Result<()> {
             println!("{password}");
         }
 
-        Command::Screenshot { output } => {
-            let capture = yal_system::capture_screen()
+        Command::Screenshot {
+            region,
+            window,
+            clipboard,
+            output,
+        } => {
+            if window.is_some() && region.is_some() {
+                return Err(anyhow::anyhow!(
+                    "a screenshot is either `--region` or `--window`, not both"
+                ));
+            }
+            let capture =
+                if let Some(region) = region {
+                    let (x, y, width, height) =
+                        yal_system::screenshot::parse_region(region).map_err(|err| anyhow::anyhow!("{err}"))?;
+                    yal_system::screenshot::capture_region(x, y, width, height)
+                } else if let Some(window) = window {
+                    yal_system::screenshot::capture_window(*window)
+                } else {
+                    yal_system::capture_screen()
+                }
                 .map_err(|err| anyhow::anyhow!("{err}"))?;
-            yal_system::screenshot::write_png(&capture, output)
+
+            let output = match output {
+                Some(path) => path.clone(),
+                None => yal_system::screenshot::default_capture_path(),
+            };
+            yal_system::screenshot::write_png(&capture, &output)
                 .map_err(|err| anyhow::anyhow!("{err}"))?;
+
+            if *clipboard {
+                let mut clipboard = yal_system::Clipboard::new()
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                clipboard
+                    .write_image(
+                        capture.image.as_raw(),
+                        capture.width as usize,
+                        capture.height as usize,
+                    )
+                    .map_err(|err| anyhow::anyhow!("{err}"))?;
+                println!("the pixels are on the clipboard");
+            }
             println!(
                 "captured {}x{} to {}",
                 capture.width,

@@ -11,8 +11,9 @@ use std::time::Instant;
 use eframe::egui::{self, Align, Color32, FontId, Key, Layout, RichText, Stroke, TextFormat};
 use egui::text::LayoutJob;
 use yal_core::action::{Action, ActionKind, OpenTarget};
+use yal_core::ranking::Match;
 use yal_engine::Engine;
-use yal_search::Scored;
+use yal_search::{Frecency, Scored};
 use yal_store::Store;
 
 /// How long the palette waits before re-running a search.
@@ -112,6 +113,8 @@ pub struct Palette {
     /// Where the selected result row sat when it was last drawn, so the
     /// panel can open beside its row.
     selected_rect: Option<egui::Rect>,
+    /// A screen-capture act in flight; it owns the window while present.
+    capture: Option<CaptureState>,
 }
 
 /// What the palette is showing.
@@ -121,6 +124,47 @@ enum Mode {
     Search,
     /// The settings pane.
     Preferences,
+}
+
+/// The capture act underway.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CaptureKind {
+    /// The whole screen, delivered to a file and to the clipboard.
+    WholeScreen,
+    /// A band dragged over the frozen screen.
+    Area,
+}
+
+/// A capture act in flight.
+///
+/// The little machine, in order: the palette leaves the screen, a beat
+/// later the frame is read (so the launcher is not in its own picture),
+/// and for the area act the window grows over the screen showing the
+/// frozen frame while the user drags a band.
+struct CaptureState {
+    /// Which act opened the overlay.
+    kind: CaptureKind,
+    /// The palette window's shape before the takeover, as it was measured.
+    restore: (i32, i32, i32, i32),
+    /// When the leaving began; the frame is read only after the beat.
+    left_at: Instant,
+    /// The frozen frame in its native pixels, once read.
+    frame: Option<image::RgbaImage>,
+    /// The frozen frame as the palette draws it.
+    texture: Option<egui::TextureHandle>,
+    /// The band's first corner, in overlay points.
+    band_start: Option<egui::Pos2>,
+}
+
+/// What one frame of the overlay decides.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CaptureOutcome {
+    /// The band is still moving; more frames.
+    Continue,
+    /// The band closed; the crop is in screen pixels.
+    Banded { region: (i32, i32, u32, u32) },
+    /// Escape or a click without a band: the act ends without a picture.
+    Abandoned,
 }
 
 /// The palette's appearance.
@@ -216,6 +260,7 @@ impl Palette {
             action_panel: None,
             panel_selected: 0,
             selected_rect: None,
+            capture: None,
         };
         palette.theme = palette
             .store
@@ -452,20 +497,47 @@ impl Palette {
             }
         }
 
+        // The capture acts take the window over themselves: they leave
+        // the screen, read the frame, grow it back, and report by toast.
+        // They are not carried out the general way and the palette is
+        // not put away by the tail below.
+        if action.kind == ActionKind::LauncherTask {
+            if let OpenTarget::Task { name, .. } = &action.target {
+                match name.as_str() {
+                    "screenshot-screen" => {
+                        self.credit_selected();
+                        self.begin_capture(CaptureKind::WholeScreen);
+                        return;
+                    }
+                    "capture-area" => {
+                        self.credit_selected();
+                        self.begin_capture(CaptureKind::Area);
+                        return;
+                    }
+                    _ => {}
+                }
+            }
+        }
+
         if let Err(error) = self.perform(action) {
             self.status = Some(error.to_string());
             return;
         }
 
         // Remember the choice so frecency can prefer it next time.
-        if let Some(result) = self.results.get(self.selected) {
-            let key = result.item.id.0.clone();
-            let _ = self.store.record_use(&key, chrono::Utc::now());
-        }
+        self.credit_selected();
 
         // The palette gets out of the way once a result is chosen.
         self.visible = false;
         self.hide_requested = true;
+    }
+
+    /// Credit the selected result in the usage history.
+    fn credit_selected(&mut self) {
+        if let Some(result) = self.results.get(self.selected) {
+            let key = result.item.id.0.clone();
+            let _ = self.store.record_use(&key, chrono::Utc::now());
+        }
     }
 
     /// Carry out the act highlighted in the secondary panel.
@@ -556,6 +628,261 @@ impl Palette {
 }
 
 impl Palette {
+    // ---- the screen-capture acts -----------------------------------------
+
+    /// Open a capture act: the palette leaves the screen now, and the
+    /// frame is read a beat later by the pump.
+    ///
+    /// The leaving is done with `place`, not with egui's viewport
+    /// command, so it needs no context and lands inside this frame —
+    /// whichever frame the keystroke came from.
+    fn begin_capture(&mut self, kind: CaptureKind) {
+        // Close the panel with the secondary acts, if one was open: the
+        // window is about to be something else entirely.
+        self.action_panel = None;
+        if self.capture.is_some() {
+            // A capture already under way; entering twice would lose the
+            // first band and steal the window shape, so the second ask
+            // wins nothing: it is turned around.
+            return;
+        }
+        let Some(handle) = yal_system::windows::own_window_handle() else {
+            self.status = Some("the palette window could not be found".into());
+            return;
+        };
+        let restore = match yal_system::window_controls::rect(handle) {
+            Ok(rect) => rect,
+            Err(error) => {
+                self.status = Some(error.to_string());
+                return;
+            }
+        };
+        if let Err(error) =
+            yal_system::window_controls::place(handle, Some(-16000), Some(-16000), None, None)
+        {
+            self.status = Some(error.to_string());
+            return;
+        }
+        self.capture = Some(CaptureState {
+            kind,
+            restore,
+            left_at: std::time::Instant::now(),
+            frame: None,
+            texture: None,
+            band_start: None,
+        });
+        // The palette stays "visible" during the act — an off-screen
+        // window that stops painting takes the frame loop with it, which
+        // is just what park() works around. The pump keeps the repaints
+        // up instead.
+        self.visible = true;
+    }
+
+    /// Drive an in-flight capture act through its states.
+    fn pump_capture(&mut self, ctx: &egui::Context) {
+        // The beat the window needs to be off the screen before the
+        // frame is read, so the launcher is not inside its own picture.
+        const LEAVE_BEAT: std::time::Duration = std::time::Duration::from_millis(180);
+
+        let Some(state) = self.capture.take() else {
+            return;
+        };
+
+        // Nothing read yet: wait out the beat, then read once.
+        if state.frame.is_none() {
+            let elapsed = state.left_at.elapsed();
+            if elapsed < LEAVE_BEAT {
+                self.capture = Some(state);
+                ctx.request_repaint_after(LEAVE_BEAT - elapsed);
+                return;
+            }
+
+            // The frame is read once, after the beat. A failure ends
+            // the act cleanly: word by toast, since the palette is
+            // parked away from its own status line.
+            let capture = match yal_system::screenshot::capture_screen() {
+                Ok(capture) => capture,
+                Err(error) => {
+                    self.capture = None;
+                    let _ = yal_system::notify::toast("Capture", &error.to_string());
+                    self.park(ctx);
+                    return;
+                }
+            };
+
+            match state.kind {
+                CaptureKind::WholeScreen => {
+                    let outcome = self.store_with_clipboard_image(&capture);
+                    self.capture = None;
+                    let word = match &outcome {
+                        Ok(path) => format!(
+                            "saved to {}\nthe pixels are on the clipboard",
+                            path.display()
+                        ),
+                        Err(error) => error.clone(),
+                    };
+                    let _ = yal_system::notify::toast("Capture", &word);
+                    self.park(ctx);
+                    return;
+                }
+                CaptureKind::Area => {}
+            }
+
+            // The area act: the frame freezes into a texture, the window
+            // grows over the screen, and the drag begins.
+            let (screen_width, screen_height) = yal_system::screenshot::screen_extent();
+            if screen_width == 0 || screen_height == 0 {
+                self.capture = None;
+                let _ = yal_system::notify::toast(
+                    "Capture",
+                    "the screen reports no usable dimensions",
+                );
+                self.park(ctx);
+                return;
+            }
+            let image = egui::ColorImage::from_rgba_unmultiplied(
+                [capture.width as usize, capture.height as usize],
+                capture.image.as_raw(),
+            );
+            let texture = ctx.load_texture("yal-frozen-screen", image, egui::TextureOptions::LINEAR);
+            if let Some(handle) = yal_system::windows::own_window_handle() {
+                let _ = yal_system::window_controls::place(
+                    handle,
+                    Some(0),
+                    Some(0),
+                    Some(screen_width as i32),
+                    Some(screen_height as i32),
+                );
+                yal_system::window_controls::pin_above_everything(handle);
+            }
+            self.capture = Some(CaptureState {
+                restore: state.restore,
+                left_at: state.left_at,
+                frame: Some(capture.image),
+                texture: Some(texture),
+                band_start: None,
+                kind: CaptureKind::Area,
+            });
+            self.needs_focus = true;
+            ctx.request_repaint();
+            return;
+        }
+
+        // Frame in hand: the overlay runs until the band closes or the
+        // act is abandoned.
+        let (outcome, state) = draw_capture(ctx, state);
+        match outcome {
+            CaptureOutcome::Continue => {
+                self.capture = Some(state);
+                ctx.request_repaint_after(std::time::Duration::from_millis(15));
+            }
+            CaptureOutcome::Abandoned => {
+                self.capture = None;
+                dismiss_capture_window(state.restore);
+                self.park(ctx);
+            }
+            CaptureOutcome::Banded { region } => {
+                self.finish_area_capture(ctx, state, region);
+            }
+        }
+    }
+
+    /// Save a captured frame: a PNG in Pictures, then the pixels
+    /// themselves on the clipboard, so the picture lands wherever it is
+    /// going without a round trip through the file.
+    fn store_with_clipboard_image(
+        &self,
+        capture: &yal_system::screenshot::Capture,
+    ) -> Result<std::path::PathBuf, String> {
+        let path = yal_system::screenshot::default_capture_path();
+        yal_system::screenshot::write_png(capture, &path).map_err(|err| err.to_string())?;
+        let mut clipboard =
+            yal_system::clipboard::Clipboard::new().map_err(|err| err.to_string())?;
+        clipboard
+            .write_image(
+                capture.image.as_raw(),
+                capture.width as usize,
+                capture.height as usize,
+            )
+            .map_err(|err| err.to_string())?;
+        Ok(path)
+    }
+
+    /// Close an area capture: crop the band out of the frozen frame,
+    /// save it, put the pixels on the clipboard, and leave a receipt row
+    /// in front of the results for when the palette comes back.
+    fn finish_area_capture(
+        &mut self,
+        ctx: &egui::Context,
+        state: CaptureState,
+        region: (i32, i32, u32, u32),
+    ) {
+        let Some(frame) = state.frame else {
+            return;
+        };
+        // The band is clamped to what the frame holds, in case a beat of
+        // window settling left a pointer corner outside of it.
+        let Some(region) =
+            yal_system::screenshot::clamp_region(region.0, region.1, region.2, region.3, (frame.width(), frame.height()))
+        else {
+            self.capture = None;
+            dismiss_capture_window(state.restore);
+            self.park(ctx);
+            return;
+        };
+        let (x, y, width, height) = region;
+
+        // The frozen frame was swizzled on read; the band keeps its
+        // pixels as they are.
+        let band = image::imageops::crop_imm(&frame, x as u32, y as u32, width, height).to_image();
+        let capture = yal_system::screenshot::Capture {
+            image: band,
+            width,
+            height,
+        };
+        self.capture = None;
+        dismiss_capture_window(state.restore);
+
+        match self.store_with_clipboard_image(&capture) {
+            Ok(path) => {
+                let display = path.display().to_string();
+                self.insert_capture_row(path);
+                let _ = yal_system::notify::toast(
+                    "Capture",
+                    &format!("saved to {display}\nthe picture is on the clipboard"),
+                );
+            }
+            Err(error) => {
+                let _ = yal_system::notify::toast("Capture", &error);
+            }
+        }
+        self.park(ctx);
+    }
+
+    /// Put the fresh capture in front of the results.
+    ///
+    /// The row is the act's receipt, not machine state: it lives until
+    /// the next keystroke, when the search rebuilds the list.
+    fn insert_capture_row(&mut self, path: std::path::PathBuf) {
+        let display = path.display().to_string();
+        self.results.insert(
+            0,
+            Scored {
+                item: yal_core::item::Item::new("The new capture")
+                    .with_id(format!("capture:{display}"))
+                    .with_subtitle(display.clone())
+                    .with_action(Action::reveal(path))
+                    .with_secondary_action(Action::copy(display))
+                    .with_secondary_action(Action::task("capture-area", Vec::new())),
+                kind: yal_core::CommandKind::System,
+                matched: Match::none(),
+                score: 0.0,
+                frecency: Frecency::never(),
+            },
+        );
+        self.selected = 0;
+    }
+
     /// Carry out an action.
     ///
     /// The palette owns the tasks that are not intents about other
@@ -633,6 +960,26 @@ impl Palette {
                 self.store
                     .delete_clipboard(id)
                     .map_err(|err| err.to_string())
+            }
+            "screenshot-window" => {
+                // PrintWindow reads the named window's own surface, so
+                // the palette need not leave the screen for this one.
+                let handle = arguments
+                    .first()
+                    .ok_or_else(|| "the window handle is missing".to_string())?
+                    .parse::<u64>()
+                    .map_err(|err| format!("the window handle is not a number: {err}"))?;
+                let capture = yal_system::screenshot::capture_window(handle)
+                    .map_err(|err| err.to_string())?;
+                let path = self.store_with_clipboard_image(&capture)?;
+                let _ = yal_system::notify::toast(
+                    "Capture",
+                    &format!(
+                        "saved to {}\nthe window's picture is on the clipboard",
+                        path.display()
+                    ),
+                );
+                Ok(())
             }
             "window" => {
                 let handle = arguments
@@ -1228,7 +1575,15 @@ impl eframe::App for Palette {
         // The global hotkey toggles the palette. It is polled before
         // anything else so that the toggle is never lost between frames.
         if self.hotkey.poll() {
-            if self.visible {
+            if let Some(state) = self.capture.take() {
+                // While the band is open the window is summoned at the
+                // screen's top; the press abandons the capture outright
+                // — going into a frozen picture's drag, the launcher
+                // itself steps aside.
+                self.capture = None;
+                dismiss_capture_window(state.restore);
+                self.park(ctx);
+            } else if self.visible {
                 self.park(ctx);
             } else {
                 self.show(ctx);
@@ -1261,6 +1616,16 @@ impl eframe::App for Palette {
                     }
                 }
             }
+        }
+
+        // A capture act in flight owns the window and the frame: the
+        // overlay is what this frame shows, and the normal palette
+        // waits until it is over.
+        if self.capture.is_some() {
+            self.pump_capture(ctx);
+            self.take_focus(ctx);
+            ctx.request_repaint_after(std::time::Duration::from_millis(15));
+            return;
         }
 
         let palette_style = PaletteStyle::new(self.theme_dark(ctx));
@@ -1758,6 +2123,141 @@ impl eframe::App for Palette {
         if self.close_requested {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
+    }
+}
+
+/// A screen-capture act's last frame: put the window away with its old
+/// shape back, tucked at the park corner.
+///
+/// The size is the important part — the area act grew the window over
+/// the screen, and a show() that restores only the position would leave
+/// a window the size of the screen parked off it.
+fn dismiss_capture_window(restore: (i32, i32, i32, i32)) {
+    if let Some(handle) = yal_system::windows::own_window_handle() {
+        let _ = yal_system::window_controls::place(
+            handle,
+            Some(-16000),
+            Some(-16000),
+            Some(restore.2),
+            Some(restore.3),
+        );
+    }
+}
+
+/// Draw one frame of the frozen-screen overlay and read the band.
+///
+/// The frozen frame is drawn over the whole window; wherever a band is
+/// being dragged, the rest of the screen is dimmed around it and the
+/// band's size counted in pixels. A band closed too small counts as a
+/// click, and a click abandons the act.
+fn draw_capture(ctx: &egui::Context, mut state: CaptureState) -> (CaptureOutcome, CaptureState) {
+    let (Some(texture), Some(frame)) = (&state.texture, &state.frame) else {
+        return (CaptureOutcome::Abandoned, state);
+    };
+
+    // Escape ends the act before anything is drawn.
+    if ctx.input(|input| input.key_pressed(Key::Escape)) {
+        return (CaptureOutcome::Abandoned, state);
+    }
+
+    let scale = ctx.pixels_per_point();
+    let mut band: Option<egui::Pos2> = state.band_start;
+    let mut closed: Option<egui::Pos2> = None;
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::NONE)
+        .show(ctx, |ui| {
+            let available = ui.available_rect_before_wrap();
+            let (_, response) =
+                ui.allocate_exact_size(available.size(), egui::Sense::click_and_drag());
+            let response = response.on_hover_cursor(egui::CursorIcon::Crosshair);
+
+            // The frozen frame over every point of the window.
+            ui.painter().image(
+                texture.id(),
+                available,
+                egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                Color32::WHITE,
+            );
+
+            let pointer_now = response.interact_pointer_pos();
+            if response.drag_started() {
+                band = pointer_now;
+            }
+
+            let band_color = Color32::from_rgb(140, 190, 255);
+            let dim = Color32::from_rgba_unmultiplied(0, 0, 0, 90);
+
+            if let Some(start) = band {
+                let end = pointer_now.unwrap_or(start);
+                let bx = egui::Rect::from_two_pos(start, end);
+                // Four dim sheets around the band, so the picture's own
+                // brightness says what is in and what is out.
+                let zero = egui::CornerRadius::ZERO;
+                ui.painter().rect_filled(egui::Rect::from_min_max(available.min, egui::pos2(available.right(), bx.top())), zero, dim);
+                ui.painter().rect_filled(egui::Rect::from_min_max(egui::pos2(available.left(), bx.bottom()), available.max), zero, dim);
+                ui.painter().rect_filled(egui::Rect::from_min_max(egui::pos2(available.left(), bx.top()), egui::pos2(bx.left(), bx.bottom())), zero, dim);
+                ui.painter().rect_filled(egui::Rect::from_min_max(egui::pos2(bx.right(), bx.top()), egui::pos2(available.right(), bx.bottom())), zero, dim);
+                ui.painter().rect_stroke(
+                    bx,
+                    zero,
+                    Stroke::new(1.4_f32, band_color),
+                    egui::StrokeKind::Middle,
+                );
+                // The band's size, in the pixels that will be cropped.
+                let width = ((bx.width() * scale).round() as i64).max(0);
+                let height = ((bx.height() * scale).round() as i64).max(0);
+                ui.painter().text(
+                    bx.left_top() + egui::vec2(4.0, -6.0),
+                    egui::Align2::LEFT_BOTTOM,
+                    format!("{width} × {height} px — esc leaves, let go keeps"),
+                    FontId::proportional(13.0),
+                    Color32::from_rgb(225, 232, 245),
+                );
+            } else {
+                // Waiting for the first press: a light dim and a word.
+                let zero = egui::CornerRadius::ZERO;
+                ui.painter().rect_filled(available, zero, Color32::from_rgba_unmultiplied(0, 0, 0, 40));
+                ui.painter().text(
+                    available.center(),
+                    egui::Align2::CENTER_CENTER,
+                    "drag the band around what you want · esc leaves",
+                    FontId::proportional(15.0),
+                    Color32::from_rgb(225, 232, 245),
+                );
+            }
+
+            if response.drag_stopped() {
+                closed = pointer_now;
+            }
+        });
+
+    state.band_start = band;
+
+    if let Some((start, end)) = band.zip(closed) {
+        // The band's pixels, clamped inside the frozen frame.
+        let x1 = (start.x.min(end.x) * scale).floor();
+        let y1 = (start.y.min(end.y) * scale).floor();
+        let x2 = (start.x.max(end.x) * scale).ceil();
+        let y2 = (start.y.max(end.y) * scale).ceil();
+        let x1 = x1.max(0.0).min(frame.width() as f32) as i32;
+        let y1 = y1.max(0.0).min(frame.height() as f32) as i32;
+        let x2 = x2.max(0.0).min(frame.width() as f32) as i32;
+        let y2 = y2.max(0.0).min(frame.height() as f32) as i32;
+        let width = x2.saturating_sub(x1) as u32;
+        let height = y2.saturating_sub(y1) as u32;
+        if width < 4 || height < 4 {
+            (CaptureOutcome::Abandoned, state)
+        } else {
+            (
+                CaptureOutcome::Banded {
+                    region: (x1, y1, width, height),
+                },
+                state,
+            )
+        }
+    } else {
+        (CaptureOutcome::Continue, state)
     }
 }
 

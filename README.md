@@ -55,7 +55,7 @@ Press the palette, type a few characters, and get the thing you meant.
 | **Colours** | Named, hexadecimal, RGB and HSL, both ways. |
 | **Passwords** | Generated to length and character-class rules. |
 | **Time zones** | Every IANA zone with its current offset. |
-| **Screenshots** | Capture the screen. |
+| **Screenshots** | The whole screen, a drawn region (`--region x,y,w,h`), or one window's own surface (`--window <handle>`); every capture is stamped into `Pictures\YAL`, and `--clipboard` puts the pixels there as a picture. In the palette: "Capture the screen" sends it up, "Capture an area" freezes the screen and you drag a band over it on the spot (`esc` leaves), and a window's secondary panel captures that window. The drag is drawn by the palette itself, so it is primary-screen only for now. |
 | **Web search** | Hands the query to the search engine. |
 | **System tray** | The menu bar extra, in its Windows form. |
 

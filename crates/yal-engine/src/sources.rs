@@ -532,6 +532,10 @@ pub fn windows(list: &[yal_system::Window]) -> Vec<Candidate> {
                 .with_action(Action::task(
                     "window",
                     vec![window.handle.to_string(), "focus".into()],
+                ))
+                .with_secondary_action(Action::task(
+                    "screenshot-window",
+                    vec![window.handle.to_string()],
                 ));
             if let Some(name) = &window.process_name {
                 focus = focus.with_keyword(name.clone());
@@ -673,6 +677,25 @@ pub fn system_commands() -> Vec<Candidate> {
             .with_id("system:uuid")
             .with_subtitle("a fresh identifier, ready to copy")
             .with_action(Action::copy(quick_uuid())),
+        CommandKind::System,
+    ));
+
+    // The screenshot acts: the screen read is a plain movement of pixels
+    // to a file and to the clipboard. The whole-screen act hides the
+    // palette first, so the launcher is not inside its own picture; the
+    // area act takes the screen over for a drag.
+    found.push(Candidate::new(
+        Item::new("Capture the screen")
+            .with_id("system:screenshot-screen")
+            .with_subtitle("the whole screen, saved and on the clipboard")
+            .with_action(Action::task("screenshot-screen", Vec::new())),
+        CommandKind::System,
+    ));
+    found.push(Candidate::new(
+        Item::new("Capture an area")
+            .with_id("system:capture-area")
+            .with_subtitle("drag a rectangle; it lands as a picture")
+            .with_action(Action::task("capture-area", Vec::new())),
         CommandKind::System,
     ));
 
@@ -1314,6 +1337,54 @@ mod tests {
     fn a_query_that_is_not_a_reminder_offers_no_creation() {
         assert!(reminder_specification("remind me later", Utc::now()).is_none());
         assert!(reminder_specification("reset the router", Utc::now()).is_none());
+    }
+
+    #[test]
+    fn the_screen_is_there_to_be_captured() {
+        let commands = system_commands();
+        let action_of = |id: &str| {
+            commands
+                .iter()
+                .find(|candidate| candidate.item.id.0 == id)
+                .and_then(|candidate| candidate.item.action.clone())
+        };
+
+        let area = action_of("system:capture-area").expect("the area capture is offered");
+        let yal_core::action::OpenTarget::Task { name, .. } = area.target else {
+            panic!("the area capture should be a launcher task");
+        };
+        assert_eq!(name, "capture-area");
+
+        let whole = action_of("system:screenshot-screen").expect("the whole-screen act is offered");
+        let yal_core::action::OpenTarget::Task { name, .. } = whole.target else {
+            panic!("the whole-screen act should be a launcher task");
+        };
+        assert_eq!(name, "screenshot-screen");
+    }
+
+    #[test]
+    fn a_window_offers_to_be_pictured() {
+        let window = yal_system::Window {
+            handle: 0x1234,
+            title: "Wonderbrew".into(),
+            process_id: 42,
+            process_name: Some("wonderbrew.exe".into()),
+        };
+        let candidates = windows(&[window]);
+        let focus = &candidates[0].item;
+        assert_eq!(focus.title, "Wonderbrew");
+        let Some(shot) = focus.secondary_actions.first() else {
+            panic!("the focus item should carry the window capture in its panel");
+        };
+        let yal_core::action::OpenTarget::Task { name, arguments } = &shot.target else {
+            panic!("the window capture should be a launcher task");
+        };
+        assert_eq!(name, "screenshot-window");
+        assert_eq!(
+            arguments.first().map(String::as_str),
+            Some("4660"),
+            "the act names its window by handle"
+        );
     }
 
     #[test]

@@ -48,6 +48,38 @@ impl Clipboard {
             .set_text(text.to_string())
             .map_err(|err| ClipboardError::Write(err.to_string()))
     }
+
+    /// Put an image on the clipboard.
+    ///
+    /// The panel bytes are plain RGBA, `width` by `height`; arboard works
+    /// out the rest. A region capture pastes into a chat or editor as a
+    /// picture, which is where most captures go.
+    pub fn write_image(
+        &mut self,
+        rgba: &[u8],
+        width: usize,
+        height: usize,
+    ) -> Result<(), ClipboardError> {
+        if width == 0 || height == 0 {
+            return Err(ClipboardError::Write(
+                "an empty picture cannot be put on the clipboard".into(),
+            ));
+        }
+        if rgba.len() != width * height * 4 {
+            return Err(ClipboardError::Write(format!(
+                "the picture bytes do not match {}x{} RGBA",
+                width, height
+            )));
+        }
+        let data = arboard::ImageData {
+            width,
+            height,
+            bytes: std::borrow::Cow::Borrowed(rgba),
+        };
+        self.inner
+            .set_image(data)
+            .map_err(|err| ClipboardError::Write(err.to_string()))
+    }
 }
 
 #[cfg(test)]
@@ -67,6 +99,23 @@ mod tests {
         assert_eq!(
             clipboard.text().as_deref(),
             Some("yal clipboard test")
+        );
+    }
+
+    #[test]
+    fn an_ill_shaped_picture_is_refused_before_the_clipboard_sees_it() {
+        let Ok(mut clipboard) = Clipboard::new() else {
+            return;
+        };
+        let one_by_one = vec![90, 120, 200, 255];
+        assert!(clipboard.write_image(&one_by_one, 1, 1).is_ok());
+        assert!(
+            clipboard.write_image(&one_by_one, 2, 2).is_err(),
+            "four bytes are not enough for a 2x2 picture"
+        );
+        assert!(
+            clipboard.write_image(&[], 1, 1).is_err(),
+            "no bytes at all are not a picture"
         );
     }
 }

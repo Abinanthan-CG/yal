@@ -239,8 +239,34 @@ pub fn rect(_handle: u64) -> Result<(i32, i32, i32, i32), ControlError> {
     Err(ControlError::Gone)
 }
 
-/// Move a window, optionally resizing it.
+/// Read where a window's client area sits on the screen.
 ///
+/// The point that maps an inside-the-window position to a screen position:
+/// for the borderless palette, whose client area is its whole window, the
+/// mapping is exact and the drawn overlay can be measured in screen
+/// pixels through it.
+#[cfg(windows)]
+pub fn client_origin(handle: u64) -> Result<(i32, i32), ControlError> {
+    // In windows 0.62 `ClientToScreen` is filed under Gdi; the same
+    // user32 export either way.
+    use windows::Win32::Foundation::{HWND, POINT};
+    use windows::Win32::Graphics::Gdi::ClientToScreen;
+
+    let window = HWND(handle as *mut core::ffi::c_void);
+    let mut point = POINT::default();
+    let ok = unsafe { ClientToScreen(window, &mut point) }.as_bool();
+    if !ok {
+        return Err(ControlError::Gone);
+    }
+    Ok((point.x, point.y))
+}
+
+/// Read a client origin on a host without window handles.
+#[cfg(not(windows))]
+pub fn client_origin(_handle: u64) -> Result<(i32, i32), ControlError> {
+    Err(ControlError::Gone)
+}
+
 /// Pin a window above every other window, whatever rank they hold.
 ///
 /// A launcher window that hides and shows again can come back without its

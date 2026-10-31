@@ -26,7 +26,7 @@ pub mod window_controls;
 pub use clipboard::{Clipboard, ClipboardError};
 pub use hotkey::{Hotkey, HotkeyError, HotkeyModifiers};
 pub use launch::{LaunchError, launch};
-pub use screenshot::{ScreenshotError, capture_screen};
+pub use screenshot::{Capture, ScreenshotError, capture_screen};
 pub use tray::{Tray, TrayCommand};
 pub use watcher::ClipboardWatcher;
 pub use windows::{Window, WindowError, list_windows};

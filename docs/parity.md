@@ -36,8 +36,7 @@ per wave and recorded with the wave.
 | Snippets / text expansion | Built, verified | Live once end to end: expansion typed into Notepad after a focus check, clipboard fallback on refusal. |
 | Emoji picker | **Built** | Oct-2026 wave. The full Unicode 16.0 fully-qualified catalogue — 1,906 entries — generated at build time from Unicode's `emoji-test.txt` plus the CLDR English annotations, with Vicinae's keyword-building algorithm ported (`gen/emoji-gen.mjs`, GPL-cited; §6.3). Live: the doctor reports `emoji 1906`. |
 | Quicklinks | Built | `{query}` templates plus bundled search domains. |
-| Screenshots | Partial | Whole-primary-screen framebuffer read (`yal screenshot`,
-  screenshot.rs); the target's area-select and per-window capture are absent. |
+| Screenshots | **Built** | Whole-screen read was the start; the Oct-2026 wave added the rest. Region capture (`--region x,y,w,h`, clamped onto the screen — parse and clamp are tested), per-window capture through `PrintWindow` with `PW_RENDERFULLCONTENT` (verified live on a DirectComposition browser window), pixels-to-clipboard via arboard, stamped PNGs into `Pictures\YAL`. In the palette: "Capture the screen" (the palette leaves the screen a beat before the frame is read, so it is not in its own picture), "Capture an area" (the screen freezes under the palette, which grows over the screen while you drag a band, with the band's pixel size live), and per-window capture from a window row's secondary panel. Honest edges: the drag overlay is primary-screen only (multi-monitor is a design for another day), the pixels freeze before the drag so what you capture is what was on screen when the act began, the CLI's own capture runs DPI-virtualized (a whole-screen PNG on this machine is 1707×960 logical for a 125% display), and — like the preferences pane — the drag has not yet been driven by a live hand. Also fixed in passing: the framebuffer arrives BGRA and the original full-screen path wrote it raw, which traded red for blue; every capture now swizzles to RGBA and forces the alpha opaque. |
 | Window management | Built, verified | Focus, close, minimise, maximise, restore and the placement presets — halves, quarters, thirds, centre, full — from palette or CLI. Quarter/third/centre geometry verified live on the build machine by reading the moved window's rectangle back (`top-left-quarter` 853×462 at the corner, `middle-third` 569 wide, `center` from a corner lands at (1707−853)/2 = 427 with size unchanged). An arbitrary rectangle stays CLI-only, which matches the presets a launcher menu is for. |
 | Colour picker / converter | Partial | Conversion both ways (named, hex, RGB, HSL) with tests; the screen eyedropper — pick a colour off the screen — is absent. |
 | Currency / unit conversion | Built | Units full; currencies static by design (offline rule), vintage recorded. |
@@ -46,7 +45,7 @@ per wave and recorded with the wave.
 | QR generation | Built | `yal-data::qr`, rendered in the palette and by `yal qr`. |
 | Password generation | Built | Length and character-class rules. |
 | Regular expressions | Built | Capture groups shown. |
-| Menus, preferences, search UI | Partial | Preferences pane exists (gear, hotkey recording, theme, scripts folder — each verified live; the pane's drawing was never clicked start to finish). The target's secondary action menu — `action-menu` in the ledger — is absent here: every result carries exactly one action and Enter performs it. |
+| Menus, preferences, search UI | Partial | Preferences pane exists (gear, hotkey recording, theme, scripts folder — each verified live; the pane's drawing was never clicked start to finish). The secondary action menu — `action-menu` in the ledger — is **built** as the Oct-2026 wave: `Ctrl+K` beside the selected row, with the app-wide fallback act beside it; see the "Secondary action menu + app-wide fallback" entry below for the honest edges. The pane's drawing and the panel itself still await a live hand. |
 | Timers | Built, verified | Toast via identity registration seen on screen; palette banner fallback; the one-second UI-loop cadence failure that made reminders late was measured and moved to a watcher thread. |
 | Reminders | Built | Oct-2026 wave. One parser shared by palette and CLI; stored locally (no Apple Reminders on Windows); due watcher verified with a timed probe, cleared on the dot at t+10s; toast delivery itself not yet seen for a reminder. |
 
@@ -102,8 +101,12 @@ Soonest-first by scope, highest leverage:
 5. ~~Notes in the local store~~ — done: the reminders' pattern again; listed
    newest first, copied, removed; no parser because a note needs nothing
    but its text. See the bookmarks/notes row above.
-6. Area/window screenshot — screen sampling exists in the shape of the
-   framebuffer read; needs the region-selection interaction.
+6. ~~Area/window screenshot~~ — done as the Oct-2026 wave: region CLI
+   (`--region x,y,w,h`), window capture (`--window`, PrintWindow +
+   `PW_RENDERFULLCONTENT`), pixels-to-clipboard, the leave-then-read
+   whole-screen act, and the freeze-and-drag area overlay in the palette,
+   with a receipt row left in front of the results. Primary-screen only
+   and the drag awaits a live hand; both recorded in the table above.
 7. Colour eyedropper — same screen-read foundation.
 8. Whole-drive file index — largest index wave; needs a design for
    freshness and cost before anything is written.
