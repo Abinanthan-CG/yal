@@ -122,6 +122,41 @@ Soonest-first by scope, highest leverage:
    52 s over 16,674 directories, warm under a second, creation and
    removal both proven live through `file-index` / `files`.
 9. Preferences pane click-along — needs the user's hands, no code.
+11. ~~The launcher's home is the tray~~ — done on the same day, at the
+   launcher user's ask: the palette parks off-screen rather than hiding
+   (a hidden Windows window stops painting, and with it the event loop
+   where the global hotkey is polled — verified live early in the
+   build), and a window the manager still counts as visible keeps its
+   taskbar button, which is a ghost for a thing not on screen. The
+   answer is the Windows *tool-window* exclusion, claimed twice: at
+   birth through egui's own `with_taskbar(false)` — winit answers it
+   with `skip_taskbar`, so the window is styled a tool window before
+   it ever shows — and again every frame by a style probe that heals
+   whatever undoes the style at runtime. No taskbar button, no Alt+Tab
+   entry — a launcher is not a document. Both halves earned their
+   places live: the first attempt, a one-shot applied once per
+   process and re-claimed at every show, read back `tool=False` on
+   the built palette — its style write had landed on the wrong
+   window (the tray icon's little helper, this process's biggest
+   visible one before the palette exists) had consumed the one-shot
+   for good, and the framework's `WS_EX_APPWINDOW` brand kept the
+   ghost on the taskbar regardless of the bit under it. The tray icon (built but
+   orphaned until now) is started with the palette and forwards its
+   three commands — Open Launcher, Preferences…, Quit — onto the
+   palette's own channel through a small forwarder thread; Quit ends
+   the process. In passing: the tray's unimplemented
+   "Clipboard History" menu item was scrubbed (the palette already
+   lists that history in an empty search), and `Tray::stop` now
+   releases the tray thread instead of joining it, which would have
+   held the process open until the tray's next poll. Honest edges: the
+   icon is drawn in code — a slate square with a lighter bar, the
+   palette's own row shape, monochrome so no byte-order surprise can
+   recolour it — until the brand-icons wave brings a real one; and the
+   button's absence is proven by the style readback itself: the live
+   palette, built with all of the above, reads back the tool-window
+   style with the app-window brand gone (`EXSTYLE 0x198`), the exact
+   style a manual `SetWindowLongPtrW` experiment on that same window
+   had already shown is what takes the taskbar button away.
 10. ~~NL calculator + fetched exchange rates~~ — done as the first
    half of the Oct-2026 wave 9, design first (architecture.md, "The
    calculator that answers in plain words" and "The one network act"):

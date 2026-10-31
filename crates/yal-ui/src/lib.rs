@@ -33,6 +33,9 @@ pub enum PaletteMessage {
     Close,
     /// The user asked for the palette to show again.
     Show,
+    /// The user asked for the preferences pane, from the tray or
+    /// wherever the palette itself is not to be found.
+    Preferences,
     /// Something due could not be toasted; the palette is asked to raise
     /// its own banner, which cannot fail.
     Ring(String),
@@ -241,6 +244,37 @@ impl Palette {
             }
         }
 
+        // The tray icon is the launcher's home for the process's whole
+        // life. The palette parks instead of hiding — the hotkey lives in
+        // the paint loop, verified live — so nothing on the taskbar
+        // answers for it while it is away, and the tray carries the
+        // coming back. Its commands arrive on their own channel and a
+        // small forwarder thread relays them onto this one, in event
+        // order.
+        {
+            let (tray_sender, tray_receiver) =
+                std::sync::mpsc::channel::<yal_system::TrayCommand>();
+            let _ = yal_system::Tray::start(tray_sender);
+            let forward_sender = sender.clone();
+            std::thread::Builder::new()
+                .name("tray-forwarder".into())
+                .spawn(move || {
+                    while let Ok(command) = tray_receiver.recv() {
+                        let message = match command {
+                            yal_system::TrayCommand::ShowPalette => PaletteMessage::Show,
+                            yal_system::TrayCommand::OpenSettings => PaletteMessage::Preferences,
+                            yal_system::TrayCommand::Quit => PaletteMessage::Close,
+                        };
+                        if forward_sender.send(message).is_err() {
+                            // The palette is gone; the tray has nowhere to
+                            // report to.
+                            break;
+                        }
+                    }
+                })
+                .ok();
+        }
+
         // The hotkey is a setting, so the user can change it without
         // recompiling.
         let spec = store
@@ -417,6 +451,7 @@ impl Palette {
         // parked once can rise behind a maximised application, exactly
         // where a launcher is useless.
         if let Some(handle) = yal_system::windows::own_window_handle() {
+            let _ = yal_system::window_controls::exclude_from_taskbar(handle);
             if let Some((x, y)) = self.shown_location {
                 let _ = yal_system::window_controls::place(handle, Some(x), Some(y), None, None);
             }
@@ -429,6 +464,20 @@ impl Palette {
         self.selected_rect = None;
         self.run_search();
         self.needs_focus = true;
+    }
+
+    /// Enter the preferences pane, the way the gear does it: the drafts
+    /// fill from the store first, so the pane always draws what the
+    /// launcher is actually running with.
+    fn enter_preferences(&mut self) {
+        self.scripts_draft = self
+            .store
+            .setting("scripts_folder")
+            .ok()
+            .flatten()
+            .unwrap_or_default();
+        self.recording_hotkey = false;
+        self.mode = Mode::Preferences;
     }
 
     /// Park the palette off-screen instead of hiding it.
@@ -1785,6 +1834,20 @@ impl eframe::App for Palette {
             }
         }
 
+        // The parked window keeps no taskbar button: every frame asks the
+        // window what style it is wearing, and the tool-window exclusion
+        // goes back on the first frame it is missing. A one-shot would
+        // have pinned itself on this process's biggest visible window
+        // before the palette exists — the tray icon's little helper — and
+        // left the palette a ghost in the taskbar; that race was met
+        // live. The probe is one style read; the enum behind it is the
+        // same list every other `own_window_handle` ask pays.
+        if let Some(handle) = yal_system::windows::own_window_handle() {
+            if !yal_system::window_controls::excluded_from_taskbar(handle) {
+                yal_system::window_controls::exclude_from_taskbar(handle);
+            }
+        }
+
         // Timers and reminders are watched from their own thread, because
         // the frame loop is not a clock.
 
@@ -1794,6 +1857,14 @@ impl eframe::App for Palette {
                 PaletteMessage::Close => self.close_requested = true,
                 PaletteMessage::Show => {
                     self.show(ctx);
+                }
+                PaletteMessage::Preferences => {
+                    // The pane opens over the palette; a parked palette is
+                    // brought back for it, exactly as a summons would.
+                    if !self.visible {
+                        self.show(ctx);
+                    }
+                    self.enter_preferences();
                 }
                 PaletteMessage::Ring(announcement) => {
                     self.ring = Some(announcement);
@@ -2111,19 +2182,11 @@ impl eframe::App for Palette {
                         })
                         .clicked()
                     {
-                        self.mode = match self.mode {
-                            Mode::Search => {
-                                self.scripts_draft = self
-                                    .store
-                                    .setting("scripts_folder")
-                                    .ok()
-                                    .flatten()
-                                    .unwrap_or_default();
-                                self.recording_hotkey = false;
-                                Mode::Preferences
-                            }
-                            Mode::Preferences => Mode::Search,
-                        };
+                        if self.mode == Mode::Search {
+                            self.enter_preferences();
+                        } else {
+                            self.mode = Mode::Search;
+                        }
                     }
                 });
 
@@ -3030,7 +3093,14 @@ pub fn run(store: Store) -> eframe::Result<()> {
             .with_min_inner_size([420.0, 240.0])
             .with_decorations(false)
             .with_always_on_top()
-            .with_resizable(true),
+            .with_resizable(true)
+            // The palette's home is the tray, not the taskbar. This is
+            // egui's own switch, which winit answers with `skip_taskbar`:
+            // the window is born a tool window — off the taskbar's and
+            // Alt+Tab's lists — before it ever shows. The win32 re-claim
+            // in the frame loop is the fallback that heals whatever undoes
+            // it at runtime.
+            .with_taskbar(false),
         ..Default::default()
     };
 

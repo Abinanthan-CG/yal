@@ -267,6 +267,94 @@ pub fn client_origin(_handle: u64) -> Result<(i32, i32), ControlError> {
     Err(ControlError::Gone)
 }
 
+/// Take a window's taskbar button away, whatever brought the window up.
+///
+/// The palette parks off-screen while it is not wanted rather than hiding,
+/// because a hidden Windows window stops being painted — and with it the
+/// whole event loop, where the global hotkey is polled, goes quiet. That
+/// was verified live: a hidden palette never returned. But a window the
+/// window manager still counts as visible keeps its taskbar button, which
+/// is a ghost sitting in the taskbar for a thing that is not on the
+/// screen. The Windows answer is a *tool window*: an entry the taskbar
+/// and Alt+Tab do not list — which is what a launcher is anyway.
+#[cfg(windows)]
+pub fn exclude_from_taskbar(handle: u64) -> bool {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        GetWindowLongPtrW, SetWindowLongPtrW, SetWindowPos, GWL_EXSTYLE, SET_WINDOW_POS_FLAGS,
+        SWP_FRAMECHANGED, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WS_EX_APPWINDOW,
+        WS_EX_TOOLWINDOW,
+    };
+
+    let window = HWND(handle as *mut core::ffi::c_void);
+    unsafe {
+        let style = GetWindowLongPtrW(window, GWL_EXSTYLE);
+        // The tool-window bit is not the whole answer: a window-branding
+        // framework can pin the window back onto the taskbar with
+        // `WS_EX_APPWINDOW` — the palette's does — so the brand is
+        // stripped while the tool-window style is claimed.
+        SetWindowLongPtrW(
+            window,
+            GWL_EXSTYLE,
+            (style & !(WS_EX_APPWINDOW.0 as isize)) | WS_EX_TOOLWINDOW.0 as isize,
+        );
+        // The frame flags are re-announced: a visible window refreshes its
+        // chrome on a frame change, which is what makes the exclusion take
+        // hold without waiting for a repaint.
+        SetWindowPos(
+            window,
+            None,
+            0,
+            0,
+            0,
+            0,
+            SET_WINDOW_POS_FLAGS(
+                SWP_FRAMECHANGED.0
+                    | SWP_NOMOVE.0
+                    | SWP_NOSIZE.0
+                    | SWP_NOZORDER.0
+                    | SWP_NOACTIVATE.0,
+            ),
+        )
+        .is_ok()
+    }
+}
+
+/// Take a window's taskbar button away.
+#[cfg(not(windows))]
+pub fn exclude_from_taskbar(_handle: u64) -> bool {
+    false
+}
+
+/// Report whether the window is already out of the taskbar's inventory:
+/// it wears the tool-window style, and nothing has pinned it back with
+/// the app-window brand since.
+///
+/// The exclusion is re-claimed, never assumed: a one-shot that judged
+/// itself done on its first success once consumed itself on the wrong
+/// window — this process's biggest visible one before the palette
+/// existed — and the palette went back to ghosting in the taskbar.
+///
+/// Off Windows nothing excludes a taskbar button, so the report is
+/// always `false` and the caller re-applies forever, which is free.
+#[cfg(windows)]
+pub fn excluded_from_taskbar(handle: u64) -> bool {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        GetWindowLongPtrW, GWL_EXSTYLE, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+    };
+
+    let window = HWND(handle as *mut core::ffi::c_void);
+    let style = unsafe { GetWindowLongPtrW(window, GWL_EXSTYLE) };
+    (style & WS_EX_TOOLWINDOW.0 as isize) != 0 && (style & WS_EX_APPWINDOW.0 as isize) == 0
+}
+
+/// Report whether the window is out of the taskbar's inventory.
+#[cfg(not(windows))]
+pub fn excluded_from_taskbar(_handle: u64) -> bool {
+    false
+}
+
 /// Pin a window above every other window, whatever rank they hold.
 ///
 /// A launcher window that hides and shows again can come back without its

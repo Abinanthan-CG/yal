@@ -27,7 +27,7 @@ Press the palette, type a few characters, and get the thing you meant.
 
 | | |
 | --- | --- |
-| **Launcher** | Searches Start Menu shortcuts, Store packages, installed programs and everything on `PATH`. |
+| **Launcher** | Searches Start Menu shortcuts, Store packages, installed programs and everything on `PATH`. Runs from the tray: close the palette and a tray icon with *Open Launcher / Preferences / Quit* stays behind - no taskbar ghost, the hotkey brings it back. |
 | **Search** | Tiered fuzzy matching that understands word boundaries, camelCase acronyms and scattered subsequences. |
 | **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else - and in plain words: `10 days from now`, `next friday`, `20% of 250`. Conversions answer from the stored rate table, stamped with the day it was fetched, and `Update exchange rates` fetches a fresh one when asked. |
 | **Clipboard** | History, kept by a background watcher. |
