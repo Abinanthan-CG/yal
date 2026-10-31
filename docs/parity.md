@@ -144,7 +144,13 @@ Soonest-first by scope, highest leverage:
    orphaned until now) is started with the palette and forwards its
    three commands — Open Launcher, Preferences…, Quit — onto the
    palette's own channel through a small forwarder thread; Quit ends
-   the process. In passing: the tray's unimplemented
+   the process. The first tray, shown to its user, sat inert: showing
+   an icon is not running it — a click is a queue message for the tray
+   thread, and the crate opens the menu only while that thread
+   dispatches its Win32 messages, which the first loop never did (it
+   slept and polled the event channels, which are filled during
+   dispatch). The loop now pumps the queue before it polls. In
+   passing: the tray's unimplemented
    "Clipboard History" menu item was scrubbed (the palette already
    lists that history in an empty search), and `Tray::stop` now
    releases the tray thread instead of joining it, which would have

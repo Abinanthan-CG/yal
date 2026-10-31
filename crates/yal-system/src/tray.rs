@@ -75,6 +75,9 @@ impl Drop for Tray {
 fn run(sender: Sender<TrayCommand>) -> Result<(), Box<dyn std::error::Error>> {
     use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
     use tray_icon::{TrayIconBuilder, TrayIconEvent};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        DispatchMessageW, MSG, PeekMessageW, PM_REMOVE, TranslateMessage,
+    };
 
     let show = MenuItem::new(TrayCommand::ShowPalette.label(), true, None);
     let settings = MenuItem::new(TrayCommand::OpenSettings.label(), true, None);
@@ -95,7 +98,24 @@ fn run(sender: Sender<TrayCommand>) -> Result<(), Box<dyn std::error::Error>> {
         .with_menu_on_left_click(false)
         .build()?;
 
+    // The icon lives by the Win32 message pump of the thread that
+    // created it — and that thread is this one. A click on the icon is
+    // button-up messages sitting in this thread's message queue, and
+    // the menu opens inside the crate's window procedure while they are
+    // dispatched; the event channels are filled by that same procedure,
+    // not before. The first build slept and polled the channels without
+    // ever pumping — verified live: the icon sat in the tray completely
+    // inert, eager to be seen and deaf to every click, right or left.
+    // So the pump is the loop's first job, before anything is polled.
+    let mut message = MSG::default();
     loop {
+        unsafe {
+            while PeekMessageW(&mut message, None, 0, 0, PM_REMOVE).as_bool() {
+                let _ = TranslateMessage(&message);
+                DispatchMessageW(&message);
+            }
+        }
+
         std::thread::sleep(Duration::from_millis(120));
 
         while let Ok(event) = TrayIconEvent::receiver().try_recv() {
