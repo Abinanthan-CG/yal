@@ -27,7 +27,7 @@ Press the palette, type a few characters, and get the thing you meant.
 
 | | |
 | --- | --- |
-| **Launcher** | Searches Start Menu shortcuts, Store packages, installed programs and everything on `PATH`. Runs from the tray: close the palette and a tray icon with *Open Launcher / Preferences / Quit* stays behind - no taskbar ghost, the hotkey brings it back. |
+| **Launcher** | Searches Start Menu shortcuts, Store packages, installed programs and everything on `PATH`. Runs from the tray: close the palette and a tray icon with *Open Launcher / Preferences / Quit* stays behind - no taskbar ghost, the hotkey brings it back. The palette is dressed in the observed one's look, concept-copied from Vicinae (the GPL Raycast look-alike, credited in the parity ledger): a tall bare query field over a hairline, each row led by the application's real icon - mined from the executable for `.exe` rows, a drawn tile per command kind everywhere else - the system's own Segoe/Cascadia typography, and a footer of key-cap hints with the `n of m` count. |
 | **Search** | Tiered fuzzy matching that understands word boundaries, camelCase acronyms and scattered subsequences. |
 | **Calculator** | Arithmetic, units, currencies and dates, in the same query box as everything else - and in plain words: `10 days from now`, `next friday`, `20% of 250`. Conversions answer from the stored rate table, stamped with the day it was fetched, and `Update exchange rates` fetches a fresh one when asked. |
 | **Clipboard** | History, kept by a background watcher. |

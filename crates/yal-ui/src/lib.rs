@@ -11,6 +11,8 @@ use std::time::Instant;
 use eframe::egui::{self, Align, Color32, FontId, Key, Layout, RichText, Stroke, TextFormat};
 use egui::text::LayoutJob;
 use yal_core::action::{Action, ActionKind, OpenTarget};
+use yal_core::command::CommandKind;
+use yal_core::icon::Icon;
 use yal_core::ranking::Match;
 use yal_engine::Engine;
 use yal_search::{Frecency, Scored};
@@ -25,7 +27,7 @@ use yal_store::Store;
 const SEARCH_DEBOUNCE: std::time::Duration = std::time::Duration::from_millis(35);
 
 /// The height of one result row.
-const ROW_HEIGHT: f32 = 38.0;
+const ROW_HEIGHT: f32 = 44.0;
 
 /// A background message delivered to the palette.
 pub enum PaletteMessage {
@@ -96,6 +98,10 @@ pub struct Palette {
     cached_image: Option<Vec<u8>>,
     /// The cached texture.
     cached_texture: Option<egui::TextureHandle>,
+    /// The real application icons, mined once per executable per
+    /// process and keyed by the executable's path. A miss is cached
+    /// too: a program without pixels is not asked again every frame.
+    icon_cache: std::collections::HashMap<String, Option<egui::TextureHandle>>,
     /// The last error shown to the user.
     status: Option<String>,
     /// A timer that rang while the palette was away.
@@ -310,6 +316,7 @@ impl Palette {
             shown_location: None,
             cached_image: None,
             cached_texture: None,
+            icon_cache: Default::default(),
             status: None,
             ring: None,
             mode: Mode::Search,
@@ -1646,6 +1653,122 @@ impl Palette {
             .unwrap_or_else(yal_system::hotkey::HotkeySpec::default_spec)
     }
 
+    /// The footer: the keys the palette obeys, always on display —
+    /// the key caps naming what the keyboard does, the count of what
+    /// was offered at the right, so the vocabulary never has to be
+    /// guessed at. With nothing offered the band says exactly what a
+    /// typed word does.
+    fn draw_footer(&self, ui: &mut egui::Ui, style: &PaletteStyle) {
+        let height = 34.0;
+        let (rect, _) = ui.allocate_exact_size(
+            egui::vec2(ui.available_width(), height),
+            egui::Sense::hover(),
+        );
+        ui.painter().hline(
+            rect.x_range(),
+            rect.top(),
+            Stroke::new(1.0_f32, style.border),
+        );
+
+        let painter = ui.painter();
+        let middle = rect.center().y;
+        let mut cursor = rect.left() + 6.0;
+
+        if let Some(acts) = &self.action_panel {
+            // The panel owns the keys while it is open: its own chosen
+            // act is the one the enter key completes, and the escape
+            // key is the way back.
+            if let Some(action) = acts.get(self.panel_selected) {
+                cursor =
+                    key_caps(painter, cursor, middle, &["↵"], &action_label(action), style);
+            }
+            cursor = key_caps(painter, cursor, middle, &["Esc"], "back to the search", style);
+        } else {
+            match self.results.get(self.selected) {
+                Some(result) => {
+                    let caption = result
+                        .item
+                        .action
+                        .as_ref()
+                        .map(action_label)
+                        .unwrap_or_else(|| "open".to_string());
+                    cursor = key_caps(painter, cursor, middle, &["↵"], &caption, style);
+                    if !result.item.secondary_actions.is_empty() {
+                        cursor = key_caps(
+                            painter,
+                            cursor,
+                            middle,
+                            &["Ctrl", "K"],
+                            "the rest of the acts",
+                            style,
+                        );
+                    }
+                }
+                None => {
+                    painter.text(
+                        egui::pos2(cursor, middle),
+                        egui::Align2::LEFT_CENTER,
+                        "type to search applications, snippets, and more…",
+                        FontId::proportional(11.0),
+                        style.dim_text,
+                    );
+                }
+            }
+        }
+
+        // The count, on the right, exactly where the observed palette
+        // keeps it — reading it costs no search.
+        if !self.results.is_empty() {
+            let count = format!("{} of {}", self.selected + 1, self.results.len());
+            let galley = painter.layout(
+                count,
+                FontId::proportional(11.0),
+                style.dim_text,
+                f32::INFINITY,
+            );
+            let left = rect.right() - 12.0 - galley.size().x;
+            if left > cursor {
+                painter.galley(egui::pos2(left, middle - galley.size().y / 2.0), galley, style.dim_text);
+            }
+        }
+    }
+
+    /// The texture for a row's left-hand icon slot, `None` when the row
+    /// draws its drawn tile instead.
+    ///
+    /// The pixels are mined once per executable per process — the walk
+    /// through the shell costs several GDI objects and a freed icon
+    /// every time — and only mined at all for rows the eyes can reach:
+    /// a result far down the list is not worth a trip until the list
+    /// scrolls to it. A miss is cached too, so a program without pixels
+    /// is not asked again every frame.
+    fn resolve_row_icon(
+        &mut self,
+        ctx: &egui::Context,
+        executable: Option<String>,
+        visible: bool,
+    ) -> Option<egui::TextureHandle> {
+        let executable = executable?;
+        if let Some(cached) = self.icon_cache.get(&executable) {
+            return cached.clone();
+        }
+        if !visible {
+            return None;
+        }
+        let texture = yal_system::icons::application_icon(std::path::Path::new(&executable)).map(
+            |image| {
+                let side = [image.width.max(1) as usize, image.height.max(1) as usize];
+                ctx.load_texture(
+                    format!("icon:{executable}"),
+                    egui::ColorImage::from_rgba_unmultiplied(side, &image.rgba),
+                    egui::TextureOptions::default(),
+                )
+            },
+        );
+        self.icon_cache.insert(executable, texture.clone());
+        texture
+    }
+
     /// The preferences pane, drawn instead of the search results.
     fn draw_preferences(&mut self, ui: &mut egui::Ui, style: &PaletteStyle) {
         ui.label(RichText::new("Preferences").color(style.text).size(20.0));
@@ -1770,6 +1893,13 @@ struct PaletteStyle {
     selection: Color32,
     accent: Color32,
     border: Color32,
+    /// The colour only the query field's placeholder wears.
+    hint_text: Color32,
+    /// Floating panels that sit above the list: the action panel, the
+    /// icon tiles a row without real pixels draws.
+    panel: Color32,
+    /// The key-cap chips of the footer's hints.
+    keycap: Color32,
 }
 
 impl PaletteStyle {
@@ -1784,18 +1914,24 @@ impl PaletteStyle {
                 background: Color32::from_rgb(28, 28, 30),
                 text: Color32::from_rgb(236, 236, 238),
                 dim_text: Color32::from_rgb(150, 150, 158),
-                selection: Color32::from_rgb(58, 58, 62),
+                selection: Color32::from_rgb(46, 47, 53),
                 accent: Color32::from_rgb(120, 170, 255),
                 border: Color32::from_rgb(64, 64, 68),
+                hint_text: Color32::from_rgb(120, 121, 130),
+                panel: Color32::from_rgb(36, 36, 40),
+                keycap: Color32::from_rgb(56, 57, 64),
             }
         } else {
             Self {
                 background: Color32::from_rgb(250, 250, 252),
                 text: Color32::from_rgb(28, 28, 30),
                 dim_text: Color32::from_rgb(110, 110, 118),
-                selection: Color32::from_rgb(226, 230, 240),
+                selection: Color32::from_rgb(224, 228, 240),
                 accent: Color32::from_rgb(40, 110, 220),
                 border: Color32::from_rgb(210, 210, 216),
+                hint_text: Color32::from_rgb(142, 144, 152),
+                panel: Color32::from_rgb(244, 244, 247),
+                keycap: Color32::from_rgb(255, 255, 255),
             }
         }
     }
@@ -1903,6 +2039,69 @@ impl eframe::App for Palette {
 
         let palette_style = PaletteStyle::new(self.theme_dark(ctx));
 
+        // The platform's own typography, installed on the first frame:
+        // egui's bundled faces read as pasted-on on Windows, and the
+        // observed palette's calm comes from the system face doing the
+        // talking. Cascadia or Consolas — whichever the machine carries —
+        // keeps the code-looking payloads code-shaped.
+        //
+        // A face is offered as (family as enumerated, its file in the
+        // Windows fonts folder), and the first offer with the family
+        // installed AND the bytes readable wins. The definitions speak
+        // of font data by name; a family entry whose data was never
+        // handed over aborts the paint — the first try installed bare
+        // family names and epaint panicked at the first resolution
+        // ("No font data found"), seen live. The bytes are read before
+        // the name enters, and a face that cannot be read leaves the
+        // bundled default in place rather than blacking the paint out.
+        if self.frame_ctx.is_none() {
+            let installed: Vec<String> = yal_system::fonts::families()
+                .into_iter()
+                .map(|carried| carried.family)
+                .collect();
+            let pick = |offers: &[(&str, &str)]| -> Option<(String, Vec<u8>)> {
+                offers.iter().find_map(|(family, file)| {
+                    let carried = installed
+                        .iter()
+                        .any(|held| held.eq_ignore_ascii_case(family));
+                    let bytes = std::fs::read(
+                        std::path::Path::new(r"C:\Windows\Fonts").join(file),
+                    )
+                    .ok()?;
+                    carried.then(|| ((*family).to_string(), bytes))
+                })
+            };
+            let mut fonts = egui::FontDefinitions::default();
+            if let Some((face, bytes)) = pick(&[
+                ("Segoe UI", "segoeui.ttf"),
+                ("Segoe UI Variable Text", "SegUIVar.ttf"),
+            ]) {
+                fonts
+                    .font_data
+                    .insert(face.clone(), std::sync::Arc::new(egui::FontData::from_owned(bytes)));
+                fonts
+                    .families
+                    .entry(egui::FontFamily::Proportional)
+                    .or_default()
+                    .insert(0, face);
+            }
+            if let Some((face, bytes)) = pick(&[
+                ("Cascadia Code", "CascadiaCode.ttf"),
+                ("Cascadia Mono", "CascadiaMono.ttf"),
+                ("Consolas", "consola.ttf"),
+            ]) {
+                fonts
+                    .font_data
+                    .insert(face.clone(), std::sync::Arc::new(egui::FontData::from_owned(bytes)));
+                fonts
+                    .families
+                    .entry(egui::FontFamily::Monospace)
+                    .or_default()
+                    .insert(0, face);
+            }
+            ctx.set_fonts(fonts);
+        }
+
         // Remembered for the script threads: they cannot wake the frame
         // loop without it, and without the wake the output would arrive
         // only after the next unrelated repaint.
@@ -1917,6 +2116,7 @@ impl eframe::App for Palette {
             visuals.visuals.widgets.inactive.bg_fill = palette_style.background;
             visuals.visuals.widgets.noninteractive.bg_fill = palette_style.background;
             visuals.visuals.window_stroke = Stroke::new(1.0_f32, palette_style.border);
+            visuals.visuals.weak_text_color = Some(palette_style.hint_text);
         });
 
         // Keyboard handling runs before the field is drawn so that the
@@ -2104,7 +2304,24 @@ impl eframe::App for Palette {
             .fill(palette_style.background)
             .inner_margin(egui::Margin::same(10))
             .stroke(Stroke::new(1.0_f32, palette_style.border))
-            .corner_radius(8.0);
+            .corner_radius(10.0);
+
+        // The footer: the keys the palette obeys, always on display —
+        // the observed palette keeps a thin band at its floor with the
+        // key caps naming what the keyboard does and the count of what
+        // was offered at the right, so the vocabulary never has to be
+        // guessed at. Added first so it hugs the window's bottom edge;
+        // the detail panel, when it exists, stacks just above it.
+        egui::TopBottomPanel::bottom("hints")
+            .frame(
+                egui::Frame::new()
+                    .fill(palette_style.background)
+                    .inner_margin(egui::Margin::symmetric(12, 8)),
+            )
+            .show_separator_line(false)
+            .show(ctx, |ui| {
+                self.draw_footer(ui, &palette_style);
+            });
 
         // A result that carries an image or photograph metadata gets a
         // panel of its own. Drawing it below the list would put it off the
@@ -2117,7 +2334,13 @@ impl eframe::App for Palette {
                 .selected_image()
                 .and_then(|bytes| self.image_texture(ctx, &bytes))
                 .filter(|texture| texture.size()[0] > 0);
-            egui::TopBottomPanel::bottom("detail").show(ctx, |ui| {
+            egui::TopBottomPanel::bottom("detail")
+                .frame(
+                    egui::Frame::new()
+                        .fill(palette_style.background)
+                        .inner_margin(egui::Margin::symmetric(10, 8)),
+                )
+                .show(ctx, |ui| {
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     if let Some(texture) = &image {
                         let size = texture.size_vec2();
@@ -2150,13 +2373,17 @@ impl eframe::App for Palette {
         egui::CentralPanel::default()
             .frame(frame)
             .show(ctx, |ui| {
-                // The query field, plus the preferences button beside it.
+                // The query field: tall and bare of field chrome, the
+                // weight the observed palette owns its top with, the
+                // preferences control dimmed to the side.
                 ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 10.0;
                     let response = ui.add(
                         egui::TextEdit::singleline(&mut self.query)
                             .hint_text("Search applications, snippets, and more…")
-                            .font(FontId::proportional(22.0))
-                            .desired_width(ui.available_width() - 46.0),
+                            .font(FontId::proportional(17.0))
+                            .frame(false)
+                            .desired_width(ui.available_width() - 30.0),
                     );
                     if response.changed() {
                         self.pending = true;
@@ -2170,9 +2397,11 @@ impl eframe::App for Palette {
                     } else {
                         "⚙"
                     };
-                    let gear_button = egui::Button::new(RichText::new(gear).size(18.0))
-                        .frame(false)
-                        .small();
+                    let gear_button = egui::Button::new(
+                        RichText::new(gear).size(17.0).color(palette_style.dim_text),
+                    )
+                    .frame(false)
+                    .small();
                     if ui
                         .add(gear_button)
                         .on_hover_text(if self.mode == Mode::Preferences {
@@ -2182,17 +2411,27 @@ impl eframe::App for Palette {
                         })
                         .clicked()
                     {
-                        if self.mode == Mode::Search {
-                            self.enter_preferences();
-                        } else {
+                        if self.mode == Mode::Preferences {
                             self.mode = Mode::Search;
+                        } else {
+                            self.enter_preferences();
                         }
                     }
                 });
 
+                // The hairline under the field, drawn by hand so it runs
+                // the palette's full width and stays one point empty.
+                ui.add_space(2.0);
+                let (line, _) = ui.allocate_exact_size(
+                    egui::vec2(ui.available_width(), 1.0),
+                    egui::Sense::hover(),
+                );
+                ui.painter().hline(
+                    line.x_range(),
+                    line.top(),
+                    Stroke::new(1.0_f32, palette_style.border),
+                );
                 ui.add_space(6.0);
-                ui.separator();
-                ui.add_space(4.0);
 
                 if self.mode == Mode::Preferences {
                     self.draw_preferences(ui, &palette_style);
@@ -2202,30 +2441,60 @@ impl eframe::App for Palette {
                 // The results.
                 egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
                     if self.results.is_empty() {
-                        ui.add_space(24.0);
+                        ui.add_space(36.0);
                         ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                            let said = if self.query.trim().is_empty() {
+                                "Type to search".to_string()
+                            } else {
+                                format!("No results for \"{}\"", self.query.trim())
+                            };
                             ui.label(
-                                RichText::new("No results")
+                                RichText::new(said)
                                     .color(palette_style.dim_text)
                                     .size(15.0),
+                            );
+                            ui.add_space(6.0);
+                            ui.label(
+                                RichText::new("Applications, snippets, files, calculations…")
+                                    .color(palette_style.hint_text)
+                                    .size(12.0),
                             );
                         });
                         return;
                     }
 
                     for index in 0..self.results.len() {
-                        let result = &self.results[index];
                         let selected = index == self.selected;
                         let (rect, response) = ui.allocate_exact_size(
                             egui::vec2(ui.available_width(), ROW_HEIGHT),
                             egui::Sense::click(),
                         );
-                        draw_result(ui, rect, result, selected, &palette_style);
+                        // The real pixels are mined once per executable
+                        // per process, and only for rows the eyes can
+                        // reach; everything else draws its tile until the
+                        // list scrolls to it.
+                        let icon_identity = match &self.results[index].item.icon {
+                            Some(Icon::Application(executable)) => Some(executable.clone()),
+                            _ => None,
+                        };
+                        let visible = ui.is_rect_visible(rect);
+                        let icon = self.resolve_row_icon(ctx, icon_identity, visible);
+                        draw_result(
+                            ui,
+                            rect,
+                            &self.results[index],
+                            selected,
+                            &palette_style,
+                            icon.as_ref(),
+                        );
                         // The panel positions itself beside the selected
                         // row; the rect is from the frame that last drew
                         // it, which is one frame of lag at most.
                         if selected {
                             self.selected_rect = Some(rect);
+                            // The selection stays where the eyes are,
+                            // whatever the scroll position was doing.
+                            ui.scroll_to_rect(rect, None);
                         }
                         if response.clicked() {
                             self.selected = index;
@@ -2294,8 +2563,8 @@ impl eframe::App for Palette {
                 .get(self.selected)
                 .map(|result| result.item.title.clone())
                 .unwrap_or_default();
-            let row_height = 30.0;
-            let estimate = acts.len() as f32 * row_height + 46.0;
+            let row_height = 32.0;
+            let estimate = acts.len() as f32 * row_height + 52.0;
 
             let position = match self.selected_rect {
                 Some(rect) => {
@@ -2315,9 +2584,16 @@ impl eframe::App for Palette {
                 .collapsible(false)
                 .resizable(false)
                 .current_pos(position)
-                .default_width(300.0)
-                .max_width(300.0)
-                .min_width(300.0)
+                .default_width(320.0)
+                .max_width(320.0)
+                .min_width(320.0)
+                .frame(
+                    egui::Frame::new()
+                        .fill(palette_style.panel)
+                        .stroke(Stroke::new(1.0_f32, palette_style.border))
+                        .corner_radius(10.0)
+                        .inner_margin(egui::Margin::same(6)),
+                )
                 .show(ctx, |ui| {
                     ui.label(
                         RichText::new(header)
@@ -2841,6 +3117,7 @@ fn draw_result(
     result: &Scored,
     selected: bool,
     style: &PaletteStyle,
+    icon: Option<&egui::TextureHandle>,
 ) {
     let painter = ui.painter();
 
@@ -2848,7 +3125,43 @@ fn draw_result(
         painter.rect_filled(rect, 6.0, style.selection);
     }
 
-    let section_font = FontId::proportional(12.0);
+    // The left-hand slot: an application's real pixels, or one drawn
+    // tile per kind when nothing real is on hand. The observed list
+    // reads at a glance because the same shape leads every row.
+    let slot = 22.0;
+    let icon_center = egui::pos2(rect.left() + 10.0 + slot / 2.0, rect.center().y);
+    match icon {
+        Some(texture) => {
+            let image_rect =
+                egui::Rect::from_center_size(icon_center, egui::vec2(slot, slot));
+            painter.image(
+                texture.id(),
+                image_rect,
+                egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                Color32::WHITE,
+            );
+        }
+        None => {
+            let tile = egui::Rect::from_center_size(icon_center, egui::vec2(slot, slot));
+            painter.rect_filled(tile, 5.0, style.panel);
+            painter.rect_stroke(
+                tile,
+                5.0,
+                Stroke::new(1.0_f32, style.border),
+                egui::StrokeKind::Inside,
+            );
+            painter.text(
+                tile.center(),
+                egui::Align2::CENTER_CENTER,
+                draw_fallback_glyph(result.kind),
+                FontId::proportional(11.0),
+                style.dim_text,
+            );
+        }
+    }
+
+    let text_left = rect.left() + 10.0 + slot + 10.0;
+    let section_font = FontId::proportional(11.5);
     let section_galley = painter.layout(
         result.kind.section_title().to_string(),
         section_font,
@@ -2856,8 +3169,6 @@ fn draw_result(
         f32::INFINITY,
     );
     let section_width = section_galley.size().x + 12.0;
-
-    let text_left = rect.left() + 10.0;
     let text_right = rect.right() - 10.0 - section_width;
     let text_width = (text_right - text_left).max(40.0);
 
@@ -2913,6 +3224,77 @@ fn draw_result(
         section_galley,
         style.dim_text,
     );
+}
+
+/// The drawn tile's glyph for a row that carries no real pixels: one
+/// letter of its kind's section, except the two kinds where a mark says
+/// more than a letter ever has. The section title beside the row still
+/// names the kind in full — the tile only leads the eye.
+fn draw_fallback_glyph(kind: CommandKind) -> String {
+    match kind {
+        CommandKind::Calculator => "=".to_string(),
+        CommandKind::Colors => "#".to_string(),
+        _ => kind
+            .section_title()
+            .get(0..1)
+            .map(str::to_string)
+            .unwrap_or_else(|| "?".to_string()),
+    }
+}
+
+/// One footer hint: the key caps (rounded chips) and what they do.
+/// Returns the next hint's left edge.
+fn key_caps(
+    painter: &egui::Painter,
+    left: f32,
+    middle: f32,
+    caps: &[&str],
+    caption: &str,
+    style: &PaletteStyle,
+) -> f32 {
+    let mut x = left;
+    for cap in caps {
+        let probe = painter.layout(
+            (*cap).to_string(),
+            FontId::proportional(10.0),
+            style.text,
+            f32::INFINITY,
+        );
+        let width = probe.size().x + 12.0;
+        let rect = egui::Rect::from_center_size(
+            egui::pos2(x + width / 2.0, middle),
+            egui::vec2(width, 18.0),
+        );
+        painter.rect_filled(rect, 4.0, style.keycap);
+        painter.rect_stroke(
+            rect,
+            4.0,
+            Stroke::new(1.0_f32, style.border),
+            egui::StrokeKind::Inside,
+        );
+        painter.text(
+            rect.center(),
+            egui::Align2::CENTER_CENTER,
+            cap,
+            FontId::proportional(10.0),
+            style.text,
+        );
+        x = rect.right() + 5.0;
+    }
+    let caption_probe = painter.layout(
+        caption.to_string(),
+        FontId::proportional(11.0),
+        style.dim_text,
+        f32::INFINITY,
+    );
+    painter.text(
+        egui::pos2(x, middle),
+        egui::Align2::LEFT_CENTER,
+        caption,
+        FontId::proportional(11.0),
+        style.dim_text,
+    );
+    x + caption_probe.size().x + 12.0
 }
 
 /// Build the title layout, with the matched characters highlighted.

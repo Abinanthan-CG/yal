@@ -5,6 +5,7 @@
 
 pub mod clipboard;
 pub mod hotkey;
+pub mod icons;
 pub mod keyboard;
 pub mod launch;
 pub mod net;

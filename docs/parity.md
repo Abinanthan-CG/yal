@@ -182,5 +182,42 @@ Soonest-first by scope, highest leverage:
    failing on it, with the shape refusals asserted before the clipboard
    is touched at all.
 
+12. ~~The palette dressed as the palette it was observed to be~~ — done
+    as the second half of the Oct-2026 wave 9, a concept-level copy of
+    Vicinae's look (vicinaehq/vicinae, GPL-3.0, C++/Qt) — itself a
+    re-dressing of Raycast's design language — onto this Rust/egui
+    palette, credited here as the ledger demands. What was copied: real
+    application icons leading each row (the model's unused
+    `Icon::Application` slot now carries the executable's path; the
+    pixels are mined once per process through the shell —
+    SHGetFileInfoW, GetIconInfo, GetDIBits in 32-bit top-down BGRA —
+    and flattened to RGBA for a texture, misses cached with the hits so
+    a program without pixels is never re-asked every frame), the tall
+    bare query field (17 pt, no field chrome, one hand-drawn hairline
+    under it, in place of a 22 pt field sitting on a `ui.separator()`),
+    the footer hint band (key-cap chips naming what the keyboard does,
+    `n of m` at the right), the system's own typography installed on
+    the first frame (the face is read from `C:\Windows\Fonts` and its
+    bytes handed to egui: Segoe UI, else Segoe UI Variable; Cascadia
+    Code, else Cascadia Mono, else Consolas), taller rows (44 pt), the
+    action panel as a floating
+    rounded sheet (320 pt, panel fill, radius 10) and a framed detail
+    panel, the selection scrolled into view, and the empty state that
+    names the query when nothing matched. Honest edges: real pixels
+    only for `.exe`-pathed applications — every other row draws a
+    per-kind monogram tile, the section title still naming the kind in
+    full; no window translucency or acrylic — the DWM composition work
+    was designed and then dropped for this wave; the preferences pane
+    keeps its old dress (item 9, awaiting the user's hands); and the
+    live notepad test mines pixels end to end in the suite, as the tray
+    wave proved styles by readback. In passing, the first fonts attempt
+    installed bare family names and epaint panicked at the first
+    resolution — "No font data found for Segoe UI Variable Text", the
+    palette dying on its threshold rather than drawing — the definition
+    names data and the bytes must be read and registered before a
+    family entry may carry a name; now a face that cannot be read
+    leaves egui's bundled default in place instead of blacking the
+    paint out.
+
 Deferred pending a design decision: calendar event reading (what is the
 local source on Windows?), the app-wide fallback beyond item 4's decision.

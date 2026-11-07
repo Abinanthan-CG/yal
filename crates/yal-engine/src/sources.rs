@@ -1346,11 +1346,14 @@ fn first_line(text: &str) -> String {
     truncated
 }
 
-/// The icon for an application, derived from its executable path.
+/// The icon for an application, derived from its executable path: the
+/// item carries the executable's identity, and the shell's pixels are
+/// resolved at render time — the model's `Icon::Application` slot exists
+/// for exactly this.
 fn icon_for(path: &std::path::Path) -> Option<Icon> {
     let extension = path.extension()?.to_str()?;
     if extension.eq_ignore_ascii_case("exe") {
-        Some(Icon::symbol("app"))
+        Some(Icon::Application(path.display().to_string()))
     } else {
         None
     }
