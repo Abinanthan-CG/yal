@@ -218,6 +218,40 @@ Soonest-first by scope, highest leverage:
     family entry may carry a name; now a face that cannot be read
     leaves egui's bundled default in place instead of blacking the
     paint out.
+13. ~~Applications launch as Windows launches them~~ — done as the
+    first Nov-2026 wave, the daily-driver pipeline, design mined from
+    the GPL Vicinae's Windows app database (credited here; both
+    projects share GPL-3.0, so its spec was copyable, not just
+    observable) after the launcher user's honest verdict: icons
+    missing, games unfindable, nothing opening. The root was one bug
+    with dominoes: the shortcut resolver never loaded its link — an
+    empty `IShellLink` answered `GetPath` with the `.lnk`'s own file
+    path, so every application "resolved" to its shortcut, no `exe`
+    ever reached either the icons or the launches, and CreateProcess
+    refused the `.lnk`. Now the link is loaded through `IPersistFile`
+    before anything is read, and target, arguments and working
+    directory all come out. What else changed: Store apps stop being
+    manifest guesses — `GetAppListEntries` yields the Start Menu's own
+    launchable entries under their real AUMIDs and display names
+    (Calculator and Terminal, dropped silently before, appear); games
+    ride their launcher protocols (Steam's Palworld, as a `.url`
+    shortcut, answers as an application row with its
+    `steam://rungameid` act; the scheme table covers Epic, GOG,
+    Ubisoft, Battle.net, EA, Origin and Amazon Games); uninstallers
+    are filtered by name and by `msiexec /x`; the desktop's shortcuts
+    are scanned too; and every launch goes through `ShellExecuteW` —
+    the AUMID route for Store apps, the shortcut file handed over
+    whole so its stored arguments, working directory and compatibility
+    settings apply, the program with its arguments otherwise — so the
+    palette can open what it lists. Icons are asked from the shell by
+    parsing name (`SHCreateItemFromParsingName` + icon-only image
+    factory), honouring a shortcut's own icon location and an AUMID's
+    package art instead of only plain exe files.
+    Deferred, recorded in the design: App Paths registration entries
+    and file-into-Store-app activation, neither needed until an act
+    asks; and two items the wave's design names for the next slice —
+    IANA time zones under the date/time command and an
+    honesty pass on the rates act's failures.
 
 Deferred pending a design decision: calendar event reading (what is the
 local source on Windows?), the app-wide fallback beyond item 4's decision.
