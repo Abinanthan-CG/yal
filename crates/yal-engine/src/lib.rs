@@ -483,6 +483,11 @@ mod tests {
             path: "C:/nowhere/wonderbrew.exe".into(),
             source: yal_index::Source::StartMenu,
             keywords: vec![],
+            shortcut: None,
+            arguments: None,
+            working_directory: None,
+            aumid: None,
+            url: None,
         };
         let results = engine.search(&store, std::slice::from_ref(&file), &[], "wonderbrew", Utc::now()).unwrap();
         assert!(
@@ -520,6 +525,11 @@ mod tests {
             path: "C:/nowhere/wonderbrew.exe".into(),
             source: yal_index::Source::StartMenu,
             keywords: vec![],
+            shortcut: None,
+            arguments: None,
+            working_directory: None,
+            aumid: None,
+            url: None,
         };
         let apps = sources::applications(&[file]);
         let kinds: Vec<_> = apps[0]

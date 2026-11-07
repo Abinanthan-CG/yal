@@ -5,13 +5,19 @@
 //!
 //! | Source | What it yields |
 //! | --- | --- |
-//! | Start Menu shortcuts | User-facing apps, with an icon and a launch target |
+//! | Start Menu and desktop shortcuts | User-facing apps, `.lnk` and `.url`, with their launch target, arguments and working directory |
 //! | Uninstall registry keys | Apps installed by a package manager, including ones with no shortcut |
-//! | MSIX packages | Store apps, which have no shortcut in the Start Menu folder |
+//! | MSIX packages | Store apps, which have no shortcut in the Start Menu folder — read through `GetAppListEntries`, never through manifest guessing |
 //! | `PATH` directories | Command line programs that never get installed properly |
 //!
 //! Every source is best-effort. A source that cannot be read is skipped, not
 //! fatal, so a partially readable system still yields results.
+//!
+//! Games ride their launcher protocols: a `.url` shortcut whose URL scheme
+//! belongs to a game launcher (`steam:`, Epic, GOG Galaxy, Ubisoft,
+//! Battle.net, EA, Legacy Origin, Amazon Games) is an application whose
+//! launch is the URL itself. Uninstallers are skipped by name, on the
+//! shortcut and on the registry target alike.
 
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
@@ -21,6 +27,8 @@ use std::path::{Path, PathBuf};
 pub enum Source {
     /// A Start Menu shortcut.
     StartMenu,
+    /// A shortcut on the desktop.
+    Desktop,
     /// A Windows Store / MSIX package.
     Msix,
     /// An uninstall registry key.
@@ -34,6 +42,7 @@ impl Source {
     pub fn as_str(self) -> &'static str {
         match self {
             Source::StartMenu => "start_menu",
+            Source::Desktop => "desktop",
             Source::Msix => "msix",
             Source::Registry => "registry",
             Source::Path => "path",
@@ -42,87 +51,225 @@ impl Source {
 }
 
 /// One discovered application.
+///
+/// The launch shape follows the entry's kind: a shortcut carries itself
+/// (and the shell honours its stored arguments, working directory and
+/// compatibility settings when the shortcut file is handed over), a Store
+/// app carries its AUMID, a plain executable carries its program path.
+/// One of `shortcut`, `aumid` or `program` is always present for a
+/// launchable entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Discovered {
     /// A stable identifier derived from the launch target.
     pub id: String,
     /// The display name.
     pub name: String,
-    /// The executable to launch.
+    /// A path that stands for the application: the resolved target of a
+    /// shortcut, the executable of the rest. What the reveal act opens.
     pub path: PathBuf,
     /// Where the entry came from.
     pub source: Source,
     /// Extra search terms.
     pub keywords: Vec<String>,
+    /// The shortcut file to hand the shell, for `.lnk` and `.url` entries.
+    pub shortcut: Option<PathBuf>,
+    /// Arguments the entry carries, for launches that pass them to a program.
+    pub arguments: Option<String>,
+    /// The working directory the program starts in.
+    pub working_directory: Option<PathBuf>,
+    /// The Store application's AUMID, when this entry is one.
+    pub aumid: Option<String>,
+    /// The URL, for `.url` shortcuts.
+    pub url: Option<String>,
+}
+
+impl Discovered {
+    /// An entry with no launch extras: the common shape for plain paths.
+    pub fn plain(name: impl Into<String>, path: impl Into<PathBuf>, source: Source) -> Self {
+        let name = name.into();
+        let path: PathBuf = path.into();
+        Self {
+            id: identifier(&name, &path),
+            name,
+            path,
+            source,
+            keywords: Vec::new(),
+            shortcut: None,
+            arguments: None,
+            working_directory: None,
+            aumid: None,
+            url: None,
+        }
+    }
 }
 
 /// Discover the applications installed on this host.
+///
+/// The Store is read first: a Start Menu shortcut whose AUMID names a
+/// package that is already indexed is dropped in favour of the Store row,
+/// the way the shell itself answers one application with one identity.
 pub fn discover() -> Vec<Discovered> {
-    let mut found: BTreeSet<(String, PathBuf)> = BTreeSet::new();
+    let mut seen: BTreeSet<String> = BTreeSet::new();
     let mut results: Vec<Discovered> = Vec::new();
 
-    for shortcut in start_menu_shortcuts() {
-        let Some(resolved) = crate::lnk::resolve(&shortcut.path) else {
-            continue;
-        };
-        let name = shortcut.name;
-        let key = (name.to_lowercase(), resolved.target.clone());
-        if !found.insert(key) {
+    // Store apps: display name and AUMID straight from the package
+    // manager's launchable-entry list.
+    for (name, aumid, install) in msix_applications() {
+        let key = format!("uwp:{}", aumid.to_lowercase());
+        if !seen.insert(key) {
             continue;
         }
-        results.push(Discovered {
-            id: identifier(&name, &resolved.target),
-            name,
-            path: resolved.target,
-            source: Source::StartMenu,
-            keywords: Vec::new(),
-        });
+        let mut entry = Discovered::plain(name.clone(), install.clone().unwrap_or_default(), Source::Msix);
+        entry.aumid = Some(aumid);
+        entry.name = name;
+        results.push(entry);
     }
 
+    // Start Menu and desktop shortcuts: link and Internet-shortcut files.
+    for (shortcut, source) in shortcut_files() {
+        add_shortcut_entry(&mut seen, &mut results, &shortcut, source);
+    }
+
+    // Uninstall registry keys: installed programs without shortcuts.
     for (name, target) in registry_applications() {
-        let key = (name.to_lowercase(), target.clone());
-        if !found.insert(key) {
+        if looks_like_uninstaller(&target) {
             continue;
         }
-        results.push(Discovered {
-            id: identifier(&name, &target),
-            name,
-            path: target,
-            source: Source::Registry,
-            keywords: Vec::new(),
-        });
-    }
-
-    for (name, target) in msix_applications() {
-        let key = (name.to_lowercase(), target.clone());
-        if !found.insert(key) {
+        let key = format!("win32:{}", target.to_string_lossy().to_lowercase());
+        if !seen.insert(key) {
             continue;
         }
-        results.push(Discovered {
-            id: identifier(&name, &target),
-            name,
-            path: target,
-            source: Source::Msix,
-            keywords: Vec::new(),
-        });
+        results.push(Discovered::plain(name, target, Source::Registry));
     }
 
+    // PATH: command-line programs.
     for (name, target) in path_applications() {
-        let key = (name.to_lowercase(), target.clone());
-        if !found.insert(key) {
+        if looks_like_uninstaller(&target) {
             continue;
         }
-        results.push(Discovered {
-            id: identifier(&name, &target),
-            name,
-            path: target,
-            source: Source::Path,
-            keywords: Vec::new(),
-        });
+        let key = format!("win32:{}", target.to_string_lossy().to_lowercase());
+        if !seen.insert(key) {
+            continue;
+        }
+        results.push(Discovered::plain(name, target, Source::Path));
     }
 
     results.sort_by_key(|application| application.name.to_lowercase());
     results
+}
+
+/// One Start Menu or desktop shortcut, of any readable kind.
+fn add_shortcut_entry(
+    seen: &mut BTreeSet<String>,
+    results: &mut Vec<Discovered>,
+    file: &Path,
+    source: Source,
+) {
+    let Some(name) = file.file_stem().map(|stem| stem.to_string_lossy().into_owned()) else {
+        return;
+    };
+
+    let extension = file
+        .extension()
+        .map(|ext| ext.to_string_lossy().to_lowercase())
+        .unwrap_or_default();
+
+    let mut entry = match extension.as_str() {
+        "lnk" => {
+            let Some(resolved) = crate::lnk::resolve(file) else {
+                return;
+            };
+            if is_msi_uninstall(&resolved.target, resolved.arguments.as_deref()) {
+                return;
+            }
+            let key = format!(
+                "win32:{} {}",
+                resolved.target.to_string_lossy().to_lowercase(),
+                resolved
+                    .arguments
+                    .as_deref()
+                    .unwrap_or("")
+                    .to_lowercase()
+            );
+            if !seen.insert(key) {
+                return;
+            }
+            let mut entry = Discovered::plain(name, resolved.target, source);
+            entry.shortcut = Some(file.to_path_buf());
+            entry.arguments = resolved.arguments;
+            entry.working_directory = resolved.working_directory;
+            entry
+        }
+        "url" => {
+            let Some(url) = crate::lnk::url_target(file) else {
+                return;
+            };
+            let key = format!("win32:{}", url.to_lowercase());
+            if !seen.insert(key) {
+                return;
+            }
+            let mut entry = Discovered::plain(name, file.to_path_buf(), source);
+            entry.shortcut = Some(file.to_path_buf());
+            entry.url = Some(url);
+            entry
+        }
+        // `.appref-ms` ClickOnce applications and anything else unknown:
+        // the shortcut file itself launches through the shell, whatever
+        // the format carries inside.
+        _ if file.to_string_lossy().to_lowercase().ends_with(".appref-ms") => {
+            let key = format!("win32:{}", file.to_string_lossy().to_lowercase());
+            if !seen.insert(key) {
+                return;
+            }
+            let mut entry = Discovered::plain(name, file.to_path_buf(), source);
+            entry.shortcut = Some(file.to_path_buf());
+            entry
+        }
+        _ => return,
+    };
+
+    if looks_like_uninstaller(&entry.path) {
+        return;
+    }
+    entry.id = identifier(&entry.name, &entry.path);
+    results.push(entry);
+}
+
+/// The game-launcher URL schemes: a `.url` shortcut with one of these is
+/// a game whose launch act is the URL itself.
+pub fn is_game_url(url: &str) -> bool {
+    const SCHEMES: [&str; 9] = [
+        "steam:",
+        "com.epicgames.launcher:",
+        "goggalaxy:",
+        "uplay:",
+        "ubisoft:",
+        "battlenet:",
+        "origin:",
+        "link2ea:",
+        "amazon-games:",
+    ];
+    let lower = url.to_lowercase();
+    SCHEMES.iter().any(|scheme| lower.starts_with(scheme))
+}
+
+/// A file whose name marks it as an uninstaller: skipped, because a
+/// launcher does not offer to uninstall things by accident.
+fn looks_like_uninstaller(path: &Path) -> bool {
+    path.file_name()
+        .map(|name| name.to_string_lossy().to_lowercase().contains("unins"))
+        .unwrap_or(false)
+}
+
+/// `msiexec.exe /x ...`: the registry's uninstall shape, never launchable.
+fn is_msi_uninstall(target: &Path, arguments: Option<&str>) -> bool {
+    target
+        .file_name()
+        .map(|name| name.to_string_lossy().to_lowercase() == "msiexec.exe")
+        .unwrap_or(false)
+        && arguments
+            .map(|args| args.to_lowercase().contains("/x"))
+            .unwrap_or(false)
 }
 
 /// A stable identifier for an application.
@@ -143,46 +290,37 @@ fn identifier(name: &str, path: &Path) -> String {
     format!("{hash:016x}")
 }
 
-// ---- Start Menu -----------------------------------------------------------
+// ---- shortcuts ------------------------------------------------------------
 
-/// A shortcut discovered in a Start Menu folder.
-struct Shortcut {
-    name: String,
-    path: PathBuf,
+/// The shortcut files of the Start Menu folders and of both desktops,
+/// each paired with its source.
+///
+/// The roots come from environment variables rather than the
+/// known-folder COM API: the four folders live at fixed bearings from
+/// `APPDATA`, `ProgramData`, `USERPROFILE` and `PUBLIC`, and those
+/// bearings carry no COM apartment requirement to honour.
+fn shortcut_files() -> Vec<(PathBuf, Source)> {
+    let mut roots: Vec<(PathBuf, Source)> = Vec::new();
+    for (variable, join_from, source) in [
+        ("APPDATA", "Microsoft\\Windows\\Start Menu\\Programs", Source::StartMenu),
+        ("ProgramData", "Microsoft\\Windows\\Start Menu\\Programs", Source::StartMenu),
+        ("USERPROFILE", "Desktop", Source::Desktop),
+        ("PUBLIC", "Desktop", Source::Desktop),
+    ] {
+        if let Some(value) = std::env::var_os(variable) {
+            roots.push((PathBuf::from(value).join(join_from), source));
+        }
+    }
+
+    let mut files = Vec::new();
+    for (root, source) in roots {
+        collect_shortcut_files(&root, source, 0, &mut files);
+    }
+    files
 }
 
-/// Find shortcuts in the per-user and machine-wide Start Menu folders.
-fn start_menu_shortcuts() -> Vec<Shortcut> {
-    let mut roots: Vec<PathBuf> = Vec::new();
-
-    if let Some(app_data) = std::env::var_os("APPDATA") {
-        roots.push(
-            PathBuf::from(app_data)
-                .join("Microsoft")
-                .join("Windows")
-                .join("Start Menu")
-                .join("Programs"),
-        );
-    }
-    if let Some(program_data) = std::env::var_os("ProgramData") {
-        roots.push(
-            PathBuf::from(program_data)
-                .join("Microsoft")
-                .join("Windows")
-                .join("Start Menu")
-                .join("Programs"),
-        );
-    }
-
-    let mut shortcuts = Vec::new();
-    for root in roots {
-        collect_shortcuts(&root, &mut shortcuts, 0);
-    }
-    shortcuts
-}
-
-/// Walk a Start Menu folder collecting shortcuts, up to a depth limit.
-fn collect_shortcuts(root: &Path, out: &mut Vec<Shortcut>, depth: usize) {
+/// Walk a folder collecting shortcut files, up to a depth limit.
+fn collect_shortcut_files(root: &Path, source: Source, depth: usize, out: &mut Vec<(PathBuf, Source)>) {
     const MAX_DEPTH: usize = 4;
     if depth > MAX_DEPTH {
         return;
@@ -193,15 +331,94 @@ fn collect_shortcuts(root: &Path, out: &mut Vec<Shortcut>, depth: usize) {
     for entry in entries.flatten() {
         let path = entry.path();
         if path.is_dir() {
-            collect_shortcuts(&path, out, depth + 1);
-        } else if path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("lnk")) {
-            let name = path
-                .file_stem()
-                .map(|stem| stem.to_string_lossy().into_owned())
-                .unwrap_or_else(|| path.to_string_lossy().into_owned());
-            out.push(Shortcut { name, path });
+            collect_shortcut_files(&path, source, depth + 1, out);
+        } else {
+            out.push((path, source));
         }
     }
+}
+
+// ---- MSIX -----------------------------------------------------------------
+
+/// Store applications: the display name, the AUMID and the install folder
+/// of every launchable entry.
+///
+/// Store apps are enumerated through the Windows Runtime package manager
+/// rather than by listing `Program Files\WindowsApps`, which is not
+/// listable by an ordinary user. `FindPackagesForUser` with an empty
+/// identifier means "the current user" and works from an ordinary
+/// process; the elevated all-user enumeration is only a fallback.
+///
+/// The launchable shape comes from `GetAppListEntries` — exactly the
+/// entries the Start Menu itself lists, each under its real AUMID and
+/// display name. The first pipeline instead guessed from the manifest's
+/// `Executable=` attribute, which most Store applications do not even
+/// carry, and silently dropped them.
+///
+/// When the package manager is unavailable the source yields nothing
+/// rather than failing.
+#[cfg(windows)]
+fn msix_applications() -> Vec<(String, String, Option<PathBuf>)> {
+    use windows::core::HSTRING;
+    use windows::Management::Deployment::PackageManager;
+    use windows::Win32::System::WinRT::{RO_INIT_MULTITHREADED, RoInitialize};
+
+    // The Windows Runtime must have an apartment on this thread before any
+    // WinRT object is activated. Initialising it more than once is
+    // harmless: the second call reports the existing apartment.
+    unsafe {
+        let _ = RoInitialize(RO_INIT_MULTITHREADED);
+    }
+
+    let Some(manager) = PackageManager::new().ok() else {
+        return Vec::new();
+    };
+
+    // The current user's packages only: no elevation needed.
+    let Ok(packages) = manager.FindPackagesByUserSecurityId(&HSTRING::new()) else {
+        return Vec::new();
+    };
+
+    let mut found: Vec<(String, String, Option<PathBuf>)> = Vec::new();
+    for package in packages {
+        // Framework and resource packages are the scaffolding an app
+        // rides on, not applications.
+        if package.IsFramework().unwrap_or(true) || package.IsResourcePackage().unwrap_or(true) {
+            continue;
+        }
+        let install = package
+            .InstalledLocation()
+            .ok()
+            .and_then(|folder| folder.Path().ok())
+            .map(|path| PathBuf::from(path.to_string()));
+
+        let Ok(entries) = package.GetAppListEntries() else {
+            // One bad package does not abort the scan.
+            continue;
+        };
+        for entry in entries {
+            let Ok(aumid) = entry.AppUserModelId() else { continue };
+            if aumid.is_empty() {
+                continue;
+            }
+            let name = entry
+                .DisplayInfo()
+                .ok()
+                .and_then(|info| info.DisplayName().ok())
+                .map(|display| display.to_string())
+                .unwrap_or_default();
+            if name.is_empty() {
+                continue;
+            }
+            found.push((name, aumid.to_string(), install.clone()));
+        }
+    }
+    found
+}
+
+#[cfg(not(windows))]
+fn msix_applications() -> Vec<(String, String, Option<PathBuf>)> {
+    Vec::new()
 }
 
 // ---- PATH -----------------------------------------------------------------
@@ -226,110 +443,6 @@ fn path_applications() -> Vec<(String, PathBuf)> {
         }
     }
     found
-}
-
-// ---- MSIX -----------------------------------------------------------------
-
-/// Find Store applications.
-///
-/// Store apps are enumerated through the Windows Runtime package manager
-/// rather than by listing `Program Files\WindowsApps`. The folder itself is
-/// not readable by an ordinary user, but the package manager is, so this
-/// route works without elevation. When the package manager is unavailable
-/// the source yields nothing rather than failing.
-fn msix_applications() -> Vec<(String, PathBuf)> {
-    let packages = match enumerate_packages() {
-        Some(packages) => packages,
-        None => return Vec::new(),
-    };
-
-    let mut found = Vec::new();
-    for (display_name, install_location) in packages {
-        let Some(executable) = find_package_executable(&install_location) else {
-            continue;
-        };
-        found.push((display_name, executable));
-    }
-    found
-}
-
-/// Enumerate the installed packages, returning their display name and
-/// installation folder.
-#[cfg(windows)]
-fn enumerate_packages() -> Option<Vec<(String, PathBuf)>> {
-    use windows::Management::Deployment::PackageManager;
-    use windows::Win32::System::WinRT::{RO_INIT_MULTITHREADED, RoInitialize};
-
-    // The Windows Runtime must have an apartment on this thread before any
-    // WinRT object is activated. Initialising it more than once is
-    // harmless: the second call reports the existing apartment.
-    unsafe {
-        let _ = RoInitialize(RO_INIT_MULTITHREADED);
-    }
-
-    let manager = PackageManager::new().ok()?;
-
-    // `FindPackages` enumerates packages for every user on the machine and
-    // therefore needs elevation. `FindPackagesByUserSecurityId` with an empty
-    // identifier means "the current user" and works from an ordinary process,
-    // which is what a launcher needs. The elevated call is only used as a
-    // fallback when the current-user call is unavailable.
-    let packages = manager
-        .FindPackagesByUserSecurityId(&windows::core::HSTRING::from(""))
-        .or_else(|_| manager.FindPackages())
-        .ok()?;
-
-    let mut found = Vec::new();
-    for package in packages {
-        let Ok(id) = package.Id() else { continue };
-        let Ok(name) = id.Name() else { continue };
-        let Ok(location) = package.InstalledLocation() else {
-            continue;
-        };
-        let Ok(path) = location.Path() else { continue };
-
-        // The package's display name is the user-facing name; the package
-        // identifier is the fallback when a package declares no display name.
-        let display = package.DisplayName().ok().map(|h| h.to_string()).unwrap_or_else(|| {
-            let raw = name.to_string();
-            match raw.split_once('_') {
-                Some((head, _)) => head.to_string(),
-                None => raw,
-            }
-        });
-
-        found.push((display, PathBuf::from(path.to_string())));
-    }
-    Some(found)
-}
-
-#[cfg(not(windows))]
-fn enumerate_packages() -> Option<Vec<(String, PathBuf)>> {
-    None
-}
-
-/// Find the entry executable inside a package folder.
-fn find_package_executable(package_root: &Path) -> Option<PathBuf> {
-    let manifest = package_root.join("AppxManifest.xml");
-    let contents = std::fs::read_to_string(&manifest).ok()?;
-    let executable = extract_executable(&contents)?;
-    let candidate = package_root.join(&executable);
-    if candidate.exists() { Some(candidate) } else { None }
-}
-
-/// Extract the application executable named by an Appx manifest.
-///
-/// The manifest names the executable as `Executable="path\to\app.exe"`. The
-/// attribute may appear several times — once for the application and once per
-/// extension — and the first occurrence is the application itself.
-fn extract_executable(manifest: &str) -> Option<String> {
-    let chunk = manifest.split("Executable=").nth(1)?.trim_start();
-    let value = if let Some(rest) = chunk.strip_prefix('"') {
-        rest.split('"').next()?.to_string()
-    } else {
-        chunk.split_whitespace().next()?.to_string()
-    };
-    if value.is_empty() { None } else { Some(value) }
 }
 
 // ---- registry -------------------------------------------------------------
@@ -576,38 +689,29 @@ mod tests {
     }
 
     #[test]
-    fn extracts_the_executable_from_a_manifest() {
-        // Shapes after the real installed product's manifest, observed
-        // during indexing. This file documents that the extraction covers
-        // that exact form, so a regression is caught before it matters.
-        let manifest = r#"<Application Executable="Raycast\Raycast.exe" EntryPoint="Windows.FullTrustApplication"/>"#;
-        assert_eq!(
-            extract_executable(manifest).as_deref(),
-            Some(r"Raycast\Raycast.exe")
-        );
+    fn game_launcher_urls_are_classified() {
+        assert!(is_game_url("steam://rungameid/12345"));
+        assert!(is_game_url("STEAM://Rungameid/12345"));
+        assert!(is_game_url("com.epicgames.launcher://apps/fortnite"));
+        assert!(is_game_url("link2ea://launchgame/1234"));
+        assert!(!is_game_url("https://example.com"));
+        assert!(!is_game_url("steamunofficial://x"));
     }
 
     #[test]
-    fn takes_the_first_executable_in_a_manifest() {
-        let manifest = concat!(
-            r#"<Application Executable="App\App.exe" EntryPoint="Windows.FullTrustApplication"/>"#,
-            r#"<uap:Extension Executable="App\Helper.exe"/>"#,
-        );
-        assert_eq!(
-            extract_executable(manifest).as_deref(),
-            Some(r"App\App.exe")
-        );
+    fn uninstallers_are_recognised_by_name() {
+        assert!(looks_like_uninstaller(Path::new(r"C:\app\unins000.exe")));
+        assert!(looks_like_uninstaller(Path::new(r"C:\app\Uninstall Tool.exe")));
+        assert!(!looks_like_uninstaller(Path::new(r"C:\app\game.exe")));
     }
 
     #[test]
-    fn handles_an_unquoted_executable_attribute() {
-        let manifest = r#"<Application Executable=App.exe />"#;
-        assert_eq!(extract_executable(manifest).as_deref(), Some("App.exe"));
-    }
-
-    #[test]
-    fn a_manifest_without_an_executable_yields_nothing() {
-        assert_eq!(extract_executable("<Package/>"), None);
+    fn msi_uninstalls_are_recognised() {
+        assert!(is_msi_uninstall(
+            Path::new(r"C:\Windows\System32\msiexec.exe"),
+            Some("/X {GUID}")
+        ));
+        assert!(!is_msi_uninstall(Path::new(r"C:\game\steam.exe"), Some("-applaunch 123")));
     }
 
     #[test]

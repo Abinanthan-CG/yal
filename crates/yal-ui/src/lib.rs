@@ -1073,7 +1073,31 @@ impl Palette {
                     .iter()
                     .find(|application| application.id == *id)
                     .ok_or_else(|| format!("\"{id}\" is not an application this launcher knows"))?;
-                yal_system::launch::launch(&resolved.path).map_err(|err| err.to_string())
+                let target = yal_engine::sources::application_launch(resolved);
+                self.perform(&target)
+            }
+            (
+                ActionKind::OpenApplication,
+                OpenTarget::Launch {
+                    program,
+                    shortcut,
+                    args,
+                    working_directory,
+                    aumid,
+                },
+            ) => {
+                // The launch goes to the shell whole: the AUMID starts a
+                // Store application, a shortcut applies everything stored
+                // inside it, a program is started with its arguments and
+                // working directory.
+                yal_system::launch::application(yal_system::launch::ApplicationLaunch {
+                    program: program.as_deref(),
+                    shortcut: shortcut.as_deref(),
+                    arguments: args.as_deref(),
+                    working_directory: working_directory.as_deref(),
+                    aumid: aumid.as_deref(),
+                })
+                .map_err(|err| err.to_string())
             }
             (ActionKind::RunCommand, OpenTarget::Command { program, args }) => {
                 // Detached, with no host console: the palette does not
@@ -1736,36 +1760,34 @@ impl Palette {
     /// The texture for a row's left-hand icon slot, `None` when the row
     /// draws its drawn tile instead.
     ///
-    /// The pixels are mined once per executable per process — the walk
-    /// through the shell costs several GDI objects and a freed icon
-    /// every time — and only mined at all for rows the eyes can reach:
-    /// a result far down the list is not worth a trip until the list
-    /// scrolls to it. A miss is cached too, so a program without pixels
-    /// is not asked again every frame.
+    /// The pixels are mined once per parsing name per process — the
+    /// walk through the shell costs COM objects and GDI handles every
+    /// time — and only mined at all for rows the eyes can reach: a
+    /// result far down the list is not worth a trip until the list
+    /// scrolls to it. A miss is cached too, so a name without pixels is
+    /// not asked again every frame.
     fn resolve_row_icon(
         &mut self,
         ctx: &egui::Context,
-        executable: Option<String>,
+        parsing_name: Option<String>,
         visible: bool,
     ) -> Option<egui::TextureHandle> {
-        let executable = executable?;
-        if let Some(cached) = self.icon_cache.get(&executable) {
+        let parsing_name = parsing_name?;
+        if let Some(cached) = self.icon_cache.get(&parsing_name) {
             return cached.clone();
         }
         if !visible {
             return None;
         }
-        let texture = yal_system::icons::application_icon(std::path::Path::new(&executable)).map(
-            |image| {
-                let side = [image.width.max(1) as usize, image.height.max(1) as usize];
-                ctx.load_texture(
-                    format!("icon:{executable}"),
-                    egui::ColorImage::from_rgba_unmultiplied(side, &image.rgba),
-                    egui::TextureOptions::default(),
-                )
-            },
-        );
-        self.icon_cache.insert(executable, texture.clone());
+        let texture = yal_system::icons::shell_item_icon(&parsing_name).map(|image| {
+            let side = [image.width.max(1) as usize, image.height.max(1) as usize];
+            ctx.load_texture(
+                format!("icon:{parsing_name}"),
+                egui::ColorImage::from_rgba_unmultiplied(side, &image.rgba),
+                egui::TextureOptions::default(),
+            )
+        });
+        self.icon_cache.insert(parsing_name, texture.clone());
         texture
     }
 
@@ -3083,6 +3105,21 @@ fn action_label(action: &Action) -> String {
                 .map(|name| name.to_string_lossy().into_owned())
                 .unwrap_or_else(|| path.to_string_lossy().into_owned())
         ),
+        (ActionKind::OpenApplication, OpenTarget::Launch { program, shortcut, aumid, .. }) => {
+            // The row's own title names the application; the act names
+            // what will be invoked for it — the program, the shortcut,
+            // or the Store identity.
+            let named = [
+                shortcut.as_ref().and_then(|p| p.file_stem()),
+                program.as_ref().and_then(|p| p.file_stem()),
+                aumid.as_ref().map(|id| std::ffi::OsStr::new(id.rsplit('!').next().unwrap_or(id))),
+            ]
+            .into_iter()
+            .find_map(|named| named)
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "the application".to_string());
+            format!("open {named}")
+        }
         (ActionKind::OpenApplication, _) => "open the application".to_string(),
         (ActionKind::RunCommand, OpenTarget::Command { program, .. }) => format!(
             "run {}",

@@ -158,6 +158,56 @@ fn bgra_to_rgba(bytes: &mut [u8]) {
     }
 }
 
+/// The icon the shell item carries for a parsing name.
+///
+/// A parsing name is one of three shapes: a `.lnk` file, whose own
+/// icon location the shell honours — a game's art, not Steam's; a
+/// Store application's AUMID, whose shell item carries the package's
+/// icon without touching the unreadable `WindowsApps` folder; or an
+/// executable path. The shell is asked instead of the file, because
+/// the shell is what the Start Menu itself asks.
+///
+/// This is a per-render-time ask, worth once per name: the walk
+/// through the shell costs COM objects and GDI handles every time, so
+/// callers keep their own cache and a name is never asked twice while
+/// the process lives.
+#[cfg(windows)]
+pub fn shell_item_icon(parsing_name: &str) -> Option<IconImage> {
+    use windows::core::PCWSTR;
+    use windows::Win32::Foundation::SIZE;
+    use windows::Win32::Graphics::Gdi::{DeleteObject, HGDIOBJ};
+    use windows::Win32::UI::Shell::{
+        IShellItemImageFactory, SIIGBF_ICONONLY, SHCreateItemFromParsingName,
+    };
+
+    let wide: Vec<u16> = parsing_name
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
+
+    unsafe {
+        let factory: IShellItemImageFactory = SHCreateItemFromParsingName(
+            PCWSTR(wide.as_ptr()),
+            None,
+        )
+        .ok()?;
+
+        // The icon, not a thumbnail: ICONONLY. A 48-point ask matches
+        // the largest size most icons ship in, and the row scales it
+        // down to its 22-point slot with the shell's own pixels.
+        let bitmap = factory.GetImage(SIZE { cx: 48, cy: 48 }, SIIGBF_ICONONLY).ok()?;
+        let pixels = icon_pixels(&bitmap);
+        let _ = DeleteObject(HGDIOBJ(bitmap.0));
+        pixels
+    }
+}
+
+/// There is nothing outside Windows to mine icons from.
+#[cfg(not(windows))]
+pub fn shell_item_icon(_parsing_name: &str) -> Option<IconImage> {
+    None
+}
+
 /// There is nothing outside Windows to mine icons from.
 #[cfg(not(windows))]
 pub fn application_icon(_executable: &std::path::Path) -> Option<IconImage> {

@@ -62,6 +62,26 @@ pub enum OpenTarget {
     /// Literal text to place on the clipboard.
     Text(String),
 
+    /// An application launch, shaped as the index handed it in.
+    ///
+    /// At most one part acts: the Store identity when the item is a
+    /// Store application, else the shortcut file the shell applies
+    /// whole (its own arguments, working directory and compatibility
+    /// settings), else the program with its arguments and working
+    /// directory.
+    Launch {
+        /// The program to start.
+        program: Option<PathBuf>,
+        /// The shortcut file to hand the shell.
+        shortcut: Option<PathBuf>,
+        /// Arguments the launch passes to the program.
+        args: Option<String>,
+        /// The working directory the program starts in.
+        working_directory: Option<PathBuf>,
+        /// The Store application's AUMID.
+        aumid: Option<String>,
+    },
+
     /// A program and its arguments.
     Command {
         program: PathBuf,
@@ -113,6 +133,36 @@ impl Action {
         Self {
             kind: ActionKind::OpenPath,
             target: OpenTarget::Path(path.into()),
+        }
+    }
+
+    /// Launch an installed application as its entry named it.
+    ///
+    /// The parts are the index's honest recording of the entry: a Store
+    /// app gives its AUMID, a shortcut gives itself (the shell applies
+    /// everything stored inside), a plain executable gives its path
+    /// with arguments and a working directory when the entry carries
+    /// them.
+    ///
+    /// The shell-exe fields are optional because a Store application
+    /// has none: its path in `WindowsApps` is not even the launcher's
+    /// to read.
+    pub fn launch(
+        program: Option<PathBuf>,
+        shortcut: Option<PathBuf>,
+        args: Option<String>,
+        working_directory: Option<PathBuf>,
+        aumid: Option<String>,
+    ) -> Self {
+        Self {
+            kind: ActionKind::OpenApplication,
+            target: OpenTarget::Launch {
+                program,
+                shortcut,
+                args,
+                working_directory,
+                aumid,
+            },
         }
     }
 

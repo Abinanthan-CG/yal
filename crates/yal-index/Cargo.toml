@@ -28,6 +28,7 @@ windows = { version = "0.62", features = [
   "Win32_System_WinRT",
   "Foundation",
   "ApplicationModel",
+  "ApplicationModel_Core",
   "Management_Deployment",
   "Storage",
   "Storage_Search",

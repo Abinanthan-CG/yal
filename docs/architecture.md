@@ -241,6 +241,91 @@ The command line gets `yal file-index` to read the state and `--refresh`
 to run a pass in the foreground, which is also how the walk's cost is
 measured and recorded.
 
+### The daily-driver application pipeline
+
+The first application pipeline found apps but could not run them as
+Windows understands them. Four defects, all confirmed live: a shortcut's
+arguments and working directory were dropped at discovery, so a game
+shortcut opened Steam's library instead of the game; direct-exe spawning
+can never start a Store/MSIX application (it needs package identity
+through shell activation); games without Start Menu shortcuts were
+invisible; and icons were read only from `.exe` files, which Store-app
+locations are not readable. Wave 10 replaces both halves of the
+pipeline, design mined from the GPL Vicinae's Windows app database
+(`win-app-database.cpp`, credited in the parity ledger) — the two
+projects share GPL-3.0, so its spec is copyable, not just observable.
+
+**Discovery follows the shortcut, not the exe.** A `.lnk` is read
+without `IShellLink::Resolve` (which can block on the network): the
+shell reads the target through `IPersistFile` + `GetPath`, falls back to
+the item's ID list for CLSID targets (File Explorer's CLSID maps to
+`explorer.exe`), and additionally keeps the target's *arguments*,
+*working directory* (expanded), and the shortcut's own **AUMID**
+(`PKEY_AppUserModel_ID` from its property store). Identity follows the
+AUMID when one is carried, else program+arguments — so two shortcuts to
+the same program with different arguments are two applications, and a
+shortcut whose AUMID matches an already-indexed Store app is dropped in
+favour of the Store row.
+
+**Games ride their launcher protocols.** A `.url` shortcut whose URL
+scheme is a game-launcher protocol — `steam:`, Epic, GOG Galaxy,
+Ubisoft, Battle.net, EA (`link2ea:`), Legacy Origin, Amazon Games —
+becomes an application whose launch act is the URL itself, categorised
+as a game. Uninstallers are skipped by name (`unins*`, `msiexec /x`).
+
+**Sources widen, each deduplicated against the earlier ones** (Store
+first, then Start Menu and desktop `.lnk`/`.url`/`.appref-ms` via known
+folder IDs, then `App Paths` registry entries — helper exes without a
+version-resource `FileDescription` are skipped, `WindowsApps` aliased
+exes are skipped since Store scanning covers them — then portable
+directories, with PATH kept for command-line tools). Store apps stop
+reading manifests: `GetAppListEntries` on each non-framework,
+non-resource package yields exactly the launchable, user-visible
+entries, each carrying its real AUMID and display name — no more
+`Executable=` guessing that silently dropped every Store app without a
+manifest attribute.
+
+**Launching is per kind, through the shell.** `yal-system` grows one
+entry point, ShellExecute-based (the shell handles verbs, elevation
+prompts, protocol handlers and Store identity):
+
+- shortcut with arguments of our own to add, or needing elevation:
+  program + combined arguments + working directory;
+- plain shortcut, including every game `.url`: the shortcut file
+  itself (ShellExecute honours everything inside it; `lpParameters`
+  is ignored for `.lnk` targets, which is why the split exists);
+- Store app, no file/URI arguments: `shell:AppsFolder\<AUMID>`
+  parsing name — the one path that starts such an application;
+- Store app given arguments: `IApplicationActivationManager`,
+  files via `ActivateForFile`, URIs via `ActivateForProtocol`
+  (packaged apps never receive argv);
+- plain executable: program + quoted arguments.
+
+The domain model grows accordingly: the application item's launch
+action stops being `OpenPath(target)` and becomes a launch intent
+carrying program, arguments, working directory and AUMID as fits the
+kind, so the engine's application source and the executor agree.
+
+**Icons ask the shell by parsing name.** The shell item built from the
+parsing name carries the right icon for every kind: a `.lnk`'s item
+honours the shortcut's own `IconLocation`; an AUMID item yields the
+package's icon without touching `WindowsApps`; an exe item is what the
+first pipeline already read. One helper — `shell_item_icon(name)` —
+replaces `application_icon`, and the per-quick-tag distinction (the
+`.lnk` itself, not its target) is what makes a Steam game row show the
+game's own art.
+
+**Time zones stop being local-only.** The date/time command grows an
+IANA zone table (`chrono-tz`), so "time in Tokyo" names the zone by
+city with the local-vs-there comparison, and Windows zone names map
+into it at the edges the command exposes.
+
+**Rates tell the truth on failure.** The update act keeps its
+explicit-act shape (offline rule intact) but reports the failure's
+cause — timeout, oversize, refused — in the toast and the status line,
+and the palette names the stored vintage alongside the answer, so a
+stale table reads as stale, not broken.
+
 ---
 
 ## The palette

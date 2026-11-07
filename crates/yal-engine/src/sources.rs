@@ -58,18 +58,83 @@ pub fn applications(discovered: &[Discovered]) -> Vec<Candidate> {
         .map(|application| {
             let mut item = Item::new(application.name.clone())
                 .with_id(application.id.clone())
-                .with_subtitle(application.path.display().to_string())
-                .with_action(Action::open_path(application.path.clone()))
-                .with_secondary_action(Action::reveal(application.path.clone()))
-                .with_secondary_action(Action::copy(
-                    application.path.display().to_string(),
-                ));
-            if let Some(icon) = icon_for(&application.path) {
+                .with_subtitle(application_subtitle(application))
+                .with_action(application_launch(application));
+            if !application.path.as_os_str().is_empty()
+                && application.aumid.is_none()
+            {
+                item = item
+                    .with_secondary_action(Action::reveal(application.path.clone()))
+                    .with_secondary_action(Action::copy(
+                        application.path.display().to_string(),
+                    ));
+            }
+            if let Some(icon) = application_icon(application) {
                 item = item.with_icon(icon);
             }
             Candidate::new(item, CommandKind::Applications)
         })
         .collect()
+}
+
+/// What the subtitle says for an application entry.
+///
+/// A Store application's folder is rarely the user's to read, so its
+/// subtitle names what it is instead; a game `.url` names its URL; the
+/// rest name their executable, which is where the file actually comes
+/// from.
+fn application_subtitle(application: &Discovered) -> String {
+    if let Some(url) = &application.url {
+        return url.clone();
+    }
+    if !application.path.as_os_str().is_empty() {
+        return application.path.display().to_string();
+    }
+    "a Store application".to_string()
+}
+
+/// The launch act for an application entry, shaped as the index named it.
+///
+/// At most one part acts: the Store identity through its shell parsing
+/// name, the shortcut file whole, or the program with the arguments and
+/// working directory the entry recorded. The shell is asked for all of
+/// it — the shell knows the elevation levels, the compatibility flags
+/// and the Store identity, and a CreateProcess call does not.
+pub fn application_launch(application: &Discovered) -> Action {
+    let program = if application.aumid.is_none() && application.shortcut.is_none() {
+        Some(application.path.clone())
+    } else {
+        None
+    };
+    Action::launch(
+        program,
+        application.shortcut.clone(),
+        application.arguments.clone(),
+        application.working_directory.clone(),
+        application.aumid.clone(),
+    )
+}
+
+/// The icon slot's shell parsing name for an application entry.
+///
+/// The shell item built from the parsing name carries the right pixels
+/// for every kind: a `.lnk`'s item honours the shortcut's own icon
+/// location (a game's art, not Steam's), an AUMID item yields the
+/// package's icon without touching the unreadable `WindowsApps` folder,
+/// and an executable item is the plain exe file.
+fn application_icon(application: &Discovered) -> Option<Icon> {
+    if let Some(shortcut) = &application.shortcut {
+        return Some(Icon::Application(
+            shortcut.display().to_string(),
+        ));
+    }
+    if let Some(aumid) = &application.aumid {
+        return Some(Icon::Application(aumid.clone()));
+    }
+    if application.path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
+        return Some(Icon::Application(application.path.display().to_string()));
+    }
+    None
 }
 
 /// Build candidates for the aliases that rename applications.
@@ -105,7 +170,7 @@ pub fn aliases(
                         alias.term
                     ))
                     .with_keyword(alias.term.clone())
-                    .with_action(Action::open_path(application.path.clone()))
+                    .with_action(application_launch(application))
                     .with_secondary_action(Action::reveal(application.path.clone()))
                     .with_secondary_action(Action::copy(
                         application.path.display().to_string(),
@@ -1344,19 +1409,6 @@ fn first_line(text: &str) -> String {
     let mut truncated: String = line.chars().take(MAX).collect();
     truncated.push('…');
     truncated
-}
-
-/// The icon for an application, derived from its executable path: the
-/// item carries the executable's identity, and the shell's pixels are
-/// resolved at render time — the model's `Icon::Application` slot exists
-/// for exactly this.
-fn icon_for(path: &std::path::Path) -> Option<Icon> {
-    let extension = path.extension()?.to_str()?;
-    if extension.eq_ignore_ascii_case("exe") {
-        Some(Icon::Application(path.display().to_string()))
-    } else {
-        None
-    }
 }
 
 /// The current time, used when no other clock is available.
