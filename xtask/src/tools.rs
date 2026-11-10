@@ -4,6 +4,69 @@ use crate::{repo_root, run_tool};
 use anyhow::{bail, Context, Result};
 use std::path::{Path, PathBuf};
 
+/// Find NSIS's `makensis`.
+///
+/// It is on `PATH` after a normal install, but a per-machine install does
+/// not always add it, so the standard locations are checked as well.
+fn find_makensis() -> Option<String> {
+    if let Ok(path) = std::env::var("PATH") {
+        for directory in path.split(';') {
+            if directory.is_empty() {
+                continue;
+            }
+            let candidate = Path::new(directory).join("makensis.exe");
+            if candidate.is_file() {
+                return Some(candidate.display().to_string());
+            }
+        }
+    }
+    [
+        r"C:\Program Files (x86)\NSIS\makensis.exe",
+        r"C:\Program Files\NSIS\makensis.exe",
+    ]
+    .iter()
+    .find(|candidate| Path::new(candidate).is_file())
+    .map(|candidate| candidate.to_string())
+}
+
+/// Check that the Visual Studio ARM64 cross-compiler is installed.
+///
+/// The ARM64 build needs the `VC.Tools.ARM64` component of the Visual Studio
+/// Build Tools, which is not installed by default. Without it the link fails
+/// with "link.exe not found", which says nothing about what to do.
+fn check_arm64_toolchain() -> Result<()> {
+    let roots = [
+        r"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC",
+        r"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC",
+    ];
+    for root in roots {
+        let Ok(entries) = std::fs::read_dir(root) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let arm64 = entry.path().join("bin").join("Hostx64").join("arm64");
+            if arm64.join("link.exe").is_file() {
+                return Ok(());
+            }
+        }
+    }
+    bail!(
+        "the ARM64 cross-compiler is not installed.\n\
+         \n\
+         The ARM64 build needs the 'MSVC v143 ARM64 build tools' component of the\n\
+         Visual Studio Build Tools. Install it with:\n\
+         \n\
+           winget install --id Microsoft.VisualStudio.2022.BuildTools -e --force \\\n\
+             --override \"--wait --passive --norestart --add Microsoft.VisualStudio.Component.VC.Tools.ARM64\"\n\
+         \n\
+         Or build the other architecture with '--arch x64'. The release workflow on\n\
+         windows-latest has the ARM64 tools, so it builds both."
+    )
+}
+
 /// Location of upstream's string catalog. Only present in a developer checkout
 /// that has cloned upstream; the generated Rust file is committed so a plain
 /// build never needs it.
@@ -136,6 +199,9 @@ pub fn dist(args: &[String]) -> Result<()> {
             }
         }
         println!("dist: building {} ({})", target, file);
+        if file == "arm64" {
+            check_arm64_toolchain()?;
+        }
         run_tool(
             "cargo",
             &[
@@ -189,14 +255,21 @@ pub fn dist(args: &[String]) -> Result<()> {
         let installer = std::path::Path::new(&nsi);
         let installer_display = installer.display().to_string();
         let setup_display = setup.display().to_string();
+        // The installer script lives in `installer/`, and NSIS resolves
+        // relative paths against the script's own directory.
+        let stage_display = format!("..\\dist\\stage-{file}");
+        let makensis = find_makensis().ok_or_else(|| {
+            anyhow::anyhow!("NSIS was not found. Install it with 'winget install --id NSIS.NSIS -e'.")
+        })?;
         run_tool(
-            "makensis",
+            &makensis,
             &[
                 "-V3",
                 &format!("/DVERSION={version}"),
                 &format!("/DARCH={file}"),
                 &format!("/DNSIS_ARCH={nsis_arch}"),
                 &format!("/DCHANNEL={channel}"),
+                &format!("/DSTAGE={stage_display}"),
                 &format!("/DOUTFILE={setup_display}"),
                 &installer_display,
             ],
