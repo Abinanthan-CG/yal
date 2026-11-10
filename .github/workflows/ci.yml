@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # The pure-logic crates build and test on any host, so a mistake in the
+  # calculator or the snippet engine is caught in seconds rather than minutes.
+  logic:
+    name: Pure logic (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: crates/tc-core crates/tc-calc crates/tc-search crates/tc-snippets crates/tc-platform
+      - name: Test the pure-logic crates
+        run: cargo test -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-snippets
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-snippets --all-targets -- -D warnings
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pinned toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: . -> target
+
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: The parity ledger is current
+        run: cargo run --quiet -p xtask -- parity --check
+
+      - name: No placeholders in shipped code
+        shell: pwsh
+        run: |
+          $patterns = @('todo!', 'unimplemented!', 'unreachable!', 'TODO', 'FIXME', 'coming soon', 'mock data')
+          $targets = @('crates', 'apps', 'frontend')
+          $found = @()
+          foreach ($pattern in $patterns) {
+            $hits = Get-ChildItem -Path $targets -Recurse -Include *.rs,*.ts,*.tsx,*.js -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -notmatch '\\(target|node_modules)\\' } |
+              Select-String -Pattern $pattern -SimpleMatch
+            $found += $hits
+          }
+          if ($found) {
+            $found | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" }
+            throw "placeholders found in shipped code"
+          }
+
+      - name: Check the dependency licences
+        run: |
+          cargo install cargo-deny --locked
+          cargo deny check
+
+      - name: Build the release binaries
+        run: cargo build --release --workspace
+
+      - name: The self-test passes
+        run: ./target/release/yal.exe --self-test
+
+      - name: Build the installer and the portable zip
+        run: cargo run --quiet -p xtask -- dist --arch x64
+
+      - name: The installer smoke test
+        shell: pwsh
+        run: ./scripts/smoke-test.ps1
+
+      - name: Upload the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: yal-windows-x64
+          path: |
+            dist/yal-setup-*-x64.exe
+            dist/yal-*-x64-portable.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: ignore
