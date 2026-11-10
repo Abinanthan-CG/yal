@@ -104,3 +104,75 @@ proven on this machine and CI is a second witness rather than the only one.
 **Why.** The brief's `environment_adaptation` section says to find out where you are before
 planning. Deferring everything to CI would have been correct but much slower, and would have
 meant reporting far fewer rows as `PORTED` than the work actually justified.
+
+## 2026-11-10 - The ledger's rows are generated, which replaces the hand-authored plan
+
+**Question.** The first decision above split the ledger into fragments so that several people
+could author it at once. Four parallel workers were dispatched to hand-write the rows. Three
+produced nothing usable within the time limit, and the one that finished duplicated the
+generated rows and carried a page-path typo.
+
+**Options.** (a) Keep hand-authoring and fix the workers. (b) Generate the rows from the
+upstream documentation, and hand-write only the status and the evidence.
+
+**Decision.** (b). `cargo xtask ledger` derives the rows from the documentation pages: one row
+per heading, table row, list item and paragraph, with `·`-separated lists split into one row
+per item and shorthand percentages folded out. It writes `parity/parts/generated/*.toml`, which
+is committed. The hand-authored fragments were deleted.
+
+**Why.** The rows are a property of the documentation, not of any one author's judgement, so
+generating them removes a whole class of error: a missed behaviour, a duplicated row, a typo in
+a page path. The judgement that still needs a human — whether a behaviour is ported and which
+test proves it — stays hand-written, and the validator still checks it.
+
+**Effect on the earlier decision.** The fragments are still the authoring units, but they now
+hold the *status* and the *evidence* rather than the behaviour text.
+
+## 2026-11-10 - A running instance is asked to quit through a named event
+
+**Question.** The installer replaces the program files, so it has to close a running instance
+first. Upstream is a macOS application and has no equivalent problem.
+
+**Options.** (a) Have the installer kill the process. (b) Have the installer ask politely
+through a window message. (c) Use a named event that the running instance waits on.
+
+**Decision.** (c). The running instance creates the named event `Local\YAL-quit` and waits on
+it on a background thread; `yal.exe --quit-running` opens the same event and sets it. The
+instance exits with code 0 when the event fires.
+
+**Why.** (a) is rude and can lose the user's unsaved work. (b) needs the target window to
+exist and to respond, which it may not. The event is per session and per user, so the signal
+never reaches another user and never leaves the machine, and it works whether or not a window
+is on screen.
+
+## 2026-11-10 - The repository slug is written down once
+
+**Question.** The updater, the packaging manifests and the documentation all need to name the
+repository, and the slug is not decided yet.
+
+**Options.** (a) Write the slug in each place that needs it. (b) Write it in one constant and
+read it everywhere.
+
+**Decision.** (b). `tc-core::REPOSITORY` holds the slug, and `tc-core::latest_release_url()`
+builds the releases URL from it. `Cargo.toml` repeats it in `workspace.package.repository`
+because Cargo has no way to read a constant.
+
+**Why.** A slug that is written in five places is a slug that is wrong in two of them. One
+constant means changing the repository name is a one-line change.
+
+## 2026-11-10 - The upstream files are read with an explicit UTF-8 decode
+
+**Question.** The upstream Swift sources and the documentation pages contain non-ASCII text:
+arrows, multiplication signs, CJK and Cyrillic. Reading them shows mojibake.
+
+**Options.** (a) Assume the files are broken and re-download them. (b) Read them with an
+explicit UTF-8 decode.
+
+**Decision.** (b). The files were downloaded with `Invoke-WebRequest -OutFile`, which writes the
+raw bytes, and are read with an explicit UTF-8 decode.
+
+**Why.** The first download used `Invoke-WebRequest` without `-OutFile`, which decoded the
+responses as Windows-1252 and produced artifacts such as U+00E2 and U+0080. The files were
+re-downloaded, and the reading tools that decode correctly are used from then on. The
+mis-decoding is a property of the tool, not of the files, and mistaking it for corruption would
+have led to re-downloading correct files forever.
