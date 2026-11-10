@@ -1,0 +1,39 @@
+# YAL - a Windows keyboard launcher
+#
+# The installer is published with every release. This manifest points at the
+# latest one.
+#
+# To submit it:
+#   1. Fork https://github.com/microsoft/winget-pkgs
+#   2. Add this file under manifests/a/YAL/YAL/<version>/, with the
+#      architecture subfolder
+#   3. Open a pull request
+
+PackageIdentifier: YAL.YAL
+PackageVersion: 0.1.0
+DefaultLocale: en-US
+
+ManifestType: installer
+ManifestVersion: 1.6.0
+
+InstallerType: exe
+NestedInstallerType: null
+NestedInstallerFiles: null
+ReleaseDate: 2026-11-10
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/OWNER/REPO/releases/download/v0.1.0/yal-setup-0.1.0-x64.exe
+  InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+- Architecture: arm64
+  InstallerUrl: https://github.com/OWNER/REPO/releases/download/v0.1.0/yal-setup-0.1.0-arm64.exe
+  InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+
+ManifestType: installer
+ManifestVersion: 1.6.0
+
+InstallerType: portable
+InstallerUrl: https://github.com/OWNER/REPO/releases/download/v0.1.0/yal-0.1.0-x64-portable.zip
+InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+NestedInstallerType: portable
+NestedInstallerFiles: yal.exe
+PortableCommandAlias: yal
