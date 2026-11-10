@@ -20,3 +20,22 @@ pub use entry::{
     SystemActionId,
 };
 pub use ids::Uuid;
+
+/// The GitHub repository YAL is published from.
+///
+/// The slug is written down once, here. Everything that has to name the
+/// repository - the updater, the support link, the packaging manifests -
+/// reads it from this constant, so there is only one place to change when the
+/// repository is created.
+pub const REPOSITORY: &str = "OWNER/REPO";
+
+/// Where a user is sent when they ask for support.
+///
+/// Support belongs to the original project, because the original project is
+/// what people who search for a launcher will find.
+pub const SUPPORT_URL: &str = "https://tinycast.dev/support";
+
+/// The latest release of YAL, used by the updater.
+pub fn latest_release_url() -> String {
+    format!("https://github.com/{REPOSITORY}/releases/latest")
+}

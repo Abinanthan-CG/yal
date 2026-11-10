@@ -447,7 +447,7 @@ mod tests {
             .into_iter()
             .filter_map(|c| c.suggestion_priority().map(|p| (p, c)))
             .collect();
-        priorities.sort_by(|a, b| b.0.cmp(&a.0));
+        priorities.sort_by_key(|entry| std::cmp::Reverse(entry.0));
         assert_eq!(
             priorities,
             vec![

@@ -102,7 +102,7 @@ pub fn action_for_entry_id(entry_id: &str) -> Option<HotKeyAction> {
         return Some(HotKeyAction::Command(command));
     }
     if let Some(rest) = entry_id.strip_prefix(PREFIX_SYSTEM_ACTION) {
-        return SystemActionId::from_str(rest).map(|id| HotKeyAction::SystemAction { id });
+        return SystemActionId::parse(rest).map(|id| HotKeyAction::SystemAction { id });
     }
     if let Some(rest) = entry_id.strip_prefix(PREFIX_WINDOW_COMMAND) {
         if rest.is_empty() {
@@ -269,7 +269,7 @@ impl SystemActionId {
     }
 
     /// Look an action up by its stored id.
-    pub fn from_str(value: &str) -> Option<SystemActionId> {
+    pub fn parse(value: &str) -> Option<SystemActionId> {
         SystemActionId::ALL
             .into_iter()
             .find(|action| action.as_str() == value)
@@ -455,7 +455,7 @@ mod tests {
     #[test]
     fn system_action_ids_round_trip() {
         for action in SystemActionId::ALL {
-            assert_eq!(SystemActionId::from_str(action.as_str()), Some(action));
+            assert_eq!(SystemActionId::parse(action.as_str()), Some(action));
         }
     }
 

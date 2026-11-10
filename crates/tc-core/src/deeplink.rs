@@ -263,10 +263,8 @@ fn scalar_text(value: &Value) -> Option<String> {
                 Some(integer.to_string())
             } else if let Some(unsigned) = number.as_u64() {
                 Some(unsigned.to_string())
-            } else if let Some(float) = number.as_f64() {
-                Some(swift_double_text(float))
             } else {
-                None
+                number.as_f64().map(swift_double_text)
             }
         }
         Value::Array(_) | Value::Object(_) => None,
@@ -356,9 +354,7 @@ impl DeepLink {
     /// The link a launcher row's id makes.
     pub fn url_for_entry(entry_id: &str, scheme: &str, input: &DeepLinkInput) -> Option<String> {
         let colon = entry_id.find(':')?;
-        if crate::entry::action_for_entry_id(entry_id).is_none() {
-            return None;
-        }
+        crate::entry::action_for_entry_id(entry_id)?;
         Some(Self::build_url(
             scheme,
             &entry_id[..colon],
@@ -442,9 +438,7 @@ impl DeepLink {
             (Self::EXTENSIONS_HOST, _) | (_, true) => None,
             _ => {
                 let entry_id = format!("{host}:{path}");
-                if crate::entry::action_for_entry_id(&entry_id).is_none() {
-                    return None;
-                }
+                crate::entry::action_for_entry_id(&entry_id)?;
                 Some(DeepLink::Entry { entry_id, input })
             }
         }
@@ -540,7 +534,7 @@ impl WindowLayoutAnchor {
         }
     }
 
-    fn from_str(value: &str) -> Option<WindowLayoutAnchor> {
+    fn parse(value: &str) -> Option<WindowLayoutAnchor> {
         Some(match value {
             "top-left" => WindowLayoutAnchor::TopLeft,
             "top" => WindowLayoutAnchor::Top,
@@ -584,7 +578,7 @@ impl WindowSize {
         let height = Dimension::from_link_value(fields.get("height")?)?;
         let anchor = match fields.get("anchor") {
             None => WindowLayoutAnchor::Center,
-            Some(value) => WindowLayoutAnchor::from_str(&value.to_ascii_lowercase())?,
+            Some(value) => WindowLayoutAnchor::parse(&value.to_ascii_lowercase())?,
         };
         let offset = match fields.get("x") {
             None => Offset { x: 0, y: 0 },
