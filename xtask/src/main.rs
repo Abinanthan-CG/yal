@@ -14,6 +14,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+mod ledger;
 mod parity;
 mod tools;
 
@@ -27,6 +28,8 @@ fn main() -> Result<()> {
             summary_only: rest.iter().any(|a| a == "--summary"),
             check_only: rest.iter().any(|a| a == "--check"),
         }),
+        "ledger" => ledger::run(),
+        "tags" => ledger::report(),
         "i18n" => tools::i18n(),
         "dist" => tools::dist(rest),
         "selftest" => tools::selftest(),
@@ -48,7 +51,7 @@ fn print_help() {
          \x20 parity            Validate parity/parity.toml and regenerate PARITY.md\n\
          \x20 parity --summary  Print the per-tier counts without writing files\n\
          \x20 parity --check    Validate only; fail if PARITY.md is out of date\n\
-         \x20 i18n              Regenerate the localized string table\n\
+         \x20 ledger            Generate parity fragments from the upstream documentation\n         \x20 i18n              Regenerate the localized string table\n\
          \x20 dist              Build binaries, installer, portable zip and checksums\n\
          \x20 selftest          Run yal.exe --self-test and print its JSON report\n"
     );
@@ -90,14 +93,25 @@ pub fn test_functions_by_crate() -> BTreeMap<String, BTreeSet<String>> {
             Ok(t) => t,
             Err(_) => continue,
         };
-        let crate_name = match path
-            .strip_prefix(&root)
-            .ok()
-            .and_then(|p| p.components().next())
-            .and_then(|c| c.as_os_str().to_str())
-        {
-            Some(c) => c.to_string(),
-            None => continue,
+        // The crate is named by its own directory: `crates/tc-core` is
+        // `tc-core`, `apps/yal` is `yal`.
+        let crate_name = match path.strip_prefix(&root).ok() {
+            Some(relative) => {
+                let mut components = relative.components();
+                let first = components.next().and_then(|c| c.as_os_str().to_str());
+                match first {
+                    Some("crates") | Some("apps") => components
+                        .next()
+                        .and_then(|c| c.as_os_str().to_str())
+                        .map(|c| c.to_string()),
+                    Some(other) => Some(other.to_string()),
+                    None => None,
+                }
+            }
+            None => None,
+        };
+        let Some(crate_name) = crate_name else {
+            continue;
         };
         let entry = map.entry(crate_name).or_default();
         for line in text.lines() {

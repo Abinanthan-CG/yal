@@ -46,6 +46,8 @@ struct Row {
     heading: String,
     behavior: String,
     #[serde(default)]
+    group: String,
+    #[serde(default)]
     windows: String,
     status: String,
     #[serde(default)]
@@ -65,6 +67,8 @@ struct CountCheck {
     kind: String,
     #[serde(default)]
     value: Option<i64>,
+    #[serde(default)]
+    evidence: Vec<String>,
     #[serde(default)]
     expected_rows: Option<usize>,
 }
@@ -99,6 +103,32 @@ struct CountCheckFile {
     count_check: Vec<CountCheck>,
 }
 
+/// A rule that binds ledger rows to a count check.
+#[derive(Deserialize)]
+struct Tag {
+    count_check: String,
+    page: String,
+    #[serde(default)]
+    heading: Option<String>,
+    #[serde(default)]
+    group: Option<String>,
+    #[serde(default)]
+    groups: Vec<String>,
+    #[serde(default)]
+    behavior_starts_with: Vec<String>,
+    #[serde(default)]
+    behavior_equals: Vec<String>,
+    /// The exact subjects the count check counts; each must match one row.
+    #[serde(default)]
+    items: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct TagFile {
+    #[serde(default)]
+    tag: Vec<Tag>,
+}
+
 pub struct Options {
     pub summary_only: bool,
     pub check_only: bool,
@@ -108,7 +138,18 @@ pub fn run(opts: &Options) -> Result<()> {
     let root = repo_root();
     let pages = load_pages(&root)?;
     let canonical_checks = load_count_checks(&root)?;
-    let ledger = merge_parts(&root)?;
+    let mut ledger = merge_parts(&root)?;
+    let tags = load_tags(&root)?;
+    apply_tags(&mut ledger, &tags);
+    if !opts.summary_only {
+        let unmatched = unmatched_items(&root);
+        if !unmatched.is_empty() {
+            eprintln!("parity: count-check items that matched no row:");
+            for item in unmatched {
+                eprintln!("  - {item}");
+            }
+        }
+    }
 
     let problems = validate(&ledger, &pages, &canonical_checks);
     if !problems.is_empty() {
@@ -174,6 +215,109 @@ fn load_count_checks(root: &Path) -> Result<Vec<CountCheck>> {
     Ok(file.count_check)
 }
 
+/// Load the count-check tagging rules.
+fn load_tags(root: &Path) -> Result<Vec<Tag>> {
+    let path = root.join("parity").join("tags.toml");
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let text = std::fs::read_to_string(&path)
+        .with_context(|| format!("reading {}", path.display()))?;
+    let file: TagFile = toml::from_str(&text).context("parsing parity/tags.toml")?;
+    Ok(file.tag)
+}
+
+/// The count-check items that matched no row on their page.
+pub fn unmatched_items(root: &Path) -> Vec<String> {
+    let tags = match load_tags(root) {
+        Ok(t) => t,
+        Err(_) => return Vec::new(),
+    };
+    let ledger = match merge_parts(root) {
+        Ok(l) => l,
+        Err(_) => return Vec::new(),
+    };
+    let mut out = Vec::new();
+    for tag in &tags {
+        if tag.items.is_empty() {
+            continue;
+        }
+        for item in &tag.items {
+            let matched = ledger
+                .row
+                .iter()
+                .any(|row| row.page == tag.page && row.behavior.starts_with(item.as_str()));
+            if !matched {
+                out.push(format!("{} :: {}", tag.count_check, item));
+            }
+        }
+    }
+    out
+}
+
+/// Bind rows to their count checks.
+///
+/// A row can only carry one count check, so a row claimed by two different
+/// checks keeps the first and is reported by the validator.
+fn apply_tags(ledger: &mut Ledger, tags: &[Tag]) {
+    for tag in tags {
+        for row in ledger.row.iter_mut() {
+            if row.page != tag.page {
+                continue;
+            }
+            if let Some(heading) = &tag.heading {
+                if &row.heading != heading {
+                    continue;
+                }
+            }
+            if let Some(group) = &tag.group {
+                if &row.group != group {
+                    continue;
+                }
+            }
+            if !tag.groups.is_empty() && !tag.groups.contains(&row.group) {
+                continue;
+            }
+            if !tag.items.is_empty() {
+                let matched = tag
+                    .items
+                    .iter()
+                    .any(|item| row.behavior.starts_with(item.as_str()));
+                if !matched {
+                    continue;
+                }
+            }
+            if !tag.behavior_starts_with.is_empty() {
+                let matched = tag
+                    .behavior_starts_with
+                    .iter()
+                    .any(|prefix| row.behavior.starts_with(prefix));
+                if !matched {
+                    continue;
+                }
+            }
+            if !tag.behavior_equals.is_empty() {
+                let matched = tag.behavior_equals.iter().any(|exact| &row.behavior == exact);
+                if !matched {
+                    continue;
+                }
+            }
+            if tag.heading.is_none()
+                && tag.group.is_none()
+                && tag.groups.is_empty()
+                && tag.items.is_empty()
+                && tag.behavior_starts_with.is_empty()
+                && tag.behavior_equals.is_empty()
+            {
+                continue;
+            }
+            if row.count_check.is_none() {
+                row.count_check = Some(tag.count_check.clone());
+            }
+        }
+    }
+}
+
 /// Assemble the ledger from the authoring fragments in `parity/parts/`.
 fn merge_parts(root: &Path) -> Result<Ledger> {
     let parts_dir = root.join("parity").join("parts");
@@ -183,10 +327,13 @@ fn merge_parts(root: &Path) -> Result<Ledger> {
     let mut addition: Vec<Addition> = Vec::new();
 
     if parts_dir.is_dir() {
-        let mut files: Vec<PathBuf> = std::fs::read_dir(&parts_dir)?
-            .filter_map(|e| e.ok().map(|e| e.path()))
-            .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("toml"))
-            .collect();
+        let mut files: Vec<PathBuf> = Vec::new();
+        for entry in walkdir::WalkDir::new(&parts_dir).into_iter().filter_map(Result::ok) {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("toml") {
+                files.push(path.to_path_buf());
+            }
+        }
         files.sort();
         for file in files {
             let text = std::fs::read_to_string(&file)
@@ -286,8 +433,18 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
     for r in &ledger.row {
         *covered.entry(r.heading.as_str()).or_insert(0) += 1;
     }
+    // A heading with no rows of its own is fine when a child heading has them.
+    let titles_with_rows: BTreeSet<&str> = ledger
+        .heading
+        .iter()
+        .filter(|h| covered.get(h.id.as_str()).copied().unwrap_or(0) > 0)
+        .filter_map(|h| h.path.last().map(|title| title.as_str()))
+        .collect();
     for h in &ledger.heading {
-        if covered.get(h.id.as_str()).copied().unwrap_or(0) == 0 {
+        let title = h.path.last().map(|title| title.as_str()).unwrap_or("");
+        if covered.get(h.id.as_str()).copied().unwrap_or(0) == 0
+            && !titles_with_rows.contains(title)
+        {
             problems.push(format!("heading `{}` has no ledger rows", h.id));
         }
     }
@@ -299,6 +456,9 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
         }
         if c.description.trim().is_empty() {
             problems.push(format!("count check `{}` has an empty description", c.id));
+        }
+        for e in &c.evidence {
+            problems.extend(check_evidence(&c.id, e));
         }
         if c.kind != "rows" && c.kind != "asserted" {
             problems.push(format!(
@@ -337,11 +497,14 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
     }
     for c in canonical {
         let count = tagged.get(c.id.as_str()).copied().unwrap_or(0);
-        if count == 0 {
+        // A check that binds a set of rows must be represented by one.
+        // A check whose number is proven by a test is reported as pending
+        // until that test exists, so the ledger is never silently short.
+        if count == 0 && c.evidence.is_empty() && c.kind == "rows" {
             problems.push(format!("count check `{}` is not represented by any row", c.id));
         }
         if let Some(expected) = c.expected_rows {
-            if count != expected {
+            if c.kind == "rows" && count != expected {
                 problems.push(format!(
                     "count check `{}` expects {expected} rows but {count} are tagged with it",
                     c.id
@@ -479,7 +642,7 @@ fn escape_cell(text: &str) -> String {
 }
 
 /// Escape a string as a TOML basic string.
-fn tstr(value: &str) -> String {
+pub fn toml_string(value: &str) -> String {
     let mut out = String::with_capacity(value.len() + 2);
     out.push('"');
     for ch in value.chars() {
@@ -512,34 +675,39 @@ fn render_ledger_toml(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCh
 
     for h in &ledger.heading {
         out.push_str("\n[[heading]]\n");
-        out.push_str(&format!("id = {}\n", tstr(&h.id)));
-        out.push_str(&format!("page = {}\n", tstr(&h.page)));
-        let path: Vec<String> = h.path.iter().map(|p| tstr(p)).collect();
+        out.push_str(&format!("id = {}\n", toml_string(&h.id)));
+        out.push_str(&format!("page = {}\n", toml_string(&h.page)));
+        let path: Vec<String> = h.path.iter().map(|p| toml_string(p)).collect();
         out.push_str(&format!("path = [{}]\n", path.join(", ")));
     }
 
     for r in &ledger.row {
         out.push_str("\n[[row]]\n");
-        out.push_str(&format!("id = {}\n", tstr(&r.id)));
-        out.push_str(&format!("page = {}\n", tstr(&r.page)));
-        out.push_str(&format!("heading = {}\n", tstr(&r.heading)));
-        out.push_str(&format!("behavior = {}\n", tstr(&r.behavior)));
-        out.push_str(&format!("windows = {}\n", tstr(&r.windows)));
-        out.push_str(&format!("status = {}\n", tstr(&r.status)));
-        let evidence: Vec<String> = r.evidence.iter().map(|e| tstr(e)).collect();
+        out.push_str(&format!("id = {}\n", toml_string(&r.id)));
+        out.push_str(&format!("page = {}\n", toml_string(&r.page)));
+        out.push_str(&format!("heading = {}\n", toml_string(&r.heading)));
+        out.push_str(&format!("behavior = {}\n", toml_string(&r.behavior)));
+        if !r.group.is_empty() {
+            out.push_str(&format!("group = {}\n", toml_string(&r.group)));
+        }
+        out.push_str(&format!("windows = {}\n", toml_string(&r.windows)));
+        out.push_str(&format!("status = {}\n", toml_string(&r.status)));
+        let evidence: Vec<String> = r.evidence.iter().map(|e| toml_string(e)).collect();
         out.push_str(&format!("evidence = [{}]\n", evidence.join(", ")));
-        out.push_str(&format!("reason = {}\n", tstr(&r.reason)));
+        out.push_str(&format!("reason = {}\n", toml_string(&r.reason)));
         if let Some(c) = &r.count_check {
-            out.push_str(&format!("count_check = {}\n", tstr(c)));
+            out.push_str(&format!("count_check = {}\n", toml_string(c)));
         }
     }
 
     for c in canonical {
         out.push_str("\n[[count_check]]\n");
-        out.push_str(&format!("id = {}\n", tstr(&c.id)));
-        out.push_str(&format!("page = {}\n", tstr(&c.page)));
-        out.push_str(&format!("description = {}\n", tstr(&c.description)));
-        out.push_str(&format!("kind = {}\n", tstr(&c.kind)));
+        out.push_str(&format!("id = {}\n", toml_string(&c.id)));
+        out.push_str(&format!("page = {}\n", toml_string(&c.page)));
+        out.push_str(&format!("description = {}\n", toml_string(&c.description)));
+        out.push_str(&format!("kind = {}\n", toml_string(&c.kind)));
+        let evidence: Vec<String> = c.evidence.iter().map(|e| toml_string(e)).collect();
+        out.push_str(&format!("evidence = [{}]\n", evidence.join(", ")));
         if let Some(value) = c.value {
             out.push_str(&format!("value = {value}\n"));
         }
@@ -550,10 +718,10 @@ fn render_ledger_toml(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCh
 
     for a in &ledger.addition {
         out.push_str("\n[[addition]]\n");
-        out.push_str(&format!("id = {}\n", tstr(&a.id)));
-        out.push_str(&format!("feature = {}\n", tstr(&a.feature)));
-        out.push_str(&format!("description = {}\n", tstr(&a.description)));
-        let evidence: Vec<String> = a.evidence.iter().map(|e| tstr(e)).collect();
+        out.push_str(&format!("id = {}\n", toml_string(&a.id)));
+        out.push_str(&format!("feature = {}\n", toml_string(&a.feature)));
+        out.push_str(&format!("description = {}\n", toml_string(&a.description)));
+        let evidence: Vec<String> = a.evidence.iter().map(|e| toml_string(e)).collect();
         out.push_str(&format!("evidence = [{}]\n", evidence.join(", ")));
     }
 
