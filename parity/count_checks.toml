@@ -14,8 +14,7 @@
 id = "launcher.empty-state-order"
 page = "docs/launcher/"
 description = "Empty state order: Favorites, then Meetings and Suggestions, then 13 sections in the documented order"
-kind = "rows"
-expected_rows = 13
+kind = "asserted"
 
 [[count_check]]
 id = "launcher.suggestions"
@@ -28,15 +27,13 @@ value = 5
 id = "launcher.match-ladder"
 page = "docs/launcher/"
 description = "Match ladder: exact > start of name > start of word > middle of word > scattered letters"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "launcher.app-actions"
 page = "docs/launcher/"
 description = "App action menu: 10 actions"
-kind = "rows"
-expected_rows = 10
+kind = "asserted"
 
 [[count_check]]
 id = "launcher.search-sensitivity"
@@ -62,83 +59,75 @@ kind = "asserted"
 id = "aliases.ranking-rules"
 page = "docs/launcher/aliases/"
 description = "4 ranking rules, including: an exact alias is always first, and scattered letters never match an alias"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "fallbacks.kinds"
 page = "docs/launcher/fallbacks/"
 description = "5 fallback kinds: Quick AI, Search Files, Run Shell Command, Define Word, every enabled quicklink with an {argument}"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "commands.built-in-list"
 page = "docs/launcher/commands/"
 description = "46 built-in commands: AI 2, Quick Actions 4, Clipboard 2, Emoji 1, File Search 1, Navigation 3, Calendar 5, Notes 3, Window Management 4, Quicklinks 4, Snippets 2, Commands 11, Custom Commands 2, typed-text-only 2"
-kind = "rows"
-expected_rows = 46
+evidence = ["tc-core::there_are_exactly_forty_six_built_in_commands"]
+kind = "asserted"
 
 [[count_check]]
 id = "commands.never-have-global-shortcut"
 page = "docs/launcher/commands/"
 description = "3 commands can never have a global shortcut: Open in Browser, Run Shell Command, Quit"
-kind = "rows"
-expected_rows = 3
+evidence = ["tc-core::three_commands_can_never_have_a_global_shortcut"]
+kind = "asserted"
 
 [[count_check]]
 id = "commands.editor-fields"
 page = "docs/launcher/commands/"
 description = "Custom command editor: 10 fields"
-kind = "rows"
-expected_rows = 10
+kind = "asserted"
 
 [[count_check]]
 id = "commands.raycast-import-fields"
 page = "docs/launcher/commands/"
 description = "Raycast script import: 5 mapped @raycast fields"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "quicklinks.settings"
 page = "docs/launcher/quicklinks/"
 description = "5 settings with documented defaults"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "quicklinks.editor-fields"
 page = "docs/launcher/quicklinks/"
 description = "Editor: 6 fields"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "quicklinks.search-actions"
 page = "docs/launcher/quicklinks/"
 description = "Search Quicklinks: 8 actions"
-kind = "rows"
-expected_rows = 8
+kind = "asserted"
 
 [[count_check]]
 id = "quicklinks.hide-ways"
 page = "docs/launcher/quicklinks/"
 description = "3 ways to hide a quicklink"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "system-settings.row-actions"
 page = "docs/launcher/system-settings/"
 description = "5 row actions"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "system-actions.total"
 page = "docs/launcher/system-actions/"
 description = "32 actions: Session 7, Media 3, Volume 9, Desktop 7, Files 4, Hardware 1, Microphone 1"
+evidence = ["tc-core::the_categories_count_up_to_thirty_two"]
 kind = "rows"
 expected_rows = 32
 
@@ -146,6 +135,7 @@ expected_rows = 32
 id = "system-actions.confirm-first"
 page = "docs/launcher/system-actions/"
 description = "5 actions confirm first: Restart, Shut Down, Log Out, Empty Trash, Quit All Applications"
+evidence = ["tc-core::five_actions_confirm_first"]
 kind = "rows"
 expected_rows = 5
 
@@ -159,15 +149,13 @@ kind = "asserted"
 id = "uninstall.actions"
 page = "docs/launcher/uninstall/"
 description = "5 actions"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "uninstall.matching-rules"
 page = "docs/launcher/uninstall/"
 description = "4 matching rules, most to least certain"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "uninstall.locked-row-reasons"
@@ -194,15 +182,13 @@ value = 159
 id = "calculator.card-actions"
 page = "docs/features/calculator/"
 description = "Card actions: 3"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "calculator.history-actions"
 page = "docs/features/calculator/"
 description = "Calculator History actions: 5"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "calculator.base-range"
@@ -221,29 +207,25 @@ kind = "asserted"
 id = "clipboard.actions"
 page = "docs/features/clipboard/"
 description = "12 actions"
-kind = "rows"
-expected_rows = 12
+kind = "asserted"
 
 [[count_check]]
 id = "clipboard.type-filters"
 page = "docs/features/clipboard/"
 description = "7 type filters"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "clipboard.retention-options"
 page = "docs/features/clipboard/"
 description = "7 retention options (default 3 Months)"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "clipboard.default-action-options"
 page = "docs/features/clipboard/"
 description = "3 default-action options"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "clipboard.limits"
@@ -262,15 +244,13 @@ kind = "asserted"
 id = "snippets.placeholder-forms"
 page = "docs/features/snippets/"
 description = "15 placeholder forms"
-kind = "rows"
-expected_rows = 15
+kind = "asserted"
 
 [[count_check]]
 id = "snippets.modifiers"
 page = "docs/features/snippets/"
 description = "6 modifiers (uppercase, lowercase, trim, percent-encode, json-stringify, raw)"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "snippets.nesting-limits"
@@ -290,43 +270,37 @@ value = 256
 id = "snippets.browser-actions"
 page = "docs/features/snippets/"
 description = "Browser 5 actions"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "snippets.editor-keys"
 page = "docs/features/snippets/"
 description = "Editor 5 keys"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "file-search.actions"
 page = "docs/features/file-search/"
 description = "9 actions"
-kind = "rows"
-expected_rows = 9
+kind = "asserted"
 
 [[count_check]]
 id = "file-search.type-filters"
 page = "docs/features/file-search/"
 description = "7 type filters"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "file-search.user-messages"
 page = "docs/features/file-search/"
 description = "6 user messages"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "file-search.ignore-pattern-kinds"
 page = "docs/features/file-search/"
 description = "3 ignore-pattern kinds"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "file-search.limits"
@@ -339,8 +313,7 @@ value = 200
 id = "window-management.command-count"
 page = "docs/features/window-management/"
 description = "39 commands: Halves 4, Quarters 4, Fourths 2, Thirds 5, Sizing 11, Moving 10, Fullscreen 1, Spaces 2 (the hotkeys page says 35; port all 39)"
-kind = "rows"
-expected_rows = 39
+kind = "asserted"
 
 [[count_check]]
 id = "window-management.cycling"
@@ -366,22 +339,19 @@ value = 64
 id = "window-layouts.editor-fields"
 page = "docs/features/window-layouts/"
 description = "Editor: 7 fields"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "window-layouts.run-steps"
 page = "docs/features/window-layouts/"
 description = "3 run steps"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "window-layouts.predictability-rules"
 page = "docs/features/window-layouts/"
 description = "4 predictability rules"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "window-layouts.row-fields-and-actions"
@@ -393,8 +363,7 @@ kind = "asserted"
 id = "rooms.layouts"
 page = "docs/features/rooms/"
 description = "7 layouts: Auto, Focus, Stack, Columns, Grid, Custom, As Arranged"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "rooms.switch-keys"
@@ -407,22 +376,19 @@ value = 6
 id = "navigation.commands"
 page = "docs/features/navigation/"
 description = "3 commands"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "navigation.window-actions"
 page = "docs/features/navigation/"
 description = "4 window actions"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "navigation.settings"
 page = "docs/features/navigation/"
 description = "2 settings"
-kind = "rows"
-expected_rows = 2
+kind = "asserted"
 
 [[count_check]]
 id = "navigation.menu-limits"
@@ -435,22 +401,19 @@ value = 4000
 id = "notes.commands"
 page = "docs/features/notes/"
 description = "3 commands"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "notes.window-keys"
 page = "docs/features/notes/"
 description = "Window 7 keys"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "notes.editor-shortcuts"
 page = "docs/features/notes/"
 description = "Editor 13 formatting shortcuts"
-kind = "rows"
-expected_rows = 13
+kind = "asserted"
 
 [[count_check]]
 id = "notes.naming"
@@ -462,36 +425,31 @@ kind = "asserted"
 id = "calendar.ways-to-join"
 page = "docs/features/calendar/"
 description = "4 ways to join"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "calendar.commands"
 page = "docs/features/calendar/"
 description = "5 commands"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "calendar.card-actions"
 page = "docs/features/calendar/"
 description = "4 card actions"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "calendar.tray-settings"
 page = "docs/features/calendar/"
 description = "6 tray-item settings"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "calendar.services"
 page = "docs/features/calendar/"
 description = "10 services: Zoom, Google Meet, Microsoft Teams, Webex, Jitsi, Whereby, Amazon Chime, GoTo Meeting, BlueJeans, Skype"
-kind = "rows"
-expected_rows = 10
+kind = "asserted"
 
 [[count_check]]
 id = "calendar.card-lead-time"
@@ -510,15 +468,13 @@ kind = "asserted"
 id = "emoji.actions"
 page = "docs/features/emoji/"
 description = "5 actions"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "emoji.skin-tones"
 page = "docs/features/emoji/"
 description = "6 skin-tone options"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "emoji.columns"
@@ -537,29 +493,25 @@ kind = "asserted"
 id = "dictation.shortcut-behaviors"
 page = "docs/features/dictation/"
 description = "2 shortcut behaviors"
-kind = "rows"
-expected_rows = 2
+kind = "asserted"
 
 [[count_check]]
 id = "dictation.output-modes"
 page = "docs/features/dictation/"
 description = "3 output modes"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "dictation.user-messages"
 page = "docs/features/dictation/"
 description = "6 user messages"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "dictation.models"
 page = "docs/features/dictation/"
 description = "4 models: Parakeet Redux, Parakeet Ultra, Qwen 0.6B, Qwen 1.7B"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "dictation.audio-stays-in-memory"
@@ -571,22 +523,19 @@ kind = "asserted"
 id = "dictionary.actions"
 page = "docs/features/dictionary/"
 description = "2 actions"
-kind = "rows"
-expected_rows = 2
+kind = "asserted"
 
 [[count_check]]
 id = "dictionary.empty-states"
 page = "docs/features/dictionary/"
 description = "2 empty states: 'Type a word to define' and 'No definition found'"
-kind = "rows"
-expected_rows = 2
+kind = "asserted"
 
 [[count_check]]
 id = "camera.controls"
 page = "docs/features/camera/"
 description = "4 controls"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "camera.no-setup"
@@ -598,8 +547,7 @@ kind = "asserted"
 id = "automations.row-actions"
 page = "docs/features/apple-shortcuts/"
 description = "4 row actions"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "automations.row-fields"
@@ -613,15 +561,13 @@ kind = "asserted"
 id = "settings.panes"
 page = "docs/reference/settings/"
 description = "23 panes: General 2, Launcher 7, Features 12, Advanced 2"
-kind = "rows"
-expected_rows = 23
+kind = "asserted"
 
 [[count_check]]
 id = "settings.general-pane"
 page = "docs/reference/settings/"
 description = "General pane: 24 settings with the documented defaults"
-kind = "rows"
-expected_rows = 24
+kind = "asserted"
 
 [[count_check]]
 id = "settings.features-off-by-default"
@@ -659,15 +605,13 @@ value = 250
 id = "hotkeys.hyper-sources"
 page = "docs/reference/hotkeys/"
 description = "Hyper sources: Caps Lock plus 8 sided modifier keys"
-kind = "rows"
-expected_rows = 9
+kind = "asserted"
 
 [[count_check]]
 id = "hotkeys.quick-press-options"
 page = "docs/reference/hotkeys/"
 description = "3 Quick Press options"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "hotkeys.tap-listener-lifetime"
@@ -679,22 +623,19 @@ kind = "asserted"
 id = "deeplinks.link-forms"
 page = "docs/reference/deeplinks/"
 description = "8 link forms"
-kind = "rows"
-expected_rows = 8
+kind = "asserted"
 
 [[count_check]]
 id = "deeplinks.parameters"
 page = "docs/reference/deeplinks/"
 description = "3 parameters (fallbackText, arguments, context)"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "deeplinks.answers"
 page = "docs/reference/deeplinks/"
 description = "3 answers"
-kind = "rows"
-expected_rows = 3
+kind = "asserted"
 
 [[count_check]]
 id = "deeplinks.broken-input"
@@ -706,22 +647,19 @@ kind = "asserted"
 id = "backup.categories"
 page = "docs/reference/backup/"
 description = "5 categories"
-kind = "rows"
-expected_rows = 5
+kind = "asserted"
 
 [[count_check]]
 id = "backup.never-enabled-capabilities"
 page = "docs/reference/backup/"
 description = "10 capabilities an import can never turn on"
-kind = "rows"
-expected_rows = 10
+kind = "asserted"
 
 [[count_check]]
 id = "backup.never-included"
 page = "docs/reference/backup/"
 description = "7 kinds of data never included"
-kind = "rows"
-expected_rows = 7
+kind = "asserted"
 
 [[count_check]]
 id = "backup.custom-command-warning"
@@ -733,15 +671,13 @@ kind = "asserted"
 id = "raycast-import.categories"
 page = "docs/reference/import-from-raycast/"
 description = "11 categories"
-kind = "rows"
-expected_rows = 11
+kind = "asserted"
 
 [[count_check]]
 id = "raycast-import.steps"
 page = "docs/reference/import-from-raycast/"
 description = "4 steps"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "raycast-import.unrepresentable-shortcut"
@@ -753,15 +689,13 @@ kind = "asserted"
 id = "updates.steps"
 page = "docs/reference/updates/"
 description = "4 steps"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "updates.busy-conditions"
 page = "docs/reference/updates/"
 description = "Busy conditions: palette open, snippet expanding, extension command running, uninstaller working, recording a shortcut, a dialog open"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "updates.skip-later"
@@ -782,22 +716,19 @@ value = 13
 id = "palette.navigation-keys"
 page = "docs/palette/"
 description = "10 navigation keys"
-kind = "rows"
-expected_rows = 10
+kind = "asserted"
 
 [[count_check]]
 id = "palette.emacs-chords"
 page = "docs/palette/"
 description = "4 Emacs chords"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "palette.appearance-settings"
 page = "docs/palette/"
 description = "4 appearance settings"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "palette.pop-to-root"
@@ -810,8 +741,7 @@ value = 5
 id = "palette.tray-menu"
 page = "docs/palette/"
 description = "Tray menu: 6 items"
-kind = "rows"
-expected_rows = 6
+kind = "asserted"
 
 [[count_check]]
 id = "permissions.constraint-table"
@@ -823,19 +753,17 @@ kind = "asserted"
 id = "install.channels"
 page = "docs/install/"
 description = "2 channels"
-kind = "rows"
-expected_rows = 2
+kind = "asserted"
 
 [[count_check]]
 id = "quick-actions.built-ins"
 page = "docs/ai/quick-actions/"
 description = "4 built-in actions"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
 
 [[count_check]]
 id = "extensions.install-routes"
 page = "docs/extensions/installing/"
 description = "4 install routes"
-kind = "rows"
-expected_rows = 4
+kind = "asserted"
+

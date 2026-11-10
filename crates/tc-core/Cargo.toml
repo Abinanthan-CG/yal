@@ -6,4 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "YAL port: tc-core"
+description = "YAL port: domain types, settings model, command registry and deeplink grammar"
+
+[dependencies]
+serde_json = { workspace = true }
