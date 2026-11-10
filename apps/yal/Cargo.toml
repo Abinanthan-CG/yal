@@ -6,7 +6,18 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "The YAL launcher executable."
+description = "YAL - a Windows keyboard launcher, an unofficial port of Tinycast"
 
 [dependencies]
 tc-core = { path = "../../crates/tc-core" }
+tc-platform = { path = "../../crates/tc-platform" }
+tc-platform-win = { path = "../../crates/tc-platform-win" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-deep-link = "2"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
