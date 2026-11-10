@@ -150,6 +150,49 @@ WaitForSingleObject(handle, millis)
 `OpenEventW` returns `Err` when the event does not exist, which is exactly
 the "nobody is running" case.
 
+`DUPLICATE_SAME_ACCESS` is in `Win32::Foundation`, not
+`Win32::System::Threading`:
+
+```rust
+DuplicateHandle(
+    GetCurrentProcess(),
+    handle,
+    GetCurrentProcess(),
+    std::ptr::addr_of_mut!(target),
+    0,
+    false,
+    DUPLICATE_SAME_ACCESS,
+)
+```
+
+## Two traps that cost an afternoon
+
+### `let _ = value` drops the value immediately
+
+```rust
+let _ = QuitWatcher::spawn(...);   // the watcher is dropped right here
+```
+
+`let _ = expr;` is a **discard**, not a binding. The expression's value is
+dropped at the end of the statement. `let _x = expr;` binds and keeps it.
+
+This matters when the value owns a resource. A watcher that holds a named
+event open is dropped the instant it is created, the event closes with it, and
+every later signal finds nobody listening. The symptom is a "no running
+instance" message from a process that is plainly running.
+
+The fix is to keep the value somewhere it lives as long as the program does —
+in Tauri's state, with `app.manage(watcher)` — rather than discarding it.
+
+### One handle, two owners
+
+A thread that waits on a handle and an owner that closes it on drop are two
+owners of one handle, and closing it while the other waits is undefined
+behaviour.
+
+The fix is `DuplicateHandle`: the watcher and its thread each get a handle of
+their own, and each closes its own.
+
 ## See also
 
 - [`docs/DECISIONS.md`](../DECISIONS.md)

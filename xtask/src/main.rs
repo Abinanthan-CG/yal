@@ -74,7 +74,10 @@ pub fn workspace_sources() -> Vec<PathBuf> {
         if !base.is_dir() {
             continue;
         }
-        for entry in walkdir::WalkDir::new(&base).into_iter().filter_map(Result::ok) {
+        for entry in walkdir::WalkDir::new(&base)
+            .into_iter()
+            .filter_map(Result::ok)
+        {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("rs") {
                 out.push(path.to_path_buf());
@@ -135,7 +138,9 @@ pub fn run_tool(program: &str, args: &[&str], context: &str) -> Result<()> {
     let root = repo_root();
     let mut cmd = Command::new(program);
     cmd.current_dir(&root).args(args);
-    let status = cmd.status().with_context(|| format!("{context}: failed to spawn {program}"))?;
+    let status = cmd
+        .status()
+        .with_context(|| format!("{context}: failed to spawn {program}"))?;
     if !status.success() {
         bail!("{context}: {program} {:?} exited with {status}", args);
     }

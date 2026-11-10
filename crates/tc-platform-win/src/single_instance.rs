@@ -1,9 +1,9 @@
 use tc_platform::SingleInstance;
+use windows::core::PCWSTR;
 use windows::Win32::Foundation::{CloseHandle, HANDLE};
 use windows::Win32::System::Threading::{
     CreateMutexW, OpenMutexW, ReleaseMutex, SYNCHRONIZATION_ACCESS_RIGHTS,
 };
-use windows::core::PCWSTR;
 
 /// The name of the mutex that keeps one instance running.
 const MUTEX_NAME: &str = r"Local\YAL-single-instance";
@@ -34,7 +34,10 @@ impl Default for WindowsSingleInstance {
 
 impl SingleInstance for WindowsSingleInstance {
     fn acquire(&self) -> bool {
-        let name: Vec<u16> = MUTEX_NAME.encode_utf16().chain(std::iter::once(0)).collect();
+        let name: Vec<u16> = MUTEX_NAME
+            .encode_utf16()
+            .chain(std::iter::once(0))
+            .collect();
         // A mutex that already exists is how the second instance finds the
         // first one.
         let created = match unsafe { CreateMutexW(None, true, PCWSTR(name.as_ptr())) } {
@@ -69,7 +72,10 @@ impl SingleInstance for WindowsSingleInstance {
 
 /// Whether another instance already holds the lock, without taking it.
 pub fn another_instance_is_running() -> bool {
-    let name: Vec<u16> = MUTEX_NAME.encode_utf16().chain(std::iter::once(0)).collect();
+    let name: Vec<u16> = MUTEX_NAME
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
     let existing = match unsafe {
         OpenMutexW(
             SYNCHRONIZATION_ACCESS_RIGHTS(0x00100000),

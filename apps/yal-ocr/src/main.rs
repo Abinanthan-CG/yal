@@ -30,7 +30,11 @@ pub struct DocumentInfo {
 /// Read what can be read about a document.
 pub fn inspect(path: &Path) -> std::io::Result<DocumentInfo> {
     let metadata = std::fs::metadata(path)?;
-    let pages = if is_pdf(path) { count_pdf_pages(path) } else { None };
+    let pages = if is_pdf(path) {
+        count_pdf_pages(path)
+    } else {
+        None
+    };
     Ok(DocumentInfo {
         path: path.to_path_buf(),
         bytes: metadata.len(),
@@ -69,10 +73,7 @@ pub fn recognition_available() -> bool {
 }
 
 /// Whether a registry key exists under the given hive.
-fn registry_key_exists(
-    hive: windows::Win32::System::Registry::HKEY,
-    subkey: &str,
-) -> bool {
+fn registry_key_exists(hive: windows::Win32::System::Registry::HKEY, subkey: &str) -> bool {
     use windows::core::PCWSTR;
     use windows::Win32::System::Registry::{RegOpenKeyExW, KEY_READ};
 

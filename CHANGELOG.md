@@ -55,7 +55,9 @@ ported yet, and `PARITY.md` says so for each one.
 - **The build tool** `xtask`: `parity`, `ledger`, `tags`, `i18n`, `dist` and
   `selftest`.
 - **The installer.** A per-user NSIS installer with optional Start menu,
-  desktop and login-item sections. It never asks for administrator rights.
+  desktop and login-item sections. It never asks for administrator rights,
+  and it leaves your data alone when it is uninstalled unless you ask it not
+  to.
 - **The portable build**, with its data in a folder next to the executable.
 - **The checksums.** `SHA256SUMS.txt` for every artifact.
 - **The CI workflows.** A fast pure-logic job on Ubuntu, a full Windows job

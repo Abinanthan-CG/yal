@@ -1,9 +1,9 @@
 use tc_platform::Clipboard;
 use windows::Win32::Foundation::HANDLE;
+use windows::Win32::Foundation::HGLOBAL;
 use windows::Win32::System::DataExchange::{
     CloseClipboard, GetClipboardData, OpenClipboard, SetClipboardData,
 };
-use windows::Win32::Foundation::HGLOBAL;
 use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
 use windows::Win32::System::Ole::CF_UNICODETEXT;
 
@@ -82,5 +82,3 @@ unsafe fn read_wide_string(pointer: *const u16) -> String {
     let slice = std::slice::from_raw_parts(pointer, length);
     String::from_utf16_lossy(slice)
 }
-
-

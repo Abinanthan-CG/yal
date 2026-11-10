@@ -105,10 +105,7 @@ pub fn scan(root: &Path) -> std::io::Result<ScanSummary> {
                 .extension()
                 .map(|e| e.to_string_lossy().to_ascii_lowercase())
                 .unwrap_or_default();
-            *summary
-                .by_extension
-                .entry(extension)
-                .or_insert(0) += 1;
+            *summary.by_extension.entry(extension).or_insert(0) += 1;
         }
     }
     Ok(summary)

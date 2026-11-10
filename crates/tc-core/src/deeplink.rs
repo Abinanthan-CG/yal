@@ -127,7 +127,9 @@ impl DeepLinkInput {
                         break;
                     }
                     // The first value wins when a field is named twice.
-                    filled.entry(field_id(index)).or_insert_with(|| value.clone());
+                    filled
+                        .entry(field_id(index))
+                        .or_insert_with(|| value.clone());
                 }
                 filled
             }
@@ -317,7 +319,10 @@ pub enum DeepLink {
     /// Open the launcher, optionally with text already typed.
     Launcher { fallback_text: Option<String> },
     /// Run a launcher row, as its shortcut would.
-    Entry { entry_id: String, input: DeepLinkInput },
+    Entry {
+        entry_id: String,
+        input: DeepLinkInput,
+    },
     /// Open a Settings pane.
     Settings { slug: String },
     /// Open a note by file name, which is all a note is known by.
@@ -365,7 +370,12 @@ impl DeepLink {
 
     /// The link a note makes.
     pub fn url_for_note(name: &str, scheme: &str) -> Option<String> {
-        Some(Self::build_url(scheme, Self::NOTE_HOST, name, &DeepLinkInput::none()))
+        Some(Self::build_url(
+            scheme,
+            Self::NOTE_HOST,
+            name,
+            &DeepLinkInput::none(),
+        ))
     }
 
     /// The link a chat makes.
@@ -617,11 +627,15 @@ mod tests {
     fn a_bare_link_opens_the_launcher() {
         assert_eq!(
             parse("tinycast://"),
-            Some(DeepLink::Launcher { fallback_text: None })
+            Some(DeepLink::Launcher {
+                fallback_text: None
+            })
         );
         assert_eq!(
             parse("tinycast://search"),
-            Some(DeepLink::Launcher { fallback_text: None })
+            Some(DeepLink::Launcher {
+                fallback_text: None
+            })
         );
     }
 
@@ -722,9 +736,12 @@ mod tests {
         assert_eq!(
             input.arguments,
             Some(Arguments::Named(
-                [("a".to_string(), "1".to_string()), ("b".to_string(), "2".to_string())]
-                    .into_iter()
-                    .collect()
+                [
+                    ("a".to_string(), "1".to_string()),
+                    ("b".to_string(), "2".to_string())
+                ]
+                .into_iter()
+                .collect()
             ))
         );
 
@@ -761,7 +778,9 @@ mod tests {
         assert_eq!(
             fields.context,
             Some(Context::Fields(
-                [("title".to_string(), "Hi".to_string())].into_iter().collect()
+                [("title".to_string(), "Hi".to_string())]
+                    .into_iter()
+                    .collect()
             ))
         );
 

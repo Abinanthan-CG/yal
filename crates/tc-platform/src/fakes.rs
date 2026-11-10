@@ -5,8 +5,8 @@
 //! single-instance lock and the settings store.
 
 use super::{
-    Clipboard, Clock, FileSystem, Hotkey, IntegrityLevel, Paths, Settings, SingleInstance, WindowInfo,
-    WindowSystem,
+    Clipboard, Clock, FileSystem, Hotkey, IntegrityLevel, Paths, Settings, SingleInstance,
+    WindowInfo, WindowSystem,
 };
 use std::collections::BTreeMap;
 use std::sync::Mutex;

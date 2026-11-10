@@ -104,7 +104,8 @@ pub fn i18n() -> Result<()> {
         );
     }
     let text = std::fs::read_to_string(&source).context("reading Localizable.xcstrings")?;
-    let catalog: serde_json::Value = serde_json::from_str(&text).context("parsing Localizable.xcstrings")?;
+    let catalog: serde_json::Value =
+        serde_json::from_str(&text).context("parsing Localizable.xcstrings")?;
     let strings = catalog
         .get("strings")
         .and_then(|s| s.as_object())
@@ -116,7 +117,11 @@ pub fn i18n() -> Result<()> {
         if let Some(obj) = value.as_object() {
             if let Some(localizations) = obj.get("localizations").and_then(|l| l.as_object()) {
                 for (lang, loc) in localizations {
-                    if let Some(text) = loc.get("stringUnit").and_then(|s| s.get("value")).and_then(|v| v.as_str()) {
+                    if let Some(text) = loc
+                        .get("stringUnit")
+                        .and_then(|s| s.get("value"))
+                        .and_then(|v| v.as_str())
+                    {
                         translations.push((lang.clone(), text.to_string()));
                     }
                 }
@@ -137,7 +142,9 @@ pub fn i18n() -> Result<()> {
     }
     out.push_str("];\n\n");
     out.push_str("/// Every interface string upstream declares, with each translation.\n");
-    out.push_str("///\n/// Entries are sorted by key. A language may be missing for a given key; the\n");
+    out.push_str(
+        "///\n/// Entries are sorted by key. A language may be missing for a given key; the\n",
+    );
     out.push_str("/// English text is the fallback.\n");
     out.push_str("pub static STRINGS: &[(&str, &[(&str, &str)])] = &[\n");
     for (key, translations) in &entries {
@@ -148,7 +155,9 @@ pub fn i18n() -> Result<()> {
         out.push_str("]),\n");
     }
     out.push_str("];\n\n");
-    out.push_str("/// Look up `key` in `lang`, falling back to English and then to the key itself.\n");
+    out.push_str(
+        "/// Look up `key` in `lang`, falling back to English and then to the key itself.\n",
+    );
     out.push_str("pub fn lookup(key: &str, lang: &str) -> Option<&'static str> {\n");
     out.push_str("    let entry = STRINGS.iter().find(|(k, _)| *k == key)?;\n");
     out.push_str("    let hit = entry.1.iter().find(|(l, _)| *l == lang);\n");
@@ -156,9 +165,18 @@ pub fn i18n() -> Result<()> {
     out.push_str("    hit.or(english).map(|(_, v)| *v)\n");
     out.push_str("}\n");
 
-    let dest = repo_root().join("crates").join("tc-i18n").join("src").join("strings.generated.rs");
+    let dest = repo_root()
+        .join("crates")
+        .join("tc-i18n")
+        .join("src")
+        .join("strings.generated.rs");
     std::fs::write(&dest, out).context("writing strings.generated.rs")?;
-    println!("i18n: wrote {} ({} strings, {} languages)", dest.display(), entries.len(), LANGUAGES.len());
+    println!(
+        "i18n: wrote {} ({} strings, {} languages)",
+        dest.display(),
+        entries.len(),
+        LANGUAGES.len()
+    );
     Ok(())
 }
 
@@ -173,8 +191,16 @@ struct Artifact {
 }
 
 const ARTIFACTS: &[Artifact] = &[
-    Artifact { file: "x64", target: "x86_64-pc-windows-msvc", nsis_arch: "x64" },
-    Artifact { file: "arm64", target: "aarch64-pc-windows-msvc", nsis_arch: "arm64" },
+    Artifact {
+        file: "x64",
+        target: "x86_64-pc-windows-msvc",
+        nsis_arch: "x64",
+    },
+    Artifact {
+        file: "arm64",
+        target: "aarch64-pc-windows-msvc",
+        nsis_arch: "arm64",
+    },
 ];
 
 /// Build release binaries, the installer, the portable zip and the checksums.
@@ -227,14 +253,14 @@ pub fn dist(args: &[String]) -> Result<()> {
         }
         std::fs::create_dir_all(&stage).context("creating staging directory")?;
 
-        let profile_dir = root
-            .join("target")
-            .join(artifact.target)
-            .join("release");
+        let profile_dir = root.join("target").join(artifact.target).join("release");
         for bin in binaries {
             let from = profile_dir.join(format!("{bin}.exe"));
             if !from.exists() {
-                bail!("expected release binary {} was not produced", from.display());
+                bail!(
+                    "expected release binary {} was not produced",
+                    from.display()
+                );
             }
             std::fs::copy(&from, stage.join(format!("{bin}.exe")))
                 .with_context(|| format!("staging {}", from.display()))?;
@@ -259,7 +285,9 @@ pub fn dist(args: &[String]) -> Result<()> {
         // relative paths against the script's own directory.
         let stage_display = format!("..\\dist\\stage-{file}");
         let makensis = find_makensis().ok_or_else(|| {
-            anyhow::anyhow!("NSIS was not found. Install it with 'winget install --id NSIS.NSIS -e'.")
+            anyhow::anyhow!(
+                "NSIS was not found. Install it with 'winget install --id NSIS.NSIS -e'."
+            )
         })?;
         run_tool(
             &makensis,
@@ -288,13 +316,21 @@ pub fn dist(args: &[String]) -> Result<()> {
     let mut sums = String::new();
     for path in &produced {
         let digest = sha256_file(path)?;
-        sums.push_str(&format!("{}  {}\n", digest, path.file_name().unwrap().to_string_lossy()));
+        sums.push_str(&format!(
+            "{}  {}\n",
+            digest,
+            path.file_name().unwrap().to_string_lossy()
+        ));
     }
     let sums_path = dist_dir.join("SHA256SUMS.txt");
     std::fs::write(&sums_path, sums).context("writing SHA256SUMS.txt")?;
     println!("dist: wrote {}", sums_path.display());
     for path in &produced {
-        println!("  {} ({})", path.display(), crate::human_bytes(std::fs::metadata(path)?.len()));
+        println!(
+            "  {} ({})",
+            path.display(),
+            crate::human_bytes(std::fs::metadata(path)?.len())
+        );
     }
     Ok(())
 }
@@ -354,7 +390,10 @@ pub fn sha256_file(path: &Path) -> Result<String> {
 
 /// Read `--flag value` from an argument list.
 fn flag_value(args: &[String], flag: &str) -> Option<String> {
-    args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1)).cloned()
+    args.iter()
+        .position(|a| a == flag)
+        .and_then(|i| args.get(i + 1))
+        .cloned()
 }
 
 /// The workspace version, taken from the root manifest.

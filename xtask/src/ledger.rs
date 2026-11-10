@@ -48,9 +48,9 @@ fn parse_page(markdown: &str) -> Page {
     let mut code: Vec<String> = Vec::new();
 
     let flush_paragraph = |paragraph: &mut Vec<String>,
-                               list_items: &mut Vec<String>,
-                               headings: &Vec<Heading>,
-                               items: &mut Vec<Item>| {
+                           list_items: &mut Vec<String>,
+                           headings: &Vec<Heading>,
+                           items: &mut Vec<Item>| {
         if !list_items.is_empty() {
             for entry in list_items.drain(..) {
                 push_item(items, headings, &entry, None);
@@ -106,16 +106,8 @@ fn parse_page(markdown: &str) -> Page {
                 }
                 let path: Vec<String> = stack.iter().map(|(_, t)| t.clone()).collect();
                 stack.push((level, title.clone()));
-                let path = if level == 1 {
-                    Vec::new()
-                } else {
-                    path
-                };
-                headings.push(Heading {
-                    title,
-                    level,
-                    path,
-                });
+                let path = if level == 1 { Vec::new() } else { path };
+                headings.push(Heading { title, level, path });
                 continue;
             }
         }
@@ -176,7 +168,6 @@ fn parse_page(markdown: &str) -> Page {
 
     Page { headings, items }
 }
-
 
 /// Add one behaviour under the innermost heading.
 fn push_item(items: &mut Vec<Item>, headings: &[Heading], behaviour: &str, group: Option<String>) {
@@ -244,7 +235,10 @@ fn push_paragraph(items: &mut Vec<Item>, headings: &[Heading], text: &str) {
 /// Whether a part is only a bold label, such as a group name.
 fn is_bold_only(part: &str) -> bool {
     let trimmed = part.trim();
-    trimmed.starts_with("**") && trimmed.ends_with("**") && trimmed.len() > 4 && !trimmed[2..trimmed.len() - 2].contains("**")
+    trimmed.starts_with("**")
+        && trimmed.ends_with("**")
+        && trimmed.len() > 4
+        && !trimmed[2..trimmed.len() - 2].contains("**")
 }
 
 /// Whether a part is a bare percentage.
@@ -252,7 +246,9 @@ fn is_bare_percentage(part: &str) -> bool {
     let trimmed = part.trim();
     trimmed.len() > 1
         && trimmed.ends_with('%')
-        && trimmed[..trimmed.len() - 1].chars().all(|c| c.is_ascii_digit())
+        && trimmed[..trimmed.len() - 1]
+            .chars()
+            .all(|c| c.is_ascii_digit())
 }
 
 /// The behaviours a table row describes.
@@ -293,7 +289,10 @@ fn split_table_row(line: &str) -> Vec<String> {
         .trim_start_matches('|')
         .trim_end_matches('|')
         .trim_end_matches('|');
-    inner.split('|').map(|cell| cell.trim().to_string()).collect()
+    inner
+        .split('|')
+        .map(|cell| cell.trim().to_string())
+        .collect()
 }
 
 /// Whether a table row is the `---` separator.
@@ -497,8 +496,7 @@ pub fn run() -> Result<()> {
         total_rows += parsed.items.len();
         total_headings += parsed.headings.len();
         let path = out_dir.join(format!("{}.toml", page_slug(&page.page)));
-        std::fs::write(&path, fragment)
-            .with_context(|| format!("writing {}", path.display()))?;
+        std::fs::write(&path, fragment).with_context(|| format!("writing {}", path.display()))?;
         println!(
             "ledger: {:<40} {:>4} headings {:>5} rows",
             page.page,
@@ -506,7 +504,10 @@ pub fn run() -> Result<()> {
             parsed.items.len()
         );
     }
-    println!("ledger: {total_headings} headings, {total_rows} rows across {} pages", pages.len());
+    println!(
+        "ledger: {total_headings} headings, {total_rows} rows across {} pages",
+        pages.len()
+    );
     Ok(())
 }
 
@@ -535,8 +536,14 @@ fn render_fragment(page: &PageEntry, parsed: &Page) -> String {
             continue;
         }
         out.push_str("\n[[heading]]\n");
-        out.push_str(&format!("id = {}\n", crate::parity::toml_string(&heading_ids[index])));
-        out.push_str(&format!("page = {}\n", crate::parity::toml_string(&page.page)));
+        out.push_str(&format!(
+            "id = {}\n",
+            crate::parity::toml_string(&heading_ids[index])
+        ));
+        out.push_str(&format!(
+            "page = {}\n",
+            crate::parity::toml_string(&page.page)
+        ));
         let path: Vec<String> = heading
             .path
             .iter()
@@ -574,7 +581,10 @@ fn render_fragment(page: &PageEntry, parsed: &Page) -> String {
         }
         out.push_str("\n[[row]]\n");
         out.push_str(&format!("id = {}\n", crate::parity::toml_string(&id)));
-        out.push_str(&format!("page = {}\n", crate::parity::toml_string(&page.page)));
+        out.push_str(&format!(
+            "page = {}\n",
+            crate::parity::toml_string(&page.page)
+        ));
         out.push_str(&format!(
             "heading = {}\n",
             crate::parity::toml_string(&heading_ids[heading_index])
@@ -609,8 +619,8 @@ struct PageEntry {
 
 fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
     let path = root.join("parity").join("pages.toml");
-    let text = std::fs::read_to_string(&path)
-        .with_context(|| format!("reading {}", path.display()))?;
+    let text =
+        std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
     let value: toml::Value = text.parse().context("parsing parity/pages.toml")?;
     let pages = value
         .get("page")
@@ -619,9 +629,21 @@ fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
     let mut out = Vec::new();
     for page in pages {
         out.push(PageEntry {
-            page: page.get("page").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
-            source: page.get("source").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
-            windows: page.get("windows").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+            page: page
+                .get("page")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string(),
+            source: page
+                .get("source")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string(),
+            windows: page
+                .get("windows")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string(),
         });
     }
     Ok(out)
@@ -648,13 +670,21 @@ pub fn report() -> Result<()> {
 
     let mut by_page: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for check in &check_list {
-        let page = check.get("page").and_then(|v| v.as_str()).unwrap_or_default();
+        let page = check
+            .get("page")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
         let id = check.get("id").and_then(|v| v.as_str()).unwrap_or_default();
-        let kind = check.get("kind").and_then(|v| v.as_str()).unwrap_or_default();
+        let kind = check
+            .get("kind")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
         let expected = check.get("expected_rows").and_then(|v| v.as_integer());
         by_page.entry(page.to_string()).or_default().push(format!(
             "{id} [{kind}] expected={}",
-            expected.map(|v| v.to_string()).unwrap_or_else(|| "-".to_string())
+            expected
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "-".to_string())
         ));
     }
 

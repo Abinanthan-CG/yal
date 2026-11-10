@@ -6,6 +6,7 @@
 
 use tauri::Emitter;
 use tauri::Manager;
+use tc_platform::FileSystem;
 
 /// The palette's label, so the window can be found again.
 const PALETTE: &str = "palette";
@@ -57,23 +58,35 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
                 let _ = window.set_focus();
             }
         }))
-        .plugin(tauri_plugin_global_shortcut::Builder::new().with_handler(
-            move |app, shortcut, event| {
-                if event.state() != tauri_plugin_global_shortcut::ShortcutState::Pressed {
-                    return;
-                }
-                let _ = shortcut;
-                toggle_palette(app);
-            },
-        ).build())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(move |app, shortcut, event| {
+                    if event.state() != tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                        return;
+                    }
+                    let _ = shortcut;
+                    toggle_palette(app);
+                })
+                .build(),
+        )
         .setup(move |app| {
             let handle = app.handle().clone();
+            // The data folder has to exist before anything can be written to
+            // it, and the user should not have to know that.
+            let paths = tc_platform_win::windows_paths();
+            let data = tc_platform_win::WindowsFileSystem::new();
+            let _ = data.ensure_dir(&paths.data_dir);
+            let _ = data.ensure_dir(&paths.cache_dir);
             // The installer asks a running instance to quit before it replaces
-            // the program files, so the app has to be listening for that.
+            // the program files, so the app has to be listening for that. The
+            // watcher holds the quit event open, so it is kept in the app's
+            // state rather than dropped here.
             let quitting = handle.clone();
-            let _ = tc_platform_win::QuitWatcher::spawn(move || {
+            if let Ok(watcher) = tc_platform_win::QuitWatcher::spawn(move || {
                 quitting.exit(0);
-            });
+            }) {
+                app.manage(watcher);
+            }
             if let Some(window) = app.get_webview_window(PALETTE) {
                 if autostart {
                     let _ = window.hide();

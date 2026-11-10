@@ -188,15 +188,19 @@ pub fn run(opts: &Options) -> Result<()> {
     std::fs::write(&parity_path, parity_toml).context("writing parity/parity.toml")?;
     std::fs::write(&parity_md, markdown).context("writing PARITY.md")?;
     print_summary(&ledger, &stats);
-    println!("parity: wrote {} and {}", parity_path.display(), parity_md.display());
+    println!(
+        "parity: wrote {} and {}",
+        parity_path.display(),
+        parity_md.display()
+    );
     Ok(())
 }
 
 /// Load the canonical page inventory.
 fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
     let path = root.join("parity").join("pages.toml");
-    let text = std::fs::read_to_string(&path)
-        .with_context(|| format!("reading {}", path.display()))?;
+    let text =
+        std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
     let file: PageFile = toml::from_str(&text).context("parsing parity/pages.toml")?;
     if file.page.is_empty() {
         bail!("parity/pages.toml lists no pages");
@@ -207,8 +211,8 @@ fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
 /// Load the canonical count checks.
 fn load_count_checks(root: &Path) -> Result<Vec<CountCheck>> {
     let path = root.join("parity").join("count_checks.toml");
-    let text = std::fs::read_to_string(&path)
-        .with_context(|| format!("reading {}", path.display()))?;
+    let text =
+        std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
     let file: CountCheckFile = toml::from_str(&text).context("parsing parity/count_checks.toml")?;
     if file.count_check.is_empty() {
         bail!("parity/count_checks.toml lists no checks");
@@ -222,8 +226,8 @@ fn load_tags(root: &Path) -> Result<Vec<Tag>> {
     if !path.exists() {
         return Ok(Vec::new());
     }
-    let text = std::fs::read_to_string(&path)
-        .with_context(|| format!("reading {}", path.display()))?;
+    let text =
+        std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
     let file: TagFile = toml::from_str(&text).context("parsing parity/tags.toml")?;
     Ok(file.tag)
 }
@@ -298,7 +302,10 @@ fn apply_tags(ledger: &mut Ledger, tags: &[Tag]) {
                 }
             }
             if !tag.behavior_equals.is_empty() {
-                let matched = tag.behavior_equals.iter().any(|exact| &row.behavior == exact);
+                let matched = tag
+                    .behavior_equals
+                    .iter()
+                    .any(|exact| &row.behavior == exact);
                 if !matched {
                     continue;
                 }
@@ -329,7 +336,10 @@ fn merge_parts(root: &Path) -> Result<Ledger> {
 
     if parts_dir.is_dir() {
         let mut files: Vec<PathBuf> = Vec::new();
-        for entry in walkdir::WalkDir::new(&parts_dir).into_iter().filter_map(Result::ok) {
+        for entry in walkdir::WalkDir::new(&parts_dir)
+            .into_iter()
+            .filter_map(Result::ok)
+        {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("toml") {
                 files.push(path.to_path_buf());
@@ -339,8 +349,8 @@ fn merge_parts(root: &Path) -> Result<Ledger> {
         for file in files {
             let text = std::fs::read_to_string(&file)
                 .with_context(|| format!("reading {}", file.display()))?;
-            let part: Ledger = toml::from_str(&text)
-                .with_context(|| format!("parsing {}", file.display()))?;
+            let part: Ledger =
+                toml::from_str(&text).with_context(|| format!("parsing {}", file.display()))?;
             heading.extend(part.heading);
             row.extend(part.row);
             count_check.extend(part.count_check);
@@ -348,7 +358,13 @@ fn merge_parts(root: &Path) -> Result<Ledger> {
         }
     }
 
-    Ok(Ledger { schema: LEDGER_SCHEMA, heading, row, count_check, addition })
+    Ok(Ledger {
+        schema: LEDGER_SCHEMA,
+        heading,
+        row,
+        count_check,
+        addition,
+    })
 }
 
 fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> Vec<String> {
@@ -368,7 +384,10 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
             problems.push(format!("duplicate heading id `{}`", h.id));
         }
         let Some(page) = page_by_name.get(h.page.as_str()) else {
-            problems.push(format!("heading `{}` is on unknown page `{}`", h.id, h.page));
+            problems.push(format!(
+                "heading `{}` is on unknown page `{}`",
+                h.id, h.page
+            ));
             continue;
         };
         if let Some(tier) = h.tier {
@@ -410,7 +429,10 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
             }
         }
         match heading_by_id.get(r.heading.as_str()) {
-            None => problems.push(format!("row `{}` references unknown heading `{}`", r.id, r.heading)),
+            None => problems.push(format!(
+                "row `{}` references unknown heading `{}`",
+                r.id, r.heading
+            )),
             Some(h) => {
                 if h.page != r.page {
                     problems.push(format!(
@@ -490,7 +512,10 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
             continue;
         };
         match check_by_id.get(cid) {
-            None => problems.push(format!("row `{}` references unknown count check `{}`", r.id, cid)),
+            None => problems.push(format!(
+                "row `{}` references unknown count check `{}`",
+                r.id, cid
+            )),
             Some(c) => {
                 if c.page != r.page {
                     problems.push(format!(
@@ -508,7 +533,10 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
         // A check whose number is proven by a test is reported as pending
         // until that test exists, so the ledger is never silently short.
         if count == 0 && c.evidence.is_empty() && c.kind == "rows" {
-            problems.push(format!("count check `{}` is not represented by any row", c.id));
+            problems.push(format!(
+                "count check `{}` is not represented by any row",
+                c.id
+            ));
         }
         if let Some(expected) = c.expected_rows {
             if c.kind == "rows" && count != expected {
@@ -533,7 +561,9 @@ fn check_evidence(row_id: &str, evidence: &str) -> Vec<String> {
         )];
     };
     if test_name.is_empty() {
-        return vec![format!("row `{row_id}` has malformed evidence `{evidence}`")];
+        return vec![format!(
+            "row `{row_id}` has malformed evidence `{evidence}`"
+        )];
     }
     let map = test_functions_by_crate();
     match map.get(crate_name) {
@@ -575,8 +605,10 @@ fn summarize(ledger: &Ledger, pages: &[PageEntry]) -> Stats {
         .enumerate()
         .map(|(i, p)| (p.page.as_str(), i))
         .collect();
-    let title_by_page: BTreeMap<&str, &str> =
-        pages.iter().map(|p| (p.page.as_str(), p.title.as_str())).collect();
+    let title_by_page: BTreeMap<&str, &str> = pages
+        .iter()
+        .map(|p| (p.page.as_str(), p.title.as_str()))
+        .collect();
     let tier_by_page: BTreeMap<&str, u32> =
         pages.iter().map(|p| (p.page.as_str(), p.tier)).collect();
 
@@ -645,7 +677,10 @@ fn print_summary(ledger: &Ledger, stats: &Stats) {
 }
 
 fn escape_cell(text: &str) -> String {
-    text.replace('|', "\\|").replace('\n', " ").trim().to_string()
+    text.replace('|', "\\|")
+        .replace('\n', " ")
+        .trim()
+        .to_string()
 }
 
 /// Escape a string as a TOML basic string.
@@ -760,7 +795,9 @@ fn render_markdown(ledger: &Ledger, pages: &[PageEntry], stats: &Stats) -> Strin
     ));
 
     out.push_str("### Totals per docs page\n\n");
-    out.push_str("| Docs page | Tier | Rows | PORTED | NOT PORTED |\n| --- | ---: | ---: | ---: | ---: |\n");
+    out.push_str(
+        "| Docs page | Tier | Rows | PORTED | NOT PORTED |\n| --- | ---: | ---: | ---: | ---: |\n",
+    );
     for p in &stats.per_page {
         out.push_str(&format!(
             "| `{}` | {} | {} | {} | {} |\n",
@@ -776,8 +813,14 @@ fn render_markdown(ledger: &Ledger, pages: &[PageEntry], stats: &Stats) -> Strin
         out.push_str("| --- | --- | --- | --- | --- |\n");
         let mut rows: Vec<&Row> = ledger.row.iter().filter(|r| r.page == p.page).collect();
         rows.sort_by(|a, b| {
-            let oa = heading_by_id.get(a.heading.as_str()).map(|h| h.path.len()).unwrap_or(0);
-            let ob = heading_by_id.get(b.heading.as_str()).map(|h| h.path.len()).unwrap_or(0);
+            let oa = heading_by_id
+                .get(a.heading.as_str())
+                .map(|h| h.path.len())
+                .unwrap_or(0);
+            let ob = heading_by_id
+                .get(b.heading.as_str())
+                .map(|h| h.path.len())
+                .unwrap_or(0);
             oa.cmp(&ob).then(a.id.cmp(&b.id))
         });
         for r in rows {
@@ -786,7 +829,11 @@ fn render_markdown(ledger: &Ledger, pages: &[PageEntry], stats: &Stats) -> Strin
                 .map(|h| h.path.join(" › "))
                 .unwrap_or_else(|| r.heading.clone());
             let evidence = if r.status == PORTED {
-                r.evidence.iter().map(|e| format!("`{e}`")).collect::<Vec<_>>().join(", ")
+                r.evidence
+                    .iter()
+                    .map(|e| format!("`{e}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
             } else {
                 escape_cell(&r.reason)
             };
@@ -809,7 +856,9 @@ fn render_markdown(ledger: &Ledger, pages: &[PageEntry], stats: &Stats) -> Strin
         out.push_str("No rows are outstanding. Every row in the ledger is `PORTED`.\n\n");
     } else {
         out.push_str("Tier 1 first, then Tier 2.\n\n");
-        out.push_str("| Page | Tier | Row | Behavior | Reason |\n| --- | ---: | --- | --- | --- |\n");
+        out.push_str(
+            "| Page | Tier | Row | Behavior | Reason |\n| --- | ---: | --- | --- | --- |\n",
+        );
         let tier_by_page: BTreeMap<&str, u32> =
             pages.iter().map(|p| (p.page.as_str(), p.tier)).collect();
         for r in open {
@@ -836,7 +885,12 @@ fn render_markdown(ledger: &Ledger, pages: &[PageEntry], stats: &Stats) -> Strin
     } else {
         out.push_str("| Addition | Feature | Behavior | Evidence |\n| --- | --- | --- | --- |\n");
         for a in &ledger.addition {
-            let evidence = a.evidence.iter().map(|e| format!("`{e}`")).collect::<Vec<_>>().join(", ");
+            let evidence = a
+                .evidence
+                .iter()
+                .map(|e| format!("`{e}`"))
+                .collect::<Vec<_>>()
+                .join(", ");
             out.push_str(&format!(
                 "| `{}` | {} | {} | {} |\n",
                 a.id,

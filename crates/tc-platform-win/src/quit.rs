@@ -10,11 +10,13 @@
 use std::sync::mpsc;
 use std::sync::Mutex;
 
-use windows::Win32::Foundation::{CloseHandle, HANDLE, WAIT_OBJECT_0};
-use windows::Win32::System::Threading::{
-    CreateEventW, OpenEventW, SetEvent, WaitForSingleObject, EVENT_MODIFY_STATE,
-};
 use windows::core::PCWSTR;
+use windows::Win32::Foundation::{
+    CloseHandle, DuplicateHandle, DUPLICATE_SAME_ACCESS, HANDLE, WAIT_OBJECT_0,
+};
+use windows::Win32::System::Threading::{
+    CreateEventW, GetCurrentProcess, OpenEventW, SetEvent, WaitForSingleObject, EVENT_MODIFY_STATE,
+};
 
 /// The name of the event that asks the running instance to quit.
 const QUIT_EVENT_NAME: &str = r"Local\YAL-quit";
@@ -38,7 +40,8 @@ unsafe impl Sync for SendableHandle {}
 
 /// The handle of the quit event.
 ///
-/// A kernel handle is a plain value; it is safe to move between threads.
+/// The watcher and its thread each own a handle to the same event, so that
+/// closing one does not pull the handle out from under the other.
 #[derive(Debug)]
 pub struct QuitWatcher {
     handle: Mutex<Option<HANDLE>>,
@@ -54,18 +57,40 @@ impl QuitWatcher {
     /// The callback runs on a background thread, so it must not block for long
     /// and must be safe to call from another thread.
     pub fn spawn(on_quit: impl Fn() + Send + 'static) -> Result<QuitWatcher, String> {
-        let name: Vec<u16> = QUIT_EVENT_NAME.encode_utf16().chain(std::iter::once(0)).collect();
+        let name: Vec<u16> = QUIT_EVENT_NAME
+            .encode_utf16()
+            .chain(std::iter::once(0))
+            .collect();
         let handle = unsafe { CreateEventW(None, true, false, PCWSTR(name.as_ptr())) }
             .map_err(|error| format!("the quit signal could not be created: {error}"))?;
         if handle.is_invalid() {
             return Err("the quit signal could not be created".to_string());
         }
 
+        // The thread gets a handle of its own, so that the watcher can close
+        // its own without ending the thread's wait.
+        let mut thread_handle = HANDLE::default();
+        unsafe {
+            DuplicateHandle(
+                GetCurrentProcess(),
+                handle,
+                GetCurrentProcess(),
+                std::ptr::addr_of_mut!(thread_handle),
+                0,
+                false,
+                DUPLICATE_SAME_ACCESS,
+            )
+            .map_err(|error| {
+                let _ = CloseHandle(handle);
+                format!("the quit signal could not be duplicated: {error}")
+            })?;
+        }
+
         let watcher = QuitWatcher {
             handle: Mutex::new(Some(handle)),
         };
         let (ready_tx, ready_rx) = mpsc::channel::<()>();
-        let waiting = SendableHandle(handle);
+        let waiting = SendableHandle(thread_handle);
         std::thread::spawn(move || {
             // Take the whole wrapper, so the thread owns the handle's type
             // rather than a bare kernel handle.
@@ -77,9 +102,10 @@ impl QuitWatcher {
                 let result = unsafe { WaitForSingleObject(waiting.0, WATCH_INTERVAL_MILLIS) };
                 if result == WAIT_OBJECT_0 {
                     on_quit();
-                    return;
+                    break;
                 }
             }
+            let _ = unsafe { CloseHandle(waiting.0) };
         });
         let _ = ready_rx.recv();
         Ok(watcher)
@@ -102,7 +128,10 @@ impl Drop for QuitWatcher {
 /// The answer says whether anyone was listening. `false` means no instance was
 /// running, which is not a failure: the caller wanted it gone, and it is gone.
 pub fn signal_quit() -> bool {
-    let name: Vec<u16> = QUIT_EVENT_NAME.encode_utf16().chain(std::iter::once(0)).collect();
+    let name: Vec<u16> = QUIT_EVENT_NAME
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
     let event = match unsafe { OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr())) } {
         Ok(handle) => handle,
         Err(_) => return false,
@@ -143,7 +172,10 @@ mod tests {
         // Once the watcher is gone the event is gone with it, so a signal has
         // nobody to reach and says so.
         drop(watcher);
-        let name: Vec<u16> = QUIT_EVENT_NAME.encode_utf16().chain(std::iter::once(0)).collect();
+        let name: Vec<u16> = QUIT_EVENT_NAME
+            .encode_utf16()
+            .chain(std::iter::once(0))
+            .collect();
         let exists = unsafe {
             OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr()))
                 .map(|handle| {
@@ -154,5 +186,18 @@ mod tests {
         };
         assert!(!exists, "a quit event was left behind");
         assert!(!signal_quit(), "a signal was reported with no listener");
+    }
+
+    #[test]
+    fn the_watcher_keeps_the_event_alive_while_it_exists() {
+        // The watcher holds the event open. A watcher that is dropped straight
+        // away would take the event with it, and the running instance would
+        // never hear the signal.
+        let watcher = QuitWatcher::spawn(|| {}).expect("the quit signal could not be created");
+        assert!(
+            signal_quit(),
+            "the event was not alive while the watcher existed"
+        );
+        drop(watcher);
     }
 }

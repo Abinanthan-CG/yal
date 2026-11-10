@@ -5,8 +5,8 @@
 //! so a build that cannot run is never published.
 
 use serde_json::{json, Value};
-use tc_platform::{Clock, Hotkey, SingleInstance, WindowSystem};
 use std::process::ExitCode;
+use tc_platform::{Clock, Hotkey, SingleInstance, WindowSystem};
 
 /// The result of one subsystem's check.
 struct Check {
@@ -79,7 +79,10 @@ fn check_core() -> Vec<Check> {
     checks.push(if commands == 46 {
         Check::pass("core.commands", format!("{commands} built-in commands"))
     } else {
-        Check::fail("core.commands", format!("expected 46 built-in commands, found {commands}"))
+        Check::fail(
+            "core.commands",
+            format!("expected 46 built-in commands, found {commands}"),
+        )
     });
 
     let actions = tc_core::SystemActionId::ALL.len();
@@ -102,9 +105,15 @@ fn check_core() -> Vec<Check> {
 
     let broken = tc_core::DeepLink::parse("tinycast://command/not-a-command", "tinycast");
     checks.push(if broken.is_none() {
-        Check::pass("core.deeplinks.rejects-unknown", "an unknown row is refused")
+        Check::pass(
+            "core.deeplinks.rejects-unknown",
+            "an unknown row is refused",
+        )
     } else {
-        Check::fail("core.deeplinks.rejects-unknown", "an unknown row was accepted")
+        Check::fail(
+            "core.deeplinks.rejects-unknown",
+            "an unknown row was accepted",
+        )
     });
 
     checks
@@ -116,15 +125,20 @@ fn check_platform() -> Vec<Check> {
 
     let paths = tc_platform_win::windows_paths();
     let data = paths.data_dir.display().to_string();
-    checks.push(if paths.data_dir.is_absolute() && paths.home_dir.is_absolute() {
-        Check::pass("platform.paths", format!("data folder {data}"))
-    } else {
-        Check::fail("platform.paths", "the app's folders are not absolute paths")
-    });
+    checks.push(
+        if paths.data_dir.is_absolute() && paths.home_dir.is_absolute() {
+            Check::pass("platform.paths", format!("data folder {data}"))
+        } else {
+            Check::fail("platform.paths", "the app's folders are not absolute paths")
+        },
+    );
 
     let settings_file = paths.settings_file.display().to_string();
     checks.push(if paths.settings_file.starts_with(&paths.home_dir) {
-        Check::pass("platform.settings-path", format!("settings file {settings_file}"))
+        Check::pass(
+            "platform.settings-path",
+            format!("settings file {settings_file}"),
+        )
     } else {
         Check::fail(
             "platform.settings-path",
@@ -168,12 +182,18 @@ fn check_windows() -> Vec<Check> {
     checks.push(if count > 0 {
         Check::pass("windows.window-enumeration", format!("{count} windows"))
     } else {
-        Check::fail("windows.window-enumeration", "no window could be enumerated")
+        Check::fail(
+            "windows.window-enumeration",
+            "no window could be enumerated",
+        )
     });
 
     let hotkey = tc_platform_win::WindowsHotkey::new();
     if hotkey.is_available() {
-        checks.push(Check::pass("windows.keyboard-hook", "the hook installs and removes"));
+        checks.push(Check::pass(
+            "windows.keyboard-hook",
+            "the hook installs and removes",
+        ));
     } else {
         checks.push(Check::fail(
             "windows.keyboard-hook",
