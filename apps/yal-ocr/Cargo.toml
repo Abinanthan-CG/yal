@@ -10,3 +10,4 @@ description = "YAL text recognition (OCR) helper process."
 
 [dependencies]
 tc-core = { path = "../../crates/tc-core" }
+windows = { workspace = true }
