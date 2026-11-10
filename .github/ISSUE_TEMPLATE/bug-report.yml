@@ -1,0 +1,65 @@
+name: Bug report
+description: Something in YAL does not work as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report this.
+
+        If the behaviour is meant to match Tinycast, please check
+        [PARITY.md](https://github.com/OWNER/REPO/blob/main/PARITY.md) first —
+        every feature is listed there with its status and, where it is not
+        ported, the reason.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you see? What did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How do I get there from a fresh install?
+      placeholder: |
+        1. Open the palette with Alt+Space
+        2. Type "notepad"
+        3. Press Enter
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: YAL version
+      description: The output of `yal.exe --version`
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      description: For example "Windows 11 24H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: self-test
+    attributes:
+      label: Self-test output
+      description: The output of `yal.exe --self-test`, if you can run it
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+        - label: I read the troubleshooting guide in `docs/user/troubleshooting.md`.
