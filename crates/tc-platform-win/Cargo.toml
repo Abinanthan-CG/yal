@@ -6,8 +6,10 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "YAL port: tc-platform-win"
+description = "YAL port: the only crate that touches Win32, WinRT and COM"
 
 [dependencies]
 tc-core = { path = "../tc-core" }
 tc-platform = { path = "../tc-platform" }
+windows = { workspace = true }
+serde_json = { workspace = true }
