@@ -1,0 +1,12 @@
+[package]
+name = "tc-calc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "YAL port: tc-calc"
+
+[dependencies]
+tc-core = { path = "../tc-core" }

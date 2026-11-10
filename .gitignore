@@ -1,0 +1,32 @@
+# Build output
+/target/
+**/target/
+/dist/
+/node_modules/
+/frontend/node_modules/
+/frontend/dist/
+
+# Upstream clone and downloaded reference material (never committed)
+/upstream/
+/upstream-docs/
+
+# Generated data that upstream regenerates
+/crates/tc-i18n/src/strings.generated.rs
+/crates/tc-core/src/data/*.generated.rs
+
+# Models and large binaries
+/models/
+*.onnx
+
+# Secrets
+*.key
+*.pem
+.env
+.env.*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
