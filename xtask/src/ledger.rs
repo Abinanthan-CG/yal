@@ -361,7 +361,7 @@ fn clean_inline(text: &str) -> String {
                     }
                     name.push(ch);
                 }
-                if name.trim().to_ascii_lowercase() == "kbd" {
+                if name.trim().eq_ignore_ascii_case("kbd") {
                     let mut inner = String::new();
                     while index < chars.len() {
                         if chars[index] == '<' {
@@ -375,7 +375,7 @@ fn clean_inline(text: &str) -> String {
                                 }
                                 closing.push(ch);
                             }
-                            if closing.trim().to_ascii_lowercase() == "/kbd" {
+                            if closing.trim().eq_ignore_ascii_case("/kbd") {
                                 break;
                             }
                             continue;
@@ -472,7 +472,7 @@ fn page_slug(page: &str) -> String {
 pub fn run() -> Result<()> {
     let root = repo_root();
     let pages = load_pages(&root)?;
-    let out_dir = root.join("parity").join("parts").join("generated");
+    let out_dir = generated_dir();
     std::fs::create_dir_all(&out_dir).context("creating parity/parts/generated")?;
 
     let mut total_rows = 0usize;
@@ -566,7 +566,6 @@ fn render_fragment(page: &PageEntry, parsed: &Page) -> String {
         if heading_index >= parsed.headings.len() {
             continue;
         }
-        let heading = &parsed.headings[heading_index];
         let mut id = format!("{}.{}", heading_ids[item.heading], slug(&item.behavior));
         let counter = row_ids.entry(id.clone()).or_insert(0);
         *counter += 1;
@@ -604,8 +603,6 @@ fn render_fragment(page: &PageEntry, parsed: &Page) -> String {
 #[derive(Clone)]
 struct PageEntry {
     page: String,
-    title: String,
-    tier: u32,
     source: String,
     windows: String,
 }
@@ -623,8 +620,6 @@ fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
     for page in pages {
         out.push(PageEntry {
             page: page.get("page").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
-            title: page.get("title").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
-            tier: page.get("tier").and_then(|v| v.as_integer()).unwrap_or(1) as u32,
             source: page.get("source").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
             windows: page.get("windows").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
         });
@@ -671,17 +666,16 @@ pub fn report() -> Result<()> {
         for id in ids {
             println!("  check {id}");
         }
-        let path = root.join("parity").join("parts").join("generated").join(format!(
-            "{}.toml",
-            page_slug(&page.page)
-        ));
+        let path = generated_dir().join(format!("{}.toml", page_slug(&page.page)));
         if !path.exists() {
             println!("  (no generated fragment)");
             continue;
         }
         let text = std::fs::read_to_string(&path)?;
-            for line in text.lines() {
+        let mut heading = String::new();
+        for line in text.lines() {
             if let Some(rest) = line.strip_prefix("heading = \"") {
+                heading = rest.trim_end_matches('"').to_string();
             } else if let Some(rest) = line.strip_prefix("behavior = \"") {
                 let behavior = rest.trim_end_matches('"');
                 let short: String = behavior.chars().take(72).collect();
