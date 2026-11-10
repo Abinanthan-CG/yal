@@ -23,7 +23,11 @@ impl ParsedUrl {
         let url = url.trim();
         let separator = url.find("://")?;
         let scheme = &url[..separator];
-        if scheme.is_empty() || !scheme.chars().all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c)) {
+        if scheme.is_empty()
+            || !scheme
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c))
+        {
             return None;
         }
         let rest = &url[separator + 3..];

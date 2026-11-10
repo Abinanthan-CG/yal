@@ -61,9 +61,13 @@ if (Test-Path $installDir) {
     Remove-Item -Path $installDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-# The user's data must survive the whole test.
+# The user's data must survive the whole test. A marker file is written so
+# that the check is about the data and not about an empty folder.
 Write-Step 'Recording the user data folder'
-$dataExistedBefore = Test-Path $dataDir
+New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
+$marker = Join-Path $dataDir 'smoke-test-marker.txt'
+Set-Content -Path $marker -Value 'this file must survive the uninstall' -Encoding UTF8
+Assert-True (Test-Path $marker) "the data folder $dataDir is ready"
 
 Write-Step 'Installing silently'
 $install = Start-Process -FilePath $InstallerPath -ArgumentList '/S' -Wait -PassThru
@@ -81,10 +85,15 @@ $protocol = Get-ItemProperty -Path 'HKCU:\Software\Classes\tinycast\shell\open\c
 Assert-True ($null -ne $protocol) 'the tinycast:// protocol is registered'
 
 Write-Step 'Running the self-test'
-$selfTest = Start-Process -FilePath $exe -ArgumentList '--self-test' -Wait -PassThru -RedirectStandardOutput (Join-Path $env:TEMP 'yal-selftest-out.txt') -RedirectStandardError (Join-Path $env:TEMP 'yal-selftest-err.txt')
+$selfTestOut = Join-Path $env:TEMP 'yal-selftest-out.txt'
+$selfTestErr = Join-Path $env:TEMP 'yal-selftest-err.txt'
+$selfTest = Start-Process -FilePath $exe -ArgumentList '--self-test' -Wait -PassThru -RedirectStandardOutput $selfTestOut -RedirectStandardError $selfTestErr
 Assert-True ($selfTest.ExitCode -eq 0) "the self-test exited with $($selfTest.ExitCode)"
-$selfTestOutput = Get-Content (Join-Path $env:TEMP 'yal-selftest-out.txt') -Raw
-Assert-True ($selfTestOutput -match '"ok":true') 'the self-test reported no failing check'
+
+$report = Get-Content $selfTestOut -Raw | ConvertFrom-Json
+$failed = @($report.checks | Where-Object { -not $_.ok })
+Assert-True ($report.checks.Count -gt 0) "the self-test reported $($report.checks.Count) checks"
+Assert-True ($failed.Count -eq 0) "the self-test had no failing check"
 
 Write-Step 'Starting the application'
 $app = Start-Process -FilePath $exe -PassThru
@@ -141,6 +150,7 @@ Assert-True ($null -eq $protocolAfter) 'the tinycast:// protocol was unregistere
 
 Write-Step 'Checking that the user data is still there'
 Assert-True (Test-Path $dataDir) "the data folder $dataDir survived the uninstall"
+Assert-True (Test-Path $marker) 'the data in the folder survived the uninstall'
 
 Write-Host ''
 Write-Host 'The installer smoke test passed.' -ForegroundColor Green

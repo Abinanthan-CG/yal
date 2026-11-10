@@ -38,6 +38,9 @@ Unicode true
 !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\YAL-${CHANNEL}"
 !define PROTOCOL "tinycast"
 
+; A line break in a message box.
+!define NL "\r\n"
+
 Name "${PRODUCT} ${VERSION} (${ARCH})"
 OutFile "${OUTFILE}"
 InstallDir "$LOCALAPPDATA\Programs\yal"
@@ -155,7 +158,10 @@ Section "Uninstall"
   DeleteRegKey HKCU "${UNINSTKEY}"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "YAL"
 
-  MessageBox MB_YESNO "Remove your YAL data as well?${NL}${NL}Your settings, quicklinks, snippets and history live in %APPDATA%\yal. Choosing No keeps them for the next install." /SD IDYES IDYES remove_data IDNO keep_data
+  ; The default answer is "keep the data", both for a silent uninstall and
+  ; for a user who presses Enter without reading. Losing a configuration is
+  ; worse than leaving a small folder behind.
+  MessageBox MB_YESNO "Remove your YAL data as well?${NL}${NL}Your settings, quicklinks, snippets and history live in %APPDATA%\yal. Choosing No keeps them for the next install." /SD IDNO IDYES remove_data IDNO keep_data
   remove_data:
     RMDir /r "$APPDATA\yal"
     RMDir /r "$APPDATA\YAL"

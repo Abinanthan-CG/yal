@@ -12,16 +12,16 @@ mod single_instance;
 mod windows;
 
 pub use clipboard::WindowsClipboard;
-pub use paths::is_portable;
 pub use hotkey::WindowsHotkey;
+pub use paths::is_portable;
 pub use paths::windows_paths;
 pub use quit::{signal_quit, QuitWatcher};
 pub use single_instance::{another_instance_is_running, WindowsSingleInstance};
 pub use windows::{extended_frame_bounds, own_integrity_level, WindowsWindows};
 
-use tc_platform::{Clock, FileSystem, Paths, Settings};
 use std::collections::BTreeMap;
 use std::sync::Mutex;
+use tc_platform::{Clock, FileSystem, Paths, Settings};
 
 /// The real clock.
 #[derive(Debug, Default)]
@@ -123,7 +123,8 @@ impl Settings for WindowsSettings {
         if let Some(parent) = self.file.parent() {
             std::fs::create_dir_all(parent).map_err(|error| format!("{error}"))?;
         }
-        std::fs::write(&self.file, text).map_err(|error| format!("{}: {error}", self.file.display()))
+        std::fs::write(&self.file, text)
+            .map_err(|error| format!("{}: {error}", self.file.display()))
     }
 }
 

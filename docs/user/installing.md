@@ -111,6 +111,10 @@ you say otherwise. It asks:
 Answering **No** keeps your settings, quicklinks, snippets, notes and history
 in `%APPDATA%\yal`, ready for the next install. Answering **Yes** removes it.
 
+**No is the default**, both for a silent uninstall and for a user who presses
+Enter without reading. Losing a configuration is worse than leaving a small
+folder behind.
+
 ### By hand
 
 ```powershell

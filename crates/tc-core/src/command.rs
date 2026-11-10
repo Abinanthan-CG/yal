@@ -161,7 +161,9 @@ impl CommandId {
 
     /// Look a command up by its stable id.
     pub fn from_entry_id(entry_id: &str) -> Option<CommandId> {
-        CommandId::ALL.into_iter().find(|c| c.entry_id() == entry_id)
+        CommandId::ALL
+            .into_iter()
+            .find(|c| c.entry_id() == entry_id)
     }
 
     /// The English name, which is also the localization key upstream uses.
@@ -331,7 +333,11 @@ pub const COMPACT_BAR_LIMIT: usize = 4;
 /// Whether a selection of compact bar commands is acceptable.
 pub fn valid_compact_bar_commands(commands: &[CommandId]) -> bool {
     commands.len() <= COMPACT_BAR_LIMIT
-        && commands.iter().collect::<std::collections::BTreeSet<_>>().len() == commands.len()
+        && commands
+            .iter()
+            .collect::<std::collections::BTreeSet<_>>()
+            .len()
+            == commands.len()
         && commands.iter().all(|c| COMPACT_BAR_OPTIONS.contains(c))
 }
 
@@ -387,14 +393,20 @@ mod tests {
             .collect();
         assert_eq!(
             blocked,
-            vec![CommandId::OpenInBrowser, CommandId::RunShellCommand, CommandId::Quit]
+            vec![
+                CommandId::OpenInBrowser,
+                CommandId::RunShellCommand,
+                CommandId::Quit
+            ]
         );
     }
 
     #[test]
     fn query_driven_commands_are_open_in_browser_and_run_shell_command() {
-        let query_driven: Vec<CommandId> =
-            CommandId::ALL.into_iter().filter(|c| c.is_query_driven()).collect();
+        let query_driven: Vec<CommandId> = CommandId::ALL
+            .into_iter()
+            .filter(|c| c.is_query_driven())
+            .collect();
         assert_eq!(
             query_driven,
             vec![CommandId::OpenInBrowser, CommandId::RunShellCommand]
@@ -420,7 +432,10 @@ mod tests {
             Some(vec![CommandId::ClipboardHistory])
         );
 
-        let bad = vec!["command:clipboard-history".to_string(), "command:nope".to_string()];
+        let bad = vec![
+            "command:clipboard-history".to_string(),
+            "command:nope".to_string(),
+        ];
         assert_eq!(compact_bar_commands_from(&bad), None);
 
         let too_many = vec![

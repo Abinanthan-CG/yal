@@ -176,3 +176,48 @@ responses as Windows-1252 and produced artifacts such as U+00E2 and U+0080. The 
 re-downloaded, and the reading tools that decode correctly are used from then on. The
 mis-decoding is a property of the tool, not of the files, and mistaking it for corruption would
 have led to re-downloading correct files forever.
+
+## 2026-11-11 - The uninstaller keeps the user's data unless they ask otherwise
+
+**Question.** The uninstaller removes the program files. Should it also remove the data folder?
+
+**Options.** (a) Always remove it. (b) Always keep it. (c) Ask, and default to keeping it.
+
+**Decision.** (c), with `/SD IDNO`. The uninstaller asks "Remove your YAL data as well?", and
+the default answer is **No**, both for a silent uninstall and for a user who presses Enter without
+reading.
+
+**Why.** (a) destroys settings, quicklinks, snippets and notes without asking in the silent case,
+which is the case most likely to be run by a script. (b) never cleans up, which leaves a folder
+the user did not ask for. Asking, and defaulting to the answer that loses nothing, is the only
+one of the three that cannot destroy work.
+
+## 2026-11-11 - The application creates its own data folder at startup
+
+**Question.** The uninstaller keeps the data folder, but the application never created one — the
+folder only appeared when something wrote to it, and in the first release nothing does.
+
+**Options.** (a) Create the folders lazily, when the first thing is written. (b) Create them at
+startup.
+
+**Decision.** (b). The shell creates the data folder and the cache folder in its setup, before
+the palette is shown.
+
+**Why.** (a) means the folders appear at unpredictable moments, which makes them harder to back
+up and harder to reason about, and it leaves the uninstaller's promise — "your data survives" —
+untestable when there is no data. Creating them at startup makes the layout of the machine
+predictable, which is what a launcher is for.
+
+## 2026-11-11 - The smoke test writes a marker rather than checking an empty folder
+
+**Question.** The smoke test asserted that the data folder survived the uninstall. It failed,
+because the folder had never existed.
+
+**Options.** (a) Assert the folder exists. (b) Write a marker file before the uninstall and
+assert that the marker survives.
+
+**Decision.** (b).
+
+**Why.** (a) passes for the wrong reason: an empty folder that was never there satisfies "the
+folder is still there" only by accident, and it cannot tell "the uninstaller kept the data" from
+"there was no data". A marker file is a real thing to preserve, so the check says what it means.

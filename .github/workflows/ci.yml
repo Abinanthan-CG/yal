@@ -93,7 +93,7 @@ jobs:
 
       - name: The installer smoke test
         shell: pwsh
-        run: ./scripts/smoke-test.ps1
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke-test.ps1
 
       - name: Upload the build
         uses: actions/upload-artifact@v4

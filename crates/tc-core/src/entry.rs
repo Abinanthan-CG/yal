@@ -29,22 +29,48 @@ pub enum HotKeyAction {
     /// One of the built-in commands.
     Command(CommandId),
     /// Bring an installed app forward.
-    App { bundle_id: String },
+    App {
+        bundle_id: String,
+    },
     /// Open a Settings pane.
-    SettingsPane { bundle_id: String },
-    CustomCommand { id: Uuid },
-    SystemAction { id: SystemActionId },
-    WindowCommand { id: String },
-    WindowLayout { id: Uuid },
-    WindowRoom { id: Uuid },
-    CustomWindowSize { id: Uuid },
-    Quicklink { id: Uuid },
-    QuickAction { id: Uuid },
+    SettingsPane {
+        bundle_id: String,
+    },
+    CustomCommand {
+        id: Uuid,
+    },
+    SystemAction {
+        id: SystemActionId,
+    },
+    WindowCommand {
+        id: String,
+    },
+    WindowLayout {
+        id: Uuid,
+    },
+    WindowRoom {
+        id: Uuid,
+    },
+    CustomWindowSize {
+        id: Uuid,
+    },
+    Quicklink {
+        id: Uuid,
+    },
+    QuickAction {
+        id: Uuid,
+    },
     /// Upstream's Apple Shortcuts; on Windows, an Automation.
-    AppleShortcut { id: Uuid },
-    Snippet { id: String },
+    AppleShortcut {
+        id: Uuid,
+    },
+    Snippet {
+        id: String,
+    },
     /// Keyed by the extension's own entry id, which survives a reinstall.
-    ExtensionCommand { entry_id: String },
+    ExtensionCommand {
+        entry_id: String,
+    },
 }
 
 impl HotKeyAction {
@@ -58,11 +84,15 @@ impl HotKeyAction {
             HotKeyAction::App { bundle_id } => Some(format!("app:{bundle_id}")),
             HotKeyAction::SettingsPane { bundle_id } => Some(format!("pane:{bundle_id}")),
             HotKeyAction::CustomCommand { id } => Some(format!("{PREFIX_CUSTOM_COMMAND}{id}")),
-            HotKeyAction::SystemAction { id } => Some(format!("{PREFIX_SYSTEM_ACTION}{}", id.as_str())),
+            HotKeyAction::SystemAction { id } => {
+                Some(format!("{PREFIX_SYSTEM_ACTION}{}", id.as_str()))
+            }
             HotKeyAction::WindowCommand { id } => Some(format!("{PREFIX_WINDOW_COMMAND}{id}")),
             HotKeyAction::WindowLayout { id } => Some(format!("{PREFIX_WINDOW_LAYOUT}{id}")),
             HotKeyAction::WindowRoom { id } => Some(format!("{PREFIX_WINDOW_ROOM}{id}")),
-            HotKeyAction::CustomWindowSize { id } => Some(format!("{PREFIX_CUSTOM_WINDOW_SIZE}{id}")),
+            HotKeyAction::CustomWindowSize { id } => {
+                Some(format!("{PREFIX_CUSTOM_WINDOW_SIZE}{id}"))
+            }
             HotKeyAction::Quicklink { id } => Some(format!("{PREFIX_QUICKLINK}{id}")),
             HotKeyAction::QuickAction { id } => Some(format!("{PREFIX_QUICK_ACTION}{id}")),
             HotKeyAction::AppleShortcut { id } => Some(format!("{PREFIX_APPLE_SHORTCUT}{id}")),
@@ -89,7 +119,9 @@ impl HotKeyAction {
             HotKeyAction::QuickAction { id } => format!("hotkey.quickAction.{id}"),
             HotKeyAction::AppleShortcut { id } => format!("hotkey.appleShortcut.{id}"),
             HotKeyAction::Snippet { id } => format!("hotkey.snippet.{id}"),
-            HotKeyAction::ExtensionCommand { entry_id } => format!("hotkey.extensionCommand.{entry_id}"),
+            HotKeyAction::ExtensionCommand { entry_id } => {
+                format!("hotkey.extensionCommand.{entry_id}")
+            }
         }
     }
 }
@@ -323,9 +355,9 @@ impl SystemActionId {
             | SystemActionId::ShutDown
             | SystemActionId::LogOut
             | SystemActionId::ShowScreenSaver => SystemActionCategory::Session,
-            SystemActionId::PlayPause | SystemActionId::NextTrack | SystemActionId::PreviousTrack => {
-                SystemActionCategory::Media
-            }
+            SystemActionId::PlayPause
+            | SystemActionId::NextTrack
+            | SystemActionId::PreviousTrack => SystemActionCategory::Media,
             SystemActionId::ToggleMute
             | SystemActionId::VolumeUp
             | SystemActionId::VolumeDown

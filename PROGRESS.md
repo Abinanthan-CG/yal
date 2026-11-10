@@ -21,6 +21,7 @@ A Windows port of Tinycast (a macOS keyboard launcher, AGPL-3.0, upstream
 | Python | 3.12.10 |
 | WebView2 | 157.0.4341.42 (installed system-wide) |
 | NSIS | 3.13 (installed via winget, at `C:\Program Files (x86)\NSIS`) |
+| ARM64 cross-compiler | `Microsoft.VisualStudio.Component.VC.Tools.ARM64`, installed on 2026-11-10 |
 | Network | reachable: tinycast.dev and github.com both answer |
 
 Everything runs natively on real Windows here, so Windows-dependent rows can be
@@ -134,6 +135,9 @@ Status: **not started**
   set, and signs the checksums with minisign.
 - `packaging/winget/YAL.YAML` and `packaging/scoop/yal.json` carry placeholder checksums. They
   need the real ones from `dist/SHA256SUMS.txt` before they can be submitted.
+- Building for ARM64 needs the Visual Studio ARM64 cross-compiler. It was installed on this
+  machine on 2026-11-10; see [port note 004](docs/port-notes/004-arm64-build.md) for what it
+  takes and what does not work.
 
 ## Notes for the next session
 
@@ -144,3 +148,4 @@ Status: **not started**
 - `makensis` is not on `PATH` here. `cargo xtask dist` finds it in the standard install location.
 - Run `cargo run -p xtask -- parity` after any change to `parity/parts/`, and commit
   `PARITY.md` and `parity/parity.toml` with it.
+- `.cargo/config.toml` is gitignored, because it holds machine-specific toolchain paths.

@@ -63,7 +63,8 @@ impl WindowsHotkey {
         }
         let module = unsafe { GetModuleHandleW(None).ok()? };
         let module = Some(HINSTANCE(module.0));
-        let hook = unsafe { SetWindowsHookExW(WH_KEYBOARD_LL, Some(hook_procedure), module, 0) }.ok()?;
+        let hook =
+            unsafe { SetWindowsHookExW(WH_KEYBOARD_LL, Some(hook_procedure), module, 0) }.ok()?;
         *guard = Some(hook);
         Some(hook)
     }
@@ -81,11 +82,7 @@ impl WindowsHotkey {
 
 /// The hook callback. It must return quickly, so it does nothing but pass the
 /// event on.
-unsafe extern "system" fn hook_procedure(
-    code: i32,
-    wparam: WPARAM,
-    lparam: LPARAM,
-) -> LRESULT {
+unsafe extern "system" fn hook_procedure(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     if code >= 0 {
         let _ = &*(lparam.0 as *const KBDLLHOOKSTRUCT);
         let _ = wparam;
