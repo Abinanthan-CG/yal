@@ -1,6 +1,7 @@
 //! The card the calculator shows, as upstream's `CalcResult`.
 
 use crate::formatter::Formatter;
+use crate::units::UnitDef;
 
 /// What a card shows, as upstream's `CalcResult.Payload`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -26,6 +27,22 @@ impl Payload {
         Self::Value {
             display: Formatter::grouped(&text),
             copy_text: text,
+        }
+    }
+
+    /// The payload of a measurement, as upstream's `CalcResult.Payload.measurement`.
+    ///
+    /// CSS lengths copy without a space, so the answer pastes straight into a stylesheet.
+    pub fn measurement(value: f64, unit: &UnitDef) -> Self {
+        let text = Formatter::copy_text(value);
+        let separator = if unit.category == crate::units::UnitCategory::Pixels {
+            ""
+        } else {
+            " "
+        };
+        Self::Value {
+            display: format!("{} {}", Formatter::grouped(&text), unit.symbol),
+            copy_text: format!("{text}{separator}{}", unit.symbol),
         }
     }
 }

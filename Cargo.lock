@@ -5306,6 +5306,7 @@ dependencies = [
  "tauri-plugin-global-shortcut",
  "tauri-plugin-single-instance",
  "tc-apps",
+ "tc-calc",
  "tc-core",
  "tc-platform",
  "tc-platform-win",

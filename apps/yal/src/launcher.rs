@@ -10,6 +10,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use tc_apps::Program;
+use tc_calc::{evaluate, CalcOutcome, UnitCatalog};
 use tc_core::SystemActionId;
 use tc_search::entry_naming::SearchProfile;
 use tc_search::matcher::SearchSensitivity;
@@ -33,6 +34,14 @@ pub const SYSTEM_ACTION_PREFIX: &str = "system-action:";
 
 /// The section the system actions are listed under.
 const SYSTEM_ACTION_SECTION: &str = "System Actions";
+
+/// The prefix a calculator row's id carries.
+///
+/// A calculator row is not opened; its answer is copied.
+pub const CALCULATOR_PREFIX: &str = "calculator:";
+
+/// The section the calculator's answer is listed under.
+const CALCULATOR_SECTION: &str = "Calculator";
 
 /// One row in the results list.
 #[derive(Debug, Clone, Serialize)]
@@ -149,6 +158,15 @@ impl LauncherState {
                     needs_confirm: false,
                 })
                 .collect();
+        // The calculator's answer comes first: a query that is a calculation is
+        // asking for the answer, not for a program.
+        let mut rows = match calculator_row(query) {
+            Some(row) => {
+                rows.insert(0, row);
+                rows
+            }
+            None => rows,
+        };
         // The system actions are matched by their name, and they sit under the
         // applications: a program is what the user is usually looking for.
         rows.extend(self.system_actions_matching(query));
@@ -240,6 +258,35 @@ pub fn now_seconds() -> f64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs_f64())
         .unwrap_or(0.0)
+}
+
+/// The calculator's answer to the query, as a row.
+///
+/// The answer is copied when the row is opened, so the row's target is the text
+/// that lands on the clipboard.
+fn calculator_row(query: &str) -> Option<ResultRow> {
+    let trimmed = query.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let CalcOutcome::Card(card) = evaluate(trimmed, &UnitCatalog::new()) else {
+        return None;
+    };
+    let tc_calc::Payload::Value { display, copy_text } = &card.payload else {
+        return None;
+    };
+    // A query that only repeats itself is not a calculation.
+    if display == trimmed {
+        return None;
+    }
+    Some(ResultRow {
+        id: format!("{CALCULATOR_PREFIX}{copy_text}"),
+        name: display.clone(),
+        detail: card.expression.clone(),
+        kind: CALCULATOR_SECTION.to_string(),
+        target: copy_text.clone(),
+        needs_confirm: false,
+    })
 }
 
 #[cfg(test)]
@@ -350,5 +397,33 @@ mod tests {
     fn an_empty_query_finds_no_system_action() {
         let launcher = launcher(vec![]);
         assert!(launcher.search("").is_empty());
+    }
+
+    // MARK: - The calculator's row
+
+    #[test]
+    fn a_calculation_is_a_row_of_its_own() {
+        let row = calculator_row("10 km to m").expect("the query is a conversion");
+        assert_eq!(row.name, "10,000 m");
+        assert_eq!(row.detail, "10 km");
+        assert_eq!(row.kind, CALCULATOR_SECTION);
+        assert_eq!(row.target, "10000 m");
+        assert!(row.id.starts_with(CALCULATOR_PREFIX));
+        assert!(!row.needs_confirm);
+    }
+
+    #[test]
+    fn the_calculator_row_comes_first() {
+        let launcher = launcher(vec![program("Notepad")]);
+        let rows = launcher.search("2+2");
+        assert_eq!(rows.first().expect("a row").kind, CALCULATOR_SECTION);
+        assert_eq!(rows.first().expect("a row").name, "4");
+    }
+
+    #[test]
+    fn a_number_that_only_repeats_itself_is_not_a_calculation() {
+        assert!(calculator_row("5").is_none());
+        assert!(calculator_row("").is_none());
+        assert!(calculator_row("notepad").is_none());
     }
 }

@@ -7,9 +7,9 @@
 use tauri::Emitter;
 use tauri::Manager;
 use tauri::State;
-use tc_platform::FileSystem;
+use tc_platform::{Clipboard, FileSystem};
 
-use crate::launcher::{LauncherState, ResultRow, RANKING_FILE};
+use crate::launcher::{LauncherState, ResultRow, CALCULATOR_PREFIX, RANKING_FILE};
 
 /// The palette's label, so the window can be found again.
 const PALETTE: &str = "palette";
@@ -147,6 +147,14 @@ fn open_result(
             return Err(format!("`{}` has to be confirmed", action.english_name()));
         }
         tc_platform_win::run(action)?;
+        if let Some(window) = app.get_webview_window(PALETTE) {
+            let _ = window.hide();
+        }
+        return Ok(());
+    }
+    // A calculator row is not opened; its answer is copied.
+    if let Some(text) = id.strip_prefix(CALCULATOR_PREFIX) {
+        tc_platform_win::clipboard().write_text(text)?;
         if let Some(window) = app.get_webview_window(PALETTE) {
             let _ = window.hide();
         }

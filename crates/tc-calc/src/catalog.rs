@@ -51,6 +51,14 @@ pub trait Catalog {
 
     /// The currency code a sign such as `€` stands for, if the catalog knows it.
     fn currency_sign(&self, sign: char) -> Option<String>;
+
+    /// The full definition of a unit, when the catalog knows one.
+    ///
+    /// The core needs the scale and the offset to convert between two units. A catalog
+    /// that only knows the names answers `None`, and the conversion is then not made.
+    fn unit_definition(&self, _name: &str) -> Option<crate::units::UnitDef> {
+        None
+    }
 }
 
 /// A catalog served from plain tables of names.

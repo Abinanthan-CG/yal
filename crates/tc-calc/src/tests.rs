@@ -530,7 +530,9 @@ fn upstream_keeps_the_converted_value_while_typing() {
 // MARK: - The seam to the units and the currencies
 
 #[test]
-fn a_known_unit_is_reported_as_unsupported() {
+fn a_unit_the_catalog_cannot_convert_is_reported_as_unsupported() {
+    // A catalog that knows a unit's *name* but not its scale cannot convert it: the
+    // units of `crates/tc-calc` carry the scale, the offset and the category.
     let catalog = NameCatalog::new().unit("kg", "kg", "Kilogram");
     match evaluate("10 kg", &catalog) {
         CalcOutcome::Unsupported(area) => {
