@@ -407,6 +407,84 @@ evidence = [
 ]
 
 # ---------------------------------------------------------------------------
+# The calculator: the units
+#
+# The whole unit table is ported in `tc-calc`, and so are the conversions
+# between two of them: `10 km to m` is `10,000 m`, and `1.75 m to feet and
+# inches` is `5 ft 8.897637795 in`.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-calculator.units.1-75-m-to-feet-and-inches-5-ft-8-897637795-i"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::a_measure_is_told_in_two_units",
+  "tc-calc::units_tests::the_two_units_of_a_split_are_joined_in_three_ways",
+]
+
+[[status]]
+id = "features-calculator.units.name-two-units-of-the-same-kind-to-split-an"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::the_two_units_of_a_split_are_joined_in_three_ways",
+  "tc-calc::units_tests::two_units_of_different_kinds_are_not_a_mixed_answer",
+]
+
+[[status]]
+id = "features-calculator.units.a-unit-on-its-own-converts-to-a-related-unit"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::a_measurement_without_a_target_is_converted_into_its_counterpart",
+  "tc-calc::units_tests::a_metre_is_answered_in_feet_and_inches",
+  "tc-calc::units_tests::an_hour_on_its_own_is_answered_in_minutes",
+]
+
+[[status]]
+id = "features-calculator.units.cm-in-5-inches-12-7-cm"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::a_length_is_converted_into_another_length",
+]
+
+[[status]]
+id = "features-calculator.volume-and-flow.cubic-units-range-from-mm-to-m-plus-in-ft-an"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::the_table_holds_the_cubic_and_liquid_measures",
+]
+
+[[status]]
+id = "features-calculator.electrical.c-means-celsius-so-coulombs-are-shown-as-as"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::a_bare_c_is_the_temperature_and_not_the_charge",
+  "tc-calc::units_tests::the_prefixes_are_case_sensitive",
+]
+
+[[status]]
+id = "features-calculator.electrical.capacitance-farad-f-nf-pf-inductance-henry-m"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::the_table_holds_the_electrical_measures",
+  "tc-calc::units_tests::a_torque_is_converted_into_another_torque",
+]
+
+[[status]]
+id = "features-calculator.data-and-transfer-rates.mb-s-and-mbps-are-megabytes-per-second-and-m"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::a_transfer_rate_is_converted_into_another_one",
+]
+
+[[status]]
+id = "features-calculator.data-and-transfer-rates.other-supported-units-include-tonnes-t-stone"
+status = "PORTED"
+evidence = [
+  "tc-calc::units_tests::the_table_holds_the_remaining_measures",
+  "tc-calc::units_tests::the_table_holds_the_spelled_out_names",
+]
+
+# ---------------------------------------------------------------------------
 # The launcher: the favorites slots and the fallbacks
 #
 # The number keys that open a favorite, and the destinations that take the
@@ -811,6 +889,90 @@ evidence = [
 id = "features-clipboard.pinning.unpinning-an-entry-makes-it-the-newest-entry"
 status = "PORTED"
 evidence = ["tc-clipboard::tests::unpinning_rejoins_as_the_newest_entry"]
+
+[[status]]
+id = "features-clipboard.pinning.pinned-entries-appear-in-a-pinned-section-at"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::pins_stack_in_pin_order",
+  "tc-clipboard::tests::the_pin_order_is_restored_from_disk",
+]
+
+[[status]]
+id = "features-clipboard.pinning.they-come-first-in-both-the-full-list-and-yo"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_pinned_match_leads_a_filtered_search",
+]
+
+[[status]]
+id = "features-clipboard.pinning.kbd-kbd-kbd-1-kbd-to-kbd-kbd-kbd-9-kbd-then"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_pinned_slot_maps_to_the_visible_pinned_row",
+]
+
+[[status]]
+id = "features-clipboard.pinning.pinned-entries-are-never-removed-by-the-rete"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::the_resident_window_is_capped",
+  "tc-clipboard::tests::pins_outlive_a_cleared_history",
+]
+
+[[status]]
+id = "features-clipboard.pinning.pasting-a-pinned-entry-doesn-t-change-its-po"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::promoting_leaves_a_pinned_row_in_place",
+]
+
+[[status]]
+id = "features-clipboard.settings.clear-history-removes-every-entry-except-pin"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::pins_outlive_a_cleared_history",
+]
+
+[[status]]
+id = "features-clipboard.settings.excluded-applications-includes-keychain-acce"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_password_manager_is_excluded_by_default",
+  "tc-clipboard::tests::an_excluded_app_is_never_recorded",
+]
+
+[[status]]
+id = "features-clipboard.what-it-keeps.text-with-a-preview-text-longer-than-32-000"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_long_copy_is_not_recorded",
+  "tc-clipboard::tests::an_edit_is_held_to_the_capture_limit",
+]
+
+[[status]]
+id = "features-clipboard.what-it-keeps.a-copy-of-the-file-up-to-32-files-per-copy-a"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_multi_file_copy_makes_one_row_each",
+  "tc-clipboard::tests::a_huge_file_selection_is_not_recorded",
+]
+
+[[status]]
+id = "features-clipboard.what-it-keeps.colors-a-copied-ff5733-rgb-hsl-or-oklch-is-s"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_colour_is_written_in_each_notation",
+  "tc-clipboard::tests::every_offered_notation_re_parses_to_its_own_colour",
+]
+
+[[status]]
+id = "features-clipboard.limits-worth-knowing.the-newest-1-000-entries-are-kept-in-memory"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::the_resident_window_is_capped",
+  "tc-clipboard::tests::a_search_finds_the_rows_past_the_window",
+]
 
 [[status]]
 id = "features-clipboard.paste-sequentially.it-works-with-text-images-and-files-and-does"

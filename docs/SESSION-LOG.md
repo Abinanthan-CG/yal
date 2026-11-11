@@ -268,3 +268,52 @@ dictionary, the aliases, the hotkeys, the commands, the file search and the wind
 - The calculator's units, currencies, dates and time zones — the engine is ready for the catalog.
 - The quicklinks' store, the notes, the calendar, the rooms and the window layouts.
 - The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.
+
+## Session 6 - 2026-11-11 (evening)
+
+**Started from.** 100 rows were PORTED, the snippets library and the clipboard model were
+committed, and the calculator carried its arithmetic core and nothing else.
+
+**Did.**
+- **Ported the whole unit table** into `tc-calc`: upstream's records, the metric prefixes, the
+  byte rates, the affine temperatures, the dimensions and the compatibility rules, plus the
+  conversions between two units and the answers told in two units of one kind.
+- **Put the calculator in the palette.** The answer is the first row, and opening the row copies
+  the answer to the clipboard.
+- **Fixed the fifteen clipboard tests that were failing** — in the *tests*, not in the store. The
+  pins were expected in recency order instead of upstream's pin order, the fixtures were dated
+  in 1970 so the retention swept them away before the test could look, the alpha was compared
+  more strictly than upstream compares it, and the promotion swapped the wrong pair. Each was
+  checked against upstream's own test file before the expectation was changed. Nothing in
+  `tc-clipboard` is ignored now.
+- Replaced an `unreachable!()` in the snippets' Markdown reader with a proper error, which is
+  what the project's own rule about placeholders asks for.
+- Wrote two port notes: 011 for the clipboard model, rewritten now that nothing is ignored, and
+  012 for the unit table.
+
+**The one thing this slice refuses to answer.**
+
+Upstream's engine runs its own quantity parser before the conversions. Where that parser
+answers, this port does not answer at all: `60 mph * 2.5 hours` and `1 / 20ms to hz` are left
+unanswered rather than answered wrongly. The conversion reads its amount as a single number for
+exactly that reason, and there is a test that says so:
+
+```rust
+assert_ne!(display("1 / 20ms to hz").as_deref(), Some("0.00005 Hz"));
+```
+
+**Verified.**
+- `cargo test --workspace` passes: 571 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+- `cargo run -p xtask -- parity` reports 2 309 rows, 120 `PORTED`, 2 189 `NOT PORTED`.
+
+**Stopped at.** 120 rows are PORTED of 1 815 Tier 1 rows. Next: the quantity algebra for the
+calculator, the currencies, the emoji, the dictionary, the aliases, the hotkeys, the commands,
+the file search and the window management.
+
+**A note on the workers.** The clipboard worker from the earlier session was still writing files
+after it had reported success. Its work was checked against upstream before it was committed:
+the test fixes were right, and one of them — the pin order — was a case where the *expectation*
+had been wrong rather than the store.

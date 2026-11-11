@@ -5917,9 +5917,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "A unit on its own converts to a related unit: 1m gives feet and inches, and 1hr gives 60 min."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::a_measurement_without_a_target_is_converted_into_its_counterpart", "tc-calc::units_tests::a_metre_is_answered_in_feet_and_inches", "tc-calc::units_tests::an_hour_on_its_own_is_answered_in_minutes"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6005,9 +6005,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Cm in 5 inches — 12.7 cm."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::a_length_is_converted_into_another_length"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6214,9 +6214,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Name two units of the same kind to split an answer between them. The larger unit is whole, and the rest goes into the smaller one. Join them with and, & or just a space:"
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::the_two_units_of_a_split_are_joined_in_three_ways", "tc-calc::units_tests::two_units_of_different_kinds_are_not_a_mixed_answer"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6225,9 +6225,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "1.75 m to feet and inches — 5 ft 8.897637795 in."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::a_measure_is_told_in_two_units", "tc-calc::units_tests::the_two_units_of_a_split_are_joined_in_three_ways"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6361,9 +6361,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.volume-and-flow"
 behavior = "Cubic units range from mm³ to m³, plus in³, ft³ and yd³. You can type 3 instead of ³. Liquid measures include mL, cL, dL, L, cups, tablespoons, teaspoons, and US gallons, quarts and pints. Use fl oz for fluid ounces, because plain oz is weight. UK measures are ukgal, ukqt, ukpint and ukfloz, or written out as imperial gallons, imperial pints and imperial tablespoons."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::the_table_holds_the_cubic_and_liquid_measures"]
+reason = ""
 
 [[row]]
 id = "features-calculator.electrical.5-watt-3h-30min-to-kwh-0-0175-kwh"
@@ -6451,9 +6451,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.electrical"
 behavior = "C means Celsius, so coulombs are shown as As. Mega and milli are case-sensitive: MW is megawatts and mW is milliwatts."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::a_bare_c_is_the_temperature_and_not_the_charge", "tc-calc::units_tests::the_prefixes_are_case_sensitive"]
+reason = ""
 
 [[row]]
 id = "features-calculator.electrical.capacitance-farad-f-nf-pf-inductance-henry-m"
@@ -6461,9 +6461,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.electrical"
 behavior = "Capacitance (farad, µF, nF, pF), inductance (henry, mH), conductance (siemens), magnetic flux (weber, Wb), magnetic flux density (tesla, mT, gauss), torque (Nm, lb ft) and amount of substance (mol, mmol) all work, and they combine with the units above. Write these names out or with a prefix: a bare F is still Fahrenheit, H hours, S seconds and T tonnes. 10 newton meters to pound feet is 7.375621493 lb·ft."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::the_table_holds_the_electrical_measures", "tc-calc::units_tests::a_torque_is_converted_into_another_torque"]
+reason = ""
 
 [[row]]
 id = "features-calculator.pixels-and-density.3000px-300ppi-to-inches-10-in"
@@ -6601,9 +6601,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.data-and-transfer-rates"
 behavior = "MB/s and MBps are megabytes per second and Mbps is megabits per second, so 100Mbps to MB/s is 12.5 MB/s. Binary units like MiB/s and bit amounts like kbit also work."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::a_transfer_rate_is_converted_into_another_one"]
+reason = ""
 
 [[row]]
 id = "features-calculator.data-and-transfer-rates.other-supported-units-include-tonnes-t-stone"
@@ -6611,9 +6611,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.data-and-transfer-rates"
 behavior = "Other supported units include tonnes (t), stone (st), carats (ct), troy ounces (ozt), nautical miles (nmi), light years (ly), parsecs (pc), astronomical units (au), fathoms, furlongs, barrels (bbl), bushels (bu), acre feet, metric cups, microliters and kiloliters, cubic kilometers and miles, GWh and TWh, horsepower (hp), BTU, rpm, rps and rad/s, pound-force (lbf), poundals (pdl), ksi, ft/s2, and data sizes up to yottabytes. Spelled-out names work too, like nautical miles, sq ft, square feet and cubic feet. ° means degrees, so cos(60°) is 0.5."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::units_tests::the_table_holds_the_remaining_measures", "tc-calc::units_tests::the_table_holds_the_spelled_out_names"]
+reason = ""
 
 [[row]]
 id = "features-calculator.fuel-and-pace.fuel-economy-uses-mpg-and-km-l-and-fuel-cons"
@@ -10219,9 +10219,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.what-it-keeps"
 behavior = "**Text**, with a preview. Text longer than 32,000 characters isn't recorded."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_long_copy_is_not_recorded", "tc-clipboard::tests::an_edit_is_held_to_the_capture_limit"]
+reason = ""
 
 [[row]]
 id = "features-clipboard.what-it-keeps.images-like-screenshots-saved-as-png-files-w"
@@ -10259,9 +10259,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.what-it-keeps"
 behavior = "A copy of the file. Up to 32 files per copy are recorded. When you paste, apps receive the file itself, and text fields receive its path."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_multi_file_copy_makes_one_row_each", "tc-clipboard::tests::a_huge_file_selection_is_not_recorded"]
+reason = ""
 
 [[row]]
 id = "features-clipboard.what-it-keeps.colors-a-copied-ff5733-rgb-hsl-or-oklch-is-s"
@@ -10269,9 +10269,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.what-it-keeps"
 behavior = "**Colors.** A copied `#FF5733`, `rgb(…)`, `hsl(…)` or `oklch(…)` is shown as a color swatch."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_colour_is_written_in_each_notation", "tc-clipboard::tests::every_offered_notation_re_parses_to_its_own_colour"]
+reason = ""
 
 [[row]]
 id = "features-clipboard.what-it-keeps.if-a-file-has-been-moved-or-deleted-since-yo"
@@ -10354,9 +10354,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.pinning"
 behavior = "Pinned entries appear in a **Pinned** section at the top, in the order you pinned them."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::pins_stack_in_pin_order", "tc-clipboard::tests::the_pin_order_is_restored_from_disk"]
+reason = ""
 count_check = "clipboard.pinned-survives"
 
 [[row]]
@@ -10365,9 +10365,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.pinning"
 behavior = "They come first in both the full list and your search results."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_pinned_match_leads_a_filtered_search"]
+reason = ""
 count_check = "clipboard.pinned-survives"
 
 [[row]]
@@ -10376,9 +10376,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.pinning"
 behavior = "<kbd>⌘</kbd><kbd>1</kbd> to <kbd>⌘</kbd><kbd>9</kbd>, then <kbd>⌘</kbd><kbd>0</kbd>, act on the"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_pinned_slot_maps_to_the_visible_pinned_row"]
+reason = ""
 count_check = "clipboard.pinned-survives"
 
 [[row]]
@@ -10398,9 +10398,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.pinning"
 behavior = "**Pinned entries are never removed by the retention limit.** **Clear history** and **Delete All"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::the_resident_window_is_capped", "tc-clipboard::tests::pins_outlive_a_cleared_history"]
+reason = ""
 count_check = "clipboard.pinned-survives"
 
 [[row]]
@@ -10420,9 +10420,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.pinning"
 behavior = "Pasting a pinned entry doesn't change its position."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::promoting_leaves_a_pinned_row_in_place"]
+reason = ""
 count_check = "clipboard.pinned-survives"
 
 [[row]]
@@ -10736,9 +10736,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.settings"
 behavior = "Clear history — Removes every entry except pinned ones — None."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::pins_outlive_a_cleared_history"]
+reason = ""
 
 [[row]]
 id = "features-clipboard.settings.excluded-applications-includes-keychain-acce"
@@ -10746,9 +10746,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.settings"
 behavior = "Excluded Applications includes Keychain Access and Passwords by default, so Tinycast never records what you copy from them. You can add your own apps. Copies that apps mark as confidential are also skipped."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_password_manager_is_excluded_by_default", "tc-clipboard::tests::an_excluded_app_is_never_recorded"]
+reason = ""
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.history-is-stored-in-clipboard-sqlite3-with"
@@ -10789,9 +10789,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.limits-worth-knowing"
 behavior = "The newest **1,000** entries are kept in memory. Search also covers older entries."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::the_resident_window_is_capped", "tc-clipboard::tests::a_search_finds_the_rows_past_the_window"]
+reason = ""
 count_check = "clipboard.limits"
 
 [[row]]
