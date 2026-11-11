@@ -130,7 +130,15 @@ impl SnippetMarkdownSerializer {
                     shows_confirmation = decode_boolean(raw_value)
                         .map_err(|reason| parse_error(file, line_number, reason))?;
                 }
-                _ => unreachable!("canonical keys are exhaustively handled"),
+                // `canonical_key` only names the keys handled above, so this arm
+                // is reached only if that list and this match fall out of step.
+                _ => {
+                    return Err(parse_error(
+                        file,
+                        line_number,
+                        format!("Unsupported frontmatter key '{key}'"),
+                    ))
+                }
             }
         }
 

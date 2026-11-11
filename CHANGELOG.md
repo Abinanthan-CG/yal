@@ -44,12 +44,15 @@ has got.
   written from upstream's own expectations. Creating a snippet now writes a new file
   instead of overwriting one that was already there.
 - **The clipboard model** in `tc-clipboard`: what an entry is, how its text is
-  classified as plain text, a link, an e-mail address or a colour, how a colour is
-  written in every notation and parsed back, the filters, the capture policy, the
+  classified as plain text, a link, an e-mail address or a colour, how a colour
+  is written in every notation and parsed back, the filters, the capture policy, the
   paste sequence that tells one gesture from three, and the store with its pins and
-  its resident window. 94 tests, of which 69 pass; the other fifteen are marked
-  `#[ignore]` with the reason on each one, because the store's ordering across the
-  memory window, the pins' order and the walk across the window are not ported yet.
+  its resident window. 94 tests, all of them passing.
+- **The whole unit table** in `tc-calc`, with the conversions between two units
+  and the answers told in two units of one kind: `10 km to m` is `10,000 m`,
+  `250 sq ft to m2` is `23.22576 m²`, and `1.75 m to feet and inches` is
+  `5 ft 8.897637795 in`. The calculator's answer is a row in the palette now, and
+  opening the row copies the answer.
 - **The search slice** in `tc-search`, ported from upstream's launcher model:
   the fold and the tiered match, the scorer where a word start outscores any
   other letter, the relevance cells that weigh a name against the thing that

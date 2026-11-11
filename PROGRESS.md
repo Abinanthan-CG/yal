@@ -101,7 +101,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-tc-search has 150 tests. The workspace has 515.
+tc-search has 150 tests. The workspace has 571.
 
 ### The launcher core
 
@@ -124,18 +124,26 @@ Linux for the types and on Windows for the installer.
 The palette asks the Rust side for the rows that match what was typed, shows them, and opens the
 chosen one.
 
-### The calculator's arithmetic core (crates/tc-calc)
+### The calculator's arithmetic core and the units (crates/tc-calc)
 
 The tokenizer, the expression parser, the evaluation engine, the math functions and the number
 formatting, ported from upstream's `Features/Calculator/Model/` with upstream's own
-`Tests/calc-test.swift` as the oracle. **66 tests.**
+`Tests/calc-test.swift` as the oracle. **104 tests.**
 
 The engine asks a catalog about the units and the currencies it meets and answers
-`Unsupported` for a query it cannot finish, so the unit catalog can be added later without
-touching the engine. The units, the currencies, the dates, the time zones, the percentages and
-the history are still to come.
+`Unsupported` for a query it cannot finish, so the currencies can be added later without
+touching the engine.
 
-See [port note 006](docs/port-notes/006-calculator-core.md).
+**The whole unit table is ported now**, with the conversions between two units and the answers
+told in two units of one kind: `10 km to m` is `10,000 m`, `250 sq ft to m2` is `23.22576 m²`,
+and `1.75 m to feet and inches` is `5 ft 8.897637795 in`. The calculator's answer is a row in
+the palette, and opening it copies the answer.
+
+The currencies, the dates, the time zones, the percentages, the history, the questions asked
+in words and the arithmetic that carries a unit are still to come.
+
+See [port note 006](docs/port-notes/006-calculator-core.md) and
+[port note 012](docs/port-notes/012-unit-table-and-conversions.md).
 
 ### The system actions (crates/tc-platform-win, apps/yal)
 
@@ -171,9 +179,11 @@ See [port note 008](docs/port-notes/008-snippet-file-format.md),
 What a clipboard entry is, how its text is classified (plain, link, e-mail, colour), how a colour
 is written in each notation and parsed back, the filters, the capture policy, the paste sequence
 that tells one gesture from three, and the store with its pins and its resident window.
-**94 tests: 69 pass, 15 are marked `#[ignore]`** because the store's ordering across the memory
-window, the pins' order and the walk across the window are not ported yet. The ignored tests
-carry that reason on each one, and the ledger rows that depend on them stay `NOT PORTED`.
+**94 tests, all of them passing.** The fifteen that did not pass at first were fixed in
+the *tests*, not in the store: the pins were expected in recency order instead of upstream's
+pin order, the fixtures were dated in 1970 so the retention swept them away, the alpha was
+compared more strictly than upstream compares it, and the promotion swapped the wrong pair.
+Each was checked against upstream's own test file first.
 
 The capture loop, the Windows clipboard watcher and the palette rows are not written yet.
 
@@ -197,11 +207,12 @@ launcher's matching rules.
 
 With the snippet file format, the template engine and the library on disk, 96 rows are PORTED.
 
-With the clipboard model, 100 rows are PORTED: the four rows the clipboard model answers today
-are the link and e-mail classification, the URLs offered as links, the unpinned entry becoming
-the newest, and the rules of the paste sequence. The store's ordering, the pins and the walk
-across the memory window are still open, and the fifteen tests that would show them are marked
-`#[ignore]` until they pass.
+With the clipboard model, 100 rows are PORTED: the link and e-mail classification, the URLs
+offered as links, the unpinned entry becoming the newest, and the rules of the paste sequence.
+
+With the unit table and the conversions, and the fifteen clipboard tests fixed, **120 rows are
+PORTED**. The clipboard now answers for its pins, its memory window and its retention, and the
+calculator answers for the units it knows.
 
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
@@ -221,12 +232,15 @@ The order to work in, with what is done so far:
 9. System settings
 10. System actions — **twenty of the thirty-two run on Windows**; the other twelve have no Windows
     answer and the port says so instead of doing something else
-11. Calculator — **the arithmetic core is done**: the tokenizer, the parser, the engine and the
-    number formatting are ported to `crates/tc-calc` against upstream's own calculator tests.
-    The units, the currencies, the dates and the time zones are stage 2.
+11. Calculator — **the arithmetic core and the unit table are done**: the tokenizer, the parser,
+    the engine, the number formatting and the whole unit table are ported to `crates/tc-calc`
+    against upstream's own calculator tests, and the conversions between two units are in the
+    palette. The currencies, the dates, the time zones and the arithmetic that carries a unit
+    are stage 2.
 12. Clipboard history — **the model is done** (`crates/tc-clipboard`): the items, the
-    classification, the colours, the filters, the policy, the paste sequence and the store.
-    The capture loop, the Windows watcher and the palette rows are not.
+    classification, the colours, the filters, the policy, the paste sequence and the store with
+    its pins, its memory window and its retention. The capture loop, the Windows watcher, the OCR
+    and the palette rows are not.
 13. Emoji
 14. Snippets — **the record, the Markdown file format, the template engine and the library on
     disk are done** (`crates/tc-snippets`); the editor, the browser and the palette rows are not

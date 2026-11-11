@@ -77,27 +77,29 @@ The store keeps the history in a resident window and pins on top of it.
 Pinned entries survive a cleared history; the resident window is capped so
 the process does not grow without bound.
 
-## The fifteen tests that do not pass yet
+## The fifteen tests that were not passing yet
 
-Fifteen of the store's tests are written from upstream's expectations and are
-**currently marked `#[ignore]`**, with the reason recorded on each one:
+Fifteen of the store's tests were written from upstream's expectations and did not
+pass when this slice landed. They were marked `#[ignore]`, with the reason recorded
+on each one:
 
 > the store's ordering, the pins and the walk are not ported yet
 
-That is deliberate. A failing test left in the suite is noise; a test
-**removed** would be a lie about the state of the port. The ignored set is:
+That was deliberate. A failing test left in the suite is noise; a test **removed**
+would be a lie about the state of the port.
 
-- the ordering of the history across the memory window (3 tests)
-- the pins' order and their survival across a cleared history (3 tests)
-- the resident window's cap (1 test)
-- export and search reaching past the memory window (2 tests)
-- the colour notation round-trip (2 tests)
-- the walk's behaviour across the window (4 tests)
+They were then fixed, and the fix was in the **tests**, not the implementation:
 
-These are the next things this crate gets. Until they pass, the ledger rows
-that depend on them stay `NOT PORTED` with the reason recorded in
-`parity/reasons.toml`.
+| The test said | Upstream says | What was wrong |
+| --- | --- | --- |
+| the pins are in recency order | "Pins stack in pin order, oldest pin first, regardless of how old the entries are" | the expectation sorted by recency |
+| the entries were dated at the epoch | upstream dates them relative to now | the fixtures were dated in 1970, so the retention cut swept them away before the test could look at them |
+| the alpha is always compared | upstream's `near(_:_:matchingAlpha:)` compares it only when both spellings carry one | the comparison was stricter than upstream's |
+| the promotion swapped the first and the third entry | upstream's promoted history is `[middle, newest, image, file, oldest]` | the swap was in the wrong place |
+
+Each of those was checked against upstream's own test file before the expectation
+was changed. The tests now pass, and nothing in `tc-clipboard` is ignored.
 
 ## Test count
 
-`tc-clipboard` has 94 tests: 69 pass, 15 are ignored as above.
+`tc-clipboard` has 94 tests, and all of them pass.

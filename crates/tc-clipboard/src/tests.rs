@@ -625,9 +625,10 @@ fn pins_outlive_a_cleared_history() {
         .expect("the pin is set");
 
     store.clear_all().expect("the history is cleared");
+    // The pins survive, in pin order: the oldest pin leads.
     assert_eq!(
         texts(&store, "", ClipboardFilter::All),
-        vec!["first", "third"]
+        vec!["third", "first"]
     );
 }
 
@@ -705,17 +706,31 @@ fn the_resident_window_is_capped() {
     let pinned = item(&store, "entry 0");
     store.toggle_pinned(&pinned).expect("the pin is set");
 
-    let paths: Vec<String> = (0..32)
-        .map(|index| format!("/Users/me/batch-{index}.txt"))
-        .collect();
-    store
-        .add_files(&paths, None)
-        .expect("the files are recorded");
-    assert_eq!(store.items().len(), MEMORY_WINDOW);
-    assert!(store
-        .items()
-        .iter()
-        .any(|entry| entry.id == pinned.id && entry.is_pinned()));
+    for batch in 0..3 {
+        let paths: Vec<String> = (0..32)
+            .map(|index| format!("/Users/me/batch-{batch}-{index}.txt"))
+            .collect();
+        store
+            .add_files(&paths, None)
+            .expect("the files are recorded");
+        assert_eq!(store.items().len(), MEMORY_WINDOW);
+        // The entire new batch stays in recency order.
+        let batch_paths: Vec<&str> = store
+            .items()
+            .iter()
+            .take(paths.len())
+            .filter_map(|entry| entry.file_path())
+            .collect();
+        let expected: Vec<&str> = paths.iter().rev().map(String::as_str).collect();
+        assert_eq!(batch_paths, expected);
+        // Trimming preserves the oldest pin.
+        assert!(store
+            .items()
+            .iter()
+            .any(|entry| entry.id == pinned.id && entry.is_pinned()));
+    }
+    // Trimming removes the oldest unpinned rows: ninety-six of them went, so
+    // "entry 1" through "entry 96" are gone from the window.
     assert_eq!(
         store
             .items()
@@ -725,6 +740,7 @@ fn the_resident_window_is_capped() {
             .and_then(|entry| entry.text.clone()),
         Some("entry 97".to_string())
     );
+    // Trimmed rows remain searchable on disk.
     assert!(store
         .search("entry 1", ClipboardFilter::Text)
         .iter()
@@ -737,10 +753,13 @@ fn an_export_sees_past_the_memory_window() {
     // not just the window.
     let (_directory, mut store) = store();
     let total = 1_200;
+    // Upstream dates the entries relative to now, so the retention cut keeps
+    // them all.
+    let now = crate::store::now_millis();
     let entries: Vec<ClipboardItem> = (0..total)
         .map(|index| {
             let mut entry = ClipboardItem::text(format!("entry {index}"), None);
-            entry.created_at = index as i64;
+            entry.created_at = now - (total - index) as i64 * 1000;
             entry
         })
         .collect();
@@ -768,10 +787,11 @@ fn an_imported_file_arrives_once_per_path() {
     // Upstream `importedFilesArriveOncePerPath`: two distinct paths import as
     // two rows, and re-importing one adds nothing.
     let (_directory, mut store) = store();
+    let now = crate::store::now_millis();
     let mut one = ClipboardItem::file("/tmp/one.pdf", None);
-    one.created_at = 1;
+    one.created_at = now - 1000;
     let mut two = ClipboardItem::file("/tmp/two.pdf", None);
-    two.created_at = 2;
+    two.created_at = now;
 
     assert_eq!(
         store
@@ -807,12 +827,13 @@ fn a_pinned_match_leads_a_filtered_search() {
     let (_directory, mut store) = store();
     let mut seed: Vec<ClipboardItem> = Vec::new();
     // The pinned hit is the oldest of 260 matches; the index stops at 200.
+    let now = crate::store::now_millis();
     let mut pinned = ClipboardItem::text("needle in the haystack", None);
-    pinned.created_at = 0;
+    pinned.created_at = now - 260_000;
     seed.push(pinned);
     for index in 1..=259 {
         let mut filler = ClipboardItem::text(format!("haystack filler {index}"), None);
-        filler.created_at = index;
+        filler.created_at = now - (260 - index) as i64 * 1000;
         seed.push(filler);
     }
     store
@@ -828,6 +849,8 @@ fn a_pinned_match_leads_a_filtered_search() {
         Some("needle in the haystack".to_string())
     );
     assert_eq!(results.iter().filter(|entry| entry.is_pinned()).count(), 1);
+    // The pinned block plus the index's own answers.
+    assert!(results.len() > 200);
 }
 
 #[test]
@@ -929,10 +952,13 @@ fn a_search_finds_the_rows_past_the_window() {
     // past the window.
     let (_directory, mut store) = store();
     let total = 1_200;
+    // Upstream dates the entries relative to now, so the retention cut keeps
+    // them all.
+    let now = crate::store::now_millis();
     let entries: Vec<ClipboardItem> = (0..total)
         .map(|index| {
             let mut entry = ClipboardItem::text(format!("entry {index}"), None);
-            entry.created_at = index as i64;
+            entry.created_at = now - (total - index) as i64 * 1000;
             entry
         })
         .collect();
@@ -979,13 +1005,25 @@ fn an_empty_query_answers_with_the_whole_window() {
 // MARK: - The colours
 
 /// Whether two colours agree to a channel.
+///
+/// Upstream `near(_:_:matchingAlpha:)`: 8-bit channels are what every
+/// notation states, so agreement to a channel is agreement. The alpha is
+/// only compared when the two spellings agree about carrying one, because an
+/// alpha-free notation is an opaque spelling by design.
 fn near(left: &ColorValue, right: &ColorValue) -> bool {
-    let channels = [
+    near_matching(left, right, left.has_alpha() == right.has_alpha())
+}
+
+/// Whether two colours agree, comparing the alpha only when asked.
+fn near_matching(left: &ColorValue, right: &ColorValue, matching_alpha: bool) -> bool {
+    let mut channels = vec![
         (left.red, right.red),
         (left.green, right.green),
         (left.blue, right.blue),
-        (left.alpha, right.alpha),
     ];
+    if matching_alpha {
+        channels.push((left.alpha, right.alpha));
+    }
     channels.iter().all(|(a, b)| (a - b).abs() < 1.0 / 255.0)
 }
 
@@ -1287,9 +1325,9 @@ fn pasted(sequence: &mut PasteSequence, live: &[ClipboardItem]) -> Vec<String> {
     out
 }
 
-/// A fresh walk over the history.
-fn fresh_sequence() -> PasteSequence {
-    PasteSequence::new(&walk_history(), 1, START)
+/// A fresh walk over the given history.
+fn fresh_sequence(history: &[ClipboardItem]) -> PasteSequence {
+    PasteSequence::new(history, 1, START)
 }
 
 #[test]
@@ -1297,7 +1335,7 @@ fn the_walk_pastes_every_kind_newest_first() {
     // Upstream `walksEveryKindNewestFirst`: the walk pastes text, images and
     // files alike, newest first.
     let history = walk_history();
-    let mut sequence = fresh_sequence();
+    let mut sequence = fresh_sequence(&history);
     let expected: Vec<String> = history.iter().map(|entry| entry.id.clone()).collect();
     assert_eq!(pasted(&mut sequence, &history), expected);
 }
@@ -1307,7 +1345,7 @@ fn the_walk_stops_at_the_end_rather_than_wrapping() {
     // Upstream `stopsAtTheEndRatherThanWrapping`: a press past the oldest
     // entry pastes nothing.
     let history = walk_history();
-    let mut sequence = fresh_sequence();
+    let mut sequence = fresh_sequence(&history);
     let _ = pasted(&mut sequence, &history);
     assert!(sequence.next(&history).is_none());
 }
@@ -1321,26 +1359,17 @@ fn an_empty_history_has_nothing_to_paste() {
 
 #[test]
 fn a_promoted_entry_neither_repeats_nor_jumps_the_walk() {
-    // Upstream `promotionMidWalkNeitherRepeatsNorSkips`.
+    // Upstream `promotionMidWalkNeitherRepeatsNorSkips`: the promoted history
+    // is `[middle, newest, image, file, oldest]`, and the walk pastes the
+    // image, the middle, the file and the oldest.
     let history = walk_history();
-    let mut sequence = fresh_sequence();
+    let mut sequence = fresh_sequence(&history);
     let _ = sequence.next(&history);
     let mut promoted = history.clone();
-    promoted.swap(0, 2);
-    let expected: Vec<String> = ["image", "middle", "file", "oldest"]
+    promoted.swap(0, 1);
+    let expected: Vec<String> = [1usize, 2, 3, 4]
         .iter()
-        .map(|label| {
-            history
-                .iter()
-                .find(|entry| {
-                    entry.text.as_deref() == Some(*label)
-                        || entry.file_path() == Some(*label)
-                        || entry.image_path.as_deref() == Some(*label)
-                })
-                .expect("the entry is listed")
-                .id
-                .clone()
-        })
+        .map(|index| history[*index].id.clone())
         .collect();
     assert_eq!(pasted(&mut sequence, &promoted), expected);
 }
@@ -1349,7 +1378,7 @@ fn a_promoted_entry_neither_repeats_nor_jumps_the_walk() {
 fn an_entry_captured_mid_walk_is_not_pasted_by_it() {
     // Upstream `captureMidWalkWaitsForTheNextWalk`.
     let history = walk_history();
-    let mut sequence = fresh_sequence();
+    let mut sequence = fresh_sequence(&history);
     let mut captured = vec![ClipboardItem::text("captured", None)];
     captured.extend(history.iter().cloned());
     let expected: Vec<String> = history.iter().map(|entry| entry.id.clone()).collect();
@@ -1360,7 +1389,7 @@ fn an_entry_captured_mid_walk_is_not_pasted_by_it() {
 fn an_entry_deleted_mid_walk_is_skipped_rather_than_pasted() {
     // Upstream `entryDeletedMidWalkIsSkipped`.
     let history = walk_history();
-    let mut sequence = fresh_sequence();
+    let mut sequence = fresh_sequence(&history);
     let middle = history[2].id.clone();
     let remaining: Vec<ClipboardItem> = history
         .iter()
@@ -1375,7 +1404,7 @@ fn an_entry_deleted_mid_walk_is_skipped_rather_than_pasted() {
 fn clearing_the_history_ends_the_walk() {
     // Upstream `clearedHistoryEndsTheWalk`.
     let history = walk_history();
-    let mut sequence = fresh_sequence();
+    let mut sequence = fresh_sequence(&history);
     let _ = sequence.next(&history);
     assert!(sequence.next(&[]).is_none());
 }
@@ -1384,7 +1413,8 @@ fn clearing_the_history_ends_the_walk() {
 fn our_own_paste_keeps_the_walk_going() {
     // Upstream `ownPasteKeepsTheWalkGoing`: the count our own paste left keeps
     // the walk going.
-    let mut sequence = fresh_sequence();
+    let history = walk_history();
+    let mut sequence = fresh_sequence(&history);
     sequence.record_paste(4, START);
     assert!(sequence.continues(4, START));
 }
@@ -1392,7 +1422,8 @@ fn our_own_paste_keeps_the_walk_going() {
 #[test]
 fn a_copy_since_the_last_paste_ends_the_walk() {
     // Upstream `newCopyEndsTheWalk`.
-    let mut sequence = fresh_sequence();
+    let history = walk_history();
+    let mut sequence = fresh_sequence(&history);
     sequence.record_paste(4, START);
     assert!(!sequence.continues(5, START));
 }
@@ -1401,21 +1432,22 @@ fn a_copy_since_the_last_paste_ends_the_walk() {
 fn a_pause_under_the_timeout_keeps_the_walk_going() {
     // Upstream `pauseUnderTheTimeoutKeepsTheWalkGoing`.
     let later = START + 60_000 - 1;
-    assert!(fresh_sequence().continues(1, later));
+    assert!(fresh_sequence(&walk_history()).continues(1, later));
 }
 
 #[test]
 fn a_pause_of_the_full_timeout_ends_the_walk() {
     // Upstream `pauseOfTheFullTimeoutEndsTheWalk`.
     let later = START + 60_000;
-    assert!(!fresh_sequence().continues(1, later));
+    assert!(!fresh_sequence(&walk_history()).continues(1, later));
 }
 
 #[test]
 fn each_paste_restarts_the_timeout() {
     // Upstream `eachPasteRestartsTheTimeout`: the timeout counts from the
     // last paste, not the first press.
-    let mut sequence = fresh_sequence();
+    let history = walk_history();
+    let mut sequence = fresh_sequence(&history);
     let paste = START + 60_000 - 1;
     sequence.record_paste(2, paste);
     assert!(sequence.continues(2, paste + 60_000 - 1));
@@ -1425,7 +1457,8 @@ fn each_paste_restarts_the_timeout() {
 fn a_press_inside_the_settle_interval_is_held_back() {
     // Upstream `pressInsideTheSettleIntervalIsHeldBack`: a press before the
     // last ⌘V can land is held back.
-    let mut sequence = fresh_sequence();
+    let history = walk_history();
+    let mut sequence = fresh_sequence(&history);
     sequence.record_paste(2, START);
     assert!(sequence.is_settling(START + 125));
 }
@@ -1434,7 +1467,8 @@ fn a_press_inside_the_settle_interval_is_held_back() {
 fn a_press_at_the_settle_interval_goes_through() {
     // Upstream `pressAtTheSettleIntervalGoesThrough`: a press once the last
     // paste has landed goes through.
-    let mut sequence = fresh_sequence();
+    let history = walk_history();
+    let mut sequence = fresh_sequence(&history);
     sequence.record_paste(2, START);
     assert!(!sequence.is_settling(START + 250));
 }
