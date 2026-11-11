@@ -8,7 +8,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::markdown::{ParseError, SnippetMarkdownSerializer};
+use crate::markdown::SnippetMarkdownSerializer;
 use crate::snippet::{Snippet, SnippetSourceRevision, StoredSnippet};
 
 /// What went wrong while reading or writing the library.
@@ -142,20 +142,16 @@ impl SnippetRepository {
                 }
             };
             match SnippetMarkdownSerializer::parse(&content, &file) {
-                Ok(snippet) => records.push(StoredSnippet::for_content(
-                    file,
-                    snippet,
-                    &content,
-                )),
-                Err(ParseError { file, message, .. }) => issues.push(Issue {
-                    file,
-                    message: format!("{file}:{message}"),
+                Ok(snippet) => records.push(StoredSnippet::for_content(file, snippet, &content)),
+                Err(error) => issues.push(Issue {
+                    file: error.file.clone(),
+                    message: error.to_string(),
                 }),
             }
         }
 
         records.sort_by(record_order);
-        issues.sort_by(|lhs, rhs| lhs.id().cmp(&rhs.id()));
+        issues.sort_by_key(|issue| issue.id());
         Ok(Snapshot { records, issues })
     }
 
@@ -170,7 +166,7 @@ impl SnippetRepository {
 
         loop {
             let file = self.unique_file_url(&snippet.name, suffix);
-            match fs::write(&file, content.as_bytes()) {
+            match write_new_file(&file, &content) {
                 Ok(()) => {
                     return Ok(StoredSnippet::for_content(file, snippet.clone(), &content));
                 }
@@ -318,7 +314,7 @@ impl SnippetRepository {
         let standardized = crate::snippet::standardized_path(file);
         let parent = file
             .parent()
-            .map(|parent| crate::snippet::standardized_path(parent))
+            .map(crate::snippet::standardized_path)
             .unwrap_or_default();
         let root = crate::snippet::standardized_path(&self.root);
         let has_markdown_extension = file
@@ -326,7 +322,9 @@ impl SnippetRepository {
             .is_some_and(|extension| extension.eq_ignore_ascii_case("md"));
 
         if parent != root || !has_markdown_extension {
-            return Err(RepositoryError::InvalidFileLocation(PathBuf::from(standardized)));
+            return Err(RepositoryError::InvalidFileLocation(PathBuf::from(
+                standardized,
+            )));
         }
         Ok(PathBuf::from(standardized))
     }
@@ -342,6 +340,19 @@ impl SnippetRepository {
         })?;
         Ok(SnippetSourceRevision::new(&content))
     }
+}
+
+/// Write a file that must not exist yet.
+///
+/// A plain write would overwrite whatever was there, so the file is opened with
+/// `create_new`: a name that is taken fails instead of losing a snippet.
+fn write_new_file(file: &Path, content: &str) -> io::Result<()> {
+    use std::io::Write;
+    let mut handle = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(file)?;
+    handle.write_all(content.as_bytes())
 }
 
 /// The order snippets are listed in.

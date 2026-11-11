@@ -13,16 +13,26 @@
 //! (<https://github.com/abue-ammar/tinycast>, AGPL-3.0): the Swift files in
 //! `Features/Snippets/Model` and the tests in `Tests/snippets-test.swift`.
 
+pub mod keyword;
+#[cfg(test)]
+mod library_tests;
 pub mod locale;
 pub mod markdown;
+pub mod raycast;
+pub mod repository;
 pub mod snippet;
+pub mod store;
 pub mod template;
 #[cfg(test)]
 mod template_tests;
 #[cfg(test)]
 mod tests;
 
+pub use keyword::SnippetKeywordPolicy;
 pub use locale::{for_identifier, LocaleData};
 pub use markdown::{ParseError, SnippetMarkdownSerializer};
+pub use raycast::RaycastSnippetImport;
+pub use repository::{Issue, RepositoryError, SnippetRepository};
 pub use snippet::{Snippet, SnippetSourceRevision, StoredSnippet};
+pub use store::SnippetsStore;
 pub use template::{ExpansionContext, MissingArgument};

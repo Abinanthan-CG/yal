@@ -131,11 +131,9 @@ impl SnippetsStore {
     ///
     /// Mirrors upstream's `save(_:)`.
     pub fn save(&mut self, record: &StoredSnippet) -> Result<StoredSnippet, RepositoryError> {
-        let saved = self.repository.save(
-            &record.snippet,
-            &record.file_url,
-            &record.source_revision,
-        )?;
+        let saved =
+            self.repository
+                .save(&record.snippet, &record.file_url, &record.source_revision)?;
         self.operation_error = None;
         self.publish_local(saved.clone());
         self.start()?;

@@ -162,7 +162,7 @@ impl SnippetKeywordPolicy {
         self.reset();
         Some(Match {
             snippet_id: matched.snippet_id,
-            keyword: matched.keyword,
+            keyword: matched.value,
             deletion_count: matched.deletion_count,
         })
     }
