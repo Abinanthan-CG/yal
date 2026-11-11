@@ -139,3 +139,44 @@ and opens them. 19 of 2 309 rows are ported, the rest are open with a reason eac
   Upstream's is about 9 600 lines of Swift across 49 files, with a 150 KB test file.
 - `packaging/winget/YAL.YAML` and `packaging/scoop/yal.json` still carry placeholder checksums.
 - The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.
+
+## Session 3 - 2026-11-11 (afternoon)
+
+**Started from.** Session 2's state: the launcher core and the palette were real, 19 of 2 309
+ledger rows were ported, and the biggest page by far was the calculator at 326 rows.
+
+**Did.**
+- Reviewed the other AI's YAL port on this machine and wrote down what it actually contains.
+  It does not compile, its Windows layer is empty, its "1,209 passing tests" never run the
+  Rust, and its ledger has 1,208 rows against our 2,309. Nothing was salvaged from it.
+  The review is in `docs/audits/2026-11-11-other-port-review.md`.
+- Made `BUILD_WITH_AI.md` testable: `scripts/check-build-with-ai.ps1` runs every command the
+  document lists, and CI runs it.
+- Turned the winget and scoop manifests into templates that `cargo xtask dist` fills in with
+  the version, the repository slug, the release date and the real artifact checksums.
+- Ported the calculator's arithmetic core into `tc-calc`: the tokenizer, the expression
+  parser, the evaluation engine, the math functions, the rounding and the number
+  formatting, with upstream's own `calc-test.swift` as the oracle. 52 tests.
+- Wrote the port note for the slice, and recorded three decisions: the engine asks a
+  catalog about the units and the currencies instead of carrying them; a crate that
+  compiles is not a crate that is tested; and the other port was reviewed, not mined.
+- Moved 21 calculator rows to `PORTED`. 40 rows are ported in all.
+
+**Verified.**
+- `cargo test --workspace` passes: 328 tests, exit 0.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+- `cargo run -p xtask -- parity` reports 2 309 rows, 40 `PORTED`, 2 269 `NOT PORTED`.
+
+**Stopped at.** The calculator's arithmetic core is ported and pinned; its units, currencies,
+dates and time zones are not. The snippets and clipboard slices are with the background
+workers.
+
+**Carried forward.**
+- The calculator's units, currencies, dates and time zones: 305 of the 326 calculator rows.
+- Three upstream calculator behaviours the core does not have yet, each with its own row and
+  reason: `remainder of 20 divided by 3`, `5 root of 32`, and the primality, combinations,
+  permutations, proportions and clamp questions.
+- The snippets slice and the clipboard slice, both with background workers in flight.
+- The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.

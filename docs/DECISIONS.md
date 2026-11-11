@@ -364,6 +364,58 @@ copy the uninstaller refuses to touch. Without those rules, three copies are thr
 rows. One entry with the version in its name is honest and useful, and the version is still
 there.
 
+## 2026-11-11 - The calculator asks a catalog about the units and the currencies
+
+**Question.** Upstream's calculator engine carries the unit catalog and the currency table
+inside itself. Ours cannot, because neither is ported yet, and the unit catalog alone is
+several thousand lines.
+
+**Options.** (a) Port the units and the currencies first, and write the engine once. (b) Give
+the engine a `Catalog` interface and let it answer `Unsupported` for a query it cannot finish.
+
+**Decision.** (b). The engine asks the catalog whether a word is a unit or a currency, and a
+query that needs a conversion it cannot make answers `CalcOutcome::Unsupported { area, detail }`
+— a real answer, never a made-up number.
+
+**Why.** (a) would put the whole calculator behind its largest piece, and the arithmetic would
+go untested until the units arrived. With (b) the arithmetic core is ported and pinned by 52
+tests now, the seam is named, and the unit catalog can be added later as a second implementation
+of `Catalog` without touching the engine. A query for `10 kg` says "unsupported" instead of
+answering wrongly, which is the same rule the whole project follows: say what is missing rather
+than guess.
+
+## 2026-11-11 - A crate that compiles is not a crate that is tested
+
+**Question.** The calculator's first draft had 47 tests in `crates/tc-calc/src/tests.rs` and
+`cargo test` reported "0 passed". The crate compiled, the doc test passed, and the tests did not
+run: the module was never declared in `lib.rs`.
+
+**Decision.** Every crate's tests are declared and the reported count is checked. The port note
+for the slice says this in full.
+
+**Why.** A green `cargo build` says nothing about the tests, and "the test file exists" is not
+"the test ran". The whole ledger rests on evidence that actually executed, so a test that never
+runs is worse than no test at all: it looks like proof. This is the same reason the parity
+validator refuses a `PORTED` row whose evidence names a function that is not in the crate.
+
+## 2026-11-11 - The other AI's port was reviewed, and nothing was taken from it
+
+**Question.** A second YAL port was supplied as a source zip, claiming a full port with a few
+features missing. Could any of it be salvaged?
+
+**Options.** (a) Take the parts that look real and re-verify them. (b) Review it, write down
+what it actually contains, and take nothing.
+
+**Decision.** (b). The review is in `docs/audits/2026-11-11-other-port-review.md`.
+
+**Why.** It does not compile (three of its binaries fail on a format string), its Windows layer
+is empty (the credential store reports success while discarding the secret), and its "1,209
+passing tests" are a JavaScript file that never runs the Rust — the calculator part reads the
+answers out of a JSON file and asserts the file against itself. Its ledger has 1,208 rows
+against this port's 2,309, so the two verdicts cannot even be compared row for row. Every
+candidate piece would have to be re-verified against upstream's Swift before it could be called
+ported, and at that point it is a port of upstream rather than a salvage.
+
 ## 2026-11-11 - The palette's build is not committed
 
 **Question.** Tauri loads the palette's page from `frontend/dist/`. That directory can be
