@@ -240,3 +240,168 @@ evidence = [
   "tc-core::quicklink::tests::values_going_into_a_url_are_encoded",
   "tc-core::quicklink::tests::values_going_into_a_path_are_not_encoded",
 ]
+
+# ---------------------------------------------------------------------------
+# The calculator: the arithmetic core
+#
+# The tokenizer, the parser, the engine and the number formatting are ported
+# in `tc-calc`, with upstream's own calculator test file as the oracle. The
+# units, the currencies, the dates, the time zones, the percentages, the
+# statistics and the history are not.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-calculator.arithmetic.use-mod-for-the-remainder-because-already-me"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_mod_is_remainder_with_the_dividend_sign",
+]
+
+[[status]]
+id = "features-calculator.arithmetic.thousand-million-billion-trillion-and-quadri"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_magnitude_words_scale_the_literal",
+  "tc-calc::tests::upstream_magnitude_words_reach_trillion",
+]
+
+[[status]]
+id = "features-calculator.errors.for-anything-else-it-shows-nothing-rather-th"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rejects_a_malformed_expression",
+  "tc-calc::tests::upstream_rejects_an_unknown_word",
+  "tc-calc::tests::upstream_rejects_a_lone_literal",
+  "tc-calc::tests::upstream_rejects_a_function_call_it_cannot_answer",
+  "tc-calc::tests::upstream_rejects_a_shift_it_cannot_answer",
+  "tc-calc::tests::upstream_rejects_a_literal_that_overflows",
+  "tc-calc::tests::upstream_rejects_a_magnitude_word_it_cannot_read",
+  "tc-calc::tests::upstream_rejects_a_rounding_it_cannot_answer",
+]
+
+[[status]]
+id = "features-calculator.functions-and-comparisons.functions-take-comma-separated-values-hypot"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_the_whole_function_list",
+  "tc-calc::tests::upstream_functions_with_several_arguments",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.2-3-to-3-dp-0-667"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_to_decimal_places",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.pi-to-2-decimal-places-3-14"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounding_words",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.2-5-rounded-3"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_a_direction",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.2-1-rounded-up-3"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_a_direction",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.round-47-to-nearest-5-45"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_to_a_step",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.44-rounded-up-to-nearest-10-50"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_a_direction",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.0-625-as-fraction-5-8"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_answers_a_fraction",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.round-56-2-up-57"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_a_direction",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.round-51-to-next-10-60"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_to_a_step",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.round-59-down-to-last-10-50"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_to_a_step",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.round-56-up-to-10-60"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_to_a_step",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.3-3-to-nearest-quarter-3-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounding_words",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.round-56-789-to-1-digit-56-8"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rounds_to_decimal_places",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.0-75-to-fraction-3-4"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_answers_a_fraction",
+]
+
+[[status]]
+id = "features-calculator.rounding-and-fractions.a-number-that-has-no-simple-fraction-like-pi"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_rejects_a_rounding_it_cannot_answer",
+]
+
+[[status]]
+id = "features-calculator.other-formats.255-to-base-7-513"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base",
+]
+
+[[status]]
+id = "features-calculator.other-formats.to-base-takes-any-base-from-2-to-36"
+status = "PORTED"
+evidence = [
+  "tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base",
+]

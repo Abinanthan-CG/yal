@@ -5741,9 +5741,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.arithmetic"
 behavior = "Use mod for the remainder, because % already means percent. It has the same precedence as multiply and divide, and keeps the sign of the first number: -10 mod 3 is -1."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_mod_is_remainder_with_the_dividend_sign"]
+reason = ""
 count_check = "calculator.card-actions"
 
 [[row]]
@@ -5785,9 +5785,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.arithmetic"
 behavior = "Thousand, million, billion, trillion and quadrillion scale the number before them: 2 trillion is 2,000,000,000,000."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_magnitude_words_scale_the_literal", "tc-calc::tests::upstream_magnitude_words_reach_trillion"]
+reason = ""
 count_check = "calculator.card-actions"
 
 [[row]]
@@ -8171,9 +8171,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "2/3 to 3 dp — 0.667."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_to_decimal_places"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8182,9 +8182,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Pi to 2 decimal places — 3.14."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounding_words"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8193,9 +8193,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "2.5 rounded — 3."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_a_direction"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8204,9 +8204,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "2.1 rounded up — 3."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_a_direction"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8215,9 +8215,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Round 47 to nearest 5 — 45."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_to_a_step"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8226,9 +8226,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "44 rounded up to nearest 10 — 50."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_a_direction"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8248,9 +8248,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "0.625 as fraction — 5/8."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_answers_a_fraction"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8259,9 +8259,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Round 56.2 up — 57."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_a_direction"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8270,9 +8270,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Round 51 to next 10 — 60."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_to_a_step"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8281,9 +8281,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Round 59 down to last 10 — 50."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_to_a_step"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8292,9 +8292,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Round 56 up to 10 — 60."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_to_a_step"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8303,9 +8303,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "3.3 to nearest quarter — 3.25."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounding_words"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8314,9 +8314,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "Round 56.789 to 1 digit — 56.8."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rounds_to_decimal_places"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8325,9 +8325,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "0.75 to fraction — 3/4."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_answers_a_fraction"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8336,9 +8336,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.rounding-and-fractions"
 behavior = "A number that has no simple fraction, like pi as fraction, shows no card. round 56 to 10 shows no card either, because it could mean ten decimal places; add up, down or nearest."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rejects_a_rounding_it_cannot_answer"]
+reason = ""
 count_check = "calculator.base-range"
 
 [[row]]
@@ -8397,9 +8397,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.other-formats"
 behavior = "255 to base 7 — 513."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base"]
+reason = ""
 
 [[row]]
 id = "features-calculator.other-formats.2-to-multiplier-2x"
@@ -8417,9 +8417,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.other-formats"
 behavior = "To base takes any base from 2 to 36."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.2-000-after-5-years-at-4-2-433-31-usd"
@@ -8827,9 +8827,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.functions-and-comparisons"
 behavior = "Functions take comma-separated values: hypot(3,4), round(3.14159,2), log(8,2), gcd(12,18), lcm(4,6), atan2(1,1), pow(2,10) and root(-8,3). There are also inverse and hyperbolic trig functions, cbrt, exp, log2, sign and trunc, and the constants tau and phi."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_the_whole_function_list", "tc-calc::tests::upstream_functions_with_several_arguments"]
+reason = ""
 
 [[row]]
 id = "features-calculator.functions-and-comparisons.min-max-sum-avg-mean-average-median-and-stdd"
@@ -8878,9 +8878,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.errors"
 behavior = "For anything else, it shows nothing rather than flashing an error while you're still typing."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::tests::upstream_rejects_a_malformed_expression", "tc-calc::tests::upstream_rejects_an_unknown_word", "tc-calc::tests::upstream_rejects_a_lone_literal", "tc-calc::tests::upstream_rejects_a_function_call_it_cannot_answer", "tc-calc::tests::upstream_rejects_a_shift_it_cannot_answer", "tc-calc::tests::upstream_rejects_a_literal_that_overflows", "tc-calc::tests::upstream_rejects_a_magnitude_word_it_cannot_read", "tc-calc::tests::upstream_rejects_a_rounding_it_cannot_answer"]
+reason = ""
 count_check = "calculator.no-guessing"
 
 [[row]]

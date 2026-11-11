@@ -1,6 +1,7 @@
 # Build output
 /target/
 **/target/
+/target-*/
 /dist/
 /node_modules/
 /frontend/node_modules/
