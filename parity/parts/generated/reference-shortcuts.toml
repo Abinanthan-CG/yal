@@ -105,7 +105,7 @@ behavior = "Every built-in shortcut in the palette and its screens, in one place
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.keyboard-shortcuts.these-shortcuts-are-built-in-and-can-t-be-ch"
@@ -115,7 +115,7 @@ behavior = "These shortcuts are built in and can't be changed. For shortcuts you
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.keyboard-shortcuts.letter-shortcuts-follow-your-ascii-keyboard"
@@ -125,7 +125,7 @@ behavior = "Letter shortcuts follow your ASCII keyboard layout even while a non-
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.return-main-action"
@@ -135,7 +135,7 @@ behavior = "Return — Main action."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.return-second-action"
@@ -145,7 +145,7 @@ behavior = "⌘return — Second action."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.k-actions-menu"
@@ -155,7 +155,7 @@ behavior = "⌘K — Actions menu."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.move-the-selection"
@@ -165,7 +165,7 @@ behavior = "↑ ↓ — Move the selection."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.n-p-same-as"
@@ -175,7 +175,7 @@ behavior = "⌃N / ⌃P — Same as ↓ / ↑."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.f-b-same-as"
@@ -185,7 +185,7 @@ behavior = "⌃F / ⌃B — Same as → / ←."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.tab-launcher-quick-ai-clipboard-or-move-thro"
@@ -195,7 +195,7 @@ behavior = "Tab — Launcher → Quick AI → clipboard, or move through fields.
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.esc-clear-the-search-go-back-a-screen-then-c"
@@ -205,7 +205,7 @@ behavior = "Esc — Clear the search, go back a screen, then close."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.esc-back-to-the-root-search-from-any-screen"
@@ -215,7 +215,7 @@ behavior = "⌘esc — Back to the root search from any screen."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.delete-in-an-empty-search-go-back-a-screen"
@@ -225,7 +225,7 @@ behavior = "Delete — In an empty search, go back a screen."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.settings"
@@ -235,7 +235,7 @@ behavior = "⌘, — Settings."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.everywhere-in-the-palette.w-close-the-window"
@@ -245,7 +245,7 @@ behavior = "⌘W — Close the window."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.return-open"
@@ -255,7 +255,7 @@ behavior = "Return — Open."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.return-show-in-finder-app-setting-snippet"
@@ -265,7 +265,7 @@ behavior = "⌘return — Show in Finder (app, setting, snippet)."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.f-add-to-remove-from-favorites"
@@ -275,7 +275,7 @@ behavior = "⇧⌘F — Add to / Remove from Favorites."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.move-a-favorite-up-or-down"
@@ -285,7 +285,7 @@ behavior = "⌥⌘↑ / ↓ — Move a favorite up or down."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.1-0-open-favorite-1-to-10"
@@ -295,7 +295,7 @@ behavior = "⌘1 … ⌘0 — Open favorite 1 to 10."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.h-hide-from-search"
@@ -305,7 +305,7 @@ behavior = "⇧⌘H — Hide from Search."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.r-restart-application-running-apps-only"
@@ -315,7 +315,7 @@ behavior = "⌘R — Restart Application (running apps only)."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.q-quit-application-running-apps-only"
@@ -325,7 +325,7 @@ behavior = "⌃⇧Q — Quit Application (running apps only)."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.e-edit-quicklink-snippet-or-custom-command"
@@ -335,7 +335,7 @@ behavior = "⌘E — Edit Quicklink, Snippet or Custom Command."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.return-put-answer-in-search-bar-calculator"
@@ -345,7 +345,7 @@ behavior = "⌘return — Put Answer in Search Bar (calculator)."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.launcher.return-copy-calculation-on-a-calculator-card"
@@ -355,7 +355,7 @@ behavior = "⇧⌘return — Copy Calculation, on a calculator card."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quick-ai.return-send-or-stop-a-reply-that-s-streaming"
@@ -365,7 +365,7 @@ behavior = "Return — Send, or stop a reply that's streaming."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quick-ai.v-attach-an-image-pdf-or-text-file"
@@ -375,7 +375,7 @@ behavior = "⌘V — Attach an image, PDF or text file."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quick-ai.delete-in-an-empty-message-box-remove-the-la"
@@ -385,7 +385,7 @@ behavior = "Delete — In an empty message box, remove the last attachment."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.chat-history.return-open-chat"
@@ -395,7 +395,7 @@ behavior = "Return — Open Chat."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.chat-history.x-delete-chat"
@@ -405,7 +405,7 @@ behavior = "⌃X — Delete Chat."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.chat-history.x-delete-all-chats"
@@ -415,7 +415,7 @@ behavior = "⌃⇧X — Delete All Chats."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quick-action-panel.return-replace-your-selection"
@@ -425,7 +425,7 @@ behavior = "Return — Replace your selection."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quick-action-panel.c-copy-the-result"
@@ -435,7 +435,7 @@ behavior = "⌘C — Copy the result."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quick-action-panel.esc-close-the-panel"
@@ -445,7 +445,7 @@ behavior = "Esc — Close the panel."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.return-paste"
@@ -455,7 +455,7 @@ behavior = "Return — Paste."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.return-copy-to-clipboard"
@@ -465,7 +465,7 @@ behavior = "⌘return — Copy to Clipboard."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.return-paste-and-keep-window-open"
@@ -475,7 +475,7 @@ behavior = "⌥return — Paste and Keep Window Open."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.p-filter-by-type"
@@ -485,7 +485,7 @@ behavior = "⌘P — Filter by type."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.pin-unpin-entry"
@@ -495,7 +495,7 @@ behavior = "⌘. — Pin / Unpin Entry."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.e-edit-entry"
@@ -505,7 +505,7 @@ behavior = "⌘E — Edit Entry."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.f-show-in-finder"
@@ -515,7 +515,7 @@ behavior = "⌘F — Show in Finder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.1-0-paste-pinned-entry-1-to-10"
@@ -525,7 +525,7 @@ behavior = "⌘1 … ⌘0 — Paste pinned entry 1 to 10."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.x-delete-entry"
@@ -535,7 +535,7 @@ behavior = "⌃X — Delete Entry."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.x-delete-all-entries"
@@ -545,7 +545,7 @@ behavior = "⌃⇧X — Delete All Entries."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.clipboard.when-default-action-is-set-to-copy-to-clipbo"
@@ -555,7 +555,7 @@ behavior = "When Default action is set to Copy to Clipboard, return and ⌘retur
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.emoji.return-paste"
@@ -565,7 +565,7 @@ behavior = "Return — Paste."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.emoji.return-copy-to-clipboard"
@@ -575,7 +575,7 @@ behavior = "⌘return — Copy to Clipboard."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.emoji.return-paste-and-keep-window-open"
@@ -585,7 +585,7 @@ behavior = "⌥return — Paste and Keep Window Open."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.emoji.arrow-keys-move-through-the-grid-in-all-four"
@@ -595,7 +595,7 @@ behavior = "Arrow keys — Move through the grid, in all four directions."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.calculator-history.return-copy-answer"
@@ -605,7 +605,7 @@ behavior = "Return — Copy Answer."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.calculator-history.return-copy-expression-on-a-past-entry"
@@ -615,7 +615,7 @@ behavior = "⌘return — Copy Expression, on a past entry."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.calculator-history.return-put-answer-in-search-bar-on-a-new-cal"
@@ -625,7 +625,7 @@ behavior = "⌘return — Put Answer in Search Bar, on a new calculation."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.calculator-history.x-delete-entry"
@@ -635,7 +635,7 @@ behavior = "⌃X — Delete Entry."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.calculator-history.x-delete-all-entries"
@@ -645,7 +645,7 @@ behavior = "⌃⇧X — Delete All Entries."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.return-open-file-open-folder"
@@ -655,7 +655,7 @@ behavior = "Return — Open File / Open Folder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.return-show-in-finder"
@@ -665,7 +665,7 @@ behavior = "⌘return — Show in Finder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.p-filter-by-type"
@@ -675,7 +675,7 @@ behavior = "⌘P — Filter by type."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.c-copy-file"
@@ -685,7 +685,7 @@ behavior = "⇧⌘C — Copy File."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.v-paste-file-to"
@@ -695,7 +695,7 @@ behavior = "⇧⌘V — Paste File to …"
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.c-copy-name"
@@ -705,7 +705,7 @@ behavior = "⌥⌘C — Copy Name."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.c-copy-path"
@@ -715,7 +715,7 @@ behavior = "⌃⌘C — Copy Path."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.f-add-to-favorites-remove-from-favorites"
@@ -725,7 +725,7 @@ behavior = "⇧⌘F — Add to Favorites / Remove from Favorites."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.file-search.x-move-to-trash"
@@ -735,7 +735,7 @@ behavior = "⌃X — Move to Trash."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-windows.return-switch-to-window"
@@ -745,7 +745,7 @@ behavior = "Return — Switch to Window."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-windows.m-minimize-window"
@@ -755,7 +755,7 @@ behavior = "⌃⇧M — Minimize Window."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-windows.h-hide-application"
@@ -765,7 +765,7 @@ behavior = "⌃⇧H — Hide Application."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-windows.q-quit-application"
@@ -775,7 +775,7 @@ behavior = "⌃⇧Q — Quit Application."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-windows.repeated-presses-of-your-recorded-switch-win"
@@ -785,7 +785,7 @@ behavior = "Repeated presses of your recorded Switch Windows shortcut move throu
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.return-open-quicklink"
@@ -795,7 +795,7 @@ behavior = "Return — Open Quicklink."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.return-open-with-default-app"
@@ -805,7 +805,7 @@ behavior = "⌘return — Open With Default App."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.e-edit-quicklink"
@@ -815,7 +815,7 @@ behavior = "⌘E — Edit Quicklink."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.d-duplicate-quicklink"
@@ -825,7 +825,7 @@ behavior = "⌘D — Duplicate Quicklink."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.pin-unpin"
@@ -835,7 +835,7 @@ behavior = "⌘. — Pin / Unpin."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.f-show-in-finder"
@@ -845,7 +845,7 @@ behavior = "⌘F — Show in Finder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.quicklinks.delete-delete-quicklink"
@@ -855,7 +855,7 @@ behavior = "⌘delete — Delete Quicklink."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.snippets.return-paste-snippet"
@@ -865,7 +865,7 @@ behavior = "Return — Paste Snippet."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.snippets.return-show-in-finder"
@@ -875,7 +875,7 @@ behavior = "⌘return — Show in Finder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.snippets.e-edit-snippet"
@@ -885,7 +885,7 @@ behavior = "⌘E — Edit Snippet."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.snippets.n-create-snippet"
@@ -895,7 +895,7 @@ behavior = "⌘N — Create Snippet."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.meeting-card.return-join-meeting"
@@ -905,7 +905,7 @@ behavior = "Return — Join Meeting."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.meeting-card.return-copy-meeting-link"
@@ -915,7 +915,7 @@ behavior = "⌘return — Copy Meeting Link."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.uninstall.return-uninstall-application"
@@ -925,7 +925,7 @@ behavior = "Return — Uninstall Application."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.uninstall.return-select-unselect-file"
@@ -935,7 +935,7 @@ behavior = "⌘return — Select / Unselect File."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.uninstall.c-copy-path"
@@ -945,7 +945,7 @@ behavior = "⌥⌘C — Copy Path."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.uninstall.o-show-in-finder"
@@ -955,7 +955,7 @@ behavior = "⇧⌘O — Show in Finder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.uninstall.i-show-info-in-finder"
@@ -965,7 +965,7 @@ behavior = "⇧⌘I — Show Info in Finder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.notes-window.n-create-a-note"
@@ -975,7 +975,7 @@ behavior = "⌘N — Create a note."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.notes-window.p-open-the-switcher"
@@ -985,7 +985,7 @@ behavior = "⌘P — Open the switcher."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.notes-window.o-open-the-notes-folder"
@@ -995,7 +995,7 @@ behavior = "⌘O — Open the Notes folder."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.notes-window.w-hide-the-window"
@@ -1005,7 +1005,7 @@ behavior = "⌘W — Hide the window."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.notes-window.esc-close-the-switcher-then-hide"
@@ -1015,7 +1015,7 @@ behavior = "Esc — Close the switcher, then hide."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.notes-window.delete-move-the-selected-note-to-trash"
@@ -1025,7 +1025,7 @@ behavior = "⌘delete — Move the selected note to Trash."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-room.return-enter-the-room"
@@ -1035,7 +1035,7 @@ behavior = "Return — Enter the room."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-room.tab-tab-next-or-previous-layout-that-fits"
@@ -1045,7 +1045,7 @@ behavior = "Tab / ⇧tab — Next or previous layout that fits."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-room.k-room-actions"
@@ -1055,7 +1055,7 @@ behavior = "⌘K — Room actions."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-room.n-create-a-room"
@@ -1065,7 +1065,7 @@ behavior = "⌘N — Create a room."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-room.x-delete-the-room-its-windows-stay-open"
@@ -1075,7 +1075,7 @@ behavior = "⌃X — Delete the room; its windows stay open."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.switch-room.in-the-window-picker-return-adds-or-removes"
@@ -1085,7 +1085,7 @@ behavior = "In the window picker, return adds or removes a window and ⌘return 
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.custom-commands.return-run-command"
@@ -1095,7 +1095,7 @@ behavior = "Return — Run Command."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.custom-commands.n-create-custom-command"
@@ -1105,7 +1105,7 @@ behavior = "⌘N — Create Custom Command."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.custom-commands.e-edit-custom-command"
@@ -1115,7 +1115,7 @@ behavior = "⌘E — Edit Custom Command."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.custom-commands.x-delete-custom-command"
@@ -1125,7 +1125,7 @@ behavior = "⌃X — Delete Custom Command."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.custom-commands.for-a-command-with-arguments-tab-moves-throu"
@@ -1135,7 +1135,7 @@ behavior = "For a command with arguments, tab moves through its inline fields an
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.window-layout-editor.return-save"
@@ -1145,7 +1145,7 @@ behavior = "⌘return — Save."
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
 
 [[row]]
 id = "reference-shortcuts.dialogs.on-every-dialog-including-ones-that-delete-t"
@@ -1155,4 +1155,4 @@ behavior = "On every dialog, including ones that delete things, return clicks th
 windows = "\"Every row of all 19 tables gets exactly one Windows binding by the keyboard rules in the platform translation, recorded in docs/SHORTCUTS.md and enforced by a test. The dialog rule is unchanged: Enter presses the main button, Esc cancels, Cancel sits on the left."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."

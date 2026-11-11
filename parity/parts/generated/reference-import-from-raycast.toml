@@ -55,7 +55,7 @@ behavior = "Import your shortcuts, favorites, snippets, quicklinks and clipboard
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.import-from-raycast.tinycast-reads-raycast-s-export-file-directl"
@@ -65,7 +65,7 @@ behavior = "Tinycast reads Raycast's export file directly. Import it in Settings
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.which-exports-it-reads.only-raycast-v2-0-and-newer-tinycast-reads-t"
@@ -75,7 +75,7 @@ behavior = "Only Raycast v2.0 and newer. Tinycast reads the .rayconfig file writ
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.which-exports-it-reads.raycast-v1-x-exports-aren-t-supported-suppor"
@@ -85,7 +85,7 @@ behavior = "Raycast v1.x exports aren't supported. Support for that format was r
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.steps.in-raycast-export-your-settings-and-data-and"
@@ -95,7 +95,7 @@ behavior = "In Raycast, export your settings and data, and note the passphrase."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.steps.in-tinycast-go-to-settings-backup-raycast-ex"
@@ -105,7 +105,7 @@ behavior = "In Tinycast, go to **Settings → Backup → Raycast Export** and ch
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.steps.enter-the-passphrase-select-what-you-want-to"
@@ -115,7 +115,7 @@ behavior = "Enter the passphrase, select what you want to import, and import."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.steps.quit-tinycast-and-open-it-again"
@@ -125,7 +125,7 @@ behavior = "**Quit Tinycast and open it again.**"
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.steps.you-need-to-quit-and-reopen-tinycast-after-t"
@@ -135,7 +135,7 @@ behavior = "You need to quit and reopen Tinycast after the import finishes. Some
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.steps.tinycast-recognizes-the-file-before-you-ente"
@@ -145,7 +145,7 @@ behavior = "Tinycast recognizes the file before you enter the passphrase, so a w
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.about-the-passphrase.raycast-encrypts-the-export-even-if-you-neve"
@@ -155,7 +155,7 @@ behavior = "Raycast encrypts the export even if you never set a password. It cre
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.about-the-passphrase.you-can-find-it-in-raycast-settings-extensio"
@@ -165,7 +165,7 @@ behavior = "You can find it in Raycast → Settings → Extensions → Export Se
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.about-the-passphrase.tinycast-never-reads-your-keychain-you-paste"
@@ -175,7 +175,7 @@ behavior = "Tinycast never reads your Keychain. You paste the passphrase yoursel
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.shortcuts-app-shortcuts-command-shortcuts-an"
@@ -185,7 +185,7 @@ behavior = "Shortcuts — App shortcuts, command shortcuts, and your Hyper key s
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.favorites-from-raycast-s-pinned-items"
@@ -195,7 +195,7 @@ behavior = "Favorites — From Raycast's pinned items."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.aliases-app-aliases"
@@ -205,7 +205,7 @@ behavior = "Aliases — App aliases."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.clipboard-history-text-and-images-whose-file"
@@ -215,7 +215,7 @@ behavior = "Clipboard history — Text, and images whose files still exist."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.snippets-name-text-and-keyword"
@@ -225,7 +225,7 @@ behavior = "Snippets — Name, text and keyword."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.quicklinks-name-link-and-the-app-it-opens-wi"
@@ -235,7 +235,7 @@ behavior = "Quicklinks — Name, link and the app it opens with."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.emoji-skin-tone-raycast-s-default-becomes-ti"
@@ -245,7 +245,7 @@ behavior = "Emoji skin tone — Raycast's default becomes Tinycast's Default."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.compact-mode-from-raycast-s-window-mode"
@@ -255,7 +255,7 @@ behavior = "Compact mode — From Raycast's window mode."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.pop-to-root-only-when-the-delay-matches-an-o"
@@ -265,7 +265,7 @@ behavior = "Pop to root — Only when the delay matches an option Tinycast offer
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.launch-at-login"
@@ -275,7 +275,7 @@ behavior = "Launch at login."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.menu-bar-visibility-from-raycast-s-menu-bar"
@@ -285,7 +285,7 @@ behavior = "Menu bar visibility — From Raycast's menu bar icon setting."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.the-list-of-apps-excluded-from-clipboard-his"
@@ -295,7 +295,7 @@ behavior = "The list of apps excluded from clipboard history is imported along w
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.what-gets-imported.if-a-shortcut-uses-a-modifier-tinycast-doesn"
@@ -305,7 +305,7 @@ behavior = "If a shortcut uses a modifier Tinycast doesn't recognize, the whole 
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.clipboard-history.pinned-text-and-image-entries-stay-pinned-so"
@@ -315,7 +315,7 @@ behavior = "Pinned text and image entries stay pinned, so they survive the confi
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.clipboard-history.images-are-only-imported-if-their-files-stil"
@@ -325,7 +325,7 @@ behavior = "Images are only imported if their files still exist on this Mac. The
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.snippets.snippets-are-added-in-their-original-order-w"
@@ -335,7 +335,7 @@ behavior = "Snippets are added in their original order, without overwriting any 
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.snippets.imported-snippets-are-enabled-and-visible-in"
@@ -345,7 +345,7 @@ behavior = "Imported snippets are enabled and visible in the launcher, with conf
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.snippets.importing-never-turns-on-keyword-expansion-o"
@@ -355,7 +355,7 @@ behavior = "Importing never turns on keyword expansion. Only you can turn that o
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.snippets.if-the-snippet-files-can-t-be-written-the-su"
@@ -365,7 +365,7 @@ behavior = "If the snippet files can't be written, the summary tells you, and th
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.quicklinks.quicklinks-are-added-to-your-existing-librar"
@@ -375,7 +375,7 @@ behavior = "Quicklinks are added to your existing library, never replacing it, a
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.quicklinks.importing-at-least-one-quicklink-turns-on-th"
@@ -385,7 +385,7 @@ behavior = "Importing at least one quicklink turns on the Quicklinks feature."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.other-things-you-can-import.two-things-aren-t-part-of-a-rayconfig-so-the"
@@ -395,7 +395,7 @@ behavior = "Two things aren't part of a .rayconfig, so they have their own impor
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.other-things-you-can-import.extensions-settings-extensions-import-from-r"
@@ -405,7 +405,7 @@ behavior = "**Extensions.** **Settings → Extensions → Import from Raycast** 
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.other-things-you-can-import.see-installing-extensions"
@@ -415,7 +415,7 @@ behavior = "See Installing extensions."
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.other-things-you-can-import.script-commands-settings-commands-import-ray"
@@ -425,7 +425,7 @@ behavior = "**Script commands.** **Settings → Commands → Import Raycast Scri
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.other-things-you-can-import.into-custom-commands-scripts-that-are-symlin"
@@ -435,7 +435,7 @@ behavior = "Into custom commands. Scripts that are symlinks are imported too, an
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.afterward.while-raycast-is-running-the-pane-shows-a-qu"
@@ -445,7 +445,7 @@ behavior = "While Raycast is running, the pane shows a Quit Raycast button, so i
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."
 
 [[row]]
 id = "reference-import-from-raycast.afterward.tinycast-doesn-t-need-raycast-to-be-installe"
@@ -455,4 +455,4 @@ behavior = "Tinycast doesn't need Raycast to be installed, except to import exte
 windows = "\"Reads Raycast v2.0+ .rayconfig files with the passphrase; recognizes the file before asking, so a wrong passphrase is reported as a wrong passphrase. Imports the 11 categories; macOS shortcuts are translated by the import rule in the platform translation; app-bound items are matched to installed Windows apps by name and skipped when nothing matches. Importing never turns on keyword expansion; importing at least one quicklink turns Quicklinks on. Asks for quit-and-reopen afterwards; shows Quit Raycast while Raycast for Windows is running."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Raycast import is not built yet."

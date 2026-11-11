@@ -25,7 +25,7 @@ behavior = "What Tinycast supports from the Raycast API, how well it works in pr
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.how-well-it-works.we-tested-tinycast-against-the-37-extensions"
@@ -35,7 +35,7 @@ behavior = "We tested Tinycast against the 37 extensions installed in Raycast on
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.how-well-it-works.32-of-37-extensions-and-114-of-147-view-comm"
@@ -45,7 +45,7 @@ behavior = "32 of 37 extensions, and 114 of 147 view commands, open and render."
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.components-list-and-grid-with-sections-empty"
@@ -55,7 +55,7 @@ behavior = "Components. List and Grid with sections, empty views, item details a
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.apis-clipboard-localstorage-cache-environmen"
@@ -65,7 +65,7 @@ behavior = "APIs. Clipboard, LocalStorage, Cache, environment, getPreferenceValu
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.sign-in-with-oauth-extensions-like-github-si"
@@ -75,7 +75,7 @@ behavior = "Sign-in with OAuth. Extensions like GitHub sign you in through your 
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.node-built-ins-path-fs-and-fs-promises-os-ch"
@@ -85,7 +85,7 @@ behavior = "Node built-ins. path, fs and fs/promises, os, childprocess, crypto, 
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.http-and-https-requests-use-the-same-code-as"
@@ -95,7 +95,7 @@ behavior = "Http and https requests use the same code as fetch, so libraries lik
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.websockets-the-websocket-global-and-the-bund"
@@ -105,7 +105,7 @@ behavior = "WebSockets. The WebSocket global and the bundled ws package both con
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.bundled-packages-extensions-that-ship-their"
@@ -115,7 +115,7 @@ behavior = "Bundled packages. Extensions that ship their own nodemodules load th
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.bundled-swift-helpers-like-color-picker-s-ru"
@@ -125,7 +125,7 @@ behavior = "Bundled Swift helpers, like Color Picker's, run normally."
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.command-modes-view-commands-appear-in-the-pa"
@@ -135,7 +135,7 @@ behavior = "Command modes. view commands appear in the palette. no-view commands
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.supported.raycast-links-are-handled-inside-tinycast-ti"
@@ -145,7 +145,7 @@ behavior = "Raycast:// links are handled inside Tinycast. Tinycast registers thi
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.ai-browserextension-windowmanagement-these-a"
@@ -155,7 +155,7 @@ behavior = "AI, BrowserExtension, WindowManagement — These are Raycast service
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.a-websocket-to-a-server-macos-doesn-t-trust"
@@ -165,7 +165,7 @@ behavior = "A WebSocket to a server macOS doesn't trust — Certificate checks c
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.canceling-a-fetch-in-progress-the-caller-get"
@@ -175,7 +175,7 @@ behavior = "Canceling a fetch in progress — The caller gets its AbortError, bu
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.writing-to-a-running-childprocess-spawn-inpu"
@@ -185,7 +185,7 @@ behavior = "Writing to a running childprocess.spawn — Input is sent once, when
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.streaming-http-responses-arrive-all-at-once"
@@ -195,7 +195,7 @@ behavior = "Streaming HTTP — Responses arrive all at once, so server-sent even
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.net-and-tls-load-without-errors-but-fail-whe"
@@ -205,7 +205,7 @@ behavior = "Net and tls — Load without errors, but fail when used."
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.ai-tools-tools-not-shown"
@@ -215,7 +215,7 @@ behavior = "AI tools (tools/) — Not shown."
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."
 
 [[row]]
 id = "extensions-compatibility.not-supported-yet.if-an-extension-needs-something-that-s-missi"
@@ -225,4 +225,4 @@ behavior = "If an extension needs something that's missing, it tells you when yo
 windows = "\"Publish an honest Windows compatibility table: what works, and which APIs or extensions depend on macOS and therefore do not."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is no compatibility to report."

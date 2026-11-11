@@ -75,7 +75,7 @@ behavior = "Join your next meeting with one key, see your day, and show the next
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.calendar-meetings.tinycast-reads-the-calendars-already-on-your"
@@ -85,7 +85,7 @@ behavior = "Tinycast reads the calendars already on your Mac, finds the join lin
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.calendar-meetings.turn-it-on-in-settings-calendar-join-meeting"
@@ -95,7 +95,7 @@ behavior = "Turn it on in Settings → Calendar → Join meetings from Tinycast.
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.calendar-meetings.events-are-read-on-your-mac-and-never-leave"
@@ -105,7 +105,7 @@ behavior = "Events are read on your Mac and never leave it."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.the-join-card-when-a-meeting-is-about-to-sta"
@@ -115,7 +115,7 @@ behavior = "**The join card.** When a meeting is about to start, a card with a l
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.top-of-the-launcher-press-return-to-join"
@@ -125,7 +125,7 @@ behavior = "Top of the launcher. Press return to join."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.join-next-meeting-a-command-you-can-assign-a"
@@ -135,7 +135,7 @@ behavior = "**Join Next Meeting.** A command you can assign a global shortcut. I
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.the-card-a-meeting-that-s-already-running-or"
@@ -145,7 +145,7 @@ behavior = "The card, a meeting that's already running, or the next meeting with
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.the-menu-bar-an-optional-calendar-item-shows"
@@ -155,7 +155,7 @@ behavior = "**The menu bar.** An optional calendar item shows your next event, a
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.events-by-day"
@@ -165,7 +165,7 @@ behavior = "Events by day."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.auto-join-meetings-can-open-automatically-wh"
@@ -175,7 +175,7 @@ behavior = "**Auto join.** Meetings can open automatically when they start."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.four-ways-to-join.if-there-s-nothing-to-join-a-short-message-s"
@@ -185,7 +185,7 @@ behavior = "If there's nothing to join, a short message says Nothing to join rig
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.the-card-appears-a-set-time-before-a-meeting"
@@ -195,7 +195,7 @@ behavior = "The card appears a set time before a meeting starts and stays for th
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.join-meeting-return"
@@ -205,7 +205,7 @@ behavior = "Join Meeting — return."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.copy-meeting-link-return"
@@ -215,7 +215,7 @@ behavior = "Copy Meeting Link — ⌘return."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.open-in-calendar-o"
@@ -225,7 +225,7 @@ behavior = "Open in Calendar — ⌘O."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.show-details-i"
@@ -235,7 +235,7 @@ behavior = "Show Details — ⌘I."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.a-meeting-without-a-link-opens-in-calendar-i"
@@ -245,7 +245,7 @@ behavior = "A meeting without a link opens in Calendar instead. If another calen
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-join-card.these-actions-work-the-same-on-every-meeting"
@@ -255,7 +255,7 @@ behavior = "These actions work the same on every meeting row: the card, the Meet
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.meeting-details.show-details-opens-a-page-with-the-meeting-s"
@@ -265,7 +265,7 @@ behavior = "Show Details opens a page with the meeting's day, time and calendar,
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.tinycast-checks-the-event-s-url-location-and"
@@ -275,7 +275,7 @@ behavior = "Tinycast checks the event's URL, location and notes, in that order. 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.a-link-to-a-known-service-always-takes-prior"
@@ -285,7 +285,7 @@ behavior = "**A link to a known service always takes priority over a plain link*
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.link-at-the-top-of-an-invite-never-wins-over"
@@ -295,7 +295,7 @@ behavior = "Link at the top of an invite never wins over the Meet link below it.
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.links-that-aren-t-meetings-like-zoom-us-down"
@@ -305,7 +305,7 @@ behavior = "Links that aren't meetings, like `zoom.us/download` or a Meet dial-i
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.zoom-and-teams-open-in-their-desktop-apps-if"
@@ -315,7 +315,7 @@ behavior = "**Zoom and Teams open in their desktop apps** if they're installed, 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.links-open-in-your-default-browser-or-in-the"
@@ -325,7 +325,7 @@ behavior = "Links open in your default browser, or in the browser you choose in 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.google-meet-opens-with-the-right-account-if"
@@ -335,7 +335,7 @@ behavior = "**Google Meet opens with the right account.** If you're signed in to
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.link-opens-with-the-account-whose-calendar-h"
@@ -345,7 +345,7 @@ behavior = "Link opens with the account whose calendar has the meeting, instead 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.copy-meeting-link-copies-the-link-exactly-as"
@@ -355,7 +355,7 @@ behavior = "**Copy Meeting Link** copies the link exactly as it appears in the e
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.which-links-it-finds.declined-canceled-all-day-and-finished-event"
@@ -365,7 +365,7 @@ behavior = "Declined, canceled, all-day and finished events are always skipped."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.commands.join-next-meeting-opens-the-card-s-meeting-t"
@@ -375,7 +375,7 @@ behavior = "Join Next Meeting — Opens the card's meeting, the running one, or 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.commands.my-schedule-shows-your-meetings-as-a-list-in"
@@ -385,7 +385,7 @@ behavior = "My Schedule — Shows your meetings as a list in the palette."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.commands.create-event-opens-a-form-for-a-title-start"
@@ -395,7 +395,7 @@ behavior = "Create Event — Opens a form for a title, start time and duration, 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.commands.copy-meeting-link-copies-the-next-meeting-s"
@@ -405,7 +405,7 @@ behavior = "Copy Meeting Link — Copies the next meeting's link."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.commands.open-in-calendar-opens-the-next-meeting-in-c"
@@ -415,7 +415,7 @@ behavior = "Open in Calendar — Opens the next meeting in Calendar."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.commands.each-command-has-a-checkbox-a-shortcut-recor"
@@ -425,7 +425,7 @@ behavior = "Each command has a checkbox, a shortcut recorder and an alias field 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.meetings-in-search.upcoming-meetings-also-appear-in-launcher-se"
@@ -435,7 +435,7 @@ behavior = "Upcoming meetings also appear in launcher search, in their own Meeti
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.my-schedule.my-schedule-lists-your-remaining-events-for"
@@ -445,7 +445,7 @@ behavior = "My Schedule lists your remaining events for the days Tinycast reads,
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.how-far-ahead-it-reads.days-to-show-sets-how-far-ahead-tinycast-rea"
@@ -455,7 +455,7 @@ behavior = "Days to Show sets how far ahead Tinycast reads: Today, Today and Tom
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.auto-join.auto-join-meetings-off-by-default-opens-each"
@@ -465,7 +465,7 @@ behavior = "Auto Join Meetings (off by default) opens each meeting when it start
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.auto-join.it-only-joins-meetings-that-start-after-you"
@@ -475,7 +475,7 @@ behavior = "It only joins meetings that start **after** you turned it on."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.auto-join.it-joins-each-meeting-once-even-if-you-decli"
@@ -485,7 +485,7 @@ behavior = "It joins each meeting **once**, even if you decline the confirmation
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.auto-join.confirm-before-joining-on-by-default-asks-yo"
@@ -495,7 +495,7 @@ behavior = "**Confirm before joining** (on by default) asks you first."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.auto-join.only-join-known-meeting-services-off-by-defa"
@@ -505,7 +505,7 @@ behavior = "**Only join known meeting services** (off by default) skips events w
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.auto-join.link-like-a-booking-page-or-a-document-the-j"
@@ -515,7 +515,7 @@ behavior = "Link, like a booking page or a document. The join card, the menu bar
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.camera-preview.camera-preview-off-by-default-shows-your-cam"
@@ -525,7 +525,7 @@ behavior = "Camera Preview (off by default) shows your camera before you join, s
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.camera-preview.the-preview-replaces-the-confirmation-so-you"
@@ -535,7 +535,7 @@ behavior = "The preview replaces the confirmation, so you're never asked twice. 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.the-calendar-has-its-own-menu-bar-item-separ"
@@ -545,7 +545,7 @@ behavior = "The calendar has its own menu bar item, separate from the Tinycast i
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.calendar-in-menu-bar-disabled"
@@ -556,7 +556,7 @@ group = "Calendar in Menu Bar"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.calendar-in-menu-bar-meeting-icon"
@@ -567,7 +567,7 @@ group = "Calendar in Menu Bar"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.calendar-in-menu-bar-meeting-title-disabled"
@@ -578,7 +578,7 @@ group = "Calendar in Menu Bar"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.days-to-show-today"
@@ -589,7 +589,7 @@ group = "Days to Show"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.days-to-show-today-and-tomorrow"
@@ -600,7 +600,7 @@ group = "Days to Show"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.days-to-show-next-7-days-today-and-tomorrow"
@@ -611,7 +611,7 @@ group = "Days to Show"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.show-upcoming-events-today"
@@ -622,7 +622,7 @@ group = "Show Upcoming Events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.show-upcoming-events-2"
@@ -633,7 +633,7 @@ group = "Show Upcoming Events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.show-upcoming-events-5"
@@ -644,7 +644,7 @@ group = "Show Upcoming Events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.show-upcoming-events-10"
@@ -655,7 +655,7 @@ group = "Show Upcoming Events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.show-upcoming-events-30-minutes-before-today"
@@ -666,7 +666,7 @@ group = "Show Upcoming Events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.only-show-events-with-meetings-on"
@@ -677,7 +677,7 @@ group = "Only show events with meetings"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.only-show-events-with-meetings-off-on"
@@ -688,7 +688,7 @@ group = "Only show events with meetings"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.hide-when-there-are-no-upcoming-events-on"
@@ -699,7 +699,7 @@ group = "Hide when there are no upcoming events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.hide-when-there-are-no-upcoming-events-off-o"
@@ -710,7 +710,7 @@ group = "Hide when there are no upcoming events"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.hide-current-event-keep-visible-show-time-le"
@@ -721,7 +721,7 @@ group = "Hide Current Event"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.hide-current-event-automatically"
@@ -732,7 +732,7 @@ group = "Hide Current Event"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.hide-current-event-after-5-10-or-30-minutes"
@@ -743,7 +743,7 @@ group = "Hide Current Event"
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.with-meeting-title-the-item-shows-something"
@@ -753,7 +753,7 @@ behavior = "With Meeting Title, the item shows something like Standup • in 4 m
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.the-item-s-menu-has-join-open-in-calendar-an"
@@ -763,7 +763,7 @@ behavior = "The item's menu has Join, Open in Calendar and Dismiss Event. Below 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.with-hide-when-there-are-no-upcoming-events"
@@ -773,7 +773,7 @@ behavior = "With Hide when there are no upcoming events on, the item leaves the 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.the-menu-bar.dragging-the-item-out-of-the-menu-bar-sets-i"
@@ -783,7 +783,7 @@ behavior = "Dragging the item out of the menu bar sets it to Disabled."
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.choosing-calendars.the-calendars-list-at-the-bottom-of-the-pane"
@@ -793,7 +793,7 @@ behavior = "The Calendars list at the bottom of the pane has a search field and 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."
 
 [[row]]
 id = "features-calendar.backups.three-settings-are-never-included-in-backups"
@@ -803,4 +803,4 @@ behavior = "Three settings are never included in backups, because each one is a 
 windows = "\"Events come from calendar providers behind one trait: ICS subscription URLs (read-only), CalDAV accounts, classic Outlook through COM when installed, and the Windows appointment store when accessible. Credentials live in Credential Manager and events are processed locally. Link detection order (URL, location, notes), the 10 known services, known-service priority and the ignore rules are unchanged; Zoom and Teams open their desktop apps through their protocol handlers when installed; Google Meet links carry the owning account. Join card with live countdown, Meetings section in search, My Schedule, Auto join and Camera preview all port. The calendar menu bar item is a separate tray icon (icon mode, or title mode with a live tooltip and a minutes badge) with the same menu; clicking the icon itself never joins. Create Event writes to the default writable calendar, or opens a pre-filled compose link when every source is read-only."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The calendar is not implemented in YAL yet."

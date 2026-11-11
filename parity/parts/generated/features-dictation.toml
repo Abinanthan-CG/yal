@@ -45,7 +45,7 @@ behavior = "Turn speech into text with a model on your Mac, and paste it where y
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictation.dictation-records-your-voice-while-you-hold"
@@ -55,7 +55,7 @@ behavior = "Dictation records your voice while you hold or press a shortcut, tur
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictation.turn-it-on-in-settings-dictation-enable-dict"
@@ -65,7 +65,7 @@ behavior = "Turn it on in Settings → Dictation → Enable Dictation. It's off 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictation.two-more-steps-before-your-first-dictation-b"
@@ -75,7 +75,7 @@ behavior = "Two more steps before your first dictation, both in the same pane:"
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictation.under-model-click-download-no-model-comes-wi"
@@ -85,7 +85,7 @@ behavior = "Under **Model**, click **Download**. No model comes with Tinycast."
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictation.under-commands-record-a-shortcut-dictation-h"
@@ -95,7 +95,7 @@ behavior = "Under **Commands**, record a **Shortcut**. Dictation has none until 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.shortcut-behavior-decides-how-the-shortcut-w"
@@ -105,7 +105,7 @@ behavior = "Shortcut behavior decides how the shortcut works:"
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.press-to-start-or-stop-default-press-the-sho"
@@ -115,7 +115,7 @@ behavior = "Press to start or stop (default) — Press the shortcut — Press it
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.hold-to-talk-hold-the-shortcut-release-it-or"
@@ -125,7 +125,7 @@ behavior = "Hold to talk — Hold the shortcut — Release it, or press return."
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.press-esc-to-cancel-the-recording-is-discard"
@@ -135,7 +135,7 @@ behavior = "Press esc to cancel. The recording is discarded."
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.hold-to-talk-works-with-a-key-combination-or"
@@ -145,7 +145,7 @@ behavior = "Hold to talk works with a key combination or a single modifier key, 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.you-can-also-use-the-key-on-your-keyboard-as"
@@ -155,7 +155,7 @@ behavior = "You can also use the 🎤 key on your keyboard as the shortcut. See 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.while-tinycast-listens-a-small-capsule-near"
@@ -165,7 +165,7 @@ behavior = "While Tinycast listens, a small capsule near the bottom of the scree
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.tinycast-records-from-the-system-default-mic"
@@ -175,7 +175,7 @@ behavior = "Tinycast records from the System default microphone unless you choos
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.play-sounds-on-by-default-plays-the-macos-di"
@@ -185,7 +185,7 @@ behavior = "Play sounds (on by default) plays the macOS dictation sounds when re
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.dictating.while-you-record-tinycast-turns-your-mac-s-o"
@@ -195,7 +195,7 @@ behavior = "While you record, Tinycast turns your Mac's output volume down to a 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.when-finished-in-settings-dictation-output-p"
@@ -205,7 +205,7 @@ behavior = "When finished, in Settings → Dictation → Output, picks the desti
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.paste-in-active-app-default-pastes-into-the"
@@ -215,7 +215,7 @@ behavior = "Paste in active app (default) — Pastes into the app you were typin
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.copy-to-clipboard-copies-the-text-and-pastes"
@@ -225,7 +225,7 @@ behavior = "Copy to clipboard — Copies the text and pastes nothing."
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.paste-and-copy-pastes-the-text-and-also-leav"
@@ -235,7 +235,7 @@ behavior = "Paste and copy — Pastes the text and also leaves it on the clipboa
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.when-it-pastes-tinycast-reads-the-text-aroun"
@@ -245,7 +245,7 @@ behavior = "When it pastes, Tinycast reads the text around the cursor and adds a
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.insert-while-recording-is-off-by-default-tur"
@@ -255,7 +255,7 @@ behavior = "Insert while recording is off by default. Turn it on to paste the te
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.where-the-text-goes.password-fields-and-other-protected-fields-c"
@@ -265,7 +265,7 @@ behavior = "Password fields and other protected fields can refuse the paste."
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.choose-an-engine-then-a-model-models-downloa"
@@ -275,7 +275,7 @@ behavior = "Choose an Engine, then a Model. Models download from Hugging Face. A
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.parakeet-redux-default-lightweight-and-effic"
@@ -285,7 +285,7 @@ behavior = "Parakeet — Redux (default) — Lightweight and efficient — 25 la
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.parakeet-ultra-higher-accuracy-larger-downlo"
@@ -295,7 +295,7 @@ behavior = "Parakeet — Ultra — Higher accuracy, larger download — 25 langu
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.qwen-0-6b-smaller-and-faster-30-languages-an"
@@ -305,7 +305,7 @@ behavior = "Qwen — 0.6B — Smaller and faster — 30 languages and 22 Chinese
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.qwen-1-7b-higher-accuracy-more-memory-30-lan"
@@ -315,7 +315,7 @@ behavior = "Qwen — 1.7B — Higher accuracy, more memory — 30 languages and 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.parakeet-is-faster-and-uses-less-memory-qwen"
@@ -325,7 +325,7 @@ behavior = "Parakeet is faster and uses less memory. Qwen covers more languages 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.a-download-shows-its-progress-and-a-cancel-b"
@@ -335,7 +335,7 @@ behavior = "A download shows its progress and a Cancel button. If you switch to 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.models.with-a-qwen-model-installed-a-language-picke"
@@ -345,7 +345,7 @@ behavior = "With a Qwen model installed, a Language picker appears. Auto lets th
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.memory.the-model-runs-in-a-separate-process-tinycas"
@@ -355,7 +355,7 @@ behavior = "The model runs in a separate process, Tinycast Dictation, which you 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.in-ai-chat.while-dictation-is-on-the-ai-chat-message-fi"
@@ -365,7 +365,7 @@ behavior = "While Dictation is on, the AI Chat message field has a microphone bu
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.privacy-and-permissions.audio-stays-in-memory-it-s-never-saved-to-di"
@@ -375,7 +375,7 @@ behavior = "Audio stays in memory. It's never saved to disk or sent over the net
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.privacy-and-permissions.microphone-asked-when-you-turn-dictation-on"
@@ -385,7 +385,7 @@ behavior = "**Microphone.** Asked when you turn Dictation on. If it isn't grante
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.privacy-and-permissions.microphone-access-required-with-a-button-to"
@@ -395,7 +395,7 @@ behavior = "Microphone access required with a button to grant it or open System 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.privacy-and-permissions.accessibility-needed-to-paste-into-other-app"
@@ -405,7 +405,7 @@ behavior = "**Accessibility.** Needed to paste into other apps and read the text
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.privacy-and-permissions.asks-for-it-when-you-turn-dictation-on-copy"
@@ -415,7 +415,7 @@ behavior = "Asks for it when you turn Dictation on. Copy to clipboard works with
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.privacy-and-permissions.dictation-s-settings-and-shortcut-aren-t-inc"
@@ -425,7 +425,7 @@ behavior = "Dictation's settings and shortcut aren't included in backups, so an 
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.messages-you-might-see.download-the-dictation-model-in-settings-fir"
@@ -435,7 +435,7 @@ behavior = "Download the dictation model in Settings first — The selected mode
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.messages-you-might-see.no-speech-was-recorded-the-recording-was-emp"
@@ -445,7 +445,7 @@ behavior = "No speech was recorded — The recording was empty or too short."
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.messages-you-might-see.couldn-t-paste-dictation-into-this-app-the-a"
@@ -455,7 +455,7 @@ behavior = "Couldn't paste dictation into this app — The app refused the paste
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.messages-you-might-see.couldn-t-paste-some-dictation-into-this-app"
@@ -465,7 +465,7 @@ behavior = "Couldn't paste some dictation into this app — With Insert while re
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.messages-you-might-see.hold-to-talk-needs-a-key-combination-or-a-si"
@@ -475,7 +475,7 @@ behavior = "Hold to talk needs a key combination or a single modifier — Hold t
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 
 [[row]]
 id = "features-dictation.messages-you-might-see.allow-tinycast-to-use-the-microphone-in-syst"
@@ -485,4 +485,4 @@ behavior = "Allow Tinycast to use the microphone in System Settings — Micropho
 windows = "\"Hold-to-talk or press-to-toggle, the capsule overlay with live level bars and a transcribing wave, the 5-minute cap, output volume ducked to a tenth while recording, start/stop sounds, smart spacing and capitalization from the text around the caret (UI Automation), and Insert while recording. Models run in the dictation helper process through ONNX Runtime (DirectML with CPU fallback), are downloaded on demand from Hugging Face with progress, cancel and remove, and are released from memory on the same timer. Use upstream''s model families and names wherever a Windows-runnable export exists; a model with no runnable export is NOT PORTED as its own row. The Dictation key section becomes: any special hardware key Windows reports (F13-F24, media and launch keys, the Copilot key) can be recorded, and its default action is suppressed only while bound."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictation helper process exists, but the palette neither records nor transcribes yet."

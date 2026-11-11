@@ -602,9 +602,14 @@ fn render_fragment(page: &PageEntry, parsed: &Page) -> String {
         ));
         out.push_str("status = \"NOT PORTED\"\n");
         out.push_str("evidence = []\n");
+        let reason = if page.reason.is_empty() {
+            "This behavior is not implemented in YAL yet."
+        } else {
+            &page.reason
+        };
         out.push_str(&format!(
             "reason = {}\n",
-            crate::parity::toml_string("Not yet implemented.")
+            crate::parity::toml_string(reason)
         ));
     }
     out
@@ -615,6 +620,8 @@ struct PageEntry {
     page: String,
     source: String,
     windows: String,
+    /// Why a row on this page is not ported, when it is not.
+    reason: String,
 }
 
 fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
@@ -626,14 +633,16 @@ fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
         .get("page")
         .and_then(|p| p.as_array())
         .context("parity/pages.toml lists no pages")?;
+    let reasons = load_reasons(root)?;
     let mut out = Vec::new();
     for page in pages {
+        let name = page
+            .get("page")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
         out.push(PageEntry {
-            page: page
-                .get("page")
-                .and_then(|v| v.as_str())
-                .unwrap_or_default()
-                .to_string(),
+            page: name.clone(),
             source: page
                 .get("source")
                 .and_then(|v| v.as_str())
@@ -644,9 +653,30 @@ fn load_pages(root: &Path) -> Result<Vec<PageEntry>> {
                 .and_then(|v| v.as_str())
                 .unwrap_or_default()
                 .to_string(),
+            reason: reasons.get(&name).cloned().unwrap_or_default(),
         });
     }
     Ok(out)
+}
+
+/// The per-page reasons, from `parity/reasons.toml`.
+fn load_reasons(root: &Path) -> Result<BTreeMap<String, String>> {
+    let path = root.join("parity").join("reasons.toml");
+    if !path.exists() {
+        return Ok(BTreeMap::new());
+    }
+    let text =
+        std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
+    let value: toml::Value = text.parse().context("parsing parity/reasons.toml")?;
+    let mut reasons = BTreeMap::new();
+    if let Some(table) = value.get("page").and_then(|p| p.as_table()) {
+        for (page, reason) in table {
+            if let Some(reason) = reason.as_str() {
+                reasons.insert(page.clone(), reason.to_string());
+            }
+        }
+    }
+    Ok(reasons)
 }
 
 /// Path of the generated fragments.

@@ -35,7 +35,7 @@ behavior = "Homebrew, release channels, direct downloads, and updates."
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.install.tinycast-needs-an-apple-silicon-mac-with-mac"
@@ -45,7 +45,7 @@ behavior = "Tinycast needs an Apple silicon Mac with macOS 26 or later."
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.homebrew.homebrew-is-the-easiest-way-to-install-tinyc"
@@ -55,7 +55,7 @@ behavior = "Homebrew is the easiest way to install Tinycast."
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.homebrew.the-documentation-shows-this-example-brew-in"
@@ -65,7 +65,7 @@ behavior = "The documentation shows this example:\n\n```\nbrew install --cask ti
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.channels.each-channel-is-a-separate-app-with-its-own"
@@ -75,7 +75,7 @@ behavior = "Each channel is a separate app with its own settings, permissions an
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.channels.stable-tinycast-tinycast-app"
@@ -85,7 +85,7 @@ behavior = "Stable — tinycast — Tinycast.app."
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.channels.beta-tinycast-beta-tinycast-beta-app"
@@ -95,7 +95,7 @@ behavior = "Beta — tinycast@beta — Tinycast Beta.app."
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.channels.the-documentation-shows-this-example-brew-in"
@@ -105,7 +105,7 @@ behavior = "The documentation shows this example:\n\n```\nbrew install --cask ti
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.channels.the-beta-doesn-t-share-settings-with-the-sta"
@@ -115,7 +115,7 @@ behavior = "The beta doesn't share settings with the stable version. To move you
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.downloading-directly.builds-are-also-on-the-releases-page"
@@ -125,7 +125,7 @@ behavior = "Builds are also on the Releases page."
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.downloading-directly.open-the-dmg-and-drag-tinycast-to-applicatio"
@@ -135,7 +135,7 @@ behavior = "Open the DMG and drag Tinycast to Applications. Every release is sig
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.updating.tinycast-updates-itself-once-a-day-it-checks"
@@ -145,7 +145,7 @@ behavior = "Tinycast updates itself. Once a day it checks for a new release on i
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.updating.to-stop-the-daily-check-turn-off-automatical"
@@ -155,7 +155,7 @@ behavior = "To stop the daily check, turn off Automatically check for updates in
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.updating.because-the-app-manages-its-own-updates-brew"
@@ -165,7 +165,7 @@ behavior = "Because the app manages its own updates, brew upgrade skips Tinycast
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.updating.every-release-is-signed-with-the-same-certif"
@@ -175,7 +175,7 @@ behavior = "Every release is signed with the same certificate, so your Accessibi
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.uninstalling.the-documentation-shows-this-example-brew-un"
@@ -185,7 +185,7 @@ behavior = "The documentation shows this example:\n\n```\nbrew uninstall --cask 
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.uninstalling.to-also-remove-the-files-tinycast-created-ad"
@@ -195,7 +195,7 @@ behavior = "To also remove the files Tinycast created, add --zap:"
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.uninstalling.the-documentation-shows-this-example-brew-un-2"
@@ -205,7 +205,7 @@ behavior = "The documentation shows this example:\n\n```\nbrew uninstall --zap -
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.uninstalling.that-deletes-your-snippets-notes-quicklinks"
@@ -215,7 +215,7 @@ behavior = "That deletes your snippets, notes, quicklinks, clipboard history and
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.uninstalling.api-keys-you-saved-for-ai-providers-or-mcp-s"
@@ -225,7 +225,7 @@ behavior = "API keys you saved for AI providers or MCP servers, and extension si
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
 
 [[row]]
 id = "install.uninstalling.to-remove-a-different-app-and-the-files-it-l"
@@ -235,4 +235,4 @@ behavior = "To remove a different app and the files it left behind, use Tinycast
 windows = "\"Per-user installer .exe, portable zip, winget and Scoop. Stable and beta channels are separate apps with separate settings that run side by side. Uninstalling keeps user data unless the user chooses to remove it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."

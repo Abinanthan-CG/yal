@@ -20,7 +20,7 @@ behavior = "Search every macOS Settings pane from the launcher."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.system-settings.tinycast-lists-system-settings-panes-as-regu"
@@ -30,7 +30,7 @@ behavior = "Tinycast lists System Settings panes as regular launcher entries. Ty
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.system-settings.panes-have-their-own-system-settings-section"
@@ -40,7 +40,7 @@ behavior = "Panes have their own System Settings section, right after Applicatio
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.actions.open-system-setting-return"
@@ -50,7 +50,7 @@ behavior = "Open System Setting — return."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.actions.show-in-finder-return"
@@ -60,7 +60,7 @@ behavior = "Show in Finder — ⌘return."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.actions.add-to-remove-from-favorites-f"
@@ -70,7 +70,7 @@ behavior = "Add to / Remove from Favorites — ⇧⌘F."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.actions.reset-ranking"
@@ -80,7 +80,7 @@ behavior = "Reset Ranking."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.actions.hide-from-search-h"
@@ -90,7 +90,7 @@ behavior = "Hide from Search — ⇧⌘H."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.settings-system-settings-lists-every-pane-wi"
@@ -100,7 +100,7 @@ behavior = "Settings → System Settings lists every pane, with:"
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.enable-system-settings-at-the-top-which-remo"
@@ -110,7 +110,7 @@ behavior = "**Enable System Settings** at the top, which removes every pane from
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.shortcuts"
@@ -120,7 +120,7 @@ behavior = "Shortcuts."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.a-checkbox-for-each-pane-which-only-hides-th"
@@ -130,7 +130,7 @@ behavior = "a checkbox for each pane, which only hides that pane from search"
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.a-global-shortcut-recorder-for-each-pane"
@@ -140,7 +140,7 @@ behavior = "a global **shortcut** recorder for each pane"
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.an-alias-field-for-each-pane"
@@ -150,7 +150,7 @@ behavior = "an **alias** field for each pane"
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.this-is-most-useful-for-giving-a-shortcut-to"
@@ -160,7 +160,7 @@ behavior = "This is most useful for giving a shortcut to a pane you open often, 
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."
 
 [[row]]
 id = "launcher-system-settings.settings.see-hotkeys-for-recording-shortcuts"
@@ -170,4 +170,4 @@ behavior = "See Hotkeys for recording shortcuts."
 windows = "\"Lists every Windows Settings page (ms-settings: URIs), Control Panel item and common management console, by localized name with the English name still matching. Second action: Show in File Explorer for file-backed items (.cpl, .msc), Copy URI for ms-settings: pages. Each row has a checkbox, a global shortcut recorder and an alias field."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The Windows Settings pages are not indexed yet."

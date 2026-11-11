@@ -55,7 +55,7 @@ behavior = "What Tinycast asks for, why it needs it, and when it asks."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.permissions.tinycast-asks-for-a-permission-only-when-you"
@@ -65,7 +65,7 @@ behavior = "Tinycast asks for a permission only when you use a feature that need
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.permissions.settings-permissions-shows-the-status-of-acc"
@@ -75,7 +75,7 @@ behavior = "Settings → Permissions shows the status of Accessibility, Full Dis
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.accessibility.macos-describes-this-permission-as-control-y"
@@ -85,7 +85,7 @@ behavior = "MacOS describes this permission as \"control your computer\". Tinyca
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.accessibility.grant-it-in-system-settings-privacy-security"
@@ -95,7 +95,7 @@ behavior = "Grant it in System Settings → Privacy & Security → Accessibility
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.clipboard-and-emoji-paste-puts-the-item-into"
@@ -105,7 +105,7 @@ behavior = "Clipboard and emoji paste — Puts the item into the app you were us
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.snippets-detects-the-keyword-you-type-then-i"
@@ -115,7 +115,7 @@ behavior = "Snippets — Detects the keyword you type, then inserts the text."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.quick-actions-reads-your-selected-text-and-r"
@@ -125,7 +125,7 @@ behavior = "Quick Actions — Reads your selected text and replaces it."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.quicklinks-that-use-your-selected-text-reads"
@@ -135,7 +135,7 @@ behavior = "Quicklinks that use your selected text — Reads the selection from 
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.dictation-when-it-pastes-puts-what-you-said"
@@ -145,7 +145,7 @@ behavior = "Dictation, when it pastes — Puts what you said into the app you we
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.window-management-and-layouts-reads-and-sets"
@@ -155,7 +155,7 @@ behavior = "Window management and layouts — Reads and sets other apps' window 
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.navigation-lists-open-windows-and-clicks-men"
@@ -165,7 +165,7 @@ behavior = "Navigation — Lists open windows and clicks menu bar items."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.play-pause-next-track-previous-track-and-dis"
@@ -175,7 +175,7 @@ behavior = "Play / Pause, Next Track, Previous Track and Dismiss Notifications �
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.hyper-key-turns-one-physical-key-into-a-modi"
@@ -185,7 +185,7 @@ behavior = "Hyper key — Turns one physical key into a modifier chord."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.double-tap-modifier-shortcuts-and-holding-on"
@@ -195,7 +195,7 @@ behavior = "Double-tap modifier shortcuts, and holding one modifier to dictate �
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.esc-back-to-the-root-search-macos-uses-this"
@@ -205,7 +205,7 @@ behavior = "⌘esc back to the root search — macOS uses this shortcut unless T
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-needs-it.getselectedtext-in-extensions-reads-the-sele"
@@ -215,7 +215,7 @@ behavior = "GetSelectedText in extensions — Reads the selection from the front
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.snippet-keyword-expansion-is-the-only-featur"
@@ -225,7 +225,7 @@ behavior = "Snippet keyword expansion is the only feature that reads what you ty
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.snippets-are-off-by-default-turning-them-on"
@@ -235,7 +235,7 @@ behavior = "Snippets are **off** by default. Turning them on shows an explanatio
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.switch-counts-as-your-consent-there-s-no-sep"
@@ -245,7 +245,7 @@ behavior = "Switch counts as your consent. There's no separate prompt."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.matching-happens-only-on-your-mac-keystrokes"
@@ -255,7 +255,7 @@ behavior = "Matching happens **only on your Mac**. Keystrokes are never stored o
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.the-typing-buffer-holds-at-most-256-characte"
@@ -265,7 +265,7 @@ behavior = "The typing buffer holds at most 256 characters. It resets when you s
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.with-a-modifier-turn-on-secure-event-input-o"
@@ -275,7 +275,7 @@ behavior = "With a modifier, turn on Secure Event Input, or stop typing for 15 s
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.tinycast-uses-a-listen-only-event-tap-under"
@@ -285,7 +285,7 @@ behavior = "Tinycast uses a **listen-only** event tap under the Accessibility pe
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.monitoring"
@@ -295,7 +295,7 @@ behavior = "Monitoring."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.restoring-a-settings-backup-can-t-turn-snipp"
@@ -305,7 +305,7 @@ behavior = "**Restoring a settings backup can't turn snippets on**, so importing
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.snippets-and-keystroke-matching.never-enable-keystroke-listening"
@@ -315,7 +315,7 @@ behavior = "Never enable keystroke listening."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.calendars.the-calendar-feature-reads-your-events-to-fi"
@@ -325,7 +325,7 @@ behavior = "The Calendar feature reads your events to find meeting links."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.calendars.when-you-turn-it-on-tinycast-shows-its-own-e"
@@ -335,7 +335,7 @@ behavior = "When you turn it on, Tinycast shows its own explanation first, then 
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.calendars.events-are-read-on-your-mac-and-never-leave"
@@ -345,7 +345,7 @@ behavior = "Events are read on your Mac and never leave it."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.camera.open-camera-and-the-optional-camera-preview"
@@ -355,7 +355,7 @@ behavior = "Open Camera and the optional camera preview before a meeting ask for
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.microphone.dictation-records-from-your-microphone-when"
@@ -365,7 +365,7 @@ behavior = "Dictation records from your microphone. When you turn on Enable Dict
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.microphone.the-microphone-is-only-on-while-you-dictate"
@@ -375,7 +375,7 @@ behavior = "The microphone is only on while you dictate. Audio stays in memory o
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.microphone.to-paste-the-text-into-another-app-dictation"
@@ -385,7 +385,7 @@ behavior = "To paste the text into another app, Dictation also needs Accessibili
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.automation-and-bluetooth.a-few-actions-show-their-own-macos-prompt-th"
@@ -395,7 +395,7 @@ behavior = "A few actions show their own macOS prompt the first time you run the
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.automation-and-bluetooth.show-info-in-finder-in-the-uninstaller-docs"
@@ -405,7 +405,7 @@ behavior = "**Show Info in Finder** in the [uninstaller](/docs/launcher/uninstal
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.automation-and-bluetooth.system-actions-control-other-apps-through-ap"
@@ -415,7 +415,7 @@ behavior = "System actions, control other apps through Apple Events, which shows
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.automation-and-bluetooth.toggle-bluetooth-shows-the-bluetooth-prompt"
@@ -425,7 +425,7 @@ behavior = "**Toggle Bluetooth** shows the Bluetooth prompt."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.automation-and-bluetooth.if-you-decline-tinycast-tells-you-and-links"
@@ -435,7 +435,7 @@ behavior = "If you decline, Tinycast tells you and links to the right System Set
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.full-disk-access.tinycast-checks-whether-it-has-full-disk-acc"
@@ -445,7 +445,7 @@ behavior = "Tinycast checks whether it has Full Disk Access but never asks for i
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.full-disk-access.file-search-requires-this-access-to-build-it"
@@ -455,7 +455,7 @@ behavior = "File Search requires this access to build its private index on your 
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.full-disk-access.the-uninstaller-checks-in-the-background-to"
@@ -465,7 +465,7 @@ behavior = "The uninstaller checks in the background to work out which files it 
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-tinycast-never-needs.screen-recording-the-window-switcher-reads-w"
@@ -475,7 +475,7 @@ behavior = "**Screen Recording.** The window switcher reads window titles throug
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-tinycast-never-needs.location-the-calculator-picks-your-currency"
@@ -485,7 +485,7 @@ behavior = "**Location.** The calculator picks your currency from your Mac's reg
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-tinycast-never-needs.input-monitoring-snippets-listen-through-acc"
@@ -495,7 +495,7 @@ behavior = "**Input Monitoring.** Snippets listen through Accessibility, as desc
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
 
 [[row]]
 id = "permissions.what-tinycast-never-needs.speech-recognition-dictation-runs-its-own-mo"
@@ -505,4 +505,4 @@ behavior = "**Speech Recognition.** Dictation runs its own model on your Mac."
 windows = "\"The launcher needs nothing; ask only when a feature needs something, never at launch. Rewrite the page for Windows: administrator-window limits in place of Accessibility, camera and microphone privacy settings, calendar providers, radio access, and the list of things the app never needs."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."

@@ -241,6 +241,11 @@ means every upstream documentation change asks the porter to re-read the whole l
 two apart, a status entry is only touched when the port itself changes, and a status entry naming
 a row that no longer exists is reported as a problem rather than silently dropped.
 
+The rows that have not been reached yet take their reason from `parity/reasons.toml`, one line per
+page. A page's reason names the piece that is missing — "Favorites have no store and no rows in
+the palette yet" — rather than shrugging with "not yet implemented", which is the same sentence on
+all 2,297 open rows and therefore says nothing about any of them.
+
 ## 2026-11-11 - A row is ported when a test shows the behavior, not when the mechanism exists
 
 **Question.** Upstream's documentation rows describe behaviors, but many of them are one sentence

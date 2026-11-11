@@ -35,7 +35,7 @@ behavior = "Preferences, launcher icons, aliases and background refresh for an e
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.configuring-an-extension.open-settings-extensions-find-the-extension"
@@ -45,7 +45,7 @@ behavior = "Open Settings → Extensions, find the extension in the Installed li
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.preferences.any-settings-the-extension-defines-appear-as"
@@ -55,7 +55,7 @@ behavior = "Any settings the extension defines appear as native controls: checkb
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.preferences.they-re-saved-separately-for-each-extension"
@@ -65,7 +65,7 @@ behavior = "They're saved separately for each extension in Tinycast's own folder
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.preferences.preferences-the-extension-needs-say-required"
@@ -75,7 +75,7 @@ behavior = "Preferences the extension needs say Required. If one is empty when y
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.launcher-icon.click-change-to-replace-an-extension-s-own-a"
@@ -85,7 +85,7 @@ behavior = "Click Change… to replace an extension's own artwork with an SF Sym
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.launcher-icon.the-icon-applies-to-every-command-in-the-ext"
@@ -95,7 +95,7 @@ behavior = "The icon applies to every command in the extension."
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.launcher-icon.the-symbol-picker-starts-with-about-85-sugge"
@@ -105,7 +105,7 @@ behavior = "The symbol picker starts with about 85 suggestions, but search cover
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.launcher-icon.symbols-that-apple-reserves-for-its-own-prod"
@@ -115,7 +115,7 @@ behavior = "Symbols that Apple reserves for its own products, like iCloud, iPhon
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.launcher-icon.icon-choices-aren-t-included-in-backups"
@@ -125,7 +125,7 @@ behavior = "Icon choices aren't included in backups."
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.command-alias.each-command-has-an-alias-field-next-to-its"
@@ -135,7 +135,7 @@ behavior = "Each command has an alias field next to its shortcut recorder. If yo
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.command-alias.the-field-is-dimmed-when-the-command-is-hidd"
@@ -145,7 +145,7 @@ behavior = "The field is dimmed when the command is hidden from launcher search.
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.a-no-view-command-that-defines-an-interval-l"
@@ -155,7 +155,7 @@ behavior = "A no-view command that defines an interval, like 1m or 12h, can run 
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.background-refresh-is-off-for-each-command-u"
@@ -165,7 +165,7 @@ behavior = "Background refresh is off for each command until you run the command
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.in-the-launcher-a-small-dot-on-the-row-means"
@@ -175,7 +175,7 @@ behavior = "In the launcher, a small dot on the row means refresh is on, and a w
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.to-keep-background-refresh-light"
@@ -185,7 +185,7 @@ behavior = "To keep background refresh light:"
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.the-shortest-interval-is-one-minute-after-a"
@@ -195,7 +195,7 @@ behavior = "The shortest interval is one minute. After a failure, the wait gets 
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.a-background-run-never-interrupts-a-command"
@@ -205,7 +205,7 @@ behavior = "A background run never interrupts a command you're using."
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.background-refresh.a-background-run-never-shows-toasts-dialogs"
@@ -215,7 +215,7 @@ behavior = "A background run never shows toasts, dialogs or windows."
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.uninstalling.click-the-trash-button-on-the-extension-s-ro"
@@ -225,7 +225,7 @@ behavior = "Click the trash button on the extension's row in Settings → Extens
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."
 
 [[row]]
 id = "extensions-customising.uninstalling.k-uninstall-extension-in-the-launcher-does-t"
@@ -235,4 +235,4 @@ behavior = "⌘K → Uninstall Extension in the launcher does the same."
 windows = "\"Preferences, launcher icon, command alias, background refresh and uninstalling, unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to customise."

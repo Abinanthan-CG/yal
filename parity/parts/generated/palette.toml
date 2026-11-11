@@ -55,7 +55,7 @@ behavior = "Move around Tinycast's floating palette and adjust its appearance an
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.the-palette.the-launcher-search-tools-and-quick-ai-share"
@@ -65,7 +65,7 @@ behavior = "The launcher, search tools and Quick AI share one floating panel. AI
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.return-the-main-action-for-the-selection"
@@ -75,7 +75,7 @@ behavior = "Return — The main action for the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.return-the-second-action-usually-show-in-fin"
@@ -85,7 +85,7 @@ behavior = "⌘return — The second action, usually Show in Finder or Copy."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.k-open-the-actions-menu-for-the-selection"
@@ -95,7 +95,7 @@ behavior = "⌘K — Open the Actions menu for the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.move-the-selection"
@@ -105,7 +105,7 @@ behavior = "↑ ↓ — Move the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.tab-move-between-the-launcher-quick-ai-and-t"
@@ -115,7 +115,7 @@ behavior = "Tab — Move between the launcher, Quick AI and the clipboard."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.esc-clear-the-search-then-go-back-a-screen-t"
@@ -125,7 +125,7 @@ behavior = "Esc — Clear the search, then go back a screen, then close."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.esc-go-back-to-the-root-search-from-any-scre"
@@ -135,7 +135,7 @@ behavior = "⌘esc — Go back to the root search from any screen."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.delete-in-an-empty-search-field-go-back-one"
@@ -145,7 +145,7 @@ behavior = "Delete — In an empty search field, go back one screen."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.open-settings"
@@ -155,7 +155,7 @@ behavior = "⌘, — Open Settings."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.w-close-the-window"
@@ -165,7 +165,7 @@ behavior = "⌘W — Close the window."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.k-is-the-best-way-to-learn-the-app-every-scr"
@@ -175,7 +175,7 @@ behavior = "⌘K is the best way to learn the app. Every screen lists all of its
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.every-screen-except-the-launcher-has-a-back"
@@ -185,7 +185,7 @@ behavior = "Every screen except the launcher has a back arrow in the top-left co
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.moving-around.esc-needs-the-accessibility-permission-becau"
@@ -195,7 +195,7 @@ behavior = "⌘esc needs the Accessibility permission, because macOS uses that s
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.these-work-anywhere-in-the-palette"
@@ -205,7 +205,7 @@ behavior = "These work anywhere in the palette:"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.n"
@@ -215,7 +215,7 @@ behavior = "⌃N — ↓."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.p"
@@ -225,7 +225,7 @@ behavior = "⌃P — ↑."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.f"
@@ -235,7 +235,7 @@ behavior = "⌃F — →."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.b"
@@ -245,7 +245,7 @@ behavior = "⌃B — ←."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.on-the-emoji-grid-all-four-move-the-selectio"
@@ -255,7 +255,7 @@ behavior = "On the emoji grid, all four move the selection. Everywhere else, ⌃
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.emacs-chords.letter-shortcuts-use-your-ascii-keyboard-lay"
@@ -265,7 +265,7 @@ behavior = "Letter shortcuts use your ASCII keyboard layout, so a Japanese, Russ
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.tab-cycles-through-three-screens-launcher-qu"
@@ -275,7 +275,7 @@ behavior = "Tab cycles through three screens: launcher → Quick AI → clipboar
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.from-the-launcher-kbd-tab-kbd-sends-whatever"
@@ -285,7 +285,7 @@ behavior = "From the launcher, <kbd>tab</kbd> sends whatever you typed to [Quick
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.when-this-will-happen-the-header-shows-a-qui"
@@ -295,7 +295,7 @@ behavior = "When this will happen, the header shows a Quick AI hint next to a ta
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.from-the-clipboard-your-search-text-carries"
@@ -305,7 +305,7 @@ behavior = "From the clipboard, your search text carries over to the launcher."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.kbd-esc-kbd-goes-back-through-the-screens-in"
@@ -315,7 +315,7 @@ behavior = "<kbd>esc</kbd> goes back through the screens in reverse."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.quick-ai-is-skipped-while-ai-is-off-and-the"
@@ -325,7 +325,7 @@ behavior = "Quick AI is skipped while AI is off, and the clipboard is skipped wh
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.other-screens-like-calculator-history-or-sea"
@@ -335,7 +335,7 @@ behavior = "Other screens, like Calculator History or Search Quicklinks, aren't 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.there-s-one-exception-when-the-selected-row"
@@ -345,7 +345,7 @@ behavior = "There's one exception: when the selected row takes arguments, like a
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.if-you-open-a-screen-by-typing-its-name-in-t"
@@ -355,7 +355,7 @@ behavior = "If you open a screen by typing its name in the launcher, it opens on
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.if-you-open-a-screen-with-its-own-global-sho"
@@ -365,7 +365,7 @@ behavior = "If you open a screen with its own global shortcut while the palette 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.settings-general-escape-key-behavior-sets-wh"
@@ -375,7 +375,7 @@ behavior = "Settings → General → Escape Key Behavior sets what esc does when
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.navigate-back-or-close-window-default-go-bac"
@@ -385,7 +385,7 @@ behavior = "**Navigate back or close window** (default): go back a screen, and c
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.close-window-and-pop-to-root-close-right-awa"
@@ -395,7 +395,7 @@ behavior = "**Close window and pop to root**: close right away, and start at the
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.in-both-cases-the-first-press-clears-any-tex"
@@ -405,7 +405,7 @@ behavior = "In both cases, the first press clears any text you typed."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.how-screens-stack.in-compact-mode-esc-in-the-expanded-launcher"
@@ -415,7 +415,7 @@ behavior = "In compact mode, esc in the expanded launcher clears your text, then
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.where-it-opens.both-placement-settings-are-in-settings-gene"
@@ -425,7 +425,7 @@ behavior = "Both placement settings are in Settings → General → Appearance."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.where-it-opens.follow-the-cursor-across-displays-on-by-defa"
@@ -435,7 +435,7 @@ behavior = "Follow the cursor across displays (on by default) opens the palette 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.where-it-opens.drag-to-move-the-launcher-off-by-default-let"
@@ -445,7 +445,7 @@ behavior = "Drag to move the launcher (off by default) lets you move the panel. 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.where-it-opens.while-you-drag-dotted-guides-show-the-defaul"
@@ -455,7 +455,7 @@ behavior = "While you drag, dotted guides show the default position and light up
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.where-it-opens.tinycast-forgets-a-saved-position-only-when"
@@ -465,7 +465,7 @@ behavior = "Tinycast forgets a saved position only when no display can show it a
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.settings-general-appearance-has-these-settin"
@@ -475,7 +475,7 @@ behavior = "Settings → General → Appearance has these settings:"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.appearance-system"
@@ -486,7 +486,7 @@ group = "Appearance"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.appearance-light"
@@ -497,7 +497,7 @@ group = "Appearance"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.appearance-dark-system"
@@ -508,7 +508,7 @@ group = "Appearance"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.show-animations-on"
@@ -519,7 +519,7 @@ group = "Show animations"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.show-animations-off-on"
@@ -530,7 +530,7 @@ group = "Show animations"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.interface-size-default"
@@ -541,7 +541,7 @@ group = "Interface size"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.interface-size-large"
@@ -552,7 +552,7 @@ group = "Interface size"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.interface-size-larger-default"
@@ -563,7 +563,7 @@ group = "Interface size"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.window-mode-compact"
@@ -574,7 +574,7 @@ group = "Window mode"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.window-mode-expanded-compact"
@@ -585,7 +585,7 @@ group = "Window mode"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.appearance-system-follows-macos-whenever-it"
@@ -595,7 +595,7 @@ behavior = "Appearance. System follows macOS whenever it changes. Light uses the
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.show-animations-turn-it-off-and-every-tinyca"
@@ -605,7 +605,7 @@ behavior = "Show animations. Turn it off and every Tinycast window opens, closes
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.interface-size-makes-the-palette-and-its-flo"
@@ -615,7 +615,7 @@ behavior = "Interface size makes the palette and its floating windows 10% or 20%
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.window-mode-compact-opens-the-launcher-as-a"
@@ -625,7 +625,7 @@ behavior = "Window mode. Compact opens the launcher as a slim search bar that ex
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.settings-general-compact-shortcuts-appears-w"
@@ -635,7 +635,7 @@ behavior = "Settings → General → Compact Shortcuts appears when Compact is s
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.appearance.the-toggle-system-appearance-action-changes"
@@ -645,7 +645,7 @@ behavior = "The Toggle System Appearance action changes the appearance of macOS 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.input-source.settings-general-auto-switch-input-source-pi"
@@ -655,7 +655,7 @@ behavior = "Settings → General → Auto-switch input source picks a keyboard l
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.input-source.this-helps-if-you-type-japanese-or-chinese-m"
@@ -665,7 +665,7 @@ behavior = "This helps if you type Japanese or Chinese most of the day but your 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.pop-to-root.settings-general-pop-to-root-search-sets-how"
@@ -675,7 +675,7 @@ behavior = "Settings → General → Pop to Root Search sets how long after the 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.pop-to-root.use-a-longer-delay-if-you-often-close-the-pa"
@@ -685,7 +685,7 @@ behavior = "Use a longer delay if you often close the palette and then come back
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.pop-to-root.ai-chat-has-its-own-setting-for-reopening-a"
@@ -695,7 +695,7 @@ behavior = "AI Chat has its own setting for reopening a conversation. See AI Cha
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.the-menu-bar.the-tinycast-menu-bar-icon-has-open-tinycast"
@@ -705,7 +705,7 @@ behavior = "The Tinycast menu bar icon has Open Tinycast, Clipboard History (whi
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
 
 [[row]]
 id = "palette.the-menu-bar.settings-general-show-in-menu-bar-hides-the"
@@ -715,4 +715,4 @@ behavior = "Settings → General → Show in menu bar hides the icon. Your short
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."

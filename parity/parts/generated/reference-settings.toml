@@ -40,7 +40,7 @@ behavior = "Every Settings pane, what's in it, and the defaults."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.settings.open-settings-with-from-the-palette-the-tiny"
@@ -50,7 +50,7 @@ behavior = "Open Settings with ⌘, from the palette, the Tinycast Settings comm
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.settings.the-search-field-finds-any-setting-by-name-a"
@@ -60,7 +60,7 @@ behavior = "The search field finds any setting by name, and also by related word
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.settings.there-are-23-panes-in-four-groups"
@@ -70,7 +70,7 @@ behavior = "There are 23 panes in four groups."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-launcher-none"
@@ -80,7 +80,7 @@ behavior = "Show Launcher — None."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.language-english-deutsch-espa-ol-fran-ais-po"
@@ -90,7 +90,7 @@ behavior = "Language — English, Deutsch, Español, Français, 日本語, 한�
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.launch-at-login-on"
@@ -101,7 +101,7 @@ group = "Launch at login"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.launch-at-login-off-off"
@@ -112,7 +112,7 @@ group = "Launch at login"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-in-menu-bar-on"
@@ -123,7 +123,7 @@ group = "Show in menu bar"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-in-menu-bar-off-on"
@@ -134,7 +134,7 @@ group = "Show in menu bar"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.automatically-check-for-updates-on"
@@ -145,7 +145,7 @@ group = "Automatically check for updates"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.automatically-check-for-updates-off-on"
@@ -156,7 +156,7 @@ group = "Automatically check for updates"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.pop-to-root-search-immediately"
@@ -167,7 +167,7 @@ group = "Pop to Root Search"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.pop-to-root-search-after-5-15-30-60-or-90-se"
@@ -178,7 +178,7 @@ group = "Pop to Root Search"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.escape-key-behavior-navigate-back-or-close-w"
@@ -189,7 +189,7 @@ group = "Escape Key Behavior"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.escape-key-behavior-close-window-and-pop-to"
@@ -200,7 +200,7 @@ group = "Escape Key Behavior"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.auto-switch-input-source-none-or-any-keyboar"
@@ -210,7 +210,7 @@ behavior = "Auto-switch input source — None, or any keyboard input source you 
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.appearance-system"
@@ -221,7 +221,7 @@ group = "Appearance"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.appearance-light"
@@ -232,7 +232,7 @@ group = "Appearance"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.appearance-dark-system"
@@ -243,7 +243,7 @@ group = "Appearance"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-animations-on"
@@ -254,7 +254,7 @@ group = "Show animations"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-animations-off-on"
@@ -265,7 +265,7 @@ group = "Show animations"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.interface-size-default"
@@ -276,7 +276,7 @@ group = "Interface size"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.interface-size-large"
@@ -287,7 +287,7 @@ group = "Interface size"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.interface-size-larger-default"
@@ -298,7 +298,7 @@ group = "Interface size"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.window-mode-compact"
@@ -309,7 +309,7 @@ group = "Window mode"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.window-mode-expanded-compact"
@@ -320,7 +320,7 @@ group = "Window mode"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.compact-shortcuts-up-to-four-in-your-order-f"
@@ -330,7 +330,7 @@ behavior = "Compact Shortcuts — Up to four, in your order, from Clipboard Hist
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.follow-the-cursor-across-displays-on"
@@ -341,7 +341,7 @@ group = "Follow the cursor across displays"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.follow-the-cursor-across-displays-off-on"
@@ -352,7 +352,7 @@ group = "Follow the cursor across displays"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.drag-to-move-the-launcher-on"
@@ -363,7 +363,7 @@ group = "Drag to move the launcher"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.drag-to-move-the-launcher-off-off"
@@ -374,7 +374,7 @@ group = "Drag to move the launcher"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.hyper-key-none"
@@ -385,7 +385,7 @@ group = "Hyper Key"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.hyper-key-caps-lock"
@@ -396,7 +396,7 @@ group = "Hyper Key"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.hyper-key-left-or-right-control-shift-option"
@@ -407,7 +407,7 @@ group = "Hyper Key"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.quick-press-does-nothing"
@@ -418,7 +418,7 @@ group = "Quick Press"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.quick-press-trigger-caps-lock"
@@ -429,7 +429,7 @@ group = "Quick Press"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.quick-press-trigger-escape-caps-lock-only-do"
@@ -440,7 +440,7 @@ group = "Quick Press"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.include-shift-on"
@@ -451,7 +451,7 @@ group = "Include Shift (⇧)"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.include-shift-off-on"
@@ -462,7 +462,7 @@ group = "Include Shift (⇧)"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.secure-input-compatibility-on"
@@ -473,7 +473,7 @@ group = "Secure Input Compatibility"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.secure-input-compatibility-off-caps-lock-onl"
@@ -484,7 +484,7 @@ group = "Secure Input Compatibility"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.number-format-system"
@@ -495,7 +495,7 @@ group = "Number format"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.number-format-english-system"
@@ -506,7 +506,7 @@ group = "Number format"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-suggestions-on"
@@ -517,7 +517,7 @@ group = "Show suggestions"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.show-suggestions-off-on"
@@ -528,7 +528,7 @@ group = "Show suggestions"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.search-sensitivity-low"
@@ -539,7 +539,7 @@ group = "Search sensitivity"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.search-sensitivity-medium"
@@ -550,7 +550,7 @@ group = "Search sensitivity"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.search-sensitivity-high-medium"
@@ -561,7 +561,7 @@ group = "Search sensitivity"
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.learned-ranking-reset-clears-all-learned-ran"
@@ -571,7 +571,7 @@ behavior = "Learned ranking — Reset… clears all learned ranking."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.general-2.see-the-palette-learned-ranking-and-hotkeys"
@@ -581,7 +581,7 @@ behavior = "See The palette, Learned ranking and Hotkeys."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.permissions.shows-whether-accessibility-full-disk-access"
@@ -591,7 +591,7 @@ behavior = "Shows whether Accessibility, Full Disk Access, Calendars and Microph
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.applications-search-scopes-enable-applicatio"
@@ -601,7 +601,7 @@ behavior = "Applications — Search Scopes, Enable Applications, and a row per a
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.system-settings-enable-system-settings-and-a"
@@ -611,7 +611,7 @@ behavior = "System Settings — Enable System Settings, and a row per pane."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.system-actions-enable-system-actions-and-a-r"
@@ -621,7 +621,7 @@ behavior = "System Actions — Enable System Actions, and a row per action."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.commands-enable-commands-a-row-per-built-in"
@@ -631,7 +631,7 @@ behavior = "Commands — Enable Commands, a row per built-in command, and Custom
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.quicklinks-quicklinks-switch-its-commands-be"
@@ -641,7 +641,7 @@ behavior = "Quicklinks — Quicklinks switch, its commands, behavior, import and
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.apple-shortcuts-apple-shortcuts-switch-off-a"
@@ -651,7 +651,7 @@ behavior = "Apple Shortcuts — Apple Shortcuts switch (Off), a row per shortcut
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.fallbacks-which-fallbacks-show-under-a-searc"
@@ -661,7 +661,7 @@ behavior = "Fallbacks — Which fallbacks show under a search, and their order."
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.most-rows-have-a-launcher-checkbox-a-shortcu"
@@ -671,7 +671,7 @@ behavior = "Most rows have a launcher checkbox, a shortcut recorder and an alias
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.launcher.the-enable-switch-at-the-top-of-a-pane-turns"
@@ -681,7 +681,7 @@ behavior = "The Enable … switch at the top of a pane turns off every row and e
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.everything-here-is-off-by-default-except-cli"
@@ -691,7 +691,7 @@ behavior = "Everything here is off by default, except Clipboard and Emoji & Symb
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.clipboard-enable-clipboard-history-on-clipbo"
@@ -701,7 +701,7 @@ behavior = "Clipboard — Enable Clipboard History (On) — Clipboard commands, 
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.snippets-enable-snippets-show-in-launcher-sn"
@@ -711,7 +711,7 @@ behavior = "Snippets — Enable snippets — Show in launcher, snippet commands,
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.file-search-enable-file-search-show-in-launc"
@@ -721,7 +721,7 @@ behavior = "File Search — Enable File Search — Show in launcher (Off), Full 
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.window-management-enable-window-management-s"
@@ -731,7 +731,7 @@ behavior = "Window Management — Enable window management — Show in launcher,
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.navigation-enable-navigation-commands-show-a"
@@ -741,7 +741,7 @@ behavior = "Navigation — Enable navigation — Commands, Show Apple menu items
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.notes-enable-notes-render-markdown-on-show-f"
@@ -751,7 +751,7 @@ behavior = "Notes — Enable Notes — Render Markdown (On), Show Formatting Bar
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.calendar-join-meetings-from-tinycast-show-in"
@@ -761,7 +761,7 @@ behavior = "Calendar — Join meetings from Tinycast — Show in launcher, Upcom
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.emoji-symbols-always-on-emoji-commands-colum"
@@ -771,7 +771,7 @@ behavior = "Emoji & Symbols — (always on) — Emoji commands, Column Count (8)
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.dictation-enable-dictation-shortcut-behavior"
@@ -781,7 +781,7 @@ behavior = "Dictation — Enable Dictation — Shortcut behavior (Press to start
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.ai-enable-ai-providers-ai-commands-default-m"
@@ -791,7 +791,7 @@ behavior = "AI — Enable AI — Providers, AI commands, Default model, Reasonin
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.quick-actions-enable-quick-actions-actions-r"
@@ -801,7 +801,7 @@ behavior = "Quick Actions — Enable Quick Actions — Actions (Replace or Previ
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.features.extensions-enable-extensions-show-in-launche"
@@ -811,7 +811,7 @@ behavior = "Extensions — Enable extensions — Show in launcher, Search extens
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.advanced.backup-export-a-backup-import-one-or-import"
@@ -821,7 +821,7 @@ behavior = "Backup. Export a backup, import one, or import from Raycast. See Bac
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."
 
 [[row]]
 id = "reference-settings.advanced.about-version-license-check-for-updates-link"
@@ -831,4 +831,4 @@ behavior = "About. Version, license, Check for Updates, links to the project, an
 windows = "\"A regular resizable Settings window with the same 23 panes in four groups, the same defaults, and search by name and by related words. Renames only: Show in menu bar becomes Show in system tray; System Settings becomes Windows Settings; Apple Shortcuts becomes Automations; Hyper Key choices become Caps Lock or Left/Right Ctrl, Shift, Alt, Win; Secure Input Compatibility becomes Work over administrator windows. The Permissions pane shows what matters on Windows (administrator-window access, file index access, calendar providers, microphone, camera) with buttons to the right ms-settings: page. Languages: the same 9, generated from upstream''s Localizable.xcstrings."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The settings file and the settings store are ported, but the settings window is not built yet."

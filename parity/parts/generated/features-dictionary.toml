@@ -30,7 +30,7 @@ behavior = "Look up a word in your Mac's dictionaries from the launcher, and cop
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.define-word.define-word-shows-a-word-s-dictionary-entry"
@@ -40,7 +40,7 @@ behavior = "Define Word shows a word's dictionary entry in the launcher, read fr
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.define-word.there-s-nothing-to-turn-on-the-command-is-in"
@@ -50,7 +50,7 @@ behavior = "There's nothing to turn on. The command is in Settings → Commands,
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.looking-up-a-word.run-define-word-and-type-a-word-the-entry-up"
@@ -60,7 +60,7 @@ behavior = "Run Define Word and type a word. The entry updates as you type. The 
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.looking-up-a-word.you-can-also-start-from-the-launcher-type-th"
@@ -70,7 +70,7 @@ behavior = "You can also start from the launcher. Type the word, and Define Word
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.looking-up-a-word.the-entry-shows-the-word-and-its-pronunciati"
@@ -80,7 +80,7 @@ behavior = "The entry shows the word and its pronunciation, then each part of sp
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.looking-up-a-word.with-nothing-typed-the-screen-says-type-a-wo"
@@ -90,7 +90,7 @@ behavior = "With nothing typed, the screen says Type a word to define. If none o
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.actions.copy-definition-return"
@@ -100,7 +100,7 @@ behavior = "Copy Definition — return."
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.actions.open-in-dictionary-return"
@@ -110,7 +110,7 @@ behavior = "Open in Dictionary — ⌘return."
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.actions.copy-definition-copies-the-whole-entry-as-pl"
@@ -120,7 +120,7 @@ behavior = "Copy Definition copies the whole entry as plain text and closes the 
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.which-dictionaries.tinycast-uses-the-dictionaries-turned-on-in"
@@ -130,7 +130,7 @@ behavior = "Tinycast uses the dictionaries turned on in Dictionary.app's setting
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.which-dictionaries.lookups-happen-on-your-mac-nothing-is-sent-o"
@@ -140,7 +140,7 @@ behavior = "Lookups happen on your Mac. Nothing is sent over the network."
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."
 
 [[row]]
 id = "features-dictionary.turning-it-off.clear-define-word-s-checkbox-in-settings-com"
@@ -150,4 +150,4 @@ behavior = "Clear Define Word's checkbox in Settings → Commands. That hides bo
 windows = "\"Windows has no system dictionary, so ship one: a bundled offline English dictionary with pronunciations under a redistributable license, plus user-installed dictionary packs (StarDict format) ordered in Settings; the first dictionary that knows the word answers. The entry shows word, pronunciation, parts of speech and numbered senses, all selectable. Open in Dictionary opens a standalone dictionary window showing the word in every enabled dictionary. Lookups never use the network."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The dictionary is not implemented in YAL yet."

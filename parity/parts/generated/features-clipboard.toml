@@ -55,7 +55,7 @@ behavior = "Search the text, images, files and colors you copied, and paste them
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.clipboard-history.tinycast-saves-what-you-copy-so-you-can-find"
@@ -65,7 +65,7 @@ behavior = "Tinycast saves what you copy, so you can find it later and paste it 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.clipboard-history.clipboard-history-is-the-only-feature-that-s"
@@ -75,7 +75,7 @@ behavior = "Clipboard history is the only feature that's on by default. To turn 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.opening-it.press-kbd-tab-kbd-from-the-launcher-after-qu"
@@ -85,7 +85,7 @@ behavior = "Press <kbd>tab</kbd> from the launcher (after Quick AI, if AI is on)
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.opening-it.run-the-clipboard-history-command-or-use-its"
@@ -95,7 +95,7 @@ behavior = "Run the **Clipboard History** command, or use its global shortcut fr
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.opening-it.choose-clipboard-history-in-the-tinycast-men"
@@ -105,7 +105,7 @@ behavior = "Choose **Clipboard History** in the Tinycast menu bar menu."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.opening-it.the-footer-shows-where-a-paste-will-go-like"
@@ -115,7 +115,7 @@ behavior = "The footer shows where a paste will go, like \"Paste to Notes\"."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.paste-return"
@@ -125,7 +125,7 @@ behavior = "Paste — return."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.copy-to-clipboard-return"
@@ -135,7 +135,7 @@ behavior = "Copy to Clipboard — ⌘return."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.paste-as-plain-text-return"
@@ -145,7 +145,7 @@ behavior = "Paste as Plain Text — ⌃⌘return."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.paste-and-keep-window-open-return"
@@ -155,7 +155,7 @@ behavior = "Paste and Keep Window Open — ⌥return."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.filter-by-type-p"
@@ -165,7 +165,7 @@ behavior = "Filter by type — ⌘P."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.pin-unpin-entry"
@@ -175,7 +175,7 @@ behavior = "Pin / Unpin Entry — ⌘."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.edit-entry-e"
@@ -185,7 +185,7 @@ behavior = "Edit Entry — ⌘E."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.copy-text-on-an-image-t"
@@ -195,7 +195,7 @@ behavior = "Copy Text, on an image — ⇧⌘T."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.show-in-finder-f"
@@ -205,7 +205,7 @@ behavior = "Show in Finder — ⌘F."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.paste-a-pinned-entry-1-0"
@@ -215,7 +215,7 @@ behavior = "Paste a pinned entry — ⌘1 … ⌘0."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.delete-entry-x"
@@ -225,7 +225,7 @@ behavior = "Delete Entry — ⌃X."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.delete-all-entries-x"
@@ -235,7 +235,7 @@ behavior = "Delete All Entries — ⌃⇧X."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.the-default-action-setting-swaps-return-and"
@@ -245,7 +245,7 @@ behavior = "The Default action setting swaps return and ⌘return. If you set it
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.paste-as-plain-text-pastes-only-the-text-for"
@@ -255,7 +255,7 @@ behavior = "Paste as Plain Text pastes only the text. For a file, that's its pat
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.edit-entry-opens-a-text-entry-for-editing-re"
@@ -265,7 +265,7 @@ behavior = "Edit Entry opens a text entry for editing. ⌘return saves the chang
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.copy-text-reads-the-text-in-a-copied-image-o"
@@ -275,7 +275,7 @@ behavior = "Copy Text reads the text in a copied image, or an image file, and pu
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.pasting-needs-the-accessibility-permission"
@@ -285,7 +285,7 @@ behavior = "Pasting needs the Accessibility permission."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.actions.you-can-also-drag-any-row-into-another-app-d"
@@ -295,7 +295,7 @@ behavior = "You can also drag any row into another app. Dragging always copies, 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.paste-sequentially.give-paste-sequentially-a-shortcut-in-settin"
@@ -305,7 +305,7 @@ behavior = "Give Paste Sequentially a shortcut in Settings → Clipboard to past
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.paste-sequentially.it-works-with-text-images-and-files-and-does"
@@ -315,7 +315,7 @@ behavior = "It works with text, images and files, and doesn't change the order o
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.text-with-a-preview-text-longer-than-32-000"
@@ -325,7 +325,7 @@ behavior = "**Text**, with a preview. Text longer than 32,000 characters isn't r
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.images-like-screenshots-saved-as-png-files-w"
@@ -335,7 +335,7 @@ behavior = "**Images**, like screenshots, saved as PNG files. When you paste an 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.path-of-its-saved-file-because-terminals-ign"
@@ -345,7 +345,7 @@ behavior = "Path of its saved file, because terminals ignore image data."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.files-you-copy-in-finder-tinycast-saves-a-re"
@@ -355,7 +355,7 @@ behavior = "**Files you copy in Finder.** Tinycast saves a reference to the file
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.a-copy-of-the-file-up-to-32-files-per-copy-a"
@@ -365,7 +365,7 @@ behavior = "A copy of the file. Up to 32 files per copy are recorded. When you p
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.colors-a-copied-ff5733-rgb-hsl-or-oklch-is-s"
@@ -375,7 +375,7 @@ behavior = "**Colors.** A copied `#FF5733`, `rgb(…)`, `hsl(…)` or `oklch(…
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.if-a-file-has-been-moved-or-deleted-since-yo"
@@ -385,7 +385,7 @@ behavior = "If a file has been moved or deleted since you copied it, it stays in
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.what-it-keeps.you-can-play-video-and-audio-files-in-the-pr"
@@ -395,7 +395,7 @@ behavior = "You can play video and audio files in the preview. Nothing plays unt
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.filtering-by-type.p-opens-a-filter-to-the-right-of-the-search"
@@ -405,7 +405,7 @@ behavior = "⌘P opens a filter to the right of the search field. There are seve
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.filtering-by-type.copied-urls-count-as-links-rather-than-text"
@@ -415,7 +415,7 @@ behavior = "Copied URLs count as links rather than text, and colors aren't text 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.filtering-by-type.each-filter-has-its-own-empty-message-so-cli"
@@ -425,7 +425,7 @@ behavior = "Each filter has its own empty message, so \"Clipboard history is emp
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.filtering-by-type.links-and-emails-are-detected-from-the-text"
@@ -435,7 +435,7 @@ behavior = "Links and emails are detected from the text each time and never stor
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.pins-the-selected-entry"
@@ -445,7 +445,7 @@ behavior = "⌘. pins the selected entry."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.pinned-entries-appear-in-a-pinned-section-at"
@@ -455,7 +455,7 @@ behavior = "Pinned entries appear in a **Pinned** section at the top, in the ord
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.they-come-first-in-both-the-full-list-and-yo"
@@ -465,7 +465,7 @@ behavior = "They come first in both the full list and your search results."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.kbd-kbd-kbd-1-kbd-to-kbd-kbd-kbd-9-kbd-then"
@@ -475,7 +475,7 @@ behavior = "<kbd>⌘</kbd><kbd>1</kbd> to <kbd>⌘</kbd><kbd>9</kbd>, then <kbd>
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.first-ten-visible-pinned-entries"
@@ -485,7 +485,7 @@ behavior = "First ten visible pinned entries."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.pinned-entries-are-never-removed-by-the-rete"
@@ -495,7 +495,7 @@ behavior = "**Pinned entries are never removed by the retention limit.** **Clear
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.entries-keep-them-too-to-remove-a-pinned-ent"
@@ -505,7 +505,7 @@ behavior = "Entries keep them too. To remove a pinned entry, use Delete Entry."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.pasting-a-pinned-entry-doesn-t-change-its-po"
@@ -515,7 +515,7 @@ behavior = "Pasting a pinned entry doesn't change its position."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.pinning.unpinning-an-entry-makes-it-the-newest-entry"
@@ -525,7 +525,7 @@ behavior = "**Unpinning an entry makes it the newest entry**, instead of returni
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.search-text-in-images-and-pdfs-is-off-by-def"
@@ -535,7 +535,7 @@ behavior = "Search text in images and PDFs is off by default. When you turn it o
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.text-recognition-happens-on-your-mac-one-ite"
@@ -545,7 +545,7 @@ behavior = "Text recognition happens **on your Mac**, one item at a time, while 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.the-mouse"
@@ -555,7 +555,7 @@ behavior = "The mouse."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.it-runs-in-a-separate-helper-process-so-tiny"
@@ -565,7 +565,7 @@ behavior = "It runs in a separate helper process, so Tinycast itself stays light
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.it-handles-files-up-to-32-mb-and-the-first-6"
@@ -575,7 +575,7 @@ behavior = "It handles files up to 32 MB and the first 64 pages of a PDF."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.the-recognized-text-is-only-used-for-search"
@@ -585,7 +585,7 @@ behavior = "The recognized text is only used for search. Pasting still gives you
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.turning-the-setting-off-stops-recognition-te"
@@ -595,7 +595,7 @@ behavior = "Turning the setting off stops recognition. Text that was already rec
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.you-turn-it-back-on"
@@ -605,7 +605,7 @@ behavior = "You turn it back on."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.searching-text-inside-images-and-pdfs.this-setting-isn-t-included-in-backups"
@@ -615,7 +615,7 @@ behavior = "This setting isn't included in backups."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.settings-clipboard"
@@ -625,7 +625,7 @@ behavior = "Settings → Clipboard."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.enable-clipboard-history-on"
@@ -636,7 +636,7 @@ group = "Enable Clipboard History"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.enable-clipboard-history-off-on"
@@ -647,7 +647,7 @@ group = "Enable Clipboard History"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.clipboard-history-shortcut-any-shortcut-none"
@@ -657,7 +657,7 @@ behavior = "Clipboard History shortcut — Any shortcut — None."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.paste-sequentially-shortcut-any-shortcut-non"
@@ -667,7 +667,7 @@ behavior = "Paste Sequentially shortcut — Any shortcut — None."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-1-day"
@@ -678,7 +678,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-1-week"
@@ -689,7 +689,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-1-month"
@@ -700,7 +700,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-3-months"
@@ -711,7 +711,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-6-months"
@@ -722,7 +722,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-1-year"
@@ -733,7 +733,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.keep-history-for-forever-3-months"
@@ -744,7 +744,7 @@ group = "Keep history for"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.search-text-in-images-and-pdfs-on"
@@ -755,7 +755,7 @@ group = "Search text in images and PDFs"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.search-text-in-images-and-pdfs-off-off"
@@ -766,7 +766,7 @@ group = "Search text in images and PDFs"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.default-action-paste"
@@ -777,7 +777,7 @@ group = "Default action"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.default-action-copy-to-clipboard"
@@ -788,7 +788,7 @@ group = "Default action"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.default-action-paste-as-plain-text-paste"
@@ -799,7 +799,7 @@ group = "Default action"
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.excluded-applications-a-list-of-apps-keychai"
@@ -809,7 +809,7 @@ behavior = "Excluded Applications — A list of apps — Keychain Access, Passwo
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.clear-history-removes-every-entry-except-pin"
@@ -819,7 +819,7 @@ behavior = "Clear history — Removes every entry except pinned ones — None."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.settings.excluded-applications-includes-keychain-acce"
@@ -829,7 +829,7 @@ behavior = "Excluded Applications includes Keychain Access and Passwords by defa
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.history-is-stored-in-clipboard-sqlite3-with"
@@ -839,7 +839,7 @@ behavior = "History is stored in clipboard.sqlite3, with images next to it, in T
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.tinycast-checks-the-clipboard-twice-a-second"
@@ -849,7 +849,7 @@ behavior = "Tinycast checks the clipboard twice a second. It recognizes and skip
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.from-tinycast-never-adds-a-new-entry"
@@ -859,7 +859,7 @@ behavior = "From Tinycast never adds a new entry."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.the-newest-1-000-entries-are-kept-in-memory"
@@ -869,7 +869,7 @@ behavior = "The newest **1,000** entries are kept in memory. Search also covers 
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.search-needs-at-least-three-characters-to-us"
@@ -879,7 +879,7 @@ behavior = "**Search needs at least three characters** to use the full index. Sh
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.through-the-recent-entries-in-memory"
@@ -889,7 +889,7 @@ behavior = "Through the recent entries in memory."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.a-search-returns-at-most-200-matches-before"
@@ -899,7 +899,7 @@ behavior = "A search returns at most 200 matches before the type filter is appli
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."
 
 [[row]]
 id = "features-clipboard.limits-worth-knowing.broad-search-can-show-fewer-results-than-you"
@@ -909,4 +909,4 @@ behavior = "Broad search can show fewer results than your history contains."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The clipboard history has no store and no rows in the palette yet."

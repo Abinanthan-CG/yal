@@ -75,7 +75,7 @@ behavior = "Turn a URL, search, file or deeplink into a command, with values you
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.a-quicklink-is-a-saved-destination-that-work"
@@ -85,7 +85,7 @@ behavior = "A quicklink is a saved destination that works like any other launche
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.turn-quicklinks-on-in-settings-quicklinks-th"
@@ -95,7 +95,7 @@ behavior = "Turn quicklinks on in Settings → Quicklinks. They're off by defaul
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.enable-quicklinks-off"
@@ -105,7 +105,7 @@ behavior = "Enable quicklinks — Off."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.show-in-launcher-on"
@@ -115,7 +115,7 @@ behavior = "Show in launcher — On."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.open-in-a-new-window-off"
@@ -125,7 +125,7 @@ behavior = "Open in a new window — Off."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.pass-selected-text-as-argument-off"
@@ -135,7 +135,7 @@ behavior = "Pass selected text as argument — Off."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.confirm-before-deleting-on"
@@ -145,7 +145,7 @@ behavior = "Confirm before deleting — On."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.quicklinks.while-the-feature-is-off-there-s-no-quicklin"
@@ -155,7 +155,7 @@ behavior = "While the feature is off, there's no Quicklinks section, no quicklin
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.click-add-quicklink-in-settings-or-run-the-c"
@@ -165,7 +165,7 @@ behavior = "Click Add Quicklink in Settings, or run the Create Quicklink command
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.name-what-you-search-for"
@@ -175,7 +175,7 @@ behavior = "Name — What you search for."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.link-where-it-goes-with-any-placeholders"
@@ -185,7 +185,7 @@ behavior = "Link — Where it goes, with any placeholders."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.open-with-a-specific-app-or-the-default-app"
@@ -195,7 +195,7 @@ behavior = "Open With — A specific app, or the default app."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.icon-a-symbol-or-automatic-to-match-the-kind"
@@ -205,7 +205,7 @@ behavior = "Icon — A symbol, or Automatic to match the kind of link."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.pin-to-top-keeps-it-above-your-other-quickli"
@@ -215,7 +215,7 @@ behavior = "Pin to top — Keeps it above your other quicklinks."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.show-in-root-search-lists-it-in-the-main-sea"
@@ -225,7 +225,7 @@ behavior = "Show in root search — Lists it in the main search with your apps a
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.making-one.the-insert-menu-adds-placeholders-for-you"
@@ -235,7 +235,7 @@ behavior = "The Insert… menu adds placeholders for you."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.tinycast-works-out-what-kind-of-link-you-ent"
@@ -245,7 +245,7 @@ behavior = "Tinycast works out what kind of link you entered from its format:"
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.notes-users-file-a-file-or-folder"
@@ -255,7 +255,7 @@ behavior = "~/Notes, /Users/..., file://... — A file or folder."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.https-http-a-web-page"
@@ -265,7 +265,7 @@ behavior = "Https://..., http://... — A web page."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.smb-afp-nfs-ftp-sftp-ftps-a-network-location"
@@ -275,7 +275,7 @@ behavior = "Smb: afp: nfs: ftp: sftp: ftps: — A network location."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.spotify-slack-shortcuts-mailto-a-deeplink-in"
@@ -285,7 +285,7 @@ behavior = "Spotify://, slack://, shortcuts://, mailto: — A deeplink into an a
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.github-com-user-repo-a-web-page-with-https-a"
@@ -295,7 +295,7 @@ behavior = "Github.com/user/repo — A web page, with https:// added."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.destinations.two-formats-get-special-handling-a-single-le"
@@ -305,7 +305,7 @@ behavior = "Two formats get special handling: a single letter followed by a colo
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.placeholders.quicklinks-use-the-same-placeholders-as-snip"
@@ -315,7 +315,7 @@ behavior = "Quicklinks use the same placeholders as snippets:"
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.placeholders.the-documentation-shows-this-example-https-g"
@@ -325,7 +325,7 @@ behavior = "The documentation shows this example:\n\n```\nhttps://google.com/sea
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.placeholders.cursor-and-snippet-are-left-as-written-in-a"
@@ -335,7 +335,7 @@ behavior = "{cursor} and {snippet:…} are left as written in a link, because a 
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.encoding.values-inserted-into-a-web-link-or-deeplink"
@@ -345,7 +345,7 @@ behavior = "Values inserted into a web link or deeplink are encoded automaticall
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.encoding.raw-turns-encoding-off-it-also-lets-the-valu"
@@ -355,7 +355,7 @@ behavior = "| raw turns encoding off. It also lets the value decide what kind of
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.when-you-select-a-quicklink-that-needs-value"
@@ -365,7 +365,7 @@ behavior = "When you select a quicklink that needs values, small fields appear i
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.kbd-tab-kbd-moves-from-the-search-field-thro"
@@ -375,7 +375,7 @@ behavior = "<kbd>tab</kbd> moves from the search field through each field and ba
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.kbd-return-kbd-opens-the-quicklink-if-a-requ"
@@ -385,7 +385,7 @@ behavior = "<kbd>return</kbd> opens the quicklink. If a required field is empty,
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.instead"
@@ -395,7 +395,7 @@ behavior = "Instead."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.a-field-with-options-opens-a-menu-of-choices"
@@ -405,7 +405,7 @@ behavior = "A field with `options=` opens a menu of choices."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.kbd-esc-kbd-moves-from-a-field-back-to-the-s"
@@ -415,7 +415,7 @@ behavior = "<kbd>esc</kbd> moves from a field back to the search field."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.a-field-only-turns-red-after-you-ve-visited"
@@ -425,7 +425,7 @@ behavior = "A field only turns red after you've visited it and left it empty. Fi
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.values-like-clipboard-selection-and-date-are"
@@ -435,7 +435,7 @@ behavior = "Values like {clipboard}, {selection} and {date} are read when the li
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.filling-in-values.a-shortcut-for-a-quicklink-that-still-needs"
@@ -445,7 +445,7 @@ behavior = "A shortcut for a quicklink that still needs values opens Search Quic
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.when-there-is-no-selection.if-a-link-uses-selection-and-no-text-is-sele"
@@ -455,7 +455,7 @@ behavior = "If a link uses {selection} and no text is selected, the quicklink do
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.selected-text-from-a-shortcut.turn-on-pass-selected-text-as-argument-to-fi"
@@ -465,7 +465,7 @@ behavior = "Turn on Pass selected text as argument to fill a quicklink's first a
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.as-a-fallback.a-quicklink-with-an-argument-also-appears-un"
@@ -475,7 +475,7 @@ behavior = "A quicklink with an {argument} also appears under \"Use … with\" a
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.opening.open-with-saves-a-specific-app-if-you-later"
@@ -485,7 +485,7 @@ behavior = "Open With saves a specific app. If you later uninstall that app, Tin
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.opening.open-in-a-new-window-asks-the-browser-to-ope"
@@ -495,7 +495,7 @@ behavior = "Open in a new window asks the browser to open a new window. Chrome a
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.opening.tinycast-checks-file-and-folder-links-before"
@@ -505,7 +505,7 @@ behavior = "Tinycast checks file and folder links before opening them, so if a f
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.quicklinks-have-their-own-launcher-section-o"
@@ -515,7 +515,7 @@ behavior = "Quicklinks have their own launcher section. Only the name is searcha
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.pinned-quicklinks-come-first-in-the-order-yo"
@@ -525,7 +525,7 @@ behavior = "Pinned quicklinks come first, in the order you pinned them, followed
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.to-change-a-quicklink-from-the-launcher-sele"
@@ -535,7 +535,7 @@ behavior = "To change a quicklink from the launcher, select it and press ⌘E (E
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.the-search-quicklinks-command-opens-a-screen"
@@ -545,7 +545,7 @@ behavior = "The Search Quicklinks command opens a screen with the list on the le
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.open-quicklink-return"
@@ -555,7 +555,7 @@ behavior = "Open Quicklink — return."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.open-with-default-app-return"
@@ -565,7 +565,7 @@ behavior = "Open With Default App — ⌘return."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.copy-link-c"
@@ -575,7 +575,7 @@ behavior = "Copy Link — ⌃⌘C."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.edit-quicklink-e"
@@ -585,7 +585,7 @@ behavior = "Edit Quicklink — ⌘E."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.duplicate-quicklink-d"
@@ -595,7 +595,7 @@ behavior = "Duplicate Quicklink — ⌘D."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.pin-unpin-quicklink"
@@ -605,7 +605,7 @@ behavior = "Pin / Unpin Quicklink — ⌘."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.show-in-finder-f"
@@ -615,7 +615,7 @@ behavior = "Show in Finder — ⌘F."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.delete-quicklink-delete"
@@ -625,7 +625,7 @@ behavior = "Delete Quicklink — ⌘delete."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.open-with-default-app-only-appears-when-the"
@@ -635,7 +635,7 @@ behavior = "Open With Default App only appears when the quicklink opens with a s
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.search-quicklinks.copy-link-is-available-in-the-actions-menu-k"
@@ -645,7 +645,7 @@ behavior = "Copy Link is available in the actions menu (⌘K or right-click) in 
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.from-broadest-to-narrowest"
@@ -655,7 +655,7 @@ behavior = "From broadest to narrowest:"
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.turning-off-show-in-launcher-in-settings-rem"
@@ -665,7 +665,7 @@ behavior = "Turning off **Show in launcher** in Settings removes all quicklinks 
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.search"
@@ -675,7 +675,7 @@ behavior = "Search."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.clearing-the-enabled-checkbox-on-a-quicklink"
@@ -685,7 +685,7 @@ behavior = "Clearing the **Enabled** checkbox on a quicklink's row in Settings t
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.but-keeps-its-shortcut-and-settings"
@@ -695,7 +695,7 @@ behavior = "But keeps its shortcut and settings."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.turning-off-show-in-root-search-keeps-a-quic"
@@ -705,7 +705,7 @@ behavior = "Turning off **Show in root search** keeps a quicklink out of the mai
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.open-it-from-search-quicklinks-or-with-its-s"
@@ -715,7 +715,7 @@ behavior = "Open it from Search Quicklinks or with its shortcut. In the launcher
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.three-ways-to-hide-a-quicklink.editing-a-quicklink-keeps-its-shortcut-favor"
@@ -725,7 +725,7 @@ behavior = "Editing a quicklink keeps its shortcut, favorite, visibility and lea
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.import-and-export.import-quicklinks-and-export-quicklinks-use"
@@ -735,7 +735,7 @@ behavior = "Import Quicklinks and Export Quicklinks use a simple JSON file you c
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.import-and-export.the-documentation-shows-this-example-version"
@@ -745,7 +745,7 @@ behavior = "The documentation shows this example:\n\n```\n{\n  \"version\": 1,\n
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.import-and-export.a-quicklink-is-skipped-as-a-duplicate-if-its"
@@ -755,7 +755,7 @@ behavior = "A quicklink is skipped as a duplicate if its name or link matches on
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.import-and-export.you-can-also-import-quicklinks-from-a-raycas"
@@ -765,7 +765,7 @@ behavior = "You can also import quicklinks from a Raycast export."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-quicklinks.where-they-re-stored.quicklinks-are-stored-in-quicklinks-sqlite3"
@@ -775,4 +775,4 @@ behavior = "Quicklinks are stored in quicklinks.sqlite3 in Tinycast's Applicatio
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Quicklinks have no store and no rows in the palette yet."
