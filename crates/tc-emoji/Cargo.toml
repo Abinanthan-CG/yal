@@ -1,0 +1,14 @@
+[package]
+name = "tc-emoji"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "The emoji and symbol catalog and its search, for YAL"
+
+[dependencies]
+tc-search = { path = "../tc-search" }
+serde = { workspace = true }
+serde_json = { workspace = true }

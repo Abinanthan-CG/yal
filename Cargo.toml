@@ -5,6 +5,7 @@ members = [
     "crates/tc-search",
     "crates/tc-apps",
     "crates/tc-calc",
+    "crates/tc-emoji",
     "crates/tc-snippets",
     "crates/tc-clipboard",
     "crates/tc-files",

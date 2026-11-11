@@ -4023,6 +4023,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc-emoji"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tc-search",
+]
+
+[[package]]
 name = "tc-extensions"
 version = "0.1.0"
 dependencies = [
