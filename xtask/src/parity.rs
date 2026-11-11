@@ -120,6 +120,28 @@ struct RowStatus {
 struct StatusFile {
     #[serde(default)]
     status: Vec<RowStatus>,
+    /// Features that are out of scope by decision.
+    #[serde(default)]
+    cut: Vec<Cut>,
+}
+
+/// A feature that is not going to be built, and why.
+///
+/// A cut is not a failure: the row stays in the ledger and stays `NOT PORTED`, and
+/// the reason says that it was decided, not that it was forgotten.
+#[derive(Deserialize, Clone)]
+struct Cut {
+    /// Why the feature is out of scope.
+    reason: String,
+    /// The pages the cut covers.
+    #[serde(default)]
+    pages: Vec<String>,
+    /// The headings the cut covers, by their ledger id.
+    #[serde(default)]
+    headings: Vec<String>,
+    /// The rows the cut covers, by their ledger id.
+    #[serde(default)]
+    ids: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -414,7 +436,14 @@ fn apply_status(ledger: &mut Ledger, root: &Path) -> Result<()> {
     }
 
     for row in ledger.row.iter_mut() {
+        // A hand-authored status wins over a cut: a feature that is out of scope
+        // but was built anyway says so in its own words.
         let Some(status) = wanted.remove(&row.id) else {
+            if let Some(reason) = cut_reason(&file.cut, row) {
+                row.status = NOT_PORTED.to_string();
+                row.evidence = Vec::new();
+                row.reason = reason;
+            }
             continue;
         };
         row.status = status.status.clone();
@@ -424,6 +453,21 @@ fn apply_status(ledger: &mut Ledger, root: &Path) -> Result<()> {
 
     ledger.unknown_status = wanted.into_keys().collect();
     Ok(())
+}
+
+/// The reason a row is cut, if it is.
+///
+/// A cut names a page, a heading or a row. The first cut that covers the row wins.
+fn cut_reason(cuts: &[Cut], row: &Row) -> Option<String> {
+    for cut in cuts {
+        let covered = cut.pages.iter().any(|page| page == &row.page)
+            || cut.headings.iter().any(|heading| heading == &row.heading)
+            || cut.ids.iter().any(|id| id == &row.id);
+        if covered {
+            return Some(cut.reason.clone());
+        }
+    }
+    None
 }
 
 fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> Vec<String> {
