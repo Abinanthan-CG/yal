@@ -38,6 +38,20 @@ try {
     cargo fmt --all -- --check
     if ($LASTEXITCODE -ne 0) { throw "cargo fmt reported differences" }
 
+    Write-Host "==> the palette (npm)" -ForegroundColor Cyan
+    Push-Location (Join-Path $root 'frontend')
+    try {
+        # `npm.cmd` rather than `npm`: on Windows the `npm` shim is a PowerShell
+        # script, which a restricted execution policy refuses to run.
+        npm.cmd ci
+        if ($LASTEXITCODE -ne 0) { throw "npm ci failed" }
+        npm.cmd run build
+        if ($LASTEXITCODE -ne 0) { throw "the palette did not build" }
+    }
+    finally {
+        Pop-Location
+    }
+
     Write-Host "==> cargo clippy" -ForegroundColor Cyan
     cargo clippy --workspace --all-targets -- -D warnings
     if ($LASTEXITCODE -ne 0) { throw "cargo clippy reported warnings" }

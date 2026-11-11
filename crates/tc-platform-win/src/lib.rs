@@ -6,15 +6,19 @@
 
 mod clipboard;
 mod hotkey;
+mod launch;
 mod paths;
+mod programs;
 mod quit;
 mod single_instance;
 mod windows;
 
 pub use clipboard::WindowsClipboard;
 pub use hotkey::WindowsHotkey;
+pub use launch::{open, reveal};
 pub use paths::is_portable;
 pub use paths::windows_paths;
+pub use programs::programs;
 pub use quit::{signal_quit, QuitWatcher};
 pub use single_instance::{another_instance_is_running, WindowsSingleInstance};
 pub use windows::{extended_frame_bounds, own_integrity_level, WindowsWindows};

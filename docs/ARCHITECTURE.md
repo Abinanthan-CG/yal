@@ -92,7 +92,7 @@ The only crate that imports the `windows` crate.
 One crate per feature area, so that a change to the calculator cannot break
 the clipboard, and so that CI can test them independently:
 
-`tc-search`, `tc-calc`, `tc-snippets`, `tc-clipboard`, `tc-files`,
+`tc-search`, `tc-apps`, `tc-calc`, `tc-snippets`, `tc-clipboard`, `tc-files`,
 `tc-windows`, `tc-calendar`, `tc-backup`, `tc-i18n`, `tc-ai`, `tc-mcp`,
 `tc-extensions`.
 
@@ -135,9 +135,13 @@ Each one is started by the launcher and its standard output is read as JSON.
 
 ### The frontend
 
-`frontend/dist/` is a plain WebView2 page. It is committed, so a Rust build
-never needs Node.js. The palette's interface is a TypeScript project in
-`frontend/`, built with `npm run build`.
+`frontend/src/` is the palette's interface: Solid and TypeScript, built by
+Vite into `frontend/dist/`. Tauri loads the built page from there, and the
+built page is **not** committed — it is a build output, and CI builds it
+before the Rust.
+
+The frontend talks to the Rust side through four commands and nothing else:
+`search`, `suggestions`, `open_result` and `hide_palette`.
 
 ---
 

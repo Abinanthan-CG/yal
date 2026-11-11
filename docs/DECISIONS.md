@@ -309,3 +309,68 @@ case.
 adds a dependency for forty lines of behavior, and the crate would still need case-blindness
 added on top. (c) is the behavior upstream documents, and it is the only place in the port where
 two entries are otherwise indistinguishable.
+
+## 2026-11-11 - The program index asks three places, because Windows has three
+
+**Question.** Upstream finds applications by walking LaunchServices for `.app` bundles. Windows
+has no bundle, and no single place that lists everything the user can open.
+
+**Options.** (a) Walk the Start Menu only. (b) Read the registry's uninstall key only. (c) Read
+all three places Windows keeps them, and merge.
+
+**Decision.** (c). The **Start Menu** holds the shortcut and the name Windows shows the user. The
+registry's **uninstall** key names every installed program, with its publisher and its version.
+The registry's **App Paths** says how Windows starts a program that has no shortcut.
+
+**Why.** (a) misses everything installed without a shortcut, which on a fresh machine is most of
+it. (b) misses the programs a user launches daily but never installed deliberately, and its
+display names are the installer's, not the user's. (c) is the union: the Start Menu's name wins
+where there is one, the registry fills the gaps, and App Paths catches the rest.
+
+## 2026-11-11 - A shortcut is opened as a shortcut
+
+**Question.** A Start Menu entry is a `.lnk` file that points at an executable. To open the
+program, the launcher could resolve the shortcut, or open the shortcut.
+
+**Options.** (a) Resolve the shortcut with `IShellLinkW` and start the executable. (b) Hand the
+shortcut itself to the shell.
+
+**Decision.** (b). The shell opens a `.lnk` perfectly well, so nothing has to resolve it.
+
+**Why.** (a) needs a COM apartment and the `IShellLinkW` interface, for no gain: the shell does
+the same work, better, because it is the thing that knows what a shortcut means. It also keeps
+the port's COM surface small, which matters in a process that has to start in milliseconds.
+
+## 2026-11-11 - Programs with the same name are one entry
+
+**Question.** Upstream keeps every installed copy of an application: each path appears in the
+search, and the version and the containing folder help tell them apart. Windows machines have
+the same problem: an x64 and an x86 copy, a machine-wide and a per-user install.
+
+**Options.** (a) Keep every copy, as upstream does. (b) Merge the copies into one entry.
+
+**Decision.** (b). Entries whose names fold the same are one entry, and the Start Menu's copy
+wins. The registry's version number is kept as an alternate name, so the copies are still told
+apart in the text.
+
+**Why.** Upstream can afford to show three copies because it also implements the rules that
+make them bearable: which copy the favorite points at, which copy the shortcut opens, and which
+copy the uninstaller refuses to touch. Without those rules, three copies are three confusing
+rows. One entry with the version in its name is honest and useful, and the version is still
+there.
+
+## 2026-11-11 - The palette's build is not committed
+
+**Question.** Tauri loads the palette's page from `frontend/dist/`. That directory can be
+committed, or built.
+
+**Options.** (a) Commit `frontend/dist/`. (b) Build it in every build, and in CI.
+
+**Decision.** (b). `frontend/dist/` is a build output and is not committed. The sources are in
+`frontend/src/`, and `scripts/build.ps1` builds the palette before it builds the Rust.
+
+**Why.** (a) means two copies of the same interface, one of which is stale the moment anyone
+edits the sources, and the stale one is the one that ships unless someone remembers to rebuild.
+CI checks the types and builds the page on Linux, and builds it again on Windows, where the
+installer is made from what was built. A committed build output is a claim that cannot be
+checked; a built one always is.

@@ -25,13 +25,38 @@ jobs:
         run: rustup show active-toolchain || rustup toolchain install
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: crates/tc-core crates/tc-calc crates/tc-search crates/tc-snippets crates/tc-platform
+          workspaces: crates/tc-core crates/tc-calc crates/tc-search crates/tc-apps crates/tc-snippets crates/tc-platform
       - name: Test the pure-logic crates
-        run: cargo test -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-snippets
+        run: cargo test -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-apps -p tc-snippets
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Clippy
-        run: cargo clippy -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-snippets --all-targets -- -D warnings
+        run: cargo clippy -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-apps -p tc-snippets --all-targets -- -D warnings
+
+  frontend:
+    name: Frontend (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install the palette's dependencies
+        run: npm ci
+        working-directory: frontend
+      - name: The palette's types are sound
+        run: npm run check
+        working-directory: frontend
+      - name: The palette builds
+        run: npm run build
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yal-frontend-dist
+          path: frontend/dist
+          if-no-files-found: error
 
   windows:
     name: Windows
@@ -47,6 +72,19 @@ jobs:
 
       - name: Install NSIS
         run: choco install nsis --yes --no-progress
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build the palette
+        run: npm ci
+        working-directory: frontend
+      - name: Build the palette
+        run: npm run build
+        working-directory: frontend
 
       - name: Check formatting
         run: cargo fmt --all -- --check

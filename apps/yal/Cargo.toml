@@ -9,9 +9,11 @@ repository.workspace = true
 description = "YAL - a Windows keyboard launcher, an unofficial port of Tinycast"
 
 [dependencies]
+tc-apps = { path = "../../crates/tc-apps" }
 tc-core = { path = "../../crates/tc-core" }
 tc-platform = { path = "../../crates/tc-platform" }
 tc-platform-win = { path = "../../crates/tc-platform-win" }
+tc-search = { path = "../../crates/tc-search" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { version = "2", features = ["tray-icon", "image-png"] }
