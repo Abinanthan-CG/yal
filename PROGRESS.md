@@ -104,7 +104,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-	c-search has 150 tests. The workspace has 242.
+	c-search has 150 tests. The workspace has 275.
 
 ### The launcher core
 
@@ -153,10 +153,13 @@ The order to work in, with what is done so far:
 8. Quicklinks — the destinations are done; the store, the editor and the section are not
 9. System settings
 10. System actions — all 32, with their confirmations
-11. Calculator
+11. Calculator — **in progress**: the tokenizer, the parser, the engine and the number
+    formatting are being ported to `crates/tc-calc` against upstream's own calculator tests
 12. Clipboard history
 13. Emoji
-14. Snippets
+14. Snippets — **in progress**: the record, the keyword policy, the markdown serializer, the
+    repository, the store, the template engine and the Raycast import are being ported to
+    `crates/tc-snippets`
 15. File search
 16. Window management
 17. Window layouts
@@ -176,6 +179,17 @@ The order to work in, with what is done so far:
 31. Uninstall
 32. Updates
 
+## The other port, reviewed
+
+Another AI shipped a separate YAL port (`yal-source-0.1.0.zip`). It was unpacked outside this
+repository and checked on this machine. It does not compile, its Windows layer is empty (the
+credential store reports success while discarding the secret), its "1,209 passing tests" are a
+JavaScript re-implementation that never runs the Rust, and its parity ledger has 1,208 rows
+against this port's 2,309, so the two verdicts cannot be compared row for row.
+
+Nothing was salvaged from it. The review, with the commands and their output, is in
+[docs/audits/2026-11-11-other-port-review.md](docs/audits/2026-11-11-other-port-review.md).
+
 ## Phase 3 - Tier 2
 
 Status: **not started**
@@ -192,8 +206,9 @@ Status: **not started**
   `Cargo.toml` repeats it because Cargo cannot read a constant.
 - The installer has not been signed. The release workflow signs it when the certificate secret is
   set, and signs the checksums with minisign.
-- `packaging/winget/YAL.YAML` and `packaging/scoop/yal.json` carry placeholder checksums. They
-  need the real ones from `dist/SHA256SUMS.txt` before they can be submitted.
+- `packaging/winget/YAL.YAML` and `packaging/scoop/yal.json` are templates. `cargo xtask dist`
+  fills in the version, the repository slug, the release date and the real artifact checksums, and
+  writes the result to `dist/packaging/`. The files in the repository keep their placeholders.
 - Building for ARM64 needs the Visual Studio ARM64 cross-compiler. It was installed on this
   machine on 2026-11-10; see [port note 004](docs/port-notes/004-arm64-build.md) for what it
   takes and what does not work.
