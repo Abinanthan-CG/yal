@@ -11,3 +11,9 @@ description = "YAL port: tc-files"
 [dependencies]
 tc-core = { path = "../tc-core" }
 tc-platform = { path = "../tc-platform" }
+rusqlite = { workspace = true }
+thiserror = { workspace = true }
+unicode-normalization = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
