@@ -9,9 +9,9 @@
 
 [page]
 "docs/launcher/" = "The search and the program index are ported; the other sections — Windows Settings pages, quicklinks, snippets, system actions, window commands, layouts, rooms, custom commands, Quick Actions and meetings — have no entries yet."
-"docs/launcher/favorites/" = "Favorites have no store and no rows in the palette yet."
+"docs/launcher/favorites/" = "The number keys that open a favorite are ported in `tc-core`, but favorites have no store and no rows in the palette yet."
 "docs/launcher/aliases/" = "An entry's alias is not stored, and the alias editor is not built yet."
-"docs/launcher/fallbacks/" = "The fallback list has no store and no rows in the palette yet."
+"docs/launcher/fallbacks/" = "The fallback model is ported in `tc-core` — the built-ins, the quicklink fallback, the stored order and the section header — but the rows are not shown under the search and no fallback is run yet."
 "docs/launcher/commands/" = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 "docs/launcher/quicklinks/" = "Quicklinks have no store and no rows in the palette yet."
 "docs/launcher/system-settings/" = "The Windows Settings pages are not indexed yet."

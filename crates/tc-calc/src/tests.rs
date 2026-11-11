@@ -6,6 +6,7 @@
 
 use crate::catalog::NameCatalog;
 use crate::engine::{evaluate, CalcOutcome};
+use crate::formatter::Formatter;
 use crate::result::{CalcResult, Payload};
 
 /// The outcome of a query, with the empty catalog upstream's own tests run with.
@@ -559,4 +560,108 @@ fn an_unknown_word_is_not_a_unit() {
         CalcOutcome::NoCard => {}
         other => panic!("an unknown word answered {other:?}"),
     }
+}
+
+// MARK: - More of the upstream suite
+
+#[test]
+fn upstream_a_spoken_root() {
+    // Upstream: `2 square root of 9` is "6".
+    assert_display("2 square root of 9", "6");
+    // Upstream: `cube root of 8%` is "0.430886938" and the sign of an odd root is kept.
+    assert_display("cube root of 8%", "0.430886938");
+    assert_display("cube root of -8%", "-0.430886938");
+}
+
+#[test]
+fn upstream_reads_the_odd_spaces() {
+    // Upstream: a non-breaking space and a thin space separate the terms.
+    assert_display("2\u{00A0}+\u{2009}2", "4");
+}
+
+#[test]
+fn upstream_a_compact_literal_mods() {
+    assert_display("10k mod 3", "1");
+}
+
+#[test]
+fn upstream_echoes_the_pretty_glyphs() {
+    // Upstream: the card echoes "3×3".
+    assert_expression("3*3", "3×3");
+}
+
+#[test]
+fn upstream_keeps_the_result_for_every_trailing_operator() {
+    assert_display("10 /", "10");
+    assert_display("10 ^", "10");
+    assert_copy("10k +", "10000");
+}
+
+#[test]
+fn upstream_rejects_a_half_typed_expression() {
+    assert_no_card("+");
+    assert_no_card("10 + nonsense");
+    assert_no_card("10 + (");
+    // Upstream: a stray English word is a search, not a partial expression.
+    assert_no_card("10 of");
+    assert_no_card("pages per");
+    assert_no_card("world times 5");
+}
+
+#[test]
+fn upstream_writes_the_operators_out() {
+    assert_display("10 multiplied by 3", "30");
+}
+
+#[test]
+fn upstream_the_rest_of_the_function_list() {
+    assert_display("cot(1)", "0.6420926159");
+    assert_display("csc(1)", "1.188395106");
+    assert_display("acos(1)", "0");
+    assert_display("arctan(1)", "0.7853981634");
+    assert_display("exp(0)", "1");
+}
+
+#[test]
+fn upstream_the_rest_of_the_constants() {
+    assert_display("2 tau", "12.56637061");
+    assert_display("phi * 2", "3.236067977");
+}
+
+#[test]
+fn upstream_reads_a_comma_inside_a_number() {
+    // Upstream: "10,5" is the number 105, and a lone number earns no card.
+    assert_no_card("10,5");
+}
+
+#[test]
+fn upstream_adds_decimals() {
+    assert_display("5 + 3", "8");
+    assert_display("1.5 + 3", "4.5");
+    assert_display("99.99 + 0.01", "100");
+}
+// MARK: - The formatter on its own
+
+#[test]
+fn upstream_compounds_feet_and_inches() {
+    // Upstream: one metre is "3 feet 3.37007874 inches".
+    assert_eq!(
+        Formatter::compound_feet_inches(1.0 / 0.3048),
+        "3 feet 3.37007874 inches"
+    );
+}
+
+#[test]
+fn upstream_breaks_a_timespan_into_its_largest_units() {
+    // Upstream: 8,700 seconds is "2 hr 25 min".
+    assert_eq!(Formatter::timespan(8_700.0), "2 hr 25 min");
+    assert_eq!(Formatter::timespan(90.0), "1 min 30 s");
+}
+
+#[test]
+fn upstream_money_widens_below_a_cent() {
+    assert_eq!(Formatter::currency(15.0), "15.00");
+    assert_eq!(Formatter::currency(0.5), "0.50");
+    assert_eq!(Formatter::currency(0.005), "0.005");
+    assert_eq!(Formatter::currency(0.0), "0.00");
 }

@@ -10,6 +10,8 @@
 pub mod command;
 pub mod deeplink;
 pub mod entry;
+pub mod fallback;
+pub mod favorites;
 pub mod ids;
 pub mod quicklink;
 pub mod url;
@@ -20,6 +22,8 @@ pub use entry::{
     action_for_entry_id, HotKeyAction, SystemActionCategory, SystemActionConfirmation,
     SystemActionId,
 };
+pub use fallback::{Fallback, FallbackBuiltin};
+pub use favorites::FavoriteSlots;
 pub use ids::Uuid;
 pub use quicklink::QuicklinkDestination;
 

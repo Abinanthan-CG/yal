@@ -19,7 +19,7 @@ has got.
 - **The calculator's arithmetic core** in `tc-calc`, ported from upstream's calculator model:
   the tokenizer, the expression parser, the evaluation engine, the math functions, the
   rounding and the number formatting, with upstream's own `calc-test.swift` as the oracle
-  and 52 tests. The engine asks a catalog about the units and the currencies it meets and
+  and 66 tests. The engine asks a catalog about the units and the currencies it meets and
   answers `Unsupported` for a query it cannot finish, so the unit catalog can be added
   without touching the engine.
 - **The search slice** in `tc-search`, ported from upstream's launcher model:

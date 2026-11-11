@@ -17934,9 +17934,9 @@ page = "docs/launcher/favorites/"
 heading = "launcher-favorites.launching-by-number"
 behavior = "⌘1 opens your first favorite, ⌘2 the second, and so on up to ⌘9. ⌘0 opens the tenth. Favorites after the tenth don't get a number, so move one up if you want a key for it."
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
-status = "NOT PORTED"
-evidence = []
-reason = "Favorites have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::favorites::tests::there_are_ten_slots_and_no_digit_repeats", "tc-core::favorites::tests::a_digit_names_its_slot", "tc-core::favorites::tests::a_slot_shows_its_digit"]
+reason = ""
 count_check = "favorites.numbered-slots"
 
 [[row]]
@@ -17945,9 +17945,9 @@ page = "docs/launcher/favorites/"
 heading = "launcher-favorites.launching-by-number"
 behavior = "The numbers follow key positions, so they work the same on any keyboard layout."
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
-status = "NOT PORTED"
-evidence = []
-reason = "Favorites have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::favorites::tests::a_physical_number_row_key_names_its_slot", "tc-core::favorites::tests::a_slot_and_its_digit_round_trip"]
+reason = ""
 count_check = "favorites.numbered-slots"
 
 [[row]]

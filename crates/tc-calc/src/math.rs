@@ -31,6 +31,14 @@ impl Math {
         single_argument(name).is_some() || Self::MULTIPLE_ARGUMENTS.contains(&name)
     }
 
+    /// Whether a name is a one-argument function, as upstream's `CalcMath.functions`.
+    ///
+    /// Upstream's parser reaches for the one-argument functions by name, so a name that
+    /// only takes several arguments is not one of them.
+    pub fn is_single_argument(name: &str) -> bool {
+        single_argument(name).is_some()
+    }
+
     /// The value of a named constant, as upstream's `CalcMath.constants`.
     pub fn constant(name: &str) -> Option<f64> {
         Some(match name {
