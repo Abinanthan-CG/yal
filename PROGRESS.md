@@ -101,7 +101,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-tc-search has 150 tests. The workspace has 651.
+tc-search has 150 tests. The workspace has 706.
 
 ### The launcher core
 
@@ -199,6 +199,23 @@ and the Settings pane are not either, so **the window-management rows stay
 `NOT PORTED`**: a model behind a screen is not the screen.
 
 See [port note 014](docs/port-notes/014-window-commands-and-geometry.md).
+
+### The file index (crates/tc-files)
+
+The private index behind Search Files: the folders the user picks, the rules
+that keep things out of them, the pass that keeps the index current, the
+SQLite store it lives in, and the search over it. **55 tests**, written from
+upstream's own documentation.
+
+The pass is the donor project's design (GPL-3.0-only): the nanosecond
+freshness rule, the rejection of junctions and reparse points, and the exact
+per-directory deletion. Upstream's scope model and upstream's search rules are
+the ones that were kept - including the accents, which are folded.
+
+The screen, the Settings pane and the actions on a row are not built, so the
+file-search rows stay `NOT PORTED`.
+
+See [port note 015](docs/port-notes/015-file-search-index.md).
 
 ### The clipboard model (crates/tc-clipboard)
 

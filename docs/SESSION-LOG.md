@@ -385,11 +385,22 @@ command is reachable from the launcher, so the window-management rows stay
 `NOT PORTED` until a test on this machine moves a window and reads its
 rectangle back.
 
+- **The file-search backend**, into `crates/tc-files`: the search scopes, the
+  three kinds of ignore rule upstream has, the incremental pass that keeps the
+  index current, the SQLite store, and the search over it - every word must
+  appear in the name in any order, the exact name first, the user's own files
+  above the hidden and the program ones, the accents folded, 200 results at
+  most, and the recent list for an empty query. 55 tests. The rebuild follows
+  upstream's rule: the new index is built beside the old one and swapped in
+  when it is ready, so a search that is running keeps the old index until the
+  new one is complete.
+
 **The worker failed.** The background worker that was to build the file-search
 backend died on a provider balance error before writing a file, so that slice
-is not started. The geometry above was written by hand instead.
+was written by hand instead - as the geometry was.
 
 **Verified.**
 - `cargo test -p tc-windows` passes: 47 tests, 0 failed, 0 ignored.
+- `cargo test -p tc-files` passes: 55 tests, 0 failed, 0 ignored.
 - `cargo clippy -p tc-windows --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all` leaves no diff.

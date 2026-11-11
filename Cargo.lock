@@ -4043,8 +4043,12 @@ dependencies = [
 name = "tc-files"
 version = "0.1.0"
 dependencies = [
+ "rusqlite",
  "tc-core",
  "tc-platform",
+ "tempfile",
+ "thiserror 2.0.21",
+ "unicode-normalization",
 ]
 
 [[package]]

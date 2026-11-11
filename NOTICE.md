@@ -395,19 +395,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## The parallel YAL project - the window geometry
+## The parallel YAL project - the window geometry and the file index
 
-The window-management geometry in `crates/tc-windows/src/geometry.rs` follows the
-shape of the **YAL** project by Abinanthan-CG, <https://github.com/Abinanthan-CG/yal>,
-which is licensed under the GNU General Public License version 3. YAL is a
-community rebuild of the same launcher written in Rust with an egui interface;
-its window geometry keeps the arithmetic in one pure function and the platform
-calls beside it, and that is the shape this port follows.
+Two parts of this port follow the **YAL** project by Abinanthan-CG,
+<https://github.com/Abinanthan-CG/yal>, which is licensed under the GNU General
+Public License version 3. YAL is a community rebuild of the same launcher
+written in Rust with an egui interface.
 
-Every rule in the file comes from upstream Tinycast's own Swift
-(`Tinycast/Features/WindowManagement/Model/WindowPlacementEngine.swift`); the
-donor contributed the shape of the module and the vocabulary of its tests. The
-audit of what was taken and what was not is in
+- **`crates/tc-windows/src/geometry.rs`** - the window geometry. YAL keeps the
+  arithmetic in one pure function and the platform calls beside it, and that is
+  the shape this port follows. Every rule in the file comes from upstream
+  Tinycast's own Swift
+  (`Tinycast/Features/WindowManagement/Model/WindowPlacementEngine.swift`); the
+  donor contributed the shape of the module and the vocabulary of its tests.
+- **`crates/tc-files/src/index.rs`** - the incremental file index. The donor's
+  pass is the design: two tables, the nanosecond freshness rule, the rejection
+  of junctions and reparse points, and the exact per-directory deletion. The
+  donor's scope model and its search were not taken; upstream's own are used.
+  `crates/tc-files/ATTRIBUTION.md` says exactly what was taken.
+
+The audit of what was taken and what was not is in
 `docs/audits/2026-11-11-parallel-yal-review.md`.
 
 AGPL-3.0 is GPL-3.0 plus section 13, so this combination is lawful and the
