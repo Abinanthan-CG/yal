@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 19 | 1796 |
+| 1 | 1815 | 40 | 1775 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **19** | **2290** |
+| **All** | **2309** | **40** | **2269** |
 
 ### Totals per docs page
 
@@ -27,7 +27,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/system-settings/` | 1 | 16 | 0 | 16 |
 | `docs/launcher/system-actions/` | 1 | 54 | 0 | 54 |
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
-| `docs/features/calculator/` | 1 | 326 | 0 | 326 |
+| `docs/features/calculator/` | 1 | 326 | 21 | 305 |
 | `docs/features/clipboard/` | 1 | 85 | 0 | 85 |
 | `docs/features/snippets/` | 1 | 87 | 0 | 87 |
 | `docs/features/file-search/` | 1 | 68 | 0 | 68 |
@@ -532,8 +532,8 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | 4(2+3) is 20. 2pi, 2sqrt(9) and (2+3)(2+3) all work, and 6/2(1+2) gives the same answer as 6/2(1+2). A lone x between numbers also multiplies, so 3x3 and $5 x 2 work. Two numbers separated only by a space never multiply, so 5 3 stays a search. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | A trailing operator keeps the last answer on screen. 10 + shows 10, and 10kg + 500g + shows 10,500 g, so the card doesn't flicker while you type the next number. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Spoken roots work with measurements: square root of 25m2 is 5 m. root 4 of 81 is 3, and log 81 base 3 is 4. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Thousand, million, billion, trillion and quadrillion scale the number before them: 2 trillion is 2,000,000,000,000. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Use mod for the remainder, because % already means percent. It has the same precedence as multiply and divide, and keeps the sign of the first number: -10 mod 3 is -1. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | Thousand, million, billion, trillion and quadrillion scale the number before them: 2 trillion is 2,000,000,000,000. | PORTED | `tc-calc::tests::upstream_magnitude_words_scale_the_literal`, `tc-calc::tests::upstream_magnitude_words_reach_trillion` |
+| Calculator | Calculator | Use mod for the remainder, because % already means percent. It has the same precedence as multiply and divide, and keeps the sign of the first number: -10 mod 3 is -1. | PORTED | `tc-calc::tests::upstream_mod_is_remainder_with_the_dividend_sign` |
 | Calculator | Calculator | You can also write the operators as words: 10 plus 5, 10 minus 3, 6 times 7, 10 divided by 2, 10 multiplied by 3 and 2 to the power of 10. 3 raised to 4, 2 exponent 10 and 3 to the 4 are powers too. 4 squared is 16 and 3 cubed is 27. per means divide, so 60 miles per hour is 60 mi/hr. percent, per cent and percentage mean %, so 20 percent of 50 is 10. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Calculator History is a separate screen that you open with the command of the same name. It isn't part of the tab cycle. To leave it, press esc, or delete in an empty search. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Copy Answer — return. | NOT PORTED | The calculator engine is not ported yet. |
@@ -615,7 +615,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | 500mA 3h 30min — 1,750 mAh. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | C means Celsius, so coulombs are shown as As. Mega and milli are case-sensitive: MW is megawatts and mW is milliwatts. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Capacitance (farad, µF, nF, pF), inductance (henry, mH), conductance (siemens), magnetic flux (weber, Wb), magnetic flux density (tesla, mT, gauss), torque (Nm, lb ft) and amount of substance (mol, mmol) all work, and they combine with the units above. Write these names out or with a prefix: a bare F is still Fahrenheit, H hours, S seconds and T tonnes. 10 newton meters to pound feet is 7.375621493 lb·ft. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | For anything else, it shows nothing rather than flashing an error while you're still typing. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | For anything else, it shows nothing rather than flashing an error while you're still typing. | PORTED | `tc-calc::tests::upstream_rejects_a_malformed_expression`, `tc-calc::tests::upstream_rejects_an_unknown_word`, `tc-calc::tests::upstream_rejects_a_lone_literal`, `tc-calc::tests::upstream_rejects_a_function_call_it_cannot_answer`, `tc-calc::tests::upstream_rejects_a_shift_it_cannot_answer`, `tc-calc::tests::upstream_rejects_a_literal_that_overflows`, `tc-calc::tests::upstream_rejects_a_magnitude_word_it_cannot_read`, `tc-calc::tests::upstream_rejects_a_rounding_it_cannot_answer` |
 | Calculator | Calculator | The calculator only shows an error for real mistakes, like combining two units that don't fit together (1kg + 1m) or a unit and a currency (Cannot convert Currency to Weight.). | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 10 km/h to min/km — 6 min/km. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 100 mi / 4 gal to l/100km — 9.408583333 L/100km. | NOT PORTED | The calculator engine is not ported yet. |
@@ -626,7 +626,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | Fuel economy uses mpg and km/L, and fuel consumption uses L/100km. 15 km/l to mpg is 35.2821875 mpg, and 100 mi / 4 gal to mpg is 25 mpg. Economy and consumption convert directly into each other, as do speed and pace: | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | ==, !=, and >= compare numbers or compatible units: 1km == 1000m is true. Whole numbers support &, \|, xor, ~, >. ^ always means a power. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Base conversion works both ways: 0xff shows Hexadecimal → Decimal, 256 as hex is 0x100, and 2m / 2m to hex is 0x1. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Functions take comma-separated values: hypot(3,4), round(3.14159,2), log(8,2), gcd(12,18), lcm(4,6), atan2(1,1), pow(2,10) and root(-8,3). There are also inverse and hyperbolic trig functions, cbrt, exp, log2, sign and trunc, and the constants tau and phi. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | Functions take comma-separated values: hypot(3,4), round(3.14159,2), log(8,2), gcd(12,18), lcm(4,6), atan2(1,1), pow(2,10) and root(-8,3). There are also inverse and hyperbolic trig functions, cbrt, exp, log2, sign and trunc, and the constants tau and phi. | PORTED | `tc-calc::tests::upstream_the_whole_function_list`, `tc-calc::tests::upstream_functions_with_several_arguments` |
 | Calculator | Calculator | Min, max, sum, avg, mean, average, median and stddev take lists, including measurements, and count counts them: sum(1km,500m) is 1.5 km. Inside a function, write 1000 instead of 1,000, because commas separate the values. If your number format uses a decimal comma, separate values with ; instead, as in max(2,5; 3). | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 20 after 5 years at 5% decay every year — 15.47561875. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 20 after 5 years at 5% every year — 25.52563125. | NOT PORTED | The calculator engine is not ported yet. |
@@ -710,22 +710,22 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | Download, upload, transfer and send all work. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Time saved 1 hour at 1.5x — 0.3333333333 hr. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Transfer 1 TB at 100 Mbps — 22 hr 13 min 20 s. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 0.625 as fraction — 5/8. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 0.75 to fraction — 3/4. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 0.625 as fraction — 5/8. | PORTED | `tc-calc::tests::upstream_answers_a_fraction` |
+| Calculator | Calculator | 0.75 to fraction — 3/4. | PORTED | `tc-calc::tests::upstream_answers_a_fraction` |
 | Calculator | Calculator | $1,240 rounded to nearest hundred — 1,200.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 2.1 rounded up — 3. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 2/3 to 3 dp — 0.667. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 2.5 rounded — 3. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 3.3 to nearest quarter — 3.25. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 44 rounded up to nearest 10 — 50. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | A number that has no simple fraction, like pi as fraction, shows no card. round 56 to 10 shows no card either, because it could mean ten decimal places; add up, down or nearest. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Pi to 2 decimal places — 3.14. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Round 47 to nearest 5 — 45. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Round 51 to next 10 — 60. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Round 56.2 up — 57. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Round 56.789 to 1 digit — 56.8. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Round 56 up to 10 — 60. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Round 59 down to last 10 — 50. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 2.1 rounded up — 3. | PORTED | `tc-calc::tests::upstream_rounds_a_direction` |
+| Calculator | Calculator | 2/3 to 3 dp — 0.667. | PORTED | `tc-calc::tests::upstream_rounds_to_decimal_places` |
+| Calculator | Calculator | 2.5 rounded — 3. | PORTED | `tc-calc::tests::upstream_rounds_a_direction` |
+| Calculator | Calculator | 3.3 to nearest quarter — 3.25. | PORTED | `tc-calc::tests::upstream_rounding_words` |
+| Calculator | Calculator | 44 rounded up to nearest 10 — 50. | PORTED | `tc-calc::tests::upstream_rounds_a_direction` |
+| Calculator | Calculator | A number that has no simple fraction, like pi as fraction, shows no card. round 56 to 10 shows no card either, because it could mean ten decimal places; add up, down or nearest. | PORTED | `tc-calc::tests::upstream_rejects_a_rounding_it_cannot_answer` |
+| Calculator | Calculator | Pi to 2 decimal places — 3.14. | PORTED | `tc-calc::tests::upstream_rounding_words` |
+| Calculator | Calculator | Round 47 to nearest 5 — 45. | PORTED | `tc-calc::tests::upstream_rounds_to_a_step` |
+| Calculator | Calculator | Round 51 to next 10 — 60. | PORTED | `tc-calc::tests::upstream_rounds_to_a_step` |
+| Calculator | Calculator | Round 56.2 up — 57. | PORTED | `tc-calc::tests::upstream_rounds_a_direction` |
+| Calculator | Calculator | Round 56.789 to 1 digit — 56.8. | PORTED | `tc-calc::tests::upstream_rounds_to_decimal_places` |
+| Calculator | Calculator | Round 56 up to 10 — 60. | PORTED | `tc-calc::tests::upstream_rounds_to_a_step` |
+| Calculator | Calculator | Round 59 down to last 10 — 50. | PORTED | `tc-calc::tests::upstream_rounds_to_a_step` |
 | Calculator | Calculator | 120 / 4 people — 30. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | $120 split 4 — 30.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 20% tip on 85 split 3 — 5.666666667. | NOT PORTED | The calculator engine is not ported yet. |
@@ -832,11 +832,11 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator › Rounding and fractions | 0.000123 to scientific notation — 1.23e-4. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Rounding and fractions | 1234567 to sci — 1.234567e6. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Rounding and fractions | 2 to multiplier — 2x. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Rounding and fractions | 255 to base 7 — 513. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator › Rounding and fractions | 255 to base 7 — 513. | PORTED | `tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base` |
 | Calculator | Calculator › Rounding and fractions | 51.4772° to dms — 51° 28′ 37.92″. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Rounding and fractions | 5400 seconds to hms — 1h 30m 0s. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Rounding and fractions | 75.5 seconds to laptime — 00:01:15.5. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Rounding and fractions | To base takes any base from 2 to 36. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator › Rounding and fractions | To base takes any base from 2 to 36. | PORTED | `tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base` |
 | Calculator | Calculator › Currency and crypto | A money answer shows when the rates were last updated. Click the refresh button next to it to load new rates now. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Currency and crypto | Crypto prices are best effort. If they fail to load, currencies still work, and Tinycast tries loading crypto prices again in 30 minutes. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Currency and crypto | Money is rounded to two decimal places, or to four significant digits for amounts under a cent, and is always written out in full: 1 IDR to USD is 0.00005539 USD, never 5.539e-05. | NOT PORTED | The calculator engine is not ported yet. |
@@ -2975,8 +2975,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.arithmetic.4-2-3-is-20-2pi-2sqrt-9-and-2-3-2-3-all-work` | 4(2+3) is 20. 2pi, 2sqrt(9) and (2+3)(2+3) all work, and 6/2(1+2) gives the same answer as 6/2(1+2). A lone x between numbers also multiplies, so 3x3 and $5 x 2 work. Two numbers separated only by a space never multiply, so 5 3 stays a search. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.arithmetic.a-trailing-operator-keeps-the-last-answer-on` | A trailing operator keeps the last answer on screen. 10 + shows 10, and 10kg + 500g + shows 10,500 g, so the card doesn't flicker while you type the next number. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.arithmetic.spoken-roots-work-with-measurements-square-r` | Spoken roots work with measurements: square root of 25m2 is 5 m. root 4 of 81 is 3, and log 81 base 3 is 4. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.arithmetic.thousand-million-billion-trillion-and-quadri` | Thousand, million, billion, trillion and quadrillion scale the number before them: 2 trillion is 2,000,000,000,000. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.arithmetic.use-mod-for-the-remainder-because-already-me` | Use mod for the remainder, because % already means percent. It has the same precedence as multiply and divide, and keeps the sign of the first number: -10 mod 3 is -1. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.arithmetic.you-can-also-write-the-operators-as-words-10` | You can also write the operators as words: 10 plus 5, 10 minus 3, 6 times 7, 10 divided by 2, 10 multiplied by 3 and 2 to the power of 10. 3 raised to 4, 2 exponent 10 and 3 to the 4 are powers too. 4 squared is 16 and 3 cubed is 27. per means divide, so 60 miles per hour is 60 mi/hr. percent, per cent and percentage mean %, so 20 percent of 50 is 10. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.calculator-history.calculator-history-is-a-separate-screen-that` | Calculator History is a separate screen that you open with the command of the same name. It isn't part of the tab cycle. To leave it, press esc, or delete in an empty search. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.calculator-history.copy-answer-return` | Copy Answer — return. | The calculator engine is not ported yet. |
@@ -3058,7 +3056,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.electrical.500ma-3h-30min-1-750-mah` | 500mA 3h 30min — 1,750 mAh. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.electrical.c-means-celsius-so-coulombs-are-shown-as-as` | C means Celsius, so coulombs are shown as As. Mega and milli are case-sensitive: MW is megawatts and mW is milliwatts. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.electrical.capacitance-farad-f-nf-pf-inductance-henry-m` | Capacitance (farad, µF, nF, pF), inductance (henry, mH), conductance (siemens), magnetic flux (weber, Wb), magnetic flux density (tesla, mT, gauss), torque (Nm, lb ft) and amount of substance (mol, mmol) all work, and they combine with the units above. Write these names out or with a prefix: a bare F is still Fahrenheit, H hours, S seconds and T tonnes. 10 newton meters to pound feet is 7.375621493 lb·ft. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.errors.for-anything-else-it-shows-nothing-rather-th` | For anything else, it shows nothing rather than flashing an error while you're still typing. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.errors.the-calculator-only-shows-an-error-for-real` | The calculator only shows an error for real mistakes, like combining two units that don't fit together (1kg + 1m) or a unit and a currency (Cannot convert Currency to Weight.). | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.fuel-and-pace.10-km-h-to-min-km-6-min-km` | 10 km/h to min/km — 6 min/km. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.fuel-and-pace.100-mi-4-gal-to-l-100km-9-408583333-l-100km` | 100 mi / 4 gal to l/100km — 9.408583333 L/100km. | The calculator engine is not ported yet. |
@@ -3069,7 +3066,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.fuel-and-pace.fuel-economy-uses-mpg-and-km-l-and-fuel-cons` | Fuel economy uses mpg and km/L, and fuel consumption uses L/100km. 15 km/l to mpg is 35.2821875 mpg, and 100 mi / 4 gal to mpg is 25 mpg. Economy and consumption convert directly into each other, as do speed and pace: | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.and-compare-numbers-or-compatible-units-1km` | ==, !=, and >= compare numbers or compatible units: 1km == 1000m is true. Whole numbers support &, \|, xor, ~, >. ^ always means a power. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.base-conversion-works-both-ways-0xff-shows-h` | Base conversion works both ways: 0xff shows Hexadecimal → Decimal, 256 as hex is 0x100, and 2m / 2m to hex is 0x1. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.functions-take-comma-separated-values-hypot` | Functions take comma-separated values: hypot(3,4), round(3.14159,2), log(8,2), gcd(12,18), lcm(4,6), atan2(1,1), pow(2,10) and root(-8,3). There are also inverse and hyperbolic trig functions, cbrt, exp, log2, sign and trunc, and the constants tau and phi. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.min-max-sum-avg-mean-average-median-and-stdd` | Min, max, sum, avg, mean, average, median and stddev take lists, including measurements, and count counts them: sum(1km,500m) is 1.5 km. Inside a function, write 1000 instead of 1,000, because commas separate the values. If your number format uses a decimal comma, separate values with ; instead, as in max(2,5; 3). | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.20-after-5-years-at-5-decay-every-year-15-47` | 20 after 5 years at 5% decay every year — 15.47561875. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.20-after-5-years-at-5-every-year-25-52563125` | 20 after 5 years at 5% every year — 25.52563125. | The calculator engine is not ported yet. |
@@ -3131,11 +3127,9 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.0-000123-to-scientific-notation-1-23e-4` | 0.000123 to scientific notation — 1.23e-4. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.1234567-to-sci-1-234567e6` | 1234567 to sci — 1.234567e6. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.2-to-multiplier-2x` | 2 to multiplier — 2x. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.other-formats.255-to-base-7-513` | 255 to base 7 — 513. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.51-4772-to-dms-51-28-37-92` | 51.4772° to dms — 51° 28′ 37.92″. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.5400-seconds-to-hms-1h-30m-0s` | 5400 seconds to hms — 1h 30m 0s. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.75-5-seconds-to-laptime-00-01-15-5` | 75.5 seconds to laptime — 00:01:15.5. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.other-formats.to-base-takes-any-base-from-2-to-36` | To base takes any base from 2 to 36. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.0-125-as-12-5` | 0.125 as % — 12.5%. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.10-is-what-with-20-33-33333333` | 10 is what % with 20 — 33.33333333%. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.10-tax-on-100-110` | 10% tax on 100 — 110. | The calculator engine is not ported yet. |
@@ -3194,22 +3188,7 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.rem-and-em.24px-1-5-rem` | 24px — 1.5 rem. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.rem-and-em.2rem-32-px` | 2rem — 32 px. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.rem-and-em.rem-and-em-use-the-browser-s-default-root-fo` | Rem and em use the browser's default root font size of 16px. pt means pints, not points. When you copy a px, rem or em result, the space is removed (24px) so you can paste it into CSS. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.0-625-as-fraction-5-8` | 0.625 as fraction — 5/8. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.0-75-to-fraction-3-4` | 0.75 to fraction — 3/4. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.1-240-rounded-to-nearest-hundred-1-200-00-us` | $1,240 rounded to nearest hundred — 1,200.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.2-1-rounded-up-3` | 2.1 rounded up — 3. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.2-3-to-3-dp-0-667` | 2/3 to 3 dp — 0.667. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.2-5-rounded-3` | 2.5 rounded — 3. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.3-3-to-nearest-quarter-3-25` | 3.3 to nearest quarter — 3.25. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.44-rounded-up-to-nearest-10-50` | 44 rounded up to nearest 10 — 50. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.a-number-that-has-no-simple-fraction-like-pi` | A number that has no simple fraction, like pi as fraction, shows no card. round 56 to 10 shows no card either, because it could mean ten decimal places; add up, down or nearest. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.pi-to-2-decimal-places-3-14` | Pi to 2 decimal places — 3.14. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.round-47-to-nearest-5-45` | Round 47 to nearest 5 — 45. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.round-51-to-next-10-60` | Round 51 to next 10 — 60. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.round-56-2-up-57` | Round 56.2 up — 57. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.round-56-789-to-1-digit-56-8` | Round 56.789 to 1 digit — 56.8. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.round-56-up-to-10-60` | Round 56 up to 10 — 60. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.round-59-down-to-last-10-50` | Round 59 down to last 10 — 50. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.120-4-people-30` | 120 / 4 people — 30. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.120-split-4-30-00-usd` | $120 split 4 — 30.00 USD. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.20-tip-on-85-split-3-5-666666667` | 20% tip on 85 split 3 — 5.666666667. | The calculator engine is not ported yet. |

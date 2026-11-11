@@ -17,7 +17,7 @@
 "docs/launcher/system-settings/" = "The Windows Settings pages are not indexed yet."
 "docs/launcher/system-actions/" = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 "docs/launcher/uninstall/" = "The installer removes the program files and keeps the data; the in-app uninstaller and the per-application uninstall are not built yet."
-"docs/features/calculator/" = "The calculator engine is not ported yet."
+"docs/features/calculator/" = "The calculator's arithmetic core is ported, but the units, the currencies, the dates, the time zones, the percentages, the statistics and the history are not."
 "docs/features/clipboard/" = "The clipboard history has no store and no rows in the palette yet."
 "docs/features/snippets/" = "The snippet store has no editor and no rows in the palette yet."
 "docs/features/file-search/" = "The file indexer helper exists, but the palette does not search the index yet."
