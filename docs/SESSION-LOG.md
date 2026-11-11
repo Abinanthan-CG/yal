@@ -317,3 +317,14 @@ the file search and the window management.
 after it had reported success. Its work was checked against upstream before it was committed:
 the test fixes were right, and one of them — the pin order — was a case where the *expectation*
 had been wrong rather than the store.
+**Also, after the note above.**
+
+- **Ported the emoji model** into a new crate `tc-emoji`: upstream's whole catalog of 2 136
+  emoji and symbols in upstream's own format and order, upstream's search ranking running on
+  the fuzzy matcher `tc-search` already carries, the pins, the frequency, the skin tones and
+  the grid's navigation. 32 tests, every one of them taken from upstream's own test files.
+- The picker screen is not built, so the emoji rows stay `NOT PORTED`: the model behind them
+  is done, but a row that describes a screen is not shown by a model. The localized keyword
+  packs are not in upstream's repository either — they live in the app bundle — so the English
+  keywords are all this port searches.
+- The workspace now has 604 tests, 0 failed, 0 ignored.

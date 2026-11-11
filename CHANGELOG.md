@@ -53,7 +53,12 @@ has got.
   `250 sq ft to m2` is `23.22576 m²`, and `1.75 m to feet and inches` is
   `5 ft 8.897637795 in`. The calculator's answer is a row in the palette now, and
   opening the row copies the answer.
+- **The emoji model** in `tc-emoji`: the whole catalog of 2 136 emoji and symbols,
+  upstream's search with upstream's ranking, the pins, the frequency, the skin
+  tones and the grid's navigation, with 32 tests written from upstream's own test
+  files. The picker screen is not built yet.
 - **The search slice** in `tc-search`, ported from upstream's launcher model:
+  the fold and the tiered match, the scorer where a word start outscores any
   the fold and the tiered match, the scorer where a word start outscores any
   other letter, the relevance cells that weigh a name against the thing that
   provides it, the learned ranking that remembers what the user opens, the
