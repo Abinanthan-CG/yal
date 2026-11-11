@@ -16,9 +16,13 @@
 pub mod locale;
 pub mod markdown;
 pub mod snippet;
+pub mod template;
+#[cfg(test)]
+mod template_tests;
 #[cfg(test)]
 mod tests;
 
 pub use locale::{for_identifier, LocaleData};
 pub use markdown::{ParseError, SnippetMarkdownSerializer};
 pub use snippet::{Snippet, SnippetSourceRevision, StoredSnippet};
+pub use template::{ExpansionContext, MissingArgument};

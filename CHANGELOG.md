@@ -19,6 +19,10 @@ has got.
 - **The snippet record and its Markdown file** in `tc-snippets`: the front matter, the body kept
   exactly as written, the files that are rejected and why, and the small locale table the date
   tokens format with.
+- **The snippet template engine**: every placeholder (`{clipboard}`, `{selection}`, `{date}`,
+  `{time}`, `{datetime}`, `{day}`, `{uuid}`, `{cursor}`, `{argument name="…"}`,
+  `{snippet:Name}`), the offsets, the formats, the locales and the modifiers — and a token that
+  cannot be read stays in the text as it was written.
 - **The system actions, working on Windows**: twenty of the thirty-two now run for real — the
   session actions, the media and volume keys, Show Desktop, the light and dark theme, hiding and
   showing the windows, quitting them, and the Recycle Bin — and they are rows in the palette

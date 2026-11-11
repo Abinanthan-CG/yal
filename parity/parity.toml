@@ -14122,9 +14122,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{clipboard} — The clipboard contents, as plain text."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_clipboard_is_inserted_as_it_is"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14133,9 +14133,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{clipboard offset=1} — An earlier clip; 1 is the one before the current one."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_clipboard_token_reaches_back_through_the_history"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14144,9 +14144,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{selection} — The selected text in the app you were using."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_selection_is_inserted_as_it_is"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14155,9 +14155,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{date} {time} {datetime} — Today's date, the time, or both, in your locale."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_date_and_the_time_tokens_render_their_styles"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14166,9 +14166,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{day} — The name of the weekday."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_date_and_the_time_tokens_render_their_styles"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14177,9 +14177,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{uuid} — A new UUID for each token."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::each_uuid_token_draws_a_fresh_value"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14188,9 +14188,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{date format=\"yyyy-MM-dd\"} — Any date format."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_format_parameter_picks_the_pattern"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14199,9 +14199,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{date locale=\"fr-FR\"} — Another locale; can't be combined with format."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::another_locale_renders_the_date_in_that_locale", "tc-snippets::template_tests::a_locale_with_a_format_leaves_the_token_literal"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14210,9 +14210,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{time offset=\"+3h +30m\"} — Shifted by m minutes, h hours, d days, M months, y years."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::several_offsets_apply_in_order"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14221,9 +14221,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{argument} — Asks you for a value, named \"Argument\"."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::an_argument_that_was_not_supplied_is_owed"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14232,9 +14232,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{argument name=\"Recipient\"} — Asks for a named value."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_declared_arguments_are_the_ones_the_template_asks_for"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14243,9 +14243,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{argument default=\"Hi\"} — Optional; uses the default without asking."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::an_argument_with_a_default_expands_without_asking"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14254,9 +14254,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{argument options=\"a, b, c\"} — Asks you to pick from a list."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::an_argument_may_offer_its_choices"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14265,9 +14265,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{snippet:Name} — Another snippet, inserted inline."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::a_snippet_reference_expands_the_other_snippet", "tc-snippets::template_tests::a_disabled_snippet_cannot_be_reached"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14276,9 +14276,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "{cursor} — Where the cursor goes afterward."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_cursor_token_says_where_the_cursor_goes"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14298,9 +14298,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.placeholders"
 behavior = "A value only needs quotes if it contains |. Without quotes, a value continues up to the next key=, so {date format=MMMM d, yyyy} keeps its spaces."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_format_parameter_picks_the_pattern"]
+reason = ""
 count_check = "snippets.placeholder-forms"
 
 [[row]]
@@ -14320,9 +14320,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Chain modifiers from left to right: {clipboard | trim | uppercase}."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_modifiers_chain_from_left_to_right"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
@@ -14331,9 +14331,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Available modifiers: uppercase."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_case_modifiers_change_the_case"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
@@ -14342,9 +14342,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Lowercase."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_case_modifiers_change_the_case"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
@@ -14353,9 +14353,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Trim."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_modifiers_chain_from_left_to_right"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
@@ -14364,9 +14364,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Percent-encode."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::percent_encode_escapes_everything_outside_the_unreserved_set"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
@@ -14375,9 +14375,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Json-stringify."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::json_stringify_escapes_without_adding_quotes"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
@@ -14386,9 +14386,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.modifiers"
 behavior = "Raw."
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::an_encoded_value_is_not_encoded_twice"]
+reason = ""
 count_check = "snippets.modifiers"
 
 [[row]]
