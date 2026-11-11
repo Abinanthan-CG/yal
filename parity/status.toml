@@ -405,3 +405,27 @@ status = "PORTED"
 evidence = [
   "tc-calc::tests::upstream_base_conversion_to_an_arbitrary_base",
 ]
+
+# ---------------------------------------------------------------------------
+# The launcher: the favorites slots and the fallbacks
+#
+# The number keys that open a favorite, and the destinations that take the
+# typed query as their input, are ported in `tc-core`.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher-favorites.launching-by-number.1-opens-your-first-favorite-2-the-second-and"
+status = "PORTED"
+evidence = [
+  "tc-core::favorites::tests::there_are_ten_slots_and_no_digit_repeats",
+  "tc-core::favorites::tests::a_digit_names_its_slot",
+  "tc-core::favorites::tests::a_slot_shows_its_digit",
+]
+
+[[status]]
+id = "launcher-favorites.launching-by-number.the-numbers-follow-key-positions-so-they-wor"
+status = "PORTED"
+evidence = [
+  "tc-core::favorites::tests::a_physical_number_row_key_names_its_slot",
+  "tc-core::favorites::tests::a_slot_and_its_digit_round_trip",
+]

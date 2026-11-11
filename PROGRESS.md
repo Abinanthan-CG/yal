@@ -58,7 +58,7 @@ Status: **done**
 Status: **done**
 
 - `tc-core`: 46 built-in commands, 32 system actions, the launcher-row identifier scheme, the
-  `tinycast://` grammar, strict UUIDs, URL encoding. **50 tests.**
+  `tinycast://` grammar, strict UUIDs, URL encoding. **102 tests.**
 - `tc-platform`: the traits (`Paths`, `WindowSystem`, `Clipboard`, `Hotkey`, `SingleInstance`,
   `Clock`, `FileSystem`, `Settings`) and their in-memory fakes.
 - `tc-platform-win`: the Win32 implementation — paths, clipboard, foreground window, window list,
@@ -104,7 +104,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-	c-search has 150 tests. The workspace has 328.
+	c-search has 150 tests. The workspace has 361.
 
 ### The launcher core
 
@@ -131,7 +131,7 @@ chosen one.
 
 The tokenizer, the expression parser, the evaluation engine, the math functions and the number
 formatting, ported from upstream's `Features/Calculator/Model/` with upstream's own
-`Tests/calc-test.swift` as the oracle. **52 tests.**
+`Tests/calc-test.swift` as the oracle. **66 tests.**
 
 The engine asks a catalog about the units and the currencies it meets and answers
 `Unsupported` for a query it cannot finish, so the unit catalog can be added later without

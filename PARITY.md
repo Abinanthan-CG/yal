@@ -10,16 +10,16 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 40 | 1775 |
+| 1 | 1815 | 42 | 1773 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **40** | **2269** |
+| **All** | **2309** | **42** | **2267** |
 
 ### Totals per docs page
 
 | Docs page | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: | ---: |
 | `docs/launcher/` | 1 | 76 | 12 | 64 |
-| `docs/launcher/favorites/` | 1 | 21 | 0 | 21 |
+| `docs/launcher/favorites/` | 1 | 21 | 2 | 19 |
 | `docs/launcher/aliases/` | 1 | 18 | 0 | 18 |
 | `docs/launcher/fallbacks/` | 1 | 15 | 0 | 15 |
 | `docs/launcher/commands/` | 1 | 113 | 0 | 113 |
@@ -162,10 +162,10 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Favorites | Favorites | Tinycast keeps the path you saved. If you move or rename the file, add it again from its new | NOT PORTED | Favorites have no store and no rows in the palette yet. |
 | Favorites | Favorites | Turning off File Search hides favorite files and folders, but keeps them for when you turn it back | NOT PORTED | Favorites have no store and no rows in the palette yet. |
 | Favorites | Favorites | The slim search bar of compact mode doesn't show your favorites, but the same numbers still open them. Press ↓ to open the full list. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
-| Favorites | Favorites | ⌘1 opens your first favorite, ⌘2 the second, and so on up to ⌘9. ⌘0 opens the tenth. Favorites after the tenth don't get a number, so move one up if you want a key for it. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
+| Favorites | Favorites | ⌘1 opens your first favorite, ⌘2 the second, and so on up to ⌘9. ⌘0 opens the tenth. Favorites after the tenth don't get a number, so move one up if you want a key for it. | PORTED | `tc-core::favorites::tests::there_are_ten_slots_and_no_digit_repeats`, `tc-core::favorites::tests::a_digit_names_its_slot`, `tc-core::favorites::tests::a_slot_shows_its_digit` |
 | Favorites | Favorites | Hold ⌘ for a moment and each numbered favorite shows its number on the right side of its row. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
 | Favorites | Favorites | In the clipboard screen, the same number keys paste your pinned entries instead. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
-| Favorites | Favorites | The numbers follow key positions, so they work the same on any keyboard layout. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
+| Favorites | Favorites | The numbers follow key positions, so they work the same on any keyboard layout. | PORTED | `tc-core::favorites::tests::a_physical_number_row_key_names_its_slot`, `tc-core::favorites::tests::a_slot_and_its_digit_round_trip` |
 | Favorites | Favorites | The numbers only work while the Favorites section is visible, which means with nothing typed. Once you start typing, the list shows ranked results, so a position number wouldn't be meaningful. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
 | Favorites | Favorites | Favorites keep the order you give them. With nothing typed, select one and press ⌥⌘↑ or ⌥⌘↓, or choose ⌘K → Move Favorite Up or Move Favorite Down. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
 | Favorites | Favorites | The selection moves with the favorite, so you can keep pressing the keys until it's where you want it. | NOT PORTED | Favorites have no store and no rows in the palette yet. |
@@ -4167,10 +4167,8 @@ Tier 1 first, then Tier 2.
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.files-and-folders.tinycast-keeps-the-path-you-saved-if-you-mov` | Tinycast keeps the path you saved. If you move or rename the file, add it again from its new | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.files-and-folders.turning-off-file-search-hides-favorite-files` | Turning off File Search hides favorite files and folders, but keeps them for when you turn it back | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.in-compact-mode.the-slim-search-bar-of-compact-mode-doesn-t` | The slim search bar of compact mode doesn't show your favorites, but the same numbers still open them. Press ↓ to open the full list. | Favorites have no store and no rows in the palette yet. |
-| `docs/launcher/favorites/` | 1 | `launcher-favorites.launching-by-number.1-opens-your-first-favorite-2-the-second-and` | ⌘1 opens your first favorite, ⌘2 the second, and so on up to ⌘9. ⌘0 opens the tenth. Favorites after the tenth don't get a number, so move one up if you want a key for it. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.launching-by-number.hold-for-a-moment-and-each-numbered-favorite` | Hold ⌘ for a moment and each numbered favorite shows its number on the right side of its row. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.launching-by-number.in-the-clipboard-screen-the-same-number-keys` | In the clipboard screen, the same number keys paste your pinned entries instead. | Favorites have no store and no rows in the palette yet. |
-| `docs/launcher/favorites/` | 1 | `launcher-favorites.launching-by-number.the-numbers-follow-key-positions-so-they-wor` | The numbers follow key positions, so they work the same on any keyboard layout. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.launching-by-number.the-numbers-only-work-while-the-favorites-se` | The numbers only work while the Favorites section is visible, which means with nothing typed. Once you start typing, the list shows ranked results, so a position number wouldn't be meaningful. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.reordering.favorites-keep-the-order-you-give-them-with` | Favorites keep the order you give them. With nothing typed, select one and press ⌥⌘↑ or ⌥⌘↓, or choose ⌘K → Move Favorite Up or Move Favorite Down. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.reordering.the-selection-moves-with-the-favorite-so-you` | The selection moves with the favorite, so you can keep pressing the keys until it's where you want it. | Favorites have no store and no rows in the palette yet. |

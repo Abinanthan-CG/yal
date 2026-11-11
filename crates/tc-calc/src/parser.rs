@@ -357,7 +357,7 @@ impl<'a> Parser<'a> {
         if Math::MULTIPLE_ARGUMENTS.contains(&name) && opens_an_argument_list {
             return self.parse_function(name, catalog);
         }
-        if Math::is_function(name) {
+        if Math::is_single_argument(name) {
             self.position += 1;
             let argument = self.parse_operand(catalog)?;
             if argument.is_boolean {

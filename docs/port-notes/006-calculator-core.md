@@ -40,7 +40,7 @@ own implementation. A spot check of the file against our tests:
 | `expectDisplay("2 trillion", "2,000,000,000,000")` | `assert_display("2 trillion", "2,000,000,000,000")` |
 | `expectDisplay("remainder of 20 divided by 3", "2")` | **not supported yet** |
 
-`tc-calc` has 52 tests and one doc test.
+`tc-calc` has 66 tests and one doc test.
 
 ## The seam to the units and the currencies
 
