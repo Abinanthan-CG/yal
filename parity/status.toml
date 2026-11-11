@@ -984,3 +984,74 @@ evidence = [
   "tc-clipboard::tests::an_empty_history_has_nothing_to_paste",
   "tc-clipboard::tests::clearing_the_history_ends_the_walk",
 ]
+# ---------------------------------------------------------------------------
+# The features that are out of scope
+#
+# A cut is a decision, not a failure. The row stays in the ledger and stays
+# `NOT PORTED`, and its reason says that it was decided rather than forgotten.
+#
+# These were decided on 2026-11-11, and they can be undone by deleting the
+# entry: the scope is the ledger's, and the ledger is regenerated from it.
+# ---------------------------------------------------------------------------
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): YAL talks to no model provider and holds no API key, so the AI features are not built. The AI rows inside the commands and the shortcut reference went with them."
+pages = ["docs/ai/", "docs/ai/mcp/", "docs/ai/quick-actions/"]
+headings = [
+  "reference-shortcuts.quick-ai",
+  "reference-shortcuts.chat-history",
+  "reference-shortcuts.quick-action-panel",
+  "reference-shortcuts.meeting-card",
+]
+ids = [
+  "launcher-commands.built-in-commands.ai-quick-ai",
+  "launcher-commands.built-in-commands.ai-ai-chat",
+  "launcher-commands.built-in-commands.quick-actions-fix-grammar",
+  "launcher-commands.built-in-commands.quick-actions-rewrite",
+  "launcher-commands.built-in-commands.quick-actions-translate",
+  "launcher-commands.built-in-commands.quick-actions-summarize",
+]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): Raycast extensions and Apple Shortcuts are macOS concepts. YAL carries neither."
+pages = [
+  "docs/extensions/",
+  "docs/extensions/installing/",
+  "docs/extensions/compatibility/",
+  "docs/extensions/customising/",
+  "docs/features/apple-shortcuts/",
+]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): the macOS accessibility and screen-recording permissions have no Windows answer. A per-user Windows install asks for nothing beyond what Windows already grants it."
+pages = ["docs/permissions/"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): dictation is not built. Windows' own speech input does the same job, and YAL does not build a second one."
+pages = ["docs/features/dictation/"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): the camera is not built."
+pages = ["docs/features/camera/"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): the dictionary is not built. The Define Word command opens a web lookup instead."
+pages = ["docs/features/dictionary/"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): the saved window layouts and the rooms that hold them are not built. The window management itself - switching, moving and resizing a window - stays."
+pages = ["docs/features/window-layouts/", "docs/features/rooms/"]
+headings = ["reference-shortcuts.window-layout-editor", "reference-shortcuts.switch-room"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): the in-app uninstaller is not built. The installer still removes the program and keeps the data."
+pages = ["docs/launcher/uninstall/"]
+headings = ["reference-shortcuts.uninstall"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): YAL is built and used by one person, who rebuilds it from the source, so there is no update to check for."
+pages = ["docs/reference/updates/"]
+
+[[cut]]
+reason = "Out of scope by decision (2026-11-11): macOS has a menu bar and YAL does not, so the menu items of the app in front cannot be read. Switching windows stays."
+headings = ["features-navigation.search-menu-bar-items"]

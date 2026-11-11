@@ -481,3 +481,48 @@ edits the sources, and the stale one is the one that ships unless someone rememb
 CI checks the types and builds the page on Linux, and builds it again on Windows, where the
 installer is made from what was built. A committed build output is a claim that cannot be
 checked; a built one always is.
+## 2026-11-11 - The scope of YAL, decided by the person who will use it
+
+**The question.** The ledger holds 2 309 rows, of which 120 are ported. Every remaining
+row was listed - 348 features across 42 pages - and the scope was decided page by page.
+
+**Decision.** 623 rows are out of scope; 1 566 are to be built.
+
+| Cut | Rows | Why |
+| --- | --- | --- |
+| The AI features (the AI page, the MCP page, the quick actions, and the AI rows inside the commands and the shortcut reference) | 245 | YAL talks to no model provider and holds no API key. |
+| The Raycast extensions, and Apple Shortcuts | 117 | macOS concepts with no Windows answer. |
+| The macOS permissions | 46 | The accessibility and screen-recording permissions have no Windows answer. |
+| The saved window layouts and the rooms that hold them | 70 | The window management itself stays; the saved layouts do not. |
+| Dictation | 45 | Windows' own speech input does the job. |
+| The in-app uninstaller | 37 | The installer still removes the program and keeps the data. |
+| The update check | 25 | YAL is built and used by one person, who rebuilds it from the source. |
+| The camera | 14 | Not for now. |
+| The dictionary | 13 | The Define Word command opens a web lookup instead. |
+| Reading an app's menu bar | 2 | macOS has a menu bar; Windows does not. |
+
+**How a cut is recorded.** A cut is a decision, not a failure: the row stays in the ledger and
+stays `NOT PORTED`, and its reason says that it was decided rather than forgotten. The cuts
+live in `parity/status.toml` as `[[cut]]` entries, which name a page, a heading or a row.
+Deleting a cut puts the feature back in scope, and the scope review is regenerated from the
+ledger with `scripts/make-scope-review.ps1`.
+
+**Why the ledger needed a new mechanism.** The reason a row is open used to be per page, which
+could not say "the AI commands inside the commands page are out of scope while the rest of
+the page is not". The cut entries give every row its own honest reason.
+
+**What the calendar does on Windows.** Upstream's calendar is macOS EventKit. The Windows
+answer is the calendar through WinRT, which reads the calendars the user already has in
+Windows - and a command that opens the web calendar in the browser. A web view of Google
+Calendar on its own would be a picture of a calendar: it could not answer "join the next
+meeting" or "what is my schedule", and it would need the user to sign in to Google inside
+our window.
+
+**What "the palette" is.** Upstream's palette is the floating search panel the whole app
+lives in - the launcher is its root screen, and every other screen stacks on it. The rows
+under it are the back stack, the actions menu, the tab cycle and the key handling. It is the
+app's own shell, and YAL has a first version of it and needs the rest.
+
+**What the shortcut reference is.** Not macros. It is which key does what, per screen: return
+pastes in the clipboard, command-return copies, the number keys open the favorites. The
+shortcuts you record yourself are the separate hotkeys page.

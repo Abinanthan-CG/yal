@@ -1,6 +1,6 @@
 # YAL: what is still to build
 
-Generated from parity/parity.toml on 2026-11-11 19:28.
+Generated from parity/parity.toml on 2026-11-11 20:25.
 Every open row is here, grouped into the feature it belongs to.
 
 **How to use it.** Tick the features you want. A tick means: build it, with a test
@@ -9,60 +9,62 @@ in parity/reasons.toml - a row that is not built is never silently claimed.
 
 The count in brackets is how many ledger rows the feature covers.
 
-**2189 rows are open across the features below.**
+**2189 rows are open: 1566 to build and 623 out of scope by decision.**
 
 ## At a glance
 
-What Windows has for each page, and what this port would do about it.
+What was decided on 2026-11-11, and what each page becomes.
 
-| Page | Rows | On Windows |
+| Page | Rows | Decision |
 | --- | --- | --- |
-| Features > Calculator | 296 | **Build** - Pure arithmetic. The currencies need live rates, so they come last. |
-| Ai | 139 | **Build** - With the user's own key (BYOK). Apple Intelligence has no Windows answer. |
-| Launcher > Commands | 113 | **Build** - The built-in command catalogue, one row per command. |
-| Reference > Shortcuts | 106 | **Build** - The keyboard system: the recording, the conflicts, the chords. |
-| Features > Window Management | 78 | **Build** - Real Win32: enumerate, move, resize, focus. |
-| Reference > Settings | 76 | **Build** - The settings panes, their groups and their defaults. |
-| Features > Calendar | 72 | **Decide** - Upstream is macOS EventKit. Windows would need Outlook or ICS; that is a real choice to make. |
-| Features > Clipboard | 70 | **Build** - The capture loop, the Windows clipboard watcher and the palette section. |
-| Features > File Search | 68 | **Build** - The indexer and the search, over NTFS. |
-| Palette | 66 | **Build** - The screens, the back stack, the actions menu and the key handling. |
-| Launcher | 64 | **Build** - The launcher's own behaviour. |
-| Launcher > Quicklinks | 64 | **Build** - The store, the section and the editor. |
-| Reference > Hotkeys | 63 | **Build** - The global shortcuts and the modifier taps. |
-| Features > Notes | 60 | **Build** - A folder of Markdown files, as upstream. |
-| Features > Snippets | 59 | **Build** - The section, the editor and the browser. |
-| Ai > Mcp | 52 | **Build** - MCP servers are local processes; Windows runs them the same way. |
-| Reference > Backup | 49 | **Build** - The export and the import of the user's data. |
-| Permissions | 46 | **Leave** - The macOS accessibility and screen-recording permissions have no Windows answer. |
-| Ai > Quick Actions | 45 | **Build** - Needs the AI provider first, so it follows it. |
-| Reference > Deeplinks | 45 | **Build** - Our own tinycast:// grammar. |
-| Features > Dictation | 45 | **Decide** - Windows has speech recognition, but not the macOS dictation API upstream uses. |
-| Reference > Import From Raycast | 41 | **Build** - The .rayconfig export format, once it is understood. |
-| Features > Window Layouts | 36 | **Build** - Windows virtual desktops. |
-| Features > Navigation | 35 | **Decide** - Windows has UI Automation; upstream drives the macOS accessibility API. |
-| Launcher > Uninstall | 32 | **Build** - The in-app uninstaller. |
-| The Overview | 30 | **Docs** - The overview and the first-run story. |
-| Launcher > System Actions | 28 | **Build** - The twenty that run; the twelve that cannot stay open with their reason. |
-| Features > Rooms | 28 | **Build** - Windows virtual desktops, as the rooms. |
-| Extensions > Installing | 27 | **Leave** - As above. |
-| Extensions | 26 | **Leave** - Raycast extensions are a macOS concept with no Windows answer. |
-| Reference > Updates | 25 | **Build** - A check against the release feed. |
-| Features > Emoji | 25 | **Build** - The picker screen; the model is already done. |
-| Features > Apple Shortcuts | 22 | **Leave** - Apple Shortcuts has no Windows answer; Windows Automations are a different thing. |
-| Install | 21 | **Build** - The installer, the portable build and the checksums are done. |
-| Extensions > Compatibility | 21 | **Leave** - As above. |
-| Extensions > Customising | 21 | **Leave** - As above. |
-| Launcher > Favorites | 19 | **Build** - The favorites slots and the section. |
-| Launcher > Aliases | 18 | **Build** - The alias store. |
-| Launcher > System Settings | 16 | **Build** - The settings the launcher itself reads. |
-| Launcher > Fallbacks | 15 | **Build** - The fallbacks. |
-| Features > Camera | 14 | **Decide** - Windows has a camera, but not the way upstream reads one. |
-| Features > Dictionary | 13 | **Decide** - Windows has no built-in dictionary to look a word up in. |
+| Features > Calculator | 296 | **BUILD** - All of it, 1:1. The currencies come last: they need live rates. |
+| Ai | 0 | **CUT** - No model provider, no API key. Decided 2026-11-11. |
+| Launcher > Commands | 107 | **BUILD** - The built-in command catalogue, one row per command. |
+| Reference > Shortcuts | 83 | **BUILD** - Which key does what, per screen. The AI screens went with the AI. |
+| Features > Window Management | 78 | **BUILD** - Switching, moving and resizing windows - real Win32. |
+| Reference > Settings | 76 | **BUILD** - The settings panes, their groups and their defaults. |
+| Features > Calendar | 72 | **BUILD** - Windows' own calendar through WinRT, plus a command that opens the web calendar. |
+| Features > Clipboard | 70 | **BUILD** - All of it, 1:1: the capture loop, the watcher and the section. |
+| Features > File Search | 68 | **BUILD** - The indexer and the search, over NTFS. |
+| Palette | 66 | **BUILD** - The app's own shell: the screens, the back stack, the actions menu, the keys. |
+| Launcher | 64 | **BUILD** - The launcher's own behaviour. |
+| Launcher > Quicklinks | 64 | **BUILD** - The store, the section and the editor. |
+| Reference > Hotkeys | 63 | **BUILD** - The global shortcuts you record yourself. |
+| Features > Notes | 60 | **BUILD** - A folder of Markdown files, as upstream. |
+| Features > Snippets | 59 | **BUILD** - The section, the editor and the browser. |
+| Ai > Mcp | 0 | **CUT** - With the AI. |
+| Reference > Backup | 49 | **BUILD** - The export and the import of your data. |
+| Permissions | 0 | **CUT** - The macOS permissions have no Windows answer. |
+| Ai > Quick Actions | 0 | **CUT** - With the AI. |
+| Reference > Deeplinks | 45 | **BUILD** - Our own tinycast:// grammar. |
+| Features > Dictation | 0 | **CUT** - Windows' own speech input does the job. |
+| Reference > Import From Raycast | 41 | **BUILD** - Low priority: the .rayconfig export can be done by hand. |
+| Features > Window Layouts | 0 | **CUT** - The saved layouts, and the rooms that hold them, went with it. |
+| Features > Navigation | 33 | **BUILD** - Switching windows stays; reading a menu bar did not. |
+| Launcher > Uninstall | 0 | **CUT** - The in-app uninstaller. |
+| The Overview | 30 | **BUILD** - The first-run story: pick a shortcut, turn on what you want. |
+| Launcher > System Actions | 28 | **BUILD** - The twenty that run stay; the twelve that cannot stay open with their reason. |
+| Features > Rooms | 0 | **CUT** - With the window layouts. |
+| Extensions > Installing | 0 | **CUT** - A macOS concept. |
+| Extensions | 0 | **CUT** - A macOS concept. |
+| Reference > Updates | 0 | **CUT** - One person rebuilds it from the source. |
+| Features > Emoji | 25 | **BUILD** - The picker screen; the model is already done. |
+| Features > Apple Shortcuts | 0 | **CUT** - A macOS concept. |
+| Install | 21 | **BUILD** - Already done. |
+| Extensions > Compatibility | 0 | **CUT** - A macOS concept. |
+| Extensions > Customising | 0 | **CUT** - A macOS concept. |
+| Launcher > Favorites | 19 | **BUILD** - The favorites slots and the section. |
+| Launcher > Aliases | 18 | **BUILD** - The alias store. |
+| Launcher > System Settings | 16 | **BUILD** - The Windows Settings pages, opened straight from the launcher. |
+| Launcher > Fallbacks | 15 | **BUILD** - The fallbacks. |
+| Features > Camera | 0 | **CUT** - Not for now. |
+| Features > Dictionary | 0 | **CUT** - Define Word opens a web lookup instead. |
+
+## To build
 
 ## Features > Calculator
 
-_296 open rows._
+_296 rows to build._
 
 - [ ] **Arithmetic** (13)
     - Math, units, live currency and crypto rates, dates and time zones, answered as you type.
@@ -200,94 +202,20 @@ _296 open rows._
     - To count workdays between two dates, use workdays between july 27 and august 7 or august 3 to august 14 in workdays.
     - As a unit on its own, a workday is eight hours: 55h in workdays.
 
-## Ai
-
-_139 open rows._
-
-- [ ] **Api Connections** (13)
-    - Use your own key with OpenAI API, Anthropic Claude, Google Gemini, OpenRouter, or any OpenAI Compatible endpoint, including a local one like Ollama.
-    - **Keys are stored only in your login Keychain.** They never appear in preferences, logs or
-    - Backups.
-    - _...and 10 more in this feature._
-- [ ] **Apple Intelligence** (2)
-    - Apple Intelligence runs on your Mac. It needs no key or account, and nothing leaves your Mac. When your Mac supports it, it's the default.
-    - It works with text only, with no web search or attachments. If Apple Intelligence isn't available, Settings → AI says why. On a Mac that supports i...
-- [ ] **Attachments** (16)
-    - Press ⌘V in the message box to attach what's on your clipboard:
-    - **An image or screenshot**, scaled to at most 1568 px on its longest side.
-    - **A PDF.**
-    - _...and 13 more in this feature._
-- [ ] **Chat History** (6)
-    - ⌘K → Chat History lists saved conversations grouped by day, with a preview of the selected one.
-    - Open Chat — return.
-    - Continue in AI Chat — ⌘J.
-    - _...and 3 more in this feature._
-- [ ] **Choosing A Model** (8)
-    - Models come from Settings → AI → Providers → Manage…. Default model, below it, sets which model a new chat uses and its reasoning effort.
-    - The panel lists every provider on the left and shows the selected one on the right, in up to three tabs:
-    - **Overview** shows whether the provider is ready, which account it's signed in with, and which
-    - _...and 5 more in this feature._
-- [ ] **Coming Back To A Chat** (10)
-    - Two settings in Settings → AI control what you see when you open Quick AI or the AI Chat window again:
-    - Opens to — Recent Conversation.
-    - Opens to — A New Conversation — Recent Conversation.
-    - _...and 7 more in this feature._
-- [ ] **Installed Ai Codex Claude Grok Opencode And** (10)
-    - If you already use the codex, claude, grok, opencode or agent (Cursor) command-line tools, Tinycast can use their existing setup. Codex also works ...
-    - Each tool has its own switch, and all five are off by default. The pane shows whether each one is ready, not installed, or needs you to sign in. It...
-    - Tinycast finds each command the same way your Terminal does. If it finds the wrong copy, or none, open the tool's Advanced tab:
-    - _...and 7 more in this feature._
-- [ ] **Opening A Chat** (21)
-    - Chat with Apple Intelligence, your installed Codex, Claude, Grok, OpenCode or Cursor, or any API you connect, in the palette or in its own window.
-    - You can chat in two places, and both share one history:
-    - **Quick AI** is a screen inside the palette. The search field becomes the message box, and replies
-    - _...and 18 more in this feature._
-- [ ] **Privacy And Storage** (7)
-    - Conversations are saved on your Mac in `ai-chats.sqlite3`, in Tinycast's Application Support
-    - Folder.
-    - **Keep conversations** sets how long they're kept: **7 Days**, **30 Days**, **3 Months** or
-    - _...and 4 more in this feature._
-- [ ] **Quick Ai** (11)
-    - Type in the search field and press return to send. While a reply is streaming, return stops it.
-    - The model name is on the right side of the header. Click it, or press ⌘P, to switch models. On models that support it, a second menu beside it chan...
-    - Stop Response — ⌘. — Stops the reply that's streaming.
-    - _...and 8 more in this feature._
-- [ ] **Replies** (3)
-    - Replies are formatted as Markdown. Your own messages appear exactly as you typed them. A reply keeps streaming even if you close the palette or the...
-    - Replies also render math. LaTeX between \\( and \\), or between single $ signs, appears inline; between \\` and `\\, or between $$ signs, it appear...
-    - Web pages a reply links to are listed under it as numbered sources, and each number also follows the sentence that cited it.
-- [ ] **Suggested Replies** (1)
-    - When a reply ends with a few next steps, they appear as buttons. Click one to send it as your next message. To turn them off, use Settings → AI → S...
-- [ ] **System Prompt** (3)
-    - Tinycast sends a short note before every conversation that tells the model where it's running. The System prompt box adds your own instructions aft...
-    - Send a system prompt (on by default) controls both. If you turn it off, no instructions are sent. Both are billed again with every message, and the...
-    - When the box contains text, it opens blurred, so a screenshot of Settings doesn't show your instructions. Click the eye button to show and edit it.
-- [ ] **The Ai Chat Window** (24)
-    - The sidebar lists your saved chats, pinned ones first and the rest grouped by day. A new chat appears there once you send its first message. A spin...
-    - Type in the message box at the bottom. return sends, and ⇧return starts a new line. Below the text is one row of controls:
-    - **+** holds **Attach Files…**, **Web Search** (for models that can search), and **Tools**, which
-    - _...and 21 more in this feature._
-- [ ] **Tools From Mcp Servers** (1)
-    - With an API connection, or with the installed Codex or Claude command, the model can call tools from MCP servers you add. See MCP servers.
-- [ ] **Web Search** (3)
-    - Settings → AI → Web search is off by default. Your prompts are only sent to a search engine after you turn it on.
-    - It works with Codex and with OpenRouter models. Searches appear inline in the reply with the query that was used, and sources are linked by name.
-    - In the AI Chat window, + → Web Search turns the same setting on and off. While it's on, a Search button sits next to +. Click it to turn web search...
-
 ## Launcher > Commands
 
-_113 open rows._
+_107 rows to build._
 
 - [ ] **Arguments** (8)
     - Select a command with arguments and small fields appear beside the search field. The command stays selected while you fill them in.
     - <kbd>tab</kbd> moves through the fields; <kbd>⇧</kbd><kbd>tab</kbd> moves back.
     - <kbd>return</kbd> runs the command once every required value is present. Otherwise it focuses the
     - _...and 5 more in this feature._
-- [ ] **Built In Commands** (51)
+- [ ] **Built In Commands** (45)
     - Every built-in command, and the shell commands you write yourself.
     - Commands are actions you can run by name from the launcher. Some are built in, and you can add your own shell commands.
     - Each built-in command belongs to one Settings pane. A feature's commands are in that feature's pane and only appear while the feature is on. The re...
-    - _...and 48 more in this feature._
+    - _...and 42 more in this feature._
 - [ ] **Custom Commands** (8)
     - Give a shell command a name, then run it from search or with its own global shortcut.
     - Turn custom commands on in Settings → Commands → Custom Commands. They're off by default.
@@ -332,17 +260,13 @@ _113 open rows._
 
 ## Reference > Shortcuts
 
-_106 open rows._
+_83 rows to build._
 
 - [ ] **Calculator History** (5)
     - Return — Copy Answer.
     - ⌘return — Copy Expression, on a past entry.
     - ⌘return — Put Answer in Search Bar, on a new calculation.
     - _...and 2 more in this feature._
-- [ ] **Chat History** (3)
-    - Return — Open Chat.
-    - ⌃X — Delete Chat.
-    - ⌃⇧X — Delete All Chats.
 - [ ] **Clipboard** (11)
     - Return — Paste.
     - ⌘return — Copy to Clipboard.
@@ -375,22 +299,11 @@ _106 open rows._
     - ⌘return — Show in Finder (app, setting, snippet).
     - ⇧⌘F — Add to / Remove from Favorites.
     - _...and 8 more in this feature._
-- [ ] **Meeting Card** (2)
-    - Return — Join Meeting.
-    - ⌘return — Copy Meeting Link.
 - [ ] **Notes Window** (6)
     - ⌘N — Create a note.
     - ⌘P — Open the switcher.
     - ⌘O — Open the Notes folder.
     - _...and 3 more in this feature._
-- [ ] **Quick Action Panel** (3)
-    - Return — Replace your selection.
-    - ⌘C — Copy the result.
-    - Esc — Close the panel.
-- [ ] **Quick Ai** (3)
-    - Return — Send, or stop a reply that's streaming.
-    - ⌘V — Attach an image, PDF or text file.
-    - Delete — In an empty message box, remove the last attachment.
 - [ ] **Quicklinks** (7)
     - Return — Open Quicklink.
     - ⌘return — Open With Default App.
@@ -401,27 +314,15 @@ _106 open rows._
     - ⌘return — Show in Finder.
     - ⌘E — Edit Snippet.
     - _...and 1 more in this feature._
-- [ ] **Switch Room** (6)
-    - Return — Enter the room.
-    - Tab / ⇧tab — Next or previous layout that fits.
-    - ⌘K — Room actions.
-    - _...and 3 more in this feature._
 - [ ] **Switch Windows** (5)
     - Return — Switch to Window.
     - ⌃⇧M — Minimize Window.
     - ⌃⇧H — Hide Application.
     - _...and 2 more in this feature._
-- [ ] **Uninstall** (5)
-    - Return — Uninstall Application.
-    - ⌘return — Select / Unselect File.
-    - ⌥⌘C — Copy Path.
-    - _...and 2 more in this feature._
-- [ ] **Window Layout Editor** (1)
-    - ⌘return — Save.
 
 ## Features > Window Management
 
-_78 open rows._
+_78 rows to build._
 
 - [ ] **Custom Sizes** (3)
     - When no built-in size suits your screen, make your own. In Settings → Window Management → Custom Sizes, click New Custom Size and give it a name, a...
@@ -461,7 +362,7 @@ _78 open rows._
 
 ## Reference > Settings
 
-_76 open rows._
+_76 rows to build._
 
 - [ ] **Advanced** (2)
     - Backup. Export a backup, import one, or import from Raycast. See Backup & restore. Sync settings file (Off) keeps your settings in a JSON file you ...
@@ -491,7 +392,7 @@ _76 open rows._
 
 ## Features > Calendar
 
-_72 open rows._
+_72 rows to build._
 
 - [ ] **Auto Join** (6)
     - Auto Join Meetings (off by default) opens each meeting when it starts.
@@ -541,7 +442,7 @@ _72 open rows._
 
 ## Features > Clipboard
 
-_70 open rows._
+_70 rows to build._
 
 - [ ] **Actions** (18)
     - Paste — return.
@@ -585,7 +486,7 @@ _70 open rows._
 
 ## Features > File Search
 
-_68 open rows._
+_68 rows to build._
 
 - [ ] **Actions** (20)
     - Open File / Open Folder — return.
@@ -632,7 +533,7 @@ _68 open rows._
 
 ## Palette
 
-_66 open rows._
+_66 rows to build._
 
 - [ ] **Appearance** (17)
     - Settings → General → Appearance has these settings:
@@ -677,7 +578,7 @@ _66 open rows._
 
 ## Launcher
 
-_64 open rows._
+_64 rows to build._
 
 - [ ] **Actions On An App** (14)
     - Press ⌘K with an app selected:
@@ -738,7 +639,7 @@ _64 open rows._
 
 ## Launcher > Quicklinks
 
-_64 open rows._
+_64 rows to build._
 
 - [ ] **As A Fallback** (1)
     - A quicklink with an {argument} also appears under \"Use … with\" at the bottom of every search. What you typed fills in its first argument. See Fal...
@@ -788,7 +689,7 @@ _64 open rows._
 
 ## Reference > Hotkeys
 
-_63 open rows._
+_63 rows to build._
 
 - [ ] **Caps Lock Details** (4)
     - While Caps Lock is your Hyper key, it's remapped at the hardware level on every keyboard, including one you plug in later. Any remapping another ap...
@@ -847,7 +748,7 @@ _63 open rows._
 
 ## Features > Notes
 
-_60 open rows._
+_60 rows to build._
 
 - [ ] **Commands** (7)
     - Plain Markdown files in one floating editor, with no database or extra files.
@@ -891,7 +792,7 @@ _60 open rows._
 
 ## Features > Snippets
 
-_59 open rows._
+_59 rows to build._
 
 - [ ] **Commands** (13)
     - Reusable Markdown templates with placeholders, arguments and keyword expansion.
@@ -940,46 +841,9 @@ _59 open rows._
     - If Tinycast can't read a token, it leaves it in the text exactly as you wrote it instead of silently removing it. So if you see {arguemnt} in your ...
     - {browser-tab} and {calculator} aren't supported.
 
-## Ai > Mcp
-
-_52 open rows._
-
-- [ ] **Adding A Server** (17)
-    - Give AI chats tools from Model Context Protocol servers, remote or running on your Mac.
-    - Model Context Protocol servers provide tools a model can call, like reading a folder, searching an issue tracker or looking something up. When you ...
-    - Turn it on in Settings → AI → MCP Servers → Enable MCP servers. It's off by default, and it only applies while AI is on. While either one is off, T...
-    - _...and 14 more in this feature._
-- [ ] **Backups** (1)
-    - Neither the switch nor your server list is included in a backup. A server list can run code on your Mac, so you have to add servers yourself.
-- [ ] **Limits** (7)
-    - **Settings → AI → Chat → Tool call rounds** sets how many rounds of tool calls a single reply can
-    - Use: 25 by default, or 10, 50, 100 or Unlimited. A model that keeps calling tools without answering is stuck, so when it reaches the limit, the rep...
-    - Each tool result, and the total of all results in one reply, has a size limit.
-    - _...and 4 more in this feature._
-- [ ] **Permission To Run** (6)
-    - With Ask Each Chat (the default), Tinycast asks before the first tool call in each conversation:
-    - **Always Allow** remembers your choice for that server.
-    - **Allow This Chat** allows calls for this conversation only.
-    - _...and 3 more in this feature._
-- [ ] **Signing In To An Oauth Server** (4)
-    - Choose HTTP, paste the server's MCP URL, and select OAuth. Click Sign In, complete the provider's sign-in in your browser and review the access it ...
-    - Leave Client ID and Client secret empty if the provider supports automatic registration. If it requires you to register your own OAuth client, ente...
-    - Tinycast refreshes tokens automatically before they expire. If a server shows Sign-in required, open it in Settings and sign in again. Sign Out dis...
-    - _...and 1 more in this feature._
-- [ ] **Talking To One Server** (1)
-    - Start a message with a handle, like @filesystem list my desktop. A tools icon after your text shows that the handle was recognized. Only that serve...
-- [ ] **Using Tools In A Chat** (2)
-    - The model is offered the tools from every enabled server. When it calls one, a row appears in the reply with a spinner while the tool runs. Consecu...
-    - In the AI Chat window, + → Tools chooses the servers for the open chat. Turn off Use Tools to offer none, or turn off single servers under Servers....
-- [ ] **Which Models Get Tools** (14)
-    - Tools are offered to API connections (OpenAI API, Anthropic Claude, Google Gemini, OpenRouter and OpenAI Compatible endpoints) and to the installed...
-    - When a chat offers servers to Codex or Claude, the model may use anything those servers' tools do, like running a command or reading a file. The co...
-    - Your own Codex and Claude MCP servers aren't used in a Tinycast chat. Claude is told to use only Tinycast's server list. Codex receives Tinycast's ...
-    - _...and 11 more in this feature._
-
 ## Reference > Backup
 
-_49 open rows._
+_49 rows to build._
 
 - [ ] **A Backup Can Never Turn On A Capability** (12)
     - Some switches are never included in a backup, because turning them on means agreeing to something, not just setting a preference:
@@ -1012,101 +876,9 @@ _49 open rows._
     - Notes — Notes/, or the Notes Folder you chose.
     - _...and 4 more in this feature._
 
-## Permissions
-
-_46 open rows._
-
-- [ ] **Accessibility** (5)
-    - What Tinycast asks for, why it needs it, and when it asks.
-    - Tinycast asks for a permission only when you use a feature that needs it, never at launch. The launcher, calculator, emoji picker and search all wo...
-    - Settings → Permissions shows the status of Accessibility, Full Disk Access, Calendars and Microphone, and opens the right System Settings pane for ...
-    - _...and 2 more in this feature._
-- [ ] **Automation And Bluetooth** (5)
-    - A few actions show their own macOS prompt the first time you run them:
-    - **Show Info in Finder** in the [uninstaller](/docs/launcher/uninstall), and some
-    - System actions, control other apps through Apple Events, which shows the standard Automation prompt.
-    - _...and 2 more in this feature._
-- [ ] **Calendars** (3)
-    - The Calendar feature reads your events to find meeting links.
-    - When you turn it on, Tinycast shows its own explanation first, then the macOS prompt. The feature is only on once macOS grants access. If you decli...
-    - Events are read on your Mac and never leave it.
-- [ ] **Camera** (1)
-    - Open Camera and the optional camera preview before a meeting ask for camera access the first time you use them. The camera isn't used before then, ...
-- [ ] **Full Disk Access** (3)
-    - Tinycast checks whether it has Full Disk Access but never asks for it automatically. Settings → Permissions and Settings → File Search both show it...
-    - File Search requires this access to build its private index on your Mac. For uninstalling apps, it is optional.
-    - The uninstaller checks in the background to work out which files it can move. Without Full Disk Access, protected folders like ~/Library/Containers...
-- [ ] **Microphone** (3)
-    - Dictation records from your microphone. When you turn on Enable Dictation, Tinycast explains what it needs first, then shows the macOS prompt. If y...
-    - The microphone is only on while you dictate. Audio stays in memory on your Mac. It's never written to disk or sent anywhere.
-    - To paste the text into another app, Dictation also needs Accessibility.
-- [ ] **Snippets And Keystroke Matching** (10)
-    - Snippet keyword expansion is the only feature that reads what you type, so these are the rules it follows:
-    - Snippets are **off** by default. Turning them on shows an explanation first, and turning on the
-    - Switch counts as your consent. There's no separate prompt.
-    - _...and 7 more in this feature._
-- [ ] **What Needs It** (12)
-    - Clipboard and emoji paste — Puts the item into the app you were using.
-    - Snippets — Detects the keyword you type, then inserts the text.
-    - Quick Actions — Reads your selected text and replaces it.
-    - _...and 9 more in this feature._
-- [ ] **What Tinycast Never Needs** (4)
-    - **Screen Recording.** The window switcher reads window titles through Accessibility.
-    - **Location.** The calculator picks your currency from your Mac's region setting.
-    - **Input Monitoring.** Snippets listen through Accessibility, as described above.
-    - _...and 1 more in this feature._
-
-## Ai > Quick Actions
-
-_45 open rows._
-
-- [ ] **A Model For One Action** (2)
-    - Every action except Translate can use its own model. Click the action's pencil button and choose a model and reasoning effort under Model. For exam...
-    - Same as Quick Actions uses the shared model. An action with its own model shows the model's name under its own. If you remove that model's connecti...
-- [ ] **Backups** (1)
-    - No Quick Actions settings are included in backups: not the switch, the models, the Replace or Preview choices, custom prompts, the language or your...
-- [ ] **Changing A Built In Prompt** (3)
-    - Click the pencil next to Fix Grammar, Rewrite or Summarize to see the exact prompt Tinycast uses. If you change it, the action uses your version. U...
-    - Translate has no prompt, because it doesn't use a language model.
-    - Your selection is always treated as text to work on, never as instructions. Custom prompts can't turn off this protection, because the result is pa...
-- [ ] **Choosing A Model** (2)
-    - Settings → Quick Actions → Model is separate from AI Chat's model, so a shortcut you use all day doesn't have to call a paid API every time. It def...
-    - It offers the same models as AI Chat, including reasoning effort where the model supports it.
-- [ ] **How The Selection Is Read** (2)
-    - Tinycast first asks the app for the selected text through Accessibility. Chrome, Electron apps and VS Code need an extra request first, because the...
-    - If that doesn't work, Tinycast briefly copies the selection with ⌘C, reads it, and restores your clipboard. If nothing is selected, it tells you in...
-- [ ] **Preview** (6)
-    - A panel shows the result as it comes in. For Fix Grammar and Rewrite, it highlights what changed. Summarize and your own actions show their result ...
-    - Return — Replace your selection.
-    - ⌘C — Copy the result.
-    - _...and 3 more in this feature._
-- [ ] **Replace** (2)
-    - The result goes straight into your document. To revert it, use undo in that app.
-    - While the model works, a message like Fixing Grammar… shows a spinner. Click it to cancel.
-- [ ] **Running One** (1)
-    - Press the action's shortcut, or type its name in the launcher. When you run it from the launcher, the palette closes first, so the action works on ...
-- [ ] **The Four Built In Actions** (14)
-    - Fix, rewrite, translate or summarize selected text in any app with one shortcut.
-    - Select text in any app, press a shortcut, and Tinycast works on it. Depending on the action, the result either replaces your selection or appears f...
-    - Turn it on in Settings → Quick Actions → Enable Quick Actions. It's off by default. When you turn it on, Tinycast explains what the feature does an...
-    - _...and 11 more in this feature._
-- [ ] **Translate** (3)
-    - Translate uses Apple's translator on your Mac. It's free and doesn't send anything to a provider.
-    - Translate to sets the language. The default is Same as this Mac. The list comes from Apple, not from your preferred languages, so it only includes ...
-    - The first time you translate into a new language, the panel opens and says the language hasn't been downloaded yet, even if Translate is set to Rep...
-- [ ] **When An Action Won T Run** (6)
-    - **In Tinycast's own windows.** Pressing a shortcut while Settings is in front does nothing, and
-    - Tinycast tells you why. Notes is the exception: Quick Actions work on text you select in a note.
-    - **In a password field**, or anywhere Secure Event Input is on.
-    - _...and 3 more in this feature._
-- [ ] **Your Own Quick Actions** (3)
-    - Add Quick Action creates a new action from a name, an icon and a prompt. Like the four built-in actions, it gets a launcher row, a shortcut and an ...
-    - Custom actions show their result in a panel by default. If you trust the prompt, switch it to Replace. Tinycast can't tell whether a prompt edits y...
-    - Click the pencil button to edit an action. Deleting one asks for confirmation, then frees its shortcut.
-
 ## Reference > Deeplinks
 
-_45 open rows._
+_45 rows to build._
 
 - [ ] **Extension Links** (1)
     - Extension commands use their own links, like raycast://extensions///. See Compatibility.
@@ -1135,43 +907,9 @@ _45 open rows._
     - Tinycast://command/clipboard-history — Runs a built-in command.
     - _...and 6 more in this feature._
 
-## Features > Dictation
-
-_45 open rows._
-
-- [ ] **Dictating** (16)
-    - Turn speech into text with a model on your Mac, and paste it where you were typing.
-    - Dictation records your voice while you hold or press a shortcut, turns it into text on your Mac, and pastes the text where you were typing.
-    - Turn it on in Settings → Dictation → Enable Dictation. It's off by default. When you turn it on, Tinycast explains what it needs, then macOS asks f...
-    - _...and 13 more in this feature._
-- [ ] **In Ai Chat** (1)
-    - While Dictation is on, the AI Chat message field has a microphone button. Click it to start, and click it again to stop and insert the text. It alw...
-- [ ] **Memory** (1)
-    - The model runs in a separate process, Tinycast Dictation, which you can see in Activity Monitor. Release model from memory quits it after the time ...
-- [ ] **Messages You Might See** (6)
-    - Download the dictation model in Settings first — The selected model isn't installed.
-    - No speech was recorded — The recording was empty or too short.
-    - Couldn't paste dictation into this app — The app refused the paste. With Paste and copy, the text is on the clipboard.
-    - _...and 3 more in this feature._
-- [ ] **Models** (8)
-    - Choose an Engine, then a Model. Models download from Hugging Face. After that, transcription runs entirely on your Mac.
-    - Parakeet — Redux (default) — Lightweight and efficient — 25 languages — About 220 MB.
-    - Parakeet — Ultra — Higher accuracy, larger download — 25 languages — About 632 MB.
-    - _...and 5 more in this feature._
-- [ ] **Privacy And Permissions** (6)
-    - Audio stays in memory. It's never saved to disk or sent over the network.
-    - **Microphone.** Asked when you turn Dictation on. If it isn't granted, the pane shows
-    - Microphone access required with a button to grant it or open System Settings. Settings → Permissions shows it too.
-    - _...and 3 more in this feature._
-- [ ] **Where The Text Goes** (7)
-    - When finished, in Settings → Dictation → Output, picks the destination:
-    - Paste in active app (default) — Pastes into the app you were typing in.
-    - Copy to clipboard — Copies the text and pastes nothing.
-    - _...and 4 more in this feature._
-
 ## Reference > Import From Raycast
 
-_41 open rows._
+_41 rows to build._
 
 - [ ] **About The Passphrase** (3)
     - Raycast encrypts the export even if you never set a password. It creates one and stores it in your login Keychain.
@@ -1212,41 +950,15 @@ _41 open rows._
     - Only Raycast v2.0 and newer. Tinycast reads the .rayconfig file written by Raycast v2.0 and later, and no other format. Check your Raycast version ...
     - _...and 1 more in this feature._
 
-## Features > Window Layouts
-
-_36 open rows._
-
-- [ ] **Making A Layout** (8)
-    - Save an arrangement of apps across your displays, then restore every window with one shortcut.
-    - A window layout is a saved arrangement of apps, with each window's size, position and display. When you run a layout, Tinycast opens any apps that ...
-    - Layouts are part of Window Management. They use its switch, its Accessibility permission and its gap setting, and need nothing else.
-    - _...and 5 more in this feature._
-- [ ] **Managing Layouts** (2)
-    - Each layout in Settings has an alias field, a shortcut recorder, a launcher checkbox, and buttons to run, edit, duplicate and delete it. Show layou...
-    - Layouts and their shortcuts are included in backups. On another Mac, entries for displays that Mac doesn't have are skipped, the same as any missin...
-- [ ] **Running A Layout** (15)
-    - Run a layout from the launcher, with its own global shortcut, or with the ▶ button in Settings.
-    - Windows that are already open all move into place at once.
-    - Apps that aren't running are opened, and each window is placed as soon as it appears. Tinycast
-    - _...and 12 more in this feature._
-- [ ] **The Editor** (11)
-    - The left side shows a preview of each display with its windows. Use the tabs above it to switch displays. The right side edits the selected window.
-    - App — Which app the window belongs to.
-    - Argument — Optional. A file, folder, web address or quicklink to open.
-    - _...and 8 more in this feature._
-
 ## Features > Navigation
 
-_35 open rows._
+_33 rows to build._
 
 - [ ] **Good To Know** (7)
     - **It always acts on the app that was in front when you opened it.** Switching apps afterward
     - Doesn't change the target.
     - **Only items you could click are listed.** Disabled items, separators and hidden items are left
     - _...and 4 more in this feature._
-- [ ] **Search Menu Bar Items** (2)
-    - Open it over any app and every menu item appears as a row, with the app's icon, the item's name, its location (like File → Export) and its keyboard...
-    - With an empty search, rows are grouped by top-level menu, like File, Edit and View. When you type, they merge into one Results list sorted by match...
 - [ ] **Settings** (4)
     - Show Apple menu items — Off — Adds the Apple menu, which is the same in every app.
     - Excluded Applications — Empty — Apps whose menus Tinycast never reads.
@@ -1258,41 +970,9 @@ _35 open rows._
     - **Switch Windows** lists every open window of every running app and brings the one you choose to
     - _...and 19 more in this feature._
 
-## Launcher > Uninstall
-
-_32 open rows._
-
-- [ ] **How Files Are Matched To The App** (5)
-    - Tinycast uses four rules, from most to least certain.
-    - Bundle identifier. An exact match, or a name inside the app's own namespace. com.apple.iBooksX.CacheDelete belongs to com.apple.iBooksX, but com.ap...
-    - Group container. Tinycast removes the group. prefix and the 10-character team ID, then applies the rule above.
-    - _...and 2 more in this feature._
-- [ ] **Locked Rows** (4)
-    - You can't select a locked row. From most to least important, a row is locked when the file is missing, protected by the system, locked by you in Ge...
-    - For example, without Full Disk Access, ~/Library/Containers, ~/Library/Group Containers and ~/Library/Cookies are locked, but ~/Library/Application...
-    - Tinycast checks whether it has Full Disk Access but never asks for it. See Permissions.
-    - _...and 1 more in this feature._
-- [ ] **Running It** (2)
-    - If the app is running, Tinycast quits it first. Then everything you selected moves to the Trash, with the app itself last, so if something fails yo...
-    - The app's shortcut, favorite, visibility and learned ranking are removed only if the app itself was removed. If you only cleaned up leftover files,...
-- [ ] **Sizes** (3)
-    - The list appears right away, and sizes fill in afterward. A row that's still being measured shows a blank size.
-    - If you confirm within the first second, the total shown can be lower than what actually moves to the Trash. Everything you selected is still moved;...
-    - A ≥ before a size means measuring stopped at its limit. Sizes match what Finder shows, so Xcode shows 9.45 GB, not the 4.19 GB its compressed files...
-- [ ] **Using It** (12)
-    - Remove an app along with the caches, preferences and containers it leaves behind.
-    - When you drag an app to the Trash, its support files stay behind in your Library folder. Tinycast's uninstaller finds those files and removes them ...
-    - Everything is moved to the Trash, and nothing is deleted permanently. If the uninstaller picks the wrong file, you can drag it back.
-    - _...and 9 more in this feature._
-- [ ] **What It Never Touches** (6)
-    - **Anything directly in your home folder.** For example, VS Code's bundle is named `Code`, and
-    - Many people keep their source code in ~/Code.
-    - `/private/var/db/receipts`, `~/Library/Keychains` and `/Library/Extensions`
-    - _...and 3 more in this feature._
-
 ## The Overview
 
-_30 open rows._
+_30 rows to build._
 
 - [ ] **1 Pick A Shortcut** (4)
     - Tinycast doesn't come with a shortcut, so it can't take over a key combination you already use. Until you choose one, open the launcher from the me...
@@ -1322,7 +1002,7 @@ _30 open rows._
 
 ## Launcher > System Actions
 
-_28 open rows._
+_28 rows to build._
 
 - [ ] **A Few Details** (5)
     - Volume. Turn Volume Up and Turn Volume Down move in 5% steps: from 37%, up goes to 40% and down goes to 35%. Tinycast shows its own volume indicato...
@@ -1347,130 +1027,9 @@ _28 open rows._
     - Actions without a visible effect show a short message with the result, like Trash Emptied, Hidden Files Shown, Dark Appearance, Bluetooth Off or 3 ...
     - A green check means something changed. A plain dot means there was nothing to do. For example, Trash Is Already Empty isn't an error, and neither a...
 
-## Features > Rooms
-
-_28 open rows._
-
-- [ ] **Getting Everything Back** (2)
-    - Quitting Tinycast, turning off Window Management, or reopening Tinycast after a crash returns every moved window to where it was, because Tinycast ...
-    - Rooms work with regular windows on the current Space. Full-screen windows aren't moved.
-- [ ] **Layouts** (9)
-    - Tab only offers layouts that fit the room's windows on the current display, and each display remembers its own choice.
-    - Auto — The first tidy layout where every window has enough room.
-    - Focus — The main window large on the left, the rest beside it.
-    - _...and 6 more in this feature._
-- [ ] **Making A Room** (9)
-    - Group a project's windows, then switch to them with one shortcut while everything else moves aside.
-    - A room is a saved set of windows for one project, with a layout. When you enter a room, its windows move to the display you're on and arrange thems...
-    - Rooms are part of Window Management. They use its switch, its Accessibility permission and its gap setting. The feature is based on Rooms by Sara G...
-    - _...and 6 more in this feature._
-- [ ] **Switching Rooms** (8)
-    - Run Switch Room. The selected room is previewed over a blurred view of your desktop.
-    - ↑ ↓ — Choose a room; the preview moves to it.
-    - Tab / ⇧tab — Try the next or previous layout that fits this display.
-    - _...and 5 more in this feature._
-
-## Extensions > Installing
-
-_27 open rows._
-
-- [ ] **Add From Folder** (2)
-    - Choose any folder that contains a manifest and built command files, like a project you just built yourself.
-    - Tinycast only copies package.json, the built commands, assets/ and any packages the build bundled in nodemodules. It never copies source maps.
-- [ ] **Custom Search Paths** (4)
-    - For other locations, like Nix, the same panel has Custom search paths: a list of folders separated by colons, like PATH, that Tinycast checks befor...
-    - The documentation shows this example:\n\n```\n~/.local/share/mise/shims\n```
-    - The documentation shows this example:\n\n```\n/etc/profiles/per-user/you/home-path/bin\n```
-    - _...and 1 more in this feature._
-- [ ] **Import From Raycast** (3)
-    - Copy the extensions you already have in Raycast on this Mac.
-    - This doesn't need Node, a package manager or a network connection, because the extensions are already built.
-    - Tinycast checks both ~/.config/raycast and ~/.config/raycast-x, and an extension found in both is only listed once. You can use Import All to impor...
-- [ ] **Install From Github** (3)
-    - Install… builds one extension from its source on this Mac. Enter owner/repo, or paste the link your browser shows for one extension's folder, such ...
-    - Building needs Node and a package manager. Tinycast runs install --ignore-scripts, then builds the extension. Install scripts are skipped, because ...
-    - Only the build is kept. The source and its dependencies are deleted once the extension installs. Closing the panel cancels a build in progress, and...
-- [ ] **Package Managers** (3)
-    - The Install from GitHub panel has a Package manager menu.
-    - Automatic (default) uses the first one you have from this list: pnpm → Bun → Yarn → npm. The fastest and most disk-efficient come first, and npm, w...
-    - Apps opened from the Dock don't get your terminal's PATH, so Tinycast checks the usual install locations itself: Homebrew, Volta, asdf, mise, fnm, ...
-- [ ] **Search Extensions** (4)
-    - The four ways to install, how updates work, and when you need a toolchain.
-    - Settings → Extensions → Install offers four ways to install extensions.
-    - Search… searches the Raycast Store and installs the extension it has already built. This is the usual way to install, and it doesn't need Node or a...
-    - _...and 1 more in this feature._
-- [ ] **Storage** (3)
-    - Everything is stored in Tinycast's Application Support folder, and uninstalling an extension removes all of it: the extension, its storage and cach...
-    - Settings → Extensions → Storage → Leftover files shows the size of leftover build folders, like those a crashed install can leave behind, and Clean...
-    - Tinycast never touches your own ~/Library/pnpm or ~/.npm.
-- [ ] **Updates** (2)
-    - Each time you open Settings → Extensions, Tinycast checks the Raycast Store for newer versions of the extensions you installed from it or imported ...
-    - Extensions installed from GitHub or a folder are never checked. To update one, install it again.
-- [ ] **What Isn T Backed Up** (3)
-    - Two settings are left out of backups because they're specific to this Mac:
-    - The package manager choice
-    - Custom search paths
-
-## Extensions
-
-_26 open rows._
-
-- [ ] **Appearance** (1)
-    - A running command keeps the appearance it started with, and a theme change applies the next time it opens. Icons and colors made for light and dark...
-- [ ] **In The Launcher** (4)
-    - An extension's commands appear in the Extensions section. Searching for the extension's name also finds its commands, so lucide finds Lucide's Sear...
-    - Global shortcuts are assigned to individual commands, not to whole extensions. See Hotkeys.
-    - When a command takes arguments, small fields appear after what you typed. tab moves from the search field through each field and back, and return i...
-    - _...and 1 more in this feature._
-- [ ] **Memory Use** (11)
-    - Tinycast runs Raycast extensions natively, rendered with SwiftUI.
-    - Tinycast runs Raycast extensions: the same package.json and the same built command files, rendered natively in the palette.
-    - Tinycast doesn't run Electron, a browser or Node.js. Extensions run in JavaScriptCore, which is already part of macOS, so supporting them adds noth...
-    - _...and 8 more in this feature._
-- [ ] **Menu Bar Commands** (2)
-    - Run a menu bar command once, or turn on Show in menu bar in its settings, to turn it on. Its icon and title then stay in the menu bar, and the inte...
-    - To stop a menu bar command, turn off Show in menu bar in the command's configuration. Installing an extension doesn't turn on its menu bar commands.
-- [ ] **Moving Around** (3)
-    - Esc clears the search field first. When the field is empty, esc and delete go back through the extension's own screens, and only leave the command ...
-    - Screens keep their state when you go back to them, so you return to where you left off.
-    - An extension's actions appear in the palette's ⌘K menu. return runs the first action, and each action's own shortcut works.
-- [ ] **Where To Go Next** (5)
-    - [Installing extensions](/docs/extensions/installing): the four ways to install, updates and
-    - Package managers.
-    - [What works](/docs/extensions/compatibility): what's supported, and the known gaps
-    - _...and 2 more in this feature._
-
-## Reference > Updates
-
-_25 open rows._
-
-- [ ] **Channels Stay Separate** (1)
-    - The stable version only updates to stable releases, and the beta only to beta releases. They're separate apps, and an update never switches you fro...
-- [ ] **Homebrew** (2)
-    - Tinycast's Homebrew casks tell Homebrew that the app updates itself, so brew upgrade skips Tinycast. It never reports Tinycast as outdated, never d...
-    - Brew install, brew uninstall and brew list work as usual.
-- [ ] **How It Works** (10)
-    - How Tinycast finds, verifies and installs new versions.
-    - Tinycast keeps itself up to date, and there's nothing to set up.
-    - **Once a day**, Tinycast checks GitHub for a newer release on its channel. If a check fails, it
-    - _...and 7 more in this feature._
-- [ ] **It Waits Until You Re Not Busy** (2)
-    - The update window never interrupts you. It waits while the palette is open, a snippet is expanding, an extension command is running, the uninstalle...
-    - Each version is offered at most once per launch.
-- [ ] **Safety Checks** (7)
-    - Nothing is installed unless every check passes. If any check fails, the app you're running stays exactly as it was.
-    - **The signature must show that the download is Tinycast**, signed the same way as the copy you're
-    - Running.
-    - _...and 4 more in this feature._
-- [ ] **Supporting Tinycast** (2)
-    - Tinycast is free and open source. Support Tinycast, in the launcher, the menu bar and Settings → About, opens a small window with a link to support...
-    - About once a month, this window may open by itself, but never on the day you install Tinycast and never while you're busy. To stop it, clear the re...
-- [ ] **Turning Off Automatic Checks** (1)
-    - Settings → General → Automatically check for updates is on by default. Turn it off, and Tinycast stops checking in the background and never opens t...
-
 ## Features > Emoji
 
-_25 open rows._
+_25 rows to build._
 
 - [ ] **Actions** (10)
     - A searchable grid of every emoji and symbol, with skin tones, pins and your most-used characters first.
@@ -1494,30 +1053,9 @@ _25 open rows._
     - Default: Medium Light.
     - _...and 5 more in this feature._
 
-## Features > Apple Shortcuts
-
-_22 open rows._
-
-- [ ] **In The Launcher** (10)
-    - Run the shortcuts from Apple's Shortcuts app in the launcher or with a global shortcut.
-    - Apple Shortcuts lists the shortcuts from Apple's Shortcuts app in the launcher, so you can run one by name or with its own global shortcut.
-    - Turn it on in Settings → Apple Shortcuts → Enable Apple Shortcuts. It's off by default. Tinycast only lists and runs your shortcuts. To create or e...
-    - _...and 7 more in this feature._
-- [ ] **Renaming And Deleting** (2)
-    - Tinycast follows each shortcut by its identifier, not its name. Rename a shortcut in the Shortcuts app and its alias, global shortcut and favorite ...
-    - When you delete a shortcut, Tinycast removes its alias, global shortcut, favorite and ranking the next time it reads the list. That includes shortc...
-- [ ] **Settings** (8)
-    - While it's on, Settings → Apple Shortcuts lists every shortcut under Shortcuts, with:
-    - a search field, which also matches aliases
-    - an [alias](/docs/launcher/aliases) field for each shortcut
-    - _...and 5 more in this feature._
-- [ ] **Turning It Off** (2)
-    - Turning it off removes the section from the launcher, and the global shortcuts you recorded stop running anything. They're kept, so they work again...
-    - Enable Apple Shortcuts is included in backups. The global shortcuts you give your shortcuts aren't.
-
 ## Install
 
-_21 open rows._
+_21 rows to build._
 
 - [ ] **Channels** (5)
     - Each channel is a separate app with its own settings, permissions and login item. They can run side by side, so you can keep the stable version and...
@@ -1543,54 +1081,9 @@ _21 open rows._
     - Because the app manages its own updates, brew upgrade skips Tinycast. This is expected. See Updates for details.
     - _...and 1 more in this feature._
 
-## Extensions > Compatibility
-
-_21 open rows._
-
-- [ ] **How Well It Works** (3)
-    - What Tinycast supports from the Raycast API, how well it works in practice, and the known gaps.
-    - We tested Tinycast against the 37 extensions installed in Raycast on the development Mac:
-    - 32 of 37 extensions, and 114 of 147 view commands, open and render.
-- [ ] **Not Supported Yet** (8)
-    - AI, BrowserExtension, WindowManagement — These are Raycast services with no local equivalent. Using one fails with a clear message.
-    - A WebSocket to a server macOS doesn't trust — Certificate checks can't be turned off, so the connection fails.
-    - Canceling a fetch in progress — The caller gets its AbortError, but the request still finishes in the background.
-    - _...and 5 more in this feature._
-- [ ] **Supported** (10)
-    - Components. List and Grid with sections, empty views, item details and search bar dropdowns. Detail with Metadata. Form with every field type: text...
-    - APIs. Clipboard, LocalStorage, Cache, environment, getPreferenceValues, showToast, showHUD, confirmAlert, closeMainWindow, popToRoot, clearSearchBa...
-    - Sign-in with OAuth. Extensions like GitHub sign you in through your browser, and the palette comes back when you finish. Sign in from one of the ex...
-    - _...and 7 more in this feature._
-
-## Extensions > Customising
-
-_21 open rows._
-
-- [ ] **Background Refresh** (7)
-    - A no-view command that defines an interval, like 1m or 12h, can run in the background on that schedule. Any subtitle it sets appears next to its na...
-    - Background refresh is off for each command until you run the command yourself once, or turn it on in the command's settings. The settings also show...
-    - In the launcher, a small dot on the row means refresh is on, and a warning appears if the last run failed. ⌘K offers Enable Background Refresh or D...
-    - _...and 4 more in this feature._
-- [ ] **Command Alias** (2)
-    - Each command has an alias field next to its shortcut recorder. If you enter si, that command comes first when you search for si, the same as an app...
-    - The field is dimmed when the command is hidden from launcher search.
-- [ ] **Launcher Icon** (5)
-    - Click Change… to replace an extension's own artwork with an SF Symbol on a colored tile, in one of 18 colors, or choose Use Original Icon to switch...
-    - The icon applies to every command in the extension.
-    - The symbol picker starts with about 85 suggestions, but search covers the full catalog of about 6,500 symbols. It also understands Apple's search k...
-    - _...and 2 more in this feature._
-- [ ] **Preferences** (5)
-    - Preferences, launcher icons, aliases and background refresh for an extension.
-    - Open Settings → Extensions, find the extension in the Installed list, and click its row to show its settings. In the launcher, ⌘K → Configure Exten...
-    - Any settings the extension defines appear as native controls: checkbox, dropdown, text field, password field, file picker, folder picker or app pic...
-    - _...and 2 more in this feature._
-- [ ] **Uninstalling** (2)
-    - Click the trash button on the extension's row in Settings → Extensions to uninstall it. This removes the extension and everything connected to it: ...
-    - ⌘K → Uninstall Extension in the launcher does the same.
-
 ## Launcher > Favorites
 
-_19 open rows._
+_19 rows to build._
 
 - [ ] **Adding One** (4)
     - Pin the things you open most, and open them by number.
@@ -1617,7 +1110,7 @@ _19 open rows._
 
 ## Launcher > Aliases
 
-_18 open rows._
+_18 rows to build._
 
 - [ ] **Backups And Cleanup** (3)
     - Aliases are included in backups.
@@ -1638,7 +1131,7 @@ _18 open rows._
 
 ## Launcher > System Settings
 
-_16 open rows._
+_16 rows to build._
 
 - [ ] **Actions** (8)
     - Search every macOS Settings pane from the launcher.
@@ -1653,7 +1146,7 @@ _16 open rows._
 
 ## Launcher > Fallbacks
 
-_15 open rows._
+_15 rows to build._
 
 - [ ] **Open In Browser** (2)
     - Open in Browser works the other way around. When your text looks like a web address, like https://… or github.com/user/repo, Open in Browser appear...
@@ -1673,36 +1166,27 @@ _15 open rows._
     - Quick AI — Sent as a question in the palette — AI is on.
     - _...and 4 more in this feature._
 
-## Features > Camera
+## Out of scope by decision
 
-_14 open rows._
+These rows stay in the ledger as NOT PORTED, with the reason recorded. Delete a
+cut from parity/status.toml and they come back into scope.
 
-- [ ] **Privacy** (4)
-    - The camera isn't used until you run the command. The first time, macOS asks for camera access.
-    - The camera turns off as soon as the preview closes, so the green light never stays on.
-    - Taking a photo also closes the preview, so the camera doesn't stay on waiting for another shot.
-    - _...and 1 more in this feature._
-- [ ] **Using It** (10)
-    - A quick camera check from the launcher, with mirroring and photos copied to the clipboard.
-    - Open Camera shows a live camera preview. Use it to check how you look before a call, flip the image, switch cameras, or take a photo and copy it to...
-    - There's nothing to turn on or set up. The command is in Settings → Commands, where you can give it a global shortcut and an alias.
-    - _...and 7 more in this feature._
-
-## Features > Dictionary
-
-_13 open rows._
-
-- [ ] **Actions** (3)
-    - Copy Definition — return.
-    - Open in Dictionary — ⌘return.
-    - Copy Definition copies the whole entry as plain text and closes the launcher. Open in Dictionary opens the word in Dictionary.app.
-- [ ] **Looking Up A Word** (7)
-    - Look up a word in your Mac's dictionaries from the launcher, and copy its definition.
-    - Define Word shows a word's dictionary entry in the launcher, read from the dictionaries already on your Mac.
-    - There's nothing to turn on. The command is in Settings → Commands, where you can give it a global shortcut and an alias. Press the shortcut again t...
-    - _...and 4 more in this feature._
-- [ ] **Turning It Off** (1)
-    - Clear Define Word's checkbox in Settings → Commands. That hides both the command and its fallback. To hide only the fallback, clear its checkbox in...
-- [ ] **Which Dictionaries** (2)
-    - Tinycast uses the dictionaries turned on in Dictionary.app's settings, in the order listed there. The first one that knows the word answers. To add...
-    - Lookups happen on your Mac. Nothing is sent over the network.
+- **Ai** (139) - Out of scope by decision (2026-11-11): YAL talks to no model provider and holds no API key, so the AI features are not built. The AI rows inside the commands and the shortcut reference went with them.
+- **Launcher > Commands** (6) - Out of scope by decision (2026-11-11): YAL talks to no model provider and holds no API key, so the AI features are not built. The AI rows inside the commands and the shortcut reference went with them.
+- **Reference > Shortcuts** (23) - Out of scope by decision (2026-11-11): YAL talks to no model provider and holds no API key, so the AI features are not built. The AI rows inside the commands and the shortcut reference went with them.
+- **Ai > Mcp** (52) - Out of scope by decision (2026-11-11): YAL talks to no model provider and holds no API key, so the AI features are not built. The AI rows inside the commands and the shortcut reference went with them.
+- **Permissions** (46) - Out of scope by decision (2026-11-11): the macOS accessibility and screen-recording permissions have no Windows answer. A per-user Windows install asks for nothing beyond what Windows already grants it.
+- **Ai > Quick Actions** (45) - Out of scope by decision (2026-11-11): YAL talks to no model provider and holds no API key, so the AI features are not built. The AI rows inside the commands and the shortcut reference went with them.
+- **Features > Dictation** (45) - Out of scope by decision (2026-11-11): dictation is not built. Windows' own speech input does the same job, and YAL does not build a second one.
+- **Features > Window Layouts** (36) - Out of scope by decision (2026-11-11): the saved window layouts and the rooms that hold them are not built. The window management itself - switching, moving and resizing a window - stays.
+- **Features > Navigation** (2) - Out of scope by decision (2026-11-11): macOS has a menu bar and YAL does not, so the menu items of the app in front cannot be read. Switching windows stays.
+- **Launcher > Uninstall** (32) - Out of scope by decision (2026-11-11): the in-app uninstaller is not built. The installer still removes the program and keeps the data.
+- **Features > Rooms** (28) - Out of scope by decision (2026-11-11): the saved window layouts and the rooms that hold them are not built. The window management itself - switching, moving and resizing a window - stays.
+- **Extensions > Installing** (27) - Out of scope by decision (2026-11-11): Raycast extensions and Apple Shortcuts are macOS concepts. YAL carries neither.
+- **Extensions** (26) - Out of scope by decision (2026-11-11): Raycast extensions and Apple Shortcuts are macOS concepts. YAL carries neither.
+- **Reference > Updates** (25) - Out of scope by decision (2026-11-11): YAL is built and used by one person, who rebuilds it from the source, so there is no update to check for.
+- **Features > Apple Shortcuts** (22) - Out of scope by decision (2026-11-11): Raycast extensions and Apple Shortcuts are macOS concepts. YAL carries neither.
+- **Extensions > Compatibility** (21) - Out of scope by decision (2026-11-11): Raycast extensions and Apple Shortcuts are macOS concepts. YAL carries neither.
+- **Extensions > Customising** (21) - Out of scope by decision (2026-11-11): Raycast extensions and Apple Shortcuts are macOS concepts. YAL carries neither.
+- **Features > Camera** (14) - Out of scope by decision (2026-11-11): the camera is not built.
+- **Features > Dictionary** (13) - Out of scope by decision (2026-11-11): the dictionary is not built. The Define Word command opens a web lookup instead.
