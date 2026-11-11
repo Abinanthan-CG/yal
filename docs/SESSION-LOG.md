@@ -215,3 +215,15 @@ clipboard, the emoji, the dictionary and the window management are all still ahe
   and the Raycast import.
 - The twelve system actions Windows cannot do, each with its reason in the ledger.
 - The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.
+
+**Continued.** The killed snippets worker had left three modules unwired and untested, and a
+fourth — the 39 KB template engine — that did not compile. All four are now wired in, fixed and
+tested: the template engine's seven compile errors and its two clippy errors are fixed, and 29
+tests were written from upstream's own expectations for the placeholders, the offsets, the
+formats, the locales and the modifiers.
+
+- `cargo test --workspace` passes: 431 tests, exit 0.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+- `cargo run -p xtask -- parity` reports 2 309 rows, 95 `PORTED`, 2 214 `NOT PORTED`.

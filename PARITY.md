@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 72 | 1743 |
+| 1 | 1815 | 95 | 1720 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **72** | **2237** |
+| **All** | **2309** | **95** | **2214** |
 
 ### Totals per docs page
 
@@ -29,7 +29,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
 | `docs/features/calculator/` | 1 | 326 | 21 | 305 |
 | `docs/features/clipboard/` | 1 | 85 | 0 | 85 |
-| `docs/features/snippets/` | 1 | 87 | 4 | 83 |
+| `docs/features/snippets/` | 1 | 87 | 27 | 60 |
 | `docs/features/file-search/` | 1 | 68 | 0 | 68 |
 | `docs/features/window-management/` | 1 | 78 | 0 | 78 |
 | `docs/features/window-layouts/` | 1 | 36 | 0 | 36 |
@@ -965,24 +965,24 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Snippets | Snippets | Right before deleting the keyword and inserting the text, Tinycast checks everything again. If | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets | Settings shows the current status: Off, Needs Accessibility or Active. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets | The typing buffer holds at most 256 characters. It resets when you switch apps, when Secure Event | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | A value only needs quotes if it contains \|. Without quotes, a value continues up to the next key=, so {date format=MMMM d, yyyy} keeps its spaces. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {argument} — Asks you for a value, named "Argument". | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {argument default="Hi"} — Optional; uses the default without asking. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {argument name="Recipient"} — Asks for a named value. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {argument options="a, b, c"} — Asks you to pick from a list. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {clipboard offset=1} — An earlier clip; 1 is the one before the current one. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {clipboard} — The clipboard contents, as plain text. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {cursor} — Where the cursor goes afterward. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {date format="yyyy-MM-dd"} — Any date format. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {date locale="fr-FR"} — Another locale; can't be combined with format. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {date} {time} {datetime} — Today's date, the time, or both, in your locale. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {day} — The name of the weekday. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {selection} — The selected text in the app you were using. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {snippet:Name} — Another snippet, inserted inline. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
+| Snippets | Snippets | A value only needs quotes if it contains \|. Without quotes, a value continues up to the next key=, so {date format=MMMM d, yyyy} keeps its spaces. | PORTED | `tc-snippets::template_tests::the_format_parameter_picks_the_pattern` |
+| Snippets | Snippets | {argument} — Asks you for a value, named "Argument". | PORTED | `tc-snippets::template_tests::an_argument_that_was_not_supplied_is_owed` |
+| Snippets | Snippets | {argument default="Hi"} — Optional; uses the default without asking. | PORTED | `tc-snippets::template_tests::an_argument_with_a_default_expands_without_asking` |
+| Snippets | Snippets | {argument name="Recipient"} — Asks for a named value. | PORTED | `tc-snippets::template_tests::the_declared_arguments_are_the_ones_the_template_asks_for` |
+| Snippets | Snippets | {argument options="a, b, c"} — Asks you to pick from a list. | PORTED | `tc-snippets::template_tests::an_argument_may_offer_its_choices` |
+| Snippets | Snippets | {clipboard offset=1} — An earlier clip; 1 is the one before the current one. | PORTED | `tc-snippets::template_tests::the_clipboard_token_reaches_back_through_the_history` |
+| Snippets | Snippets | {clipboard} — The clipboard contents, as plain text. | PORTED | `tc-snippets::template_tests::the_clipboard_is_inserted_as_it_is` |
+| Snippets | Snippets | {cursor} — Where the cursor goes afterward. | PORTED | `tc-snippets::template_tests::the_cursor_token_says_where_the_cursor_goes` |
+| Snippets | Snippets | {date format="yyyy-MM-dd"} — Any date format. | PORTED | `tc-snippets::template_tests::the_format_parameter_picks_the_pattern` |
+| Snippets | Snippets | {date locale="fr-FR"} — Another locale; can't be combined with format. | PORTED | `tc-snippets::template_tests::another_locale_renders_the_date_in_that_locale`, `tc-snippets::template_tests::a_locale_with_a_format_leaves_the_token_literal` |
+| Snippets | Snippets | {date} {time} {datetime} — Today's date, the time, or both, in your locale. | PORTED | `tc-snippets::template_tests::the_date_and_the_time_tokens_render_their_styles` |
+| Snippets | Snippets | {day} — The name of the weekday. | PORTED | `tc-snippets::template_tests::the_date_and_the_time_tokens_render_their_styles` |
+| Snippets | Snippets | {selection} — The selected text in the app you were using. | PORTED | `tc-snippets::template_tests::the_selection_is_inserted_as_it_is` |
+| Snippets | Snippets | {snippet:Name} — Another snippet, inserted inline. | PORTED | `tc-snippets::template_tests::a_snippet_reference_expands_the_other_snippet`, `tc-snippets::template_tests::a_disabled_snippet_cannot_be_reached` |
 | Snippets | Snippets | The editor's Insert… menu lists every token. You type parameters and modifiers yourself. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets | These match Raycast's dynamic placeholders, so snippets you import keep working. Raycast's {selectedText} and {query} also work, as {selection} and {argument}. {snippet name="Name"} works the same as {snippet:Name}. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {time offset="+3h +30m"} — Shifted by m minutes, h hours, d days, M months, y years. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets | {uuid} — A new UUID for each token. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
+| Snippets | Snippets | {time offset="+3h +30m"} — Shifted by m minutes, h hours, d days, M months, y years. | PORTED | `tc-snippets::template_tests::several_offsets_apply_in_order` |
+| Snippets | Snippets | {uuid} — A new UUID for each token. | PORTED | `tc-snippets::template_tests::each_uuid_token_draws_a_fresh_value` |
 | Snippets | Snippets | A snippet's shortcut does nothing while snippets are off or while that snippet is disabled. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets | Any snippet can have its own global shortcut. Record it on the snippet's row in Settings → Snippets. Pressing it pastes the snippet wherever you're typing, the same way the launcher does: placeholders, arguments, the cursor position and the confirmation all work the same. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets | The shortcut is tied to the file. If you rename or move the file outside Tinycast, or choose a different snippets folder, the shortcut is cleared. Snippet shortcuts aren't included in backups. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
@@ -1026,14 +1026,14 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Snippets | Snippets › Placeholders | All {cursor} tokens are removed, and the first one sets where the cursor goes. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets › Placeholders | Each argument is asked for once, in the order it first appears, including arguments inside referenced snippets. Values are inserted as they are: text in a value that looks like a token isn't expanded again. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets › Placeholders | Snippet references aren't case-sensitive and can be nested up to five levels deep. Tinycast detects loops. A missing, looping or too-deeply nested reference stays in the text as a token. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Available modifiers: uppercase. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Chain modifiers from left to right: {clipboard \| trim \| uppercase}. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Json-stringify. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
+| Snippets | Snippets › Placeholders | Available modifiers: uppercase. | PORTED | `tc-snippets::template_tests::the_case_modifiers_change_the_case` |
+| Snippets | Snippets › Placeholders | Chain modifiers from left to right: {clipboard \| trim \| uppercase}. | PORTED | `tc-snippets::template_tests::the_modifiers_chain_from_left_to_right` |
+| Snippets | Snippets › Placeholders | Json-stringify. | PORTED | `tc-snippets::template_tests::json_stringify_escapes_without_adding_quotes` |
 | Snippets | Snippets › Placeholders | Json-stringify escapes text for use inside a JSON string, without adding the quotes. raw only matters in quicklinks. {cursor} and snippet references don't take modifiers. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Lowercase. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Percent-encode. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Raw. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
-| Snippets | Snippets › Placeholders | Trim. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
+| Snippets | Snippets › Placeholders | Lowercase. | PORTED | `tc-snippets::template_tests::the_case_modifiers_change_the_case` |
+| Snippets | Snippets › Placeholders | Percent-encode. | PORTED | `tc-snippets::template_tests::percent_encode_escapes_everything_outside_the_unreserved_set` |
+| Snippets | Snippets › Placeholders | Raw. | PORTED | `tc-snippets::template_tests::an_encoded_value_is_not_encoded_twice` |
+| Snippets | Snippets › Placeholders | Trim. | PORTED | `tc-snippets::template_tests::the_modifiers_chain_from_left_to_right` |
 | Snippets | Snippets › Placeholders | {browser-tab} and {calculator} aren't supported. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 | Snippets | Snippets › Placeholders | If Tinycast can't read a token, it leaves it in the text exactly as you wrote it instead of silently removing it. So if you see {arguemnt} in your pasted text, you know where the typo is. | NOT PORTED | The snippet store has no editor and no rows in the palette yet. |
 
@@ -3743,32 +3743,9 @@ Tier 1 first, then Tier 2.
 | `docs/features/snippets/` | 1 | `features-snippets.limits.all-cursor-tokens-are-removed-and-the-first` | All {cursor} tokens are removed, and the first one sets where the cursor goes. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.limits.each-argument-is-asked-for-once-in-the-order` | Each argument is asked for once, in the order it first appears, including arguments inside referenced snippets. Values are inserted as they are: text in a value that looks like a token isn't expanded again. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.limits.snippet-references-aren-t-case-sensitive-and` | Snippet references aren't case-sensitive and can be nested up to five levels deep. Tinycast detects loops. A missing, looping or too-deeply nested reference stays in the text as a token. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.available-modifiers-uppercase` | Available modifiers: uppercase. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.chain-modifiers-from-left-to-right-clipboard` | Chain modifiers from left to right: {clipboard \| trim \| uppercase}. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.json-stringify` | Json-stringify. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.modifiers.json-stringify-escapes-text-for-use-inside-a` | Json-stringify escapes text for use inside a JSON string, without adding the quotes. raw only matters in quicklinks. {cursor} and snippet references don't take modifiers. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.lowercase` | Lowercase. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.percent-encode` | Percent-encode. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.raw` | Raw. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.modifiers.trim` | Trim. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.a-value-only-needs-quotes-if-it-contains-wit` | A value only needs quotes if it contains \|. Without quotes, a value continues up to the next key=, so {date format=MMMM d, yyyy} keeps its spaces. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.argument-asks-you-for-a-value-named-argument` | {argument} — Asks you for a value, named "Argument". | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.argument-default-hi-optional-uses-the-defaul` | {argument default="Hi"} — Optional; uses the default without asking. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.argument-name-recipient-asks-for-a-named-val` | {argument name="Recipient"} — Asks for a named value. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.argument-options-a-b-c-asks-you-to-pick-from` | {argument options="a, b, c"} — Asks you to pick from a list. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.clipboard-offset-1-an-earlier-clip-1-is-the` | {clipboard offset=1} — An earlier clip; 1 is the one before the current one. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.clipboard-the-clipboard-contents-as-plain-te` | {clipboard} — The clipboard contents, as plain text. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.cursor-where-the-cursor-goes-afterward` | {cursor} — Where the cursor goes afterward. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.date-format-yyyy-mm-dd-any-date-format` | {date format="yyyy-MM-dd"} — Any date format. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.date-locale-fr-fr-another-locale-can-t-be-co` | {date locale="fr-FR"} — Another locale; can't be combined with format. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.date-time-datetime-today-s-date-the-time-or` | {date} {time} {datetime} — Today's date, the time, or both, in your locale. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.day-the-name-of-the-weekday` | {day} — The name of the weekday. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.selection-the-selected-text-in-the-app-you-w` | {selection} — The selected text in the app you were using. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.snippet-name-another-snippet-inserted-inline` | {snippet:Name} — Another snippet, inserted inline. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.placeholders.the-editor-s-insert-menu-lists-every-token-y` | The editor's Insert… menu lists every token. You type parameters and modifiers yourself. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.placeholders.these-match-raycast-s-dynamic-placeholders-s` | These match Raycast's dynamic placeholders, so snippets you import keep working. Raycast's {selectedText} and {query} also work, as {selection} and {argument}. {snippet name="Name"} works the same as {snippet:Name}. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.time-offset-3h-30m-shifted-by-m-minutes-h-ho` | {time offset="+3h +30m"} — Shifted by m minutes, h hours, d days, M months, y years. | The snippet store has no editor and no rows in the palette yet. |
-| `docs/features/snippets/` | 1 | `features-snippets.placeholders.uuid-a-new-uuid-for-each-token` | {uuid} — A new UUID for each token. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.shortcuts.a-snippet-s-shortcut-does-nothing-while-snip` | A snippet's shortcut does nothing while snippets are off or while that snippet is disabled. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.shortcuts.any-snippet-can-have-its-own-global-shortcut` | Any snippet can have its own global shortcut. Record it on the snippet's row in Settings → Snippets. Pressing it pastes the snippet wherever you're typing, the same way the launcher does: placeholders, arguments, the cursor position and the confirmation all work the same. | The snippet store has no editor and no rows in the palette yet. |
 | `docs/features/snippets/` | 1 | `features-snippets.shortcuts.the-shortcut-is-tied-to-the-file-if-you-rena` | The shortcut is tied to the file. If you rename or move the file outside Tinycast, or choose a different snippets folder, the shortcut is cleared. Snippet shortcuts aren't included in backups. | The snippet store has no editor and no rows in the palette yet. |

@@ -11,7 +11,7 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use chrono::{DateTime, Datelike, FixedOffset, NaiveDate, Timelike};
+use chrono::{DateTime, Datelike, FixedOffset, NaiveDate, Offset as ChronoOffset, Timelike};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::locale::{for_identifier, LocaleData};
@@ -160,7 +160,7 @@ impl SnippetTemplateEngine {
         user_arguments: &BTreeMap<String, String>,
     ) -> ExpansionResult {
         let mut sorted: Vec<&StoredSnippet> = snippets.iter().collect();
-        sorted.sort_by(|lhs, rhs| lhs.id().cmp(&rhs.id()));
+        sorted.sort_by_key(|snippet| snippet.id());
 
         let expansion = expand_text(
             &record.snippet.text,
@@ -209,16 +209,16 @@ impl SnippetTemplateEngine {
             .collect();
 
         // Expansion falls back per occurrence, so one without a `default=` leaves the field owed.
-        let owed: HashSet<&str> = tokens
+        let owed: HashSet<String> = tokens
             .iter()
             .filter(|token| token.default_value.is_none())
-            .map(|token| token.name.as_str())
+            .map(|token| token.name.clone())
             .collect();
 
-        let mut seen: HashSet<&str> = HashSet::new();
+        let mut seen: HashSet<String> = HashSet::new();
         tokens
             .into_iter()
-            .filter(|token| seen.insert(token.name.as_str()))
+            .filter(|token| seen.insert(token.name.clone()))
             .map(|token| DeclaredArgument {
                 is_optional: !owed.contains(token.name.as_str()),
                 name: token.name,
@@ -412,16 +412,27 @@ fn expand_text(
                 expansion.append(&apply_modifiers(&modifiers, &context.selection, encoding));
             }
             Segment::DateTime { token, modifiers } => {
-                expansion.append(&apply_modifiers(&modifiers, &format_token(&token, context), encoding));
+                expansion.append(&apply_modifiers(
+                    &modifiers,
+                    &format_token(&token, context),
+                    encoding,
+                ));
             }
             Segment::Uuid { modifiers } => {
-                expansion.append(&apply_modifiers(&modifiers, &(context.uuid_factory)(), encoding));
+                expansion.append(&apply_modifiers(
+                    &modifiers,
+                    &(context.uuid_factory)(),
+                    encoding,
+                ));
             }
             Segment::Argument {
                 token,
                 source,
                 modifiers,
-            } => match user_arguments.get(&token.name).or(token.default_value.as_ref()) {
+            } => match user_arguments
+                .get(&token.name)
+                .or(token.default_value.as_ref())
+            {
                 Some(value) => expansion.append(&apply_modifiers(&modifiers, value, encoding)),
                 None => {
                     expansion.append(&source);
@@ -466,26 +477,29 @@ fn expand_text(
 ///
 /// Mirrors upstream's `resolveReference(_:snippets:)`: a disabled snippet is
 /// not expandable, and a name is matched before a keyword.
-fn resolve_reference<'a>(
-    key: &str,
-    snippets: &[&'a StoredSnippet],
-) -> Option<&'a StoredSnippet> {
+fn resolve_reference<'a>(key: &str, snippets: &[&'a StoredSnippet]) -> Option<&'a StoredSnippet> {
     let normalized_key = key.to_lowercase();
-    let candidates: Vec<&&StoredSnippet> =
-        snippets.iter().filter(|s| s.snippet.is_enabled).collect();
+    let candidates: Vec<&StoredSnippet> = snippets
+        .iter()
+        .filter(|s| s.snippet.is_enabled)
+        .copied()
+        .collect();
 
     if let Some(name_match) = candidates
         .iter()
         .find(|s| s.snippet.name.to_lowercase() == normalized_key)
     {
-        return Some(name_match);
+        return Some(*name_match);
     }
-    candidates.iter().find(|s| {
-        s.snippet
-            .keyword
-            .as_ref()
-            .is_some_and(|keyword| keyword.to_lowercase() == normalized_key)
-    })
+    candidates
+        .iter()
+        .find(|s| {
+            s.snippet
+                .keyword
+                .as_ref()
+                .is_some_and(|keyword| keyword.to_lowercase() == normalized_key)
+        })
+        .copied()
 }
 
 /// Apply a placeholder's modifiers to its value.
@@ -555,7 +569,10 @@ fn format_token(token: &DateTimeToken, context: &ExpansionContext) -> String {
             .as_deref()
             .unwrap_or(context.locale.as_str()),
     );
-    let date = apply_offsets(context.now.with_timezone(&context.time_zone), &token.offsets);
+    let date = apply_offsets(
+        context.now.with_timezone(&context.time_zone),
+        &token.offsets,
+    );
 
     let pattern = match token.format.as_deref() {
         Some(format) => format,
@@ -578,7 +595,9 @@ fn apply_offsets(date: DateTime<FixedOffset>, offsets: &[Offset]) -> DateTime<Fi
             OffsetComponent::Hour => date + chrono::Duration::hours(offset.value),
             OffsetComponent::Day => {
                 let naive = date.naive_local();
-                let shifted = naive.date().checked_add_days(chrono::Days::new(offset.value));
+                let shifted = naive
+                    .date()
+                    .checked_add_signed(chrono::Duration::days(offset.value));
                 match shifted {
                     Some(day) => day
                         .and_time(naive.time())
@@ -744,7 +763,7 @@ fn format_field(
                 locale.pm.to_string()
             }
         }
-        _ => character.to_string().repeat(count),
+        _ => field.to_string().repeat(count),
     }
 }
 
@@ -763,7 +782,9 @@ fn parse_segments(source: &str) -> Vec<Segment> {
         };
         let opening = position + opening;
         if position < opening {
-            segments.push(Segment::Literal(characters[position..opening].iter().collect()));
+            segments.push(Segment::Literal(
+                characters[position..opening].iter().collect(),
+            ));
         }
 
         let Some(closing) = characters[opening + 1..].iter().position(|c| *c == '}') else {
@@ -922,7 +943,9 @@ fn parse_token(head: &str) -> Option<ParsedToken> {
         }
 
         let key_start = index;
-        while index < characters.len() && !characters[index].is_whitespace() && characters[index] != '='
+        while index < characters.len()
+            && !characters[index].is_whitespace()
+            && characters[index] != '='
         {
             index += 1;
         }
@@ -959,7 +982,10 @@ fn parse_token(head: &str) -> Option<ParsedToken> {
         parameters.push((key, value));
     }
 
-    Some(ParsedToken { command, parameters })
+    Some(ParsedToken {
+        command,
+        parameters,
+    })
 }
 
 /// Read an integer parameter, or the fallback when it is absent.
@@ -1033,7 +1059,7 @@ fn decode_quoted(characters: &[char]) -> Option<(String, usize)> {
         match character {
             '\\' => escaped = true,
             '"' => return Some((decoded, consumed)),
-            other => decoded.push(other),
+            other => decoded.push(*other),
         }
     }
     None

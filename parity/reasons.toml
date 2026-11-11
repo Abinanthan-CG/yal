@@ -19,7 +19,7 @@
 "docs/launcher/uninstall/" = "The installer removes the program files and keeps the data; the in-app uninstaller and the per-application uninstall are not built yet."
 "docs/features/calculator/" = "The calculator's arithmetic core is ported, but the units, the currencies, the dates, the time zones, the percentages, the statistics and the history are not."
 "docs/features/clipboard/" = "The clipboard history has no store and no rows in the palette yet."
-"docs/features/snippets/" = "The snippet record and the Markdown file format are ported in `tc-snippets`, but there is no repository reading and writing the files, no template engine, no keyword expansion, no editor and no rows in the palette yet."
+"docs/features/snippets/" = "The snippet record, the Markdown file format and the template engine are ported in `tc-snippets`, but there is no repository reading and writing the files, no keyword expansion, no editor, no browser and no rows in the palette yet."
 "docs/features/file-search/" = "The file indexer helper exists, but the palette does not search the index yet."
 "docs/features/window-management/" = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
 "docs/features/window-layouts/" = "Window layouts have no store and no rows in the palette yet."

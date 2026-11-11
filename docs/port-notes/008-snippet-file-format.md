@@ -81,15 +81,16 @@ table per script beats a framework that is not there.
 
 ## What is not here
 
-- **The template engine** — the placeholders (`{clipboard}`, `{date}`,
-  `{argument name="…"}`), the modifiers and the offsets. This is the largest
-  part of the snippet feature and it is not written yet.
 - **The repository** — the part that reads and writes the files, keeps a slug
   unique (`same.md`, then `same-2.md`) and refuses a stale write when the file
   changed underneath it. The fingerprint that refuses it *is* ported
   (`SnippetSourceRevision`).
 - **The keyword policy**, the **store**, the **Raycast import**, the **editor**
   and the **browser**.
+
+The **template engine** was written by the same killed worker and arrived with
+this slice; it is ported and tested, and it is described in
+[port note 009](009-snippet-template-engine.md).
 
 ## Where this came from
 

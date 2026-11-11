@@ -627,3 +627,144 @@ status = "PORTED"
 evidence = [
   "tc-snippets::tests::the_serialized_form_starts_with_its_front_matter",
 ]
+
+# ---------------------------------------------------------------------------
+# The snippets: the placeholders and the modifiers
+#
+# The template engine is ported in `tc-snippets`.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-snippets.placeholders.clipboard-the-clipboard-contents-as-plain-te"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_clipboard_is_inserted_as_it_is"]
+
+[[status]]
+id = "features-snippets.placeholders.clipboard-offset-1-an-earlier-clip-1-is-the"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::the_clipboard_token_reaches_back_through_the_history",
+]
+
+[[status]]
+id = "features-snippets.placeholders.selection-the-selected-text-in-the-app-you-w"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_selection_is_inserted_as_it_is"]
+
+[[status]]
+id = "features-snippets.placeholders.date-time-datetime-today-s-date-the-time-or"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::the_date_and_the_time_tokens_render_their_styles",
+]
+
+[[status]]
+id = "features-snippets.placeholders.day-the-name-of-the-weekday"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::the_date_and_the_time_tokens_render_their_styles",
+]
+
+[[status]]
+id = "features-snippets.placeholders.uuid-a-new-uuid-for-each-token"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::each_uuid_token_draws_a_fresh_value"]
+
+[[status]]
+id = "features-snippets.placeholders.date-format-yyyy-mm-dd-any-date-format"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_format_parameter_picks_the_pattern"]
+
+[[status]]
+id = "features-snippets.placeholders.date-locale-fr-fr-another-locale-can-t-be-co"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::another_locale_renders_the_date_in_that_locale",
+  "tc-snippets::template_tests::a_locale_with_a_format_leaves_the_token_literal",
+]
+
+[[status]]
+id = "features-snippets.placeholders.time-offset-3h-30m-shifted-by-m-minutes-h-ho"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::several_offsets_apply_in_order"]
+
+[[status]]
+id = "features-snippets.placeholders.argument-asks-you-for-a-value-named-argument"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::an_argument_that_was_not_supplied_is_owed",
+]
+
+[[status]]
+id = "features-snippets.placeholders.argument-name-recipient-asks-for-a-named-val"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::the_declared_arguments_are_the_ones_the_template_asks_for",
+]
+
+[[status]]
+id = "features-snippets.placeholders.argument-default-hi-optional-uses-the-defaul"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::an_argument_with_a_default_expands_without_asking",
+]
+
+[[status]]
+id = "features-snippets.placeholders.argument-options-a-b-c-asks-you-to-pick-from"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::an_argument_may_offer_its_choices"]
+
+[[status]]
+id = "features-snippets.placeholders.snippet-name-another-snippet-inserted-inline"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::a_snippet_reference_expands_the_other_snippet",
+  "tc-snippets::template_tests::a_disabled_snippet_cannot_be_reached",
+]
+
+[[status]]
+id = "features-snippets.placeholders.cursor-where-the-cursor-goes-afterward"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_cursor_token_says_where_the_cursor_goes"]
+
+[[status]]
+id = "features-snippets.placeholders.a-value-only-needs-quotes-if-it-contains-wit"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_format_parameter_picks_the_pattern"]
+
+[[status]]
+id = "features-snippets.modifiers.chain-modifiers-from-left-to-right-clipboard"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_modifiers_chain_from_left_to_right"]
+
+[[status]]
+id = "features-snippets.modifiers.available-modifiers-uppercase"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_case_modifiers_change_the_case"]
+
+[[status]]
+id = "features-snippets.modifiers.lowercase"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_case_modifiers_change_the_case"]
+
+[[status]]
+id = "features-snippets.modifiers.trim"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::the_modifiers_chain_from_left_to_right"]
+
+[[status]]
+id = "features-snippets.modifiers.percent-encode"
+status = "PORTED"
+evidence = [
+  "tc-snippets::template_tests::percent_encode_escapes_everything_outside_the_unreserved_set",
+]
+
+[[status]]
+id = "features-snippets.modifiers.json-stringify"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::json_stringify_escapes_without_adding_quotes"]
+
+[[status]]
+id = "features-snippets.modifiers.raw"
+status = "PORTED"
+evidence = ["tc-snippets::template_tests::an_encoded_value_is_not_encoded_twice"]
