@@ -225,6 +225,21 @@ pub enum SystemActionCategory {
     Microphone,
 }
 
+impl SystemActionCategory {
+    /// The name the group is shown under.
+    pub fn label(self) -> &'static str {
+        match self {
+            SystemActionCategory::Session => "Session",
+            SystemActionCategory::Media => "Media",
+            SystemActionCategory::Volume => "Volume",
+            SystemActionCategory::Desktop => "Desktop",
+            SystemActionCategory::Files => "Files",
+            SystemActionCategory::Hardware => "Hardware",
+            SystemActionCategory::Microphone => "Microphone",
+        }
+    }
+}
+
 impl SystemActionId {
     /// Every action, in the order upstream declares them.
     pub const ALL: [SystemActionId; 32] = [

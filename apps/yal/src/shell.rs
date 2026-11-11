@@ -137,7 +137,21 @@ fn open_result(
     launcher: State<'_, LauncherState>,
     id: String,
     query: String,
+    confirmed: bool,
 ) -> Result<(), String> {
+    // A system action is run, not opened, and the ones that end the session or
+    // empty the bin have to be asked for first.
+    if let Some(action) = LauncherState::system_action_of(&id) {
+        let needs_confirm = action.confirmation() != tc_core::SystemActionConfirmation::None;
+        if needs_confirm && !confirmed {
+            return Err(format!("`{}` has to be confirmed", action.english_name()));
+        }
+        tc_platform_win::run(action)?;
+        if let Some(window) = app.get_webview_window(PALETTE) {
+            let _ = window.hide();
+        }
+        return Ok(());
+    }
     let Some((target, _)) = launcher.target_of(&id) else {
         return Err(format!("`{id}` is not a result the launcher knows"));
     };

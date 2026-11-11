@@ -18,6 +18,8 @@ export interface ResultRow {
   kind: string;
   /** What the launcher opens. */
   target: string;
+  /** Whether the launcher has to ask before it does it. */
+  needsConfirm: boolean;
 }
 
 /** The rows that match a query, best first. */
@@ -30,9 +32,13 @@ export function suggestions(): Promise<ResultRow[]> {
   return invoke<ResultRow[]>("suggestions");
 }
 
-/** Open a row, and learn that the user opened it. */
-export function openResult(id: string, query: string): Promise<void> {
-  return invoke<void>("open_result", { id, query });
+/**
+ * Open a row, and learn that the user opened it.
+ *
+ * A row that has to be confirmed is not opened until `confirmed` says so.
+ */
+export function openResult(id: string, query: string, confirmed = false): Promise<void> {
+  return invoke<void>("open_result", { id, query, confirmed });
 }
 
 /** Hide the palette. */

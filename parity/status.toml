@@ -429,3 +429,201 @@ evidence = [
   "tc-core::favorites::tests::a_physical_number_row_key_names_its_slot",
   "tc-core::favorites::tests::a_slot_and_its_digit_round_trip",
 ]
+
+# ---------------------------------------------------------------------------
+# The system actions
+#
+# The catalogue and the Windows translation are ported in `tc-platform-win`,
+# and the palette lists the actions in its own section.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-lock-screen"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-sleep"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-sleep-displays"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-restart"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-shut-down"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-log-out"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.session-show-screen-saver"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.media-play-pause"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.media-next-track"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.media-previous-track"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.volume-toggle-mute"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.volume-turn-volume-up"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.volume-turn-volume-down"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.desktop-show-desktop"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.desktop-toggle-system-appearance"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.desktop-hide-all-apps-except-frontmost"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.desktop-unhide-all-hidden-apps"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.desktop-quit-all-applications"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_mechanism_of_every_action_is_pinned"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.files-open-trash"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_trash_is_the_recycle_bin"]
+
+[[status]]
+id = "launcher-system-actions.the-full-list.files-empty-trash"
+status = "PORTED"
+evidence = ["tc-platform-win::system_actions::tests::the_trash_is_the_recycle_bin"]
+
+[[status]]
+id = "launcher-system-actions.confirmation.five-actions-ask-for-confirmation-first-beca"
+status = "PORTED"
+evidence = [
+  "tc-core::entry::tests::five_actions_confirm_first",
+  "yal::launcher::tests::a_system_action_that_needs_asking_says_so",
+]
+
+[[status]]
+id = "launcher-system-actions.confirmation.restart"
+status = "PORTED"
+evidence = [
+  "tc-core::entry::tests::five_actions_confirm_first",
+  "yal::launcher::tests::a_system_action_that_needs_asking_says_so",
+]
+
+[[status]]
+id = "launcher-system-actions.confirmation.shut-down"
+status = "PORTED"
+evidence = [
+  "tc-core::entry::tests::five_actions_confirm_first",
+  "yal::launcher::tests::a_system_action_that_needs_asking_says_so",
+]
+
+[[status]]
+id = "launcher-system-actions.confirmation.log-out"
+status = "PORTED"
+evidence = [
+  "tc-core::entry::tests::five_actions_confirm_first",
+  "yal::launcher::tests::a_system_action_that_needs_asking_says_so",
+]
+
+[[status]]
+id = "launcher-system-actions.confirmation.empty-trash"
+status = "PORTED"
+evidence = [
+  "tc-core::entry::tests::five_actions_confirm_first",
+  "yal::launcher::tests::a_system_action_that_needs_asking_says_so",
+]
+
+[[status]]
+id = "launcher-system-actions.confirmation.quit-all-applications"
+status = "PORTED"
+evidence = [
+  "tc-core::entry::tests::five_actions_confirm_first",
+  "yal::launcher::tests::a_system_action_that_needs_asking_says_so",
+]
+
+# ---------------------------------------------------------------------------
+# The snippets: the file format
+#
+# The snippet record, the Markdown file it is stored in and the locale table
+# are ported in `tc-snippets`.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-snippets.the-file-format.name-defaults-to-the-file-name-and-keyword-i"
+status = "PORTED"
+evidence = [
+  "tc-snippets::tests::a_blank_name_falls_back_to_the_file_name",
+  "tc-snippets::tests::the_defaults_are_the_ones_upstream_uses",
+]
+
+[[status]]
+id = "features-snippets.the-file-format.text-values-need-double-quotes-keys-aren-t-c"
+status = "PORTED"
+evidence = [
+  "tc-snippets::tests::an_unquoted_scalar_is_rejected",
+  "tc-snippets::tests::the_keys_are_not_case_sensitive",
+  "tc-snippets::tests::an_unknown_key_is_rejected",
+  "tc-snippets::tests::a_duplicate_key_is_rejected",
+  "tc-snippets::tests::a_boolean_has_to_be_exactly_true_or_false",
+  "tc-snippets::tests::an_error_names_the_problem_and_where_it_is",
+]
+
+[[status]]
+id = "features-snippets.the-file-format.everything-after-the-closing-is-the-body-and"
+status = "PORTED"
+evidence = [
+  "tc-snippets::tests::a_delimiter_inside_the_body_stays_literal",
+  "tc-snippets::tests::crlf_front_matter_parses_its_keys",
+  "tc-snippets::tests::a_snippet_round_trips_through_its_file",
+]
+
+[[status]]
+id = "features-snippets.the-file-format.the-documentation-shows-this-example-name-me"
+status = "PORTED"
+evidence = [
+  "tc-snippets::tests::the_serialized_form_starts_with_its_front_matter",
+]
