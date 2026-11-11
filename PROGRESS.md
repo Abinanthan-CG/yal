@@ -101,7 +101,28 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-	c-search has 150 tests. The workspace has 222.
+	c-search has 150 tests. The workspace has 242.
+
+### The launcher core
+
+- **`crates/tc-apps`** — the program model and the rules: the publisher is a keyword and never
+  ranks, and entries whose names fold the same are one entry.
+- **`crates/tc-platform-win/src/programs.rs`** — the Windows enumeration: the Start Menu, the
+  registry's uninstall key, and the registry's App Paths. 400 programs on this machine.
+- **`crates/tc-platform-win/src/launch.rs`** — opening a thing the way the shell does, so a
+  Start Menu shortcut is opened as a shortcut rather than resolved first.
+- **`apps/yal/src/launcher.rs`** — the index, the ranking, and the learned ranking in
+  `%APPDATA%\yal\launcher-ranking.json`.
+- **Four Tauri commands**: `search`, `suggestions`, `open_result`, `hide_palette`.
+
+### The palette
+
+The interface is Solid and TypeScript in `frontend/src/`, built by Vite into `frontend/dist/`.
+The built page is **not** committed: it is a build output, and CI builds it before the Rust, on
+Linux for the types and on Windows for the installer.
+
+The palette asks the Rust side for the rows that match what was typed, shows them, and opens the
+chosen one.
 
 ### The parity ledger
 

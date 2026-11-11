@@ -18,13 +18,20 @@ echo "==> cargo fmt --all -- --check"
 cargo fmt --all -- --check
 
 echo "==> cargo clippy"
-cargo clippy -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-snippets --all-targets -- -D warnings
+cargo clippy -p tc-core -p tc-platform -p tc-apps -p tc-calc -p tc-search -p tc-snippets --all-targets -- -D warnings
 
 echo "==> cargo test"
-cargo test -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-snippets
+cargo test -p tc-core -p tc-platform -p tc-apps -p tc-calc -p tc-search -p tc-snippets
 
 if [ "${1:-}" = "--test-only" ]; then
     exit 0
+fi
+
+echo "==> the palette (npm)"
+if command -v npm >/dev/null 2>&1; then
+    (cd frontend && npm ci && npm run build)
+else
+    echo "npm is not installed; the palette was not built" >&2
 fi
 
 echo "==> cargo run -p xtask -- parity --check"

@@ -6,7 +6,10 @@
 
 use tauri::Emitter;
 use tauri::Manager;
+use tauri::State;
 use tc_platform::FileSystem;
+
+use crate::launcher::{LauncherState, ResultRow, RANKING_FILE};
 
 /// The palette's label, so the window can be found again.
 const PALETTE: &str = "palette";
@@ -77,6 +80,10 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             let data = tc_platform_win::WindowsFileSystem::new();
             let _ = data.ensure_dir(&paths.data_dir);
             let _ = data.ensure_dir(&paths.cache_dir);
+            // The index and the learned ranking live in the app's own folder,
+            // the way upstream keeps them in Application Support.
+            let launcher = LauncherState::new(paths.data_dir.join(RANKING_FILE));
+            app.manage(launcher);
             // The installer asks a running instance to quit before it replaces
             // the program files, so the app has to be listening for that. The
             // watcher holds the quit event open, so it is kept in the app's
@@ -101,8 +108,54 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             }
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![
+            search,
+            suggestions,
+            open_result,
+            hide_palette
+        ])
         .run(tauri::generate_context!())
         .map_err(|error| format!("the application could not start: {error}"))
+}
+
+/// The rows that match the query, best first.
+#[tauri::command]
+fn search(launcher: State<'_, LauncherState>, query: String) -> Vec<ResultRow> {
+    launcher.search(&query)
+}
+
+/// The rows with nothing typed.
+#[tauri::command]
+fn suggestions(launcher: State<'_, LauncherState>) -> Vec<ResultRow> {
+    launcher.suggestions()
+}
+
+/// Open the row, and learn that the user opened it.
+#[tauri::command]
+fn open_result(
+    app: tauri::AppHandle,
+    launcher: State<'_, LauncherState>,
+    id: String,
+    query: String,
+) -> Result<(), String> {
+    let Some((target, _)) = launcher.target_of(&id) else {
+        return Err(format!("`{id}` is not a result the launcher knows"));
+    };
+    tc_platform_win::open(&target)?;
+    // The ranking learns the query only when the thing really opened.
+    launcher.remember(&id, &query);
+    if let Some(window) = app.get_webview_window(PALETTE) {
+        let _ = window.hide();
+    }
+    Ok(())
+}
+
+/// Hide the palette.
+#[tauri::command]
+fn hide_palette(app: tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window(PALETTE) {
+        let _ = window.hide();
+    }
 }
 
 /// Show the palette when it is hidden, hide it when it is shown.

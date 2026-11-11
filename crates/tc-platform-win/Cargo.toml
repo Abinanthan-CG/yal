@@ -9,6 +9,7 @@ repository.workspace = true
 description = "YAL port: the only crate that touches Win32, WinRT and COM"
 
 [dependencies]
+tc-apps = { path = "../tc-apps" }
 tc-core = { path = "../tc-core" }
 tc-platform = { path = "../tc-platform" }
 windows = { workspace = true }

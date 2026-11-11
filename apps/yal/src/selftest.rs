@@ -68,6 +68,67 @@ fn collect() -> Vec<Check> {
     checks.extend(check_core());
     checks.extend(check_platform());
     checks.extend(check_windows());
+    checks.extend(check_launcher());
+    checks
+}
+
+/// The launcher's index and its search.
+fn check_launcher() -> Vec<Check> {
+    let mut checks = Vec::new();
+
+    let programs = tc_platform_win::programs();
+    let count = programs.len();
+    checks.push(if count > 0 {
+        Check::pass(
+            "launcher.programs",
+            format!("{count} programs on this machine"),
+        )
+    } else {
+        Check::fail(
+            "launcher.programs",
+            "no installed program was found on this machine",
+        )
+    });
+
+    // The learned ranking is never written by the self-test, so the file is
+    // only a name.
+    let ranking = std::env::temp_dir().join("yal-self-test-ranking.json");
+    let launcher = crate::launcher::LauncherState::from_programs(programs, ranking);
+    checks.push(if launcher.program_count() == count {
+        Check::pass("launcher.index", format!("{count} entries in the index"))
+    } else {
+        Check::fail(
+            "launcher.index",
+            "the index does not hold every program it was given",
+        )
+    });
+
+    // Every program has to be findable by its own name.
+    let probe = tc_platform_win::programs()
+        .into_iter()
+        .find(|program| !program.name.trim().is_empty());
+    match probe {
+        Some(program) => {
+            let rows = launcher.search(&program.name);
+            let found = rows.iter().any(|row| row.name == program.name);
+            checks.push(if found {
+                Check::pass(
+                    "launcher.search",
+                    format!("`{}` is found by its own name", program.name),
+                )
+            } else {
+                Check::fail(
+                    "launcher.search",
+                    format!("`{}` was not found by its own name", program.name),
+                )
+            });
+        }
+        None => checks.push(Check::fail(
+            "launcher.search",
+            "there was no program to search for",
+        )),
+    }
+
     checks
 }
 

@@ -56,6 +56,27 @@ macOS app.
 `PARITY.md` is generated from `parity/parity.toml` and is checked in CI, so it
 cannot drift away from the code without the build failing.
 
+### What works today
+
+The port is a work in progress, and the ledger is honest about where it has
+got. What is in place:
+
+- **The palette.** A borderless, always-on-top window on the system WebView2
+  runtime, shown by the global hotkey and hidden when it loses focus.
+- **The search.** Upstream's own rules, ported whole: the fold, the tiered
+  match, the scorer where a word start outscores any other letter, the
+  relevance cells, the Latin spellings for names in another script, and the
+  ordering that decides which entry comes first.
+- **The program index.** Every program Windows knows about — the Start Menu,
+  the registry's uninstall key, the registry's App Paths — found by its name,
+  its initials, or its scattered letters.
+- **The learned ranking.** What you open, and by which query, remembered in
+  `launcher-ranking.json` in the app's own folder.
+- **The tray, the single-instance lock, the `tinycast://` protocol, the
+  installer and the portable build.**
+
+Everything else is in the ledger as `NOT PORTED`, with the reason.
+
 ---
 
 ## Installing
@@ -112,6 +133,7 @@ build enforces.
 crates/          the domain, one crate per feature area
   tc-core/       commands, launcher rows, deeplinks, identifiers
   tc-search/     matching and ranking
+  tc-apps/       the programs the launcher can open
   tc-calc/       the calculator engine
   tc-platform/   the traits every platform must satisfy, and their fakes
   tc-platform-win/  the Win32 implementation of those traits
@@ -120,7 +142,7 @@ apps/
   yal-indexer/   the file indexer helper process
   yal-ocr/       the text recognition helper process
   yal-dictation/ the dictation helper process
-frontend/        the palette's user interface
+frontend/        the palette's user interface: Solid and TypeScript
 installer/       the NSIS installer
 parity/          the parity ledger and its parts
 xtask/           the build tool: parity, ledger, i18n, dist

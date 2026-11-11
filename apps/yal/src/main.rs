@@ -7,6 +7,7 @@
 //!
 //! Run `yal.exe --self-test` for a headless check of every subsystem.
 
+mod launcher;
 mod selftest;
 mod shell;
 

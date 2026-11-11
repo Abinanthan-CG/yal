@@ -15,7 +15,7 @@ the repository's conventions.
 | Rust | `1.99.1`, pinned by `rust-toolchain.toml` |
 | Visual Studio | 2022 Build Tools with the *Desktop development with C++* workload |
 | Windows SDK | 10.0.26100.0 or later |
-| Node.js | 20 or later (only if you change the palette's interface) |
+| Node.js | 20 or later (needed to build the palette's interface) |
 | NSIS | 3.x, for the installer |
 
 Everything above is checked by `scripts/bootstrap.ps1`, which reports the
@@ -39,10 +39,11 @@ anything twice and it never upgrades a toolchain that is already correct.
 That runs, in order:
 
 1. `cargo fmt --all -- --check`
-2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo test --workspace`
-4. `cargo run -p xtask -- parity --check`
-5. `cargo run -p xtask -- dist`
+2. `npm ci && npm run build` in `frontend/` — the palette
+3. `cargo clippy --workspace --all-targets -- -D warnings`
+4. `cargo test --workspace`
+5. `cargo run -p xtask -- parity --check`
+6. `cargo run -p xtask -- dist`
 
 and leaves the artifacts in `dist/`.
 
@@ -125,19 +126,26 @@ component of the Visual Studio Build Tools.
 
 ## The palette's interface
 
-The palette is a web view. The built interface lives in `frontend/dist/` and is
-committed, so a plain Rust build never needs Node.js.
+The palette is a web view: Solid and TypeScript, built by Vite from
+`frontend/src/`. Tauri loads the built page from `frontend/dist/`, which is
+**not** committed — it is a build output, and a committed one goes stale.
 
-If you change the interface, build it first:
+Build it before the Rust build:
 
 ```powershell
 cd frontend
-npm install
+npm ci
 npm run build
 ```
 
-`frontend/dist/` is what Tauri loads, and the CI job checks that the committed
-build matches the sources.
+`npm run check` is the type check on its own, without a build.
+
+CI builds the palette twice: once on Linux, where the types are checked and the
+page is built, and once on Windows, where the built page is what the installer
+is actually made from.
+
+If you change the interface and only run `cargo build`, the window will show
+the old page. Build the palette first.
 
 ---
 

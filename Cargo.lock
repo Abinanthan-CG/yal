@@ -3911,6 +3911,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc-apps"
+version = "0.1.0"
+dependencies = [
+ "tc-search",
+]
+
+[[package]]
 name = "tc-backup"
 version = "0.1.0"
 dependencies = [
@@ -3985,6 +3992,7 @@ name = "tc-platform-win"
 version = "0.1.0"
 dependencies = [
  "serde_json",
+ "tc-apps",
  "tc-core",
  "tc-platform",
  "windows",
@@ -5217,9 +5225,11 @@ dependencies = [
  "tauri-plugin-deep-link",
  "tauri-plugin-global-shortcut",
  "tauri-plugin-single-instance",
+ "tc-apps",
  "tc-core",
  "tc-platform",
  "tc-platform-win",
+ "tc-search",
 ]
 
 [[package]]
