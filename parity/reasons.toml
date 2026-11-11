@@ -1,0 +1,52 @@
+# Why a row is not ported, one line per page.
+#
+# The ledger's scope comes from upstream's documentation; this file says what
+# is missing on Windows, so that a `NOT PORTED` row names the piece rather
+# than shrugging.
+#
+# A row that *is* ported carries its own reason in `parity/status.toml`, so
+# this file only speaks for the rows that have not been reached yet.
+
+[page]
+"docs/launcher/" = "The search and the program index are ported; the other sections — Windows Settings pages, quicklinks, snippets, system actions, window commands, layouts, rooms, custom commands, Quick Actions and meetings — have no entries yet."
+"docs/launcher/favorites/" = "Favorites have no store and no rows in the palette yet."
+"docs/launcher/aliases/" = "An entry's alias is not stored, and the alias editor is not built yet."
+"docs/launcher/fallbacks/" = "The fallback list has no store and no rows in the palette yet."
+"docs/launcher/commands/" = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
+"docs/launcher/quicklinks/" = "Quicklinks have no store and no rows in the palette yet."
+"docs/launcher/system-settings/" = "The Windows Settings pages are not indexed yet."
+"docs/launcher/system-actions/" = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
+"docs/launcher/uninstall/" = "The installer removes the program files and keeps the data; the in-app uninstaller and the per-application uninstall are not built yet."
+"docs/features/calculator/" = "The calculator engine is not ported yet."
+"docs/features/clipboard/" = "The clipboard history has no store and no rows in the palette yet."
+"docs/features/snippets/" = "The snippet store has no editor and no rows in the palette yet."
+"docs/features/file-search/" = "The file indexer helper exists, but the palette does not search the index yet."
+"docs/features/window-management/" = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+"docs/features/window-layouts/" = "Window layouts have no store and no rows in the palette yet."
+"docs/features/rooms/" = "Rooms are not implemented in YAL yet."
+"docs/features/navigation/" = "The navigation features are not implemented in YAL yet."
+"docs/features/notes/" = "The note store has no editor and no rows in the palette yet."
+"docs/features/calendar/" = "The calendar is not implemented in YAL yet."
+"docs/features/emoji/" = "The emoji picker is not implemented in YAL yet."
+"docs/features/dictation/" = "The dictation helper process exists, but the palette neither records nor transcribes yet."
+"docs/features/dictionary/" = "The dictionary is not implemented in YAL yet."
+"docs/features/camera/" = "The camera feature is not implemented in YAL yet."
+"docs/features/apple-shortcuts/" = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
+"docs/reference/settings/" = "The settings file and the settings store are ported, but the settings window is not built yet."
+"docs/reference/shortcuts/" = "The keyboard hook and the global shortcut are ported, but the shortcut editor is not built yet."
+"docs/reference/hotkeys/" = "The global hotkey engine is ported, but the per-application hotkey registry is not built yet."
+"docs/reference/deeplinks/" = "The `tinycast://` grammar is ported in `tc-core` and the protocol is registered, but a link is not acted on yet."
+"docs/reference/backup/" = "Backing up and restoring the app's data is not built yet."
+"docs/reference/import-from-raycast/" = "The Raycast import is not built yet."
+"docs/reference/updates/" = "The update check is not built yet."
+"docs/" = "This page is Tier 2: it is outside the first release's scope, and nothing on it is implemented in YAL yet."
+"docs/palette/" = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+"docs/permissions/" = "A per-user Windows install asks for no permissions beyond the ones Windows grants it; the accessibility permissions upstream needs have no Windows equivalent, and the rest of this page is not implemented."
+"docs/install/" = "The installer, the portable build and the checksums are ported; the notarization, the Microsoft Store and the package-manager parts have no Windows answer yet."
+"docs/ai/" = "No AI provider is wired up in YAL yet."
+"docs/ai/quick-actions/" = "The Quick Actions feature is not implemented in YAL yet."
+"docs/ai/mcp/" = "The MCP client is not implemented in YAL yet."
+"docs/extensions/" = "YAL does not host extensions yet."
+"docs/extensions/installing/" = "YAL does not host extensions yet, so there is nothing to install one from."
+"docs/extensions/customising/" = "YAL does not host extensions yet, so there is nothing to customise."
+"docs/extensions/compatibility/" = "YAL does not host extensions yet, so there is no compatibility to report."

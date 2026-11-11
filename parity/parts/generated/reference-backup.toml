@@ -40,7 +40,7 @@ behavior = "Save your setup to one file, choose what to export and what to impor
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.settings-backup"
@@ -50,7 +50,7 @@ behavior = "Settings → Backup."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.a-backup-is-a-single-tinycast-file-you-choos"
@@ -60,7 +60,7 @@ behavior = "A backup is a single .tinycast file. You choose what goes into it wh
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.settings-shortcuts-shortcuts-custom-commands"
@@ -70,7 +70,7 @@ behavior = "Settings & Shortcuts — Shortcuts, custom commands, quicklinks, win
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.clipboard-history-text-and-image-clips-with"
@@ -80,7 +80,7 @@ behavior = "Clipboard History — Text and image clips with their images, and re
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.snippets-your-snippet-markdown-files"
@@ -90,7 +90,7 @@ behavior = "Snippets — Your snippet Markdown files."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.notes-your-note-markdown-files"
@@ -100,7 +100,7 @@ behavior = "Notes — Your note Markdown files."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.launcher-learning-your-learned-launcher-rank"
@@ -110,7 +110,7 @@ behavior = "Launcher Learning — Your learned launcher ranking, plus emoji and 
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.backup-restore.the-launcher-also-has-export-backup-and-impo"
@@ -120,7 +120,7 @@ behavior = "The launcher also has Export Backup and Import Backup commands. They
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.read-this-before-relying-on-it.the-backup-format-can-change-between-version"
@@ -130,7 +130,7 @@ behavior = "The backup format can change between versions of Tinycast. A backup 
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.read-this-before-relying-on-it.the-file-records-which-version-created-it-if"
@@ -140,7 +140,7 @@ behavior = "The file records which version created it. If your version of Tinyca
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.imports-always-show-what-they-did.every-import-shows-a-summary-of-what-changed"
@@ -150,7 +150,7 @@ behavior = "Every import shows a summary of what changed, by category."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.imports-always-show-what-they-did.if-the-file-contains-custom-commands-tinycas"
@@ -160,7 +160,7 @@ behavior = "If the file contains custom commands, Tinycast warns you before addi
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.imports-always-show-what-they-did.imports-add-to-what-you-have-instead-of-over"
@@ -170,7 +170,7 @@ behavior = "Imports add to what you have instead of overwriting it. Snippets and
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.imports-always-show-what-they-did.launcher-learning-is-the-exception-it-replac"
@@ -180,7 +180,7 @@ behavior = "Launcher Learning is the exception. It replaces your existing data, 
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.imports-always-show-what-they-did.copied-files-in-clipboard-history-are-backed"
@@ -190,7 +190,7 @@ behavior = "Copied files in clipboard history are backed up as paths, not file c
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.some-switches-are-never-included-in-a-backup"
@@ -200,7 +200,7 @@ behavior = "Some switches are never included in a backup, because turning them o
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.snippets-agreeing-to-keyword-matching"
@@ -210,7 +210,7 @@ behavior = "**Snippets**: agreeing to keyword matching"
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.extensions-agreeing-to-run-third-party-code"
@@ -220,7 +220,7 @@ behavior = "**Extensions**: agreeing to run third-party code"
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.calendar-agreeing-to-let-tinycast-read-your"
@@ -230,7 +230,7 @@ behavior = "**Calendar**: agreeing to let Tinycast read your calendar"
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.auto-join-meetings-and-camera-preview-agreei"
@@ -240,7 +240,7 @@ behavior = "**Auto Join Meetings** and **Camera Preview**: agreeing to open link
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.quick-actions-agreeing-to-let-tinycast-type"
@@ -250,7 +250,7 @@ behavior = "**Quick Actions**: agreeing to let Tinycast type into other apps"
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.ai-and-mcp-servers-agreeing-to-send-text-to"
@@ -260,7 +260,7 @@ behavior = "**AI** and **MCP servers**: agreeing to send text to a model and run
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.search-text-in-images-and-pdfs-agreeing-to-t"
@@ -270,7 +270,7 @@ behavior = "**Search text in images and PDFs**: agreeing to text recognition in 
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.dictation-agreeing-to-let-tinycast-use-your"
@@ -280,7 +280,7 @@ behavior = "**Dictation**: agreeing to let Tinycast use your microphone"
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.sync-settings-file-agreeing-to-let-a-file-on"
@@ -290,7 +290,7 @@ behavior = "**Sync settings file**: agreeing to let a file on this Mac change yo
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.fallback-order-and-checkboxes-these-could-ad"
@@ -300,7 +300,7 @@ behavior = "**Fallback order and checkboxes**: these could add a shell command r
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.a-backup-can-never-turn-on-a-capability.this-means-a-backup-someone-sends-you-can-t"
@@ -310,7 +310,7 @@ behavior = "This means a backup someone sends you can't turn on keystroke listen
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.extensions-their-code-data-and-sign-ins-they"
@@ -320,7 +320,7 @@ behavior = "Extensions: their code, data and sign-ins — They're third-party co
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.ai-chats-api-keys-and-all-ai-and-mcp-setting"
@@ -330,7 +330,7 @@ behavior = "AI chats, API keys, and all AI and MCP settings — Conversations an
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.quick-actions-model-prompts-language-and-cus"
@@ -340,7 +340,7 @@ behavior = "Quick Actions model, prompts, language and custom actions — An imp
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.extension-package-manager-and-custom-search"
@@ -350,7 +350,7 @@ behavior = "Extension package manager and custom search paths — They're specif
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.dictation-settings-its-shortcut-and-download"
@@ -360,7 +360,7 @@ behavior = "Dictation settings, its shortcut and downloaded models — They belo
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.palette-position-auto-switch-input-source-ca"
@@ -370,7 +370,7 @@ behavior = "Palette position, auto-switch input source, calendar checkboxes, the
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.cached-data-like-currency-rates-and-update-c"
@@ -380,7 +380,7 @@ behavior = "Cached data, like currency rates and update checks — Tinycast down
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.clipboard-images-are-stored-inside-the-backu"
@@ -390,7 +390,7 @@ behavior = "Clipboard images are stored inside the backup by name, not by their 
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.other-things-that-aren-t-included.launch-at-login-and-show-in-menu-bar-are-rea"
@@ -400,7 +400,7 @@ behavior = "Launch at login and Show in menu bar are read from their current sta
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.settings-file.the-sync-settings-file-switch-in-settings-ba"
@@ -410,7 +410,7 @@ behavior = "The Sync settings file switch in Settings → Backup → Settings Fi
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.settings-file.while-it-s-on-a-change-you-make-in-settings"
@@ -420,7 +420,7 @@ behavior = "While it's on, a change you make in Settings is written to the file,
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.settings-file.the-file-holds-your-preferences-the-shortcut"
@@ -430,7 +430,7 @@ behavior = "The file holds your preferences, the shortcuts and aliases of apps, 
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.settings-file.if-the-file-already-exists-when-you-turn-syn"
@@ -440,7 +440,7 @@ behavior = "If the file already exists when you turn sync on, Tinycast asks whet
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.settings-file.like-a-backup-the-file-can-t-turn-on-snippet"
@@ -450,7 +450,7 @@ behavior = "Like a backup, the file can't turn on Snippets, Extensions, Calendar
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.everything-a-backup-includes-is-also-a-regul"
@@ -460,7 +460,7 @@ behavior = "Everything a backup includes is also a regular file. By default, it'
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.snippets-snippets-or-the-snippets-folder-you"
@@ -470,7 +470,7 @@ behavior = "Snippets — Snippets/, or the Snippets Folder you chose."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.notes-notes-or-the-notes-folder-you-chose"
@@ -480,7 +480,7 @@ behavior = "Notes — Notes/, or the Notes Folder you chose."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.quicklinks-quicklinks-sqlite3-with-its-own-j"
@@ -490,7 +490,7 @@ behavior = "Quicklinks — quicklinks.sqlite3, with its own JSON export."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.clipboard-history-clipboard-sqlite3-with-ima"
@@ -500,7 +500,7 @@ behavior = "Clipboard history — clipboard.sqlite3, with images next to it."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.ai-chats-ai-chats-sqlite3-never-included-in"
@@ -510,7 +510,7 @@ behavior = "AI chats — ai-chats.sqlite3, never included in a backup."
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."
 
 [[row]]
 id = "reference-backup.where-your-data-is-stored.snippets-and-notes-are-plain-markdown-files"
@@ -520,4 +520,4 @@ behavior = "Snippets and notes are plain Markdown files. Copying those folders w
 windows = "\"A single .tinycast file with the same five categories, chosen separately at export and at import; imports add rather than overwrite and always show a summary; Launcher Learning replaces. The never-enabled-by-import list and the not-included table apply unchanged. Settings-file sync at %USERPROFILE%/.config/tinycast/settings.json with the Import / Replace question and symlink preservation. Keep on-disk formats aligned with upstream so a macOS backup can be imported where its entries make sense on Windows, listing what was skipped (Windows addition)."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Backing up and restoring the app's data is not built yet."

@@ -40,7 +40,7 @@ behavior = "Tinycast runs Raycast extensions natively, rendered with SwiftUI."
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.tinycast-runs-raycast-extensions-the-same-pa"
@@ -50,7 +50,7 @@ behavior = "Tinycast runs Raycast extensions: the same package.json and the same
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.tinycast-doesn-t-run-electron-a-browser-or-n"
@@ -60,7 +60,7 @@ behavior = "Tinycast doesn't run Electron, a browser or Node.js. Extensions run 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.turn-extensions-on-in-settings-extensions-th"
@@ -70,7 +70,7 @@ behavior = "Turn extensions on in Settings → Extensions. They're off by defaul
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.enable-extensions-off"
@@ -80,7 +80,7 @@ behavior = "Enable extensions — Off."
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.show-in-launcher-on"
@@ -90,7 +90,7 @@ behavior = "Show in launcher — On."
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.the-switch-is-never-included-in-backups-so-i"
@@ -100,7 +100,7 @@ behavior = "The switch is never included in backups, so importing a backup can't
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.extensions.while-extensions-are-off-tinycast-doesn-t-sc"
@@ -110,7 +110,7 @@ behavior = "While extensions are off, Tinycast doesn't scan any folders, nothing
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.memory-use.only-one-foreground-command-runs-at-a-time-a"
@@ -120,7 +120,7 @@ behavior = "Only one foreground command runs at a time, and it keeps a JavaScrip
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.memory-use.starting-a-command-stops-the-previous-one-an"
@@ -130,7 +130,7 @@ behavior = "Starting a command stops the previous one and discards its engine, s
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.memory-use.the-only-exception-is-background-refresh-whi"
@@ -140,7 +140,7 @@ behavior = "The only exception is background refresh, which briefly runs a comma
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.menu-bar-commands.run-a-menu-bar-command-once-or-turn-on-show"
@@ -150,7 +150,7 @@ behavior = "Run a menu bar command once, or turn on Show in menu bar in its sett
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.menu-bar-commands.to-stop-a-menu-bar-command-turn-off-show-in"
@@ -160,7 +160,7 @@ behavior = "To stop a menu bar command, turn off Show in menu bar in the command
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.where-to-go-next.installing-extensions-docs-extensions-instal"
@@ -170,7 +170,7 @@ behavior = "[Installing extensions](/docs/extensions/installing): the four ways 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.where-to-go-next.package-managers"
@@ -180,7 +180,7 @@ behavior = "Package managers."
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.where-to-go-next.what-works-docs-extensions-compatibility-wha"
@@ -190,7 +190,7 @@ behavior = "[What works](/docs/extensions/compatibility): what's supported, and 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.where-to-go-next.configuring-one-docs-extensions-customising"
@@ -200,7 +200,7 @@ behavior = "[Configuring one](/docs/extensions/customising): preferences, icons,
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.where-to-go-next.refresh"
@@ -210,7 +210,7 @@ behavior = "Refresh."
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.in-the-launcher.an-extension-s-commands-appear-in-the-extens"
@@ -220,7 +220,7 @@ behavior = "An extension's commands appear in the Extensions section. Searching 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.in-the-launcher.global-shortcuts-are-assigned-to-individual"
@@ -230,7 +230,7 @@ behavior = "Global shortcuts are assigned to individual commands, not to whole e
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.in-the-launcher.when-a-command-takes-arguments-small-fields"
@@ -240,7 +240,7 @@ behavior = "When a command takes arguments, small fields appear after what you t
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.in-the-launcher.every-argument-is-sent-as-an-empty-string-if"
@@ -250,7 +250,7 @@ behavior = "Every argument is sent, as an empty string if you left it blank. Ray
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.moving-around.esc-clears-the-search-field-first-when-the-f"
@@ -260,7 +260,7 @@ behavior = "Esc clears the search field first. When the field is empty, esc and 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.moving-around.screens-keep-their-state-when-you-go-back-to"
@@ -270,7 +270,7 @@ behavior = "Screens keep their state when you go back to them, so you return to 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.moving-around.an-extension-s-actions-appear-in-the-palette"
@@ -280,7 +280,7 @@ behavior = "An extension's actions appear in the palette's ⌘K menu. return run
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."
 
 [[row]]
 id = "extensions.appearance.a-running-command-keeps-the-appearance-it-st"
@@ -290,4 +290,4 @@ behavior = "A running command keeps the appearance it started with, and a theme 
 windows = "\"Raycast extensions run in a Node sidecar using upstream''s Scripts/raycast-runtime, adapted for Windows and rendered by this app''s own UI."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet."

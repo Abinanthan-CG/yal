@@ -30,7 +30,7 @@ behavior = "Run the shortcuts from Apple's Shortcuts app in the launcher or with
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.apple-shortcuts.apple-shortcuts-lists-the-shortcuts-from-app"
@@ -40,7 +40,7 @@ behavior = "Apple Shortcuts lists the shortcuts from Apple's Shortcuts app in th
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.apple-shortcuts.turn-it-on-in-settings-apple-shortcuts-enabl"
@@ -50,7 +50,7 @@ behavior = "Turn it on in Settings → Apple Shortcuts → Enable Apple Shortcut
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.your-shortcuts-have-their-own-apple-shortcut"
@@ -60,7 +60,7 @@ behavior = "Your shortcuts have their own Apple Shortcuts section, right after Q
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.run-shortcut-return"
@@ -70,7 +70,7 @@ behavior = "Run Shortcut — return."
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.add-to-remove-from-favorites-f"
@@ -80,7 +80,7 @@ behavior = "Add to / Remove from Favorites — ⇧⌘F."
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.reset-ranking"
@@ -90,7 +90,7 @@ behavior = "Reset Ranking."
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.hide-from-search-h"
@@ -100,7 +100,7 @@ behavior = "Hide from Search — ⇧⌘H."
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.the-launcher-closes-before-the-shortcut-runs"
@@ -110,7 +110,7 @@ behavior = "The launcher closes before the shortcut runs, so a shortcut that wor
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.in-the-launcher.a-shortcut-can-take-as-long-as-it-needs-incl"
@@ -120,7 +120,7 @@ behavior = "A shortcut can take as long as it needs, including waiting on a dial
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.while-it-s-on-settings-apple-shortcuts-lists"
@@ -130,7 +130,7 @@ behavior = "While it's on, Settings → Apple Shortcuts lists every shortcut und
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.a-search-field-which-also-matches-aliases"
@@ -140,7 +140,7 @@ behavior = "a search field, which also matches aliases"
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.an-alias-docs-launcher-aliases-field-for-eac"
@@ -150,7 +150,7 @@ behavior = "an [alias](/docs/launcher/aliases) field for each shortcut"
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.a-global-shortcut-recorder-for-each-shortcut"
@@ -160,7 +160,7 @@ behavior = "a global shortcut recorder for each shortcut"
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.a-checkbox-for-each-shortcut-which-only-hide"
@@ -170,7 +170,7 @@ behavior = "a checkbox for each shortcut, which only hides it from launcher sear
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.working"
@@ -180,7 +180,7 @@ behavior = "Working."
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.tinycast-reads-your-shortcuts-again-each-tim"
@@ -190,7 +190,7 @@ behavior = "Tinycast reads your shortcuts again each time you open the launcher 
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.settings.tinycast-needs-no-permissions-for-this-it-ru"
@@ -200,7 +200,7 @@ behavior = "Tinycast needs no permissions for this. It runs shortcuts through Ap
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.renaming-and-deleting.tinycast-follows-each-shortcut-by-its-identi"
@@ -210,7 +210,7 @@ behavior = "Tinycast follows each shortcut by its identifier, not its name. Rena
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.renaming-and-deleting.when-you-delete-a-shortcut-tinycast-removes"
@@ -220,7 +220,7 @@ behavior = "When you delete a shortcut, Tinycast removes its alias, global short
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.turning-it-off.turning-it-off-removes-the-section-from-the"
@@ -230,7 +230,7 @@ behavior = "Turning it off removes the section from the launcher, and the global
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."
 
 [[row]]
 id = "features-apple-shortcuts.turning-it-off.enable-apple-shortcuts-is-included-in-backup"
@@ -240,4 +240,4 @@ behavior = "Enable Apple Shortcuts is included in backups. The global shortcuts 
 windows = "\"Becomes Automations: lists the user''s Power Automate Desktop flows (when installed) and Task Scheduler tasks from user-visible folders; runs them by name or global shortcut; tracks each by a stable identifier so alias, shortcut and favorite survive a rename and are cleaned up after deletion; re-reads the list whenever the launcher or the pane opens; closes the palette before running; shows nothing on success and Couldn''t Run with the last error lines on failure. Open Shortcuts becomes Open Power Automate and Open Task Scheduler. Off by default; needs no permission."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Apple Shortcuts become Windows Automations, and the Automations index is not built yet."

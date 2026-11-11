@@ -30,7 +30,7 @@ behavior = "Group a project's windows, then switch to them with one shortcut whi
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.rooms.a-room-is-a-saved-set-of-windows-for-one-pro"
@@ -40,7 +40,7 @@ behavior = "A room is a saved set of windows for one project, with a layout. Whe
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.rooms.rooms-are-part-of-window-management-they-use"
@@ -50,7 +50,7 @@ behavior = "Rooms are part of Window Management. They use its switch, its Access
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.making-a-room.open-the-windows-the-project-needs"
@@ -60,7 +60,7 @@ behavior = "Open the windows the project needs."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.making-a-room.run-switch-room-type-a-name-for-the-room-and"
@@ -70,7 +70,7 @@ behavior = "Run **Switch Room**, type a name for the room, and choose **Create R
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.making-a-room.press-kbd-return-kbd-on-each-window-you-want"
@@ -80,7 +80,7 @@ behavior = "Press <kbd>return</kbd> on each window you want in the room. To add 
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.making-a-room.its-name-and-select-it-and-it-opens-whenever"
@@ -90,7 +90,7 @@ behavior = "Its name and select it, and it opens whenever you enter the room. Th
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.making-a-room.press-kbd-kbd-kbd-return-kbd-to-save-tinycas"
@@ -100,7 +100,7 @@ behavior = "Press <kbd>⌘</kbd><kbd>return</kbd> to save. Tinycast switches to 
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.making-a-room.create-room-in-the-launcher-and-new-room-in"
@@ -110,7 +110,7 @@ behavior = "Create Room in the launcher and New Room in Settings open the same p
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.run-switch-room-the-selected-room-is-preview"
@@ -120,7 +120,7 @@ behavior = "Run Switch Room. The selected room is previewed over a blurred view 
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.choose-a-room-the-preview-moves-to-it"
@@ -130,7 +130,7 @@ behavior = "↑ ↓ — Choose a room; the preview moves to it."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.tab-tab-try-the-next-or-previous-layout-that"
@@ -140,7 +140,7 @@ behavior = "Tab / ⇧tab — Try the next or previous layout that fits this disp
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.return-enter-the-room"
@@ -150,7 +150,7 @@ behavior = "Return — Enter the room."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.k-remember-arrangement-choose-windows-delete"
@@ -160,7 +160,7 @@ behavior = "⌘K — Remember Arrangement, Choose Windows, Delete Room."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.n-create-a-room-named-after-your-search"
@@ -170,7 +170,7 @@ behavior = "⌘N — Create a room named after your search."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.x-delete-the-room-its-windows-stay-open"
@@ -180,7 +180,7 @@ behavior = "⌃X — Delete the room; its windows stay open."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.switching-rooms.every-room-is-also-a-launcher-entry-and-each"
@@ -190,7 +190,7 @@ behavior = "Every room is also a launcher entry, and each one can have its own g
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.tab-only-offers-layouts-that-fit-the-room-s"
@@ -200,7 +200,7 @@ behavior = "Tab only offers layouts that fit the room's windows on the current d
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.auto-the-first-tidy-layout-where-every-windo"
@@ -210,7 +210,7 @@ behavior = "Auto — The first tidy layout where every window has enough room."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.focus-the-main-window-large-on-the-left-the"
@@ -220,7 +220,7 @@ behavior = "Focus — The main window large on the left, the rest beside it."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.stack-like-focus-with-the-side-windows-overl"
@@ -230,7 +230,7 @@ behavior = "Stack — Like Focus, with the side windows overlapping so each titl
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.columns-side-by-side"
@@ -240,7 +240,7 @@ behavior = "Columns — Side by side."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.grid-an-even-grid"
@@ -250,7 +250,7 @@ behavior = "Grid — An even grid."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.custom-your-own-side-by-side-arrangement-sna"
@@ -260,7 +260,7 @@ behavior = "Custom — Your own side-by-side arrangement, snapped to a grid with
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.as-arranged-exactly-where-you-placed-the-win"
@@ -270,7 +270,7 @@ behavior = "As Arranged — Exactly where you placed the windows."
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.layouts.to-use-your-own-arrangement-place-the-window"
@@ -280,7 +280,7 @@ behavior = "To use your own arrangement, place the windows by hand and choose Re
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.getting-everything-back.quitting-tinycast-turning-off-window-managem"
@@ -290,7 +290,7 @@ behavior = "Quitting Tinycast, turning off Window Management, or reopening Tinyc
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."
 
 [[row]]
 id = "features-rooms.getting-everything-back.rooms-work-with-regular-windows-on-the-curre"
@@ -300,4 +300,4 @@ behavior = "Rooms work with regular windows on the current Space. Full-screen wi
 windows = "\"Same model: a named set of windows plus a layout. Entering a room arranges its windows on the current display with the chosen gap, minimizes apps that have no window in the room and parks the room apps'' other windows; nothing is ever closed. Original positions are written to disk before any move and restored on quit, when Window Management is turned off, and after a crash. The switcher previews the room over a blurred capture of the desktop. Keep the MIT attribution to Sara Gordic''s Rooms."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Rooms are not implemented in YAL yet."

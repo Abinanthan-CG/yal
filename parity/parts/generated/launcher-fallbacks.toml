@@ -35,7 +35,7 @@ behavior = "Send what you typed to Quick AI, file search, the dictionary, the sh
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.fallbacks.below-every-search-tinycast-shows-a-few-rows"
@@ -45,7 +45,7 @@ behavior = "Below every search, Tinycast shows a few rows under Use \"…\" with
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.the-built-in-fallbacks.quick-ai-sent-as-a-question-in-the-palette-a"
@@ -55,7 +55,7 @@ behavior = "Quick AI — Sent as a question in the palette — AI is on."
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.the-built-in-fallbacks.search-files-opens-file-search-with-it-typed"
@@ -65,7 +65,7 @@ behavior = "Search Files — Opens file search with it typed — File Search is 
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.the-built-in-fallbacks.run-shell-command-runs-in-zsh-with-its-outpu"
@@ -75,7 +75,7 @@ behavior = "Run Shell Command — Runs in zsh, with its output in a window — A
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.the-built-in-fallbacks.define-word-looks-it-up-in-the-dictionary-de"
@@ -85,7 +85,7 @@ behavior = "Define Word — Looks it up in the dictionary — Define Word is vis
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.the-built-in-fallbacks.a-quicklink-fills-in-the-quicklink-s-first-a"
@@ -95,7 +95,7 @@ behavior = "A quicklink — Fills in the quicklink's first {argument} — Quickl
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.run-shell-command.your-text-runs-in-bin-zsh-from-your-home-fol"
@@ -105,7 +105,7 @@ behavior = "Your text runs in /bin/zsh from your home folder with your shell con
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.run-shell-command.this-is-separate-from-custom-commands-turnin"
@@ -115,7 +115,7 @@ behavior = "This is separate from custom commands. Turning off custom commands d
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.quicklinks-as-fallbacks.every-enabled-quicklink-with-an-argument-in"
@@ -125,7 +125,7 @@ behavior = "Every enabled quicklink with an {argument} in its link becomes a fal
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.settings.settings-fallbacks-lists-every-available-fal"
@@ -135,7 +135,7 @@ behavior = "Settings → Fallbacks lists every available fallback, each with a c
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.settings.fallbacks-for-features-that-are-turned-off-d"
@@ -145,7 +145,7 @@ behavior = "Fallbacks for features that are turned off don't appear here or in s
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.settings.the-order-and-checkboxes-are-never-included"
@@ -155,7 +155,7 @@ behavior = "The order and checkboxes are never included in a backup, so importin
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.open-in-browser.open-in-browser-works-the-other-way-around-w"
@@ -165,7 +165,7 @@ behavior = "Open in Browser works the other way around. When your text looks lik
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-fallbacks.open-in-browser.it-doesn-t-affect-learned-ranking-and-can-t"
@@ -175,4 +175,4 @@ behavior = "It doesn't affect learned ranking and can't be a favorite, because i
 windows = "\"Run Shell Command runs the typed text in PowerShell from the home folder with the user''s profile loaded, with output in the output window (Stop / Run Again). Open in Browser uses the default browser and appears at the top for URLs and bare domains. Fallback order and checkboxes are never part of a backup."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The fallback list has no store and no rows in the palette yet."

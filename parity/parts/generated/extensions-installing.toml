@@ -55,7 +55,7 @@ behavior = "The four ways to install, how updates work, and when you need a tool
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.installing-extensions.settings-extensions-install-offers-four-ways"
@@ -65,7 +65,7 @@ behavior = "Settings → Extensions → Install offers four ways to install exte
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.search-extensions.search-searches-the-raycast-store-and-instal"
@@ -75,7 +75,7 @@ behavior = "Search… searches the Raycast Store and installs the extension it h
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.search-extensions.the-install-buttons-on-the-raycast-store-web"
@@ -85,7 +85,7 @@ behavior = "The Install buttons on the Raycast Store website open the same searc
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.install-from-github.install-builds-one-extension-from-its-source"
@@ -95,7 +95,7 @@ behavior = "Install… builds one extension from its source on this Mac. Enter o
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.install-from-github.building-needs-node-and-a-package-manager-ti"
@@ -105,7 +105,7 @@ behavior = "Building needs Node and a package manager. Tinycast runs install --i
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.install-from-github.only-the-build-is-kept-the-source-and-its-de"
@@ -115,7 +115,7 @@ behavior = "Only the build is kept. The source and its dependencies are deleted 
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.import-from-raycast.copy-the-extensions-you-already-have-in-rayc"
@@ -125,7 +125,7 @@ behavior = "Copy the extensions you already have in Raycast on this Mac."
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.import-from-raycast.this-doesn-t-need-node-a-package-manager-or"
@@ -135,7 +135,7 @@ behavior = "This doesn't need Node, a package manager or a network connection, b
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.import-from-raycast.tinycast-checks-both-config-raycast-and-conf"
@@ -145,7 +145,7 @@ behavior = "Tinycast checks both ~/.config/raycast and ~/.config/raycast-x, and 
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.add-from-folder.choose-any-folder-that-contains-a-manifest-a"
@@ -155,7 +155,7 @@ behavior = "Choose any folder that contains a manifest and built command files, 
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.add-from-folder.tinycast-only-copies-package-json-the-built"
@@ -165,7 +165,7 @@ behavior = "Tinycast only copies package.json, the built commands, assets/ and a
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.updates.each-time-you-open-settings-extensions-tinyc"
@@ -175,7 +175,7 @@ behavior = "Each time you open Settings → Extensions, Tinycast checks the Rayc
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.updates.extensions-installed-from-github-or-a-folder"
@@ -185,7 +185,7 @@ behavior = "Extensions installed from GitHub or a folder are never checked. To u
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.package-managers.the-install-from-github-panel-has-a-package"
@@ -195,7 +195,7 @@ behavior = "The Install from GitHub panel has a Package manager menu."
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.package-managers.automatic-default-uses-the-first-one-you-hav"
@@ -205,7 +205,7 @@ behavior = "Automatic (default) uses the first one you have from this list: pnpm
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.package-managers.apps-opened-from-the-dock-don-t-get-your-ter"
@@ -215,7 +215,7 @@ behavior = "Apps opened from the Dock don't get your terminal's PATH, so Tinycas
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.custom-search-paths.for-other-locations-like-nix-the-same-panel"
@@ -225,7 +225,7 @@ behavior = "For other locations, like Nix, the same panel has Custom search path
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.custom-search-paths.the-documentation-shows-this-example-local-s"
@@ -235,7 +235,7 @@ behavior = "The documentation shows this example:\n\n```\n~/.local/share/mise/sh
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.custom-search-paths.the-documentation-shows-this-example-etc-pro"
@@ -245,7 +245,7 @@ behavior = "The documentation shows this example:\n\n```\n/etc/profiles/per-user
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.custom-search-paths.once-you-set-it-every-future-install-uses-it"
@@ -255,7 +255,7 @@ behavior = "Once you set it, every future install uses it."
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.what-isn-t-backed-up.two-settings-are-left-out-of-backups-because"
@@ -265,7 +265,7 @@ behavior = "Two settings are left out of backups because they're specific to thi
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.what-isn-t-backed-up.the-package-manager-choice"
@@ -275,7 +275,7 @@ behavior = "The package manager choice"
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.what-isn-t-backed-up.custom-search-paths"
@@ -285,7 +285,7 @@ behavior = "Custom search paths"
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.storage.everything-is-stored-in-tinycast-s-applicati"
@@ -295,7 +295,7 @@ behavior = "Everything is stored in Tinycast's Application Support folder, and u
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.storage.settings-extensions-storage-leftover-files-s"
@@ -305,7 +305,7 @@ behavior = "Settings → Extensions → Storage → Leftover files shows the siz
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."
 
 [[row]]
 id = "extensions-installing.storage.tinycast-never-touches-your-own-library-pnpm"
@@ -315,4 +315,4 @@ behavior = "Tinycast never touches your own ~/Library/pnpm or ~/.npm."
 windows = "\"The same four ways to install, and updates. The Automatic package-manager choice keeps upstream''s order (pnpm, then Bun, then Yarn, then npm), searching PATH and the usual Windows install locations (Volta, fnm, nvm-windows, Scoop, winget), plus custom search paths. Install scripts stay disabled, as upstream."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "YAL does not host extensions yet, so there is nothing to install one from."

@@ -65,7 +65,7 @@ behavior = "Every built-in command, and the shell commands you write yourself."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.commands.commands-are-actions-you-can-run-by-name-fro"
@@ -75,7 +75,7 @@ behavior = "Commands are actions you can run by name from the launcher. Some are
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.each-built-in-command-belongs-to-one-setting"
@@ -85,7 +85,7 @@ behavior = "Each built-in command belongs to one Settings pane. A feature's comm
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.ai-quick-ai"
@@ -96,7 +96,7 @@ group = "AI"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.ai-ai-chat"
@@ -107,7 +107,7 @@ group = "AI"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quick-actions-fix-grammar"
@@ -118,7 +118,7 @@ group = "Quick Actions"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quick-actions-rewrite"
@@ -129,7 +129,7 @@ group = "Quick Actions"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quick-actions-translate"
@@ -140,7 +140,7 @@ group = "Quick Actions"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quick-actions-summarize"
@@ -151,7 +151,7 @@ group = "Quick Actions"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.clipboard-clipboard-history"
@@ -162,7 +162,7 @@ group = "Clipboard"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.clipboard-paste-sequentially"
@@ -173,7 +173,7 @@ group = "Clipboard"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.emoji-symbols-search-emoji-symbols"
@@ -183,7 +183,7 @@ behavior = "Emoji & Symbols — Search Emoji & Symbols."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.file-search-search-files"
@@ -193,7 +193,7 @@ behavior = "File Search — Search Files."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.navigation-switch-windows"
@@ -204,7 +204,7 @@ group = "Navigation"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.navigation-switch-windows-backwards"
@@ -215,7 +215,7 @@ group = "Navigation"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.navigation-search-menu-bar-items"
@@ -226,7 +226,7 @@ group = "Navigation"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.calendar-join-next-meeting"
@@ -237,7 +237,7 @@ group = "Calendar"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.calendar-my-schedule"
@@ -248,7 +248,7 @@ group = "Calendar"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.calendar-create-event"
@@ -259,7 +259,7 @@ group = "Calendar"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.calendar-copy-meeting-link"
@@ -270,7 +270,7 @@ group = "Calendar"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.calendar-open-in-calendar"
@@ -281,7 +281,7 @@ group = "Calendar"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.notes-show-notes"
@@ -292,7 +292,7 @@ group = "Notes"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.notes-create-note"
@@ -303,7 +303,7 @@ group = "Notes"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.notes-search-notes"
@@ -314,7 +314,7 @@ group = "Notes"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.window-management-create-window-layout"
@@ -325,7 +325,7 @@ group = "Window Management"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.window-management-create-layout-from-current"
@@ -336,7 +336,7 @@ group = "Window Management"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.window-management-switch-room"
@@ -347,7 +347,7 @@ group = "Window Management"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.window-management-create-room"
@@ -358,7 +358,7 @@ group = "Window Management"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quicklinks-create-quicklink"
@@ -369,7 +369,7 @@ group = "Quicklinks"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quicklinks-search-quicklinks"
@@ -380,7 +380,7 @@ group = "Quicklinks"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quicklinks-import-quicklinks"
@@ -391,7 +391,7 @@ group = "Quicklinks"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.quicklinks-export-quicklinks"
@@ -402,7 +402,7 @@ group = "Quicklinks"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.snippets-search-snippets"
@@ -413,7 +413,7 @@ group = "Snippets"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.snippets-create-snippet"
@@ -424,7 +424,7 @@ group = "Snippets"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-calculator-history"
@@ -435,7 +435,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-define-word"
@@ -446,7 +446,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-open-camera"
@@ -457,7 +457,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-export-backup"
@@ -468,7 +468,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-import-backup"
@@ -479,7 +479,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-import-from-raycast"
@@ -490,7 +490,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-check-for-updates"
@@ -501,7 +501,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-tinycast-settings"
@@ -512,7 +512,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-about-tinycast"
@@ -523,7 +523,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-support-tinycast"
@@ -534,7 +534,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.commands-quit-tinycast"
@@ -545,7 +545,7 @@ group = "Commands"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.create-custom-command-and-search-custom-comm"
@@ -555,7 +555,7 @@ behavior = "Create Custom Command and Search Custom Commands are also in Setting
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.two-more-commands-only-appear-for-what-you-t"
@@ -565,7 +565,7 @@ behavior = "Two more commands only appear for what you type: Open in Browser and
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.each-listed-command-has-a-launcher-checkbox"
@@ -575,7 +575,7 @@ behavior = "Each listed command has a launcher checkbox and an alias field. Comm
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.you-can-give-any-built-in-command-a-global-s"
@@ -585,7 +585,7 @@ behavior = "You can give any built-in command a global shortcut, with three exce
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.most-commands-that-open-a-screen-work-as-tog"
@@ -595,7 +595,7 @@ behavior = "Most commands that open a screen work as toggles: press the shortcut
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.built-in-commands.enable-commands-at-the-top-of-settings-comma"
@@ -605,7 +605,7 @@ behavior = "Enable Commands at the top of Settings → Commands turns off every 
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.give-a-shell-command-a-name-then-run-it-from"
@@ -615,7 +615,7 @@ behavior = "Give a shell command a name, then run it from search or with its own
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.turn-custom-commands-on-in-settings-commands"
@@ -625,7 +625,7 @@ behavior = "Turn custom commands on in Settings → Commands → Custom Commands
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.enable-custom-commands-off"
@@ -635,7 +635,7 @@ behavior = "Enable custom commands — Off."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.show-in-launcher-on"
@@ -645,7 +645,7 @@ behavior = "Show in launcher — On."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.turning-off-show-in-launcher-hides-the-secti"
@@ -655,7 +655,7 @@ behavior = "Turning off Show in launcher hides the section, but every shortcut k
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.only-the-command-s-name-is-searchable-not-th"
@@ -665,7 +665,7 @@ behavior = "Only the command's name is searchable, not the command itself, so yo
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.each-command-has-an-enabled-checkbox-on-its"
@@ -675,7 +675,7 @@ behavior = "Each command has an Enabled checkbox on its row. Clearing it keeps t
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.custom-commands.to-take-a-command-out-of-the-main-search-but"
@@ -685,7 +685,7 @@ behavior = "To take a command out of the main search but keep its shortcut, sele
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.name-what-you-search-for"
@@ -695,7 +695,7 @@ behavior = "Name — What you search for."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.command-the-shell-command-like-usr-bin-pmset"
@@ -705,7 +705,7 @@ behavior = "Command — The shell command, like /usr/bin/pmset displaysleepnow."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.icon-a-symbol-for-its-row-dialogs-and-output"
@@ -715,7 +715,7 @@ behavior = "Icon — A symbol for its row, dialogs and output window."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.show-in-root-search-lists-it-in-the-main-sea"
@@ -725,7 +725,7 @@ behavior = "Show in root search — Lists it in the main search. Off, only its s
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.arguments-values-to-ask-for-first-passed-as"
@@ -735,7 +735,7 @@ behavior = "Arguments — Values to ask for first, passed as $1, $2 …"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.run-in-the-folder-it-starts-in-empty-means-y"
@@ -745,7 +745,7 @@ behavior = "Run In — The folder it starts in. Empty means your home folder."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.load-shell-environment-loads-your-zshrc-so-a"
@@ -755,7 +755,7 @@ behavior = "Load shell environment — Loads your .zshrc, so aliases, functions 
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.needs-confirmation-asks-before-running-on-by"
@@ -765,7 +765,7 @@ behavior = "Needs confirmation — Asks before running. On by default."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.show-output-opens-a-window-with-everything-t"
@@ -775,7 +775,7 @@ behavior = "Show output — Opens a window with everything the command prints."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.the-editor.show-confirmation-shows-a-short-message-when"
@@ -785,7 +785,7 @@ behavior = "Show confirmation — Shows a short message when the command succeed
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.how-a-command-runs.shell-bin-zsh-lc"
@@ -795,7 +795,7 @@ behavior = "Shell — /bin/zsh -lc."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.how-a-command-runs.folder-its-run-in-folder-or-your-home-folder"
@@ -805,7 +805,7 @@ behavior = "Folder — Its Run In folder, or your home folder."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.how-a-command-runs.input-none-anything-that-reads-input-gets-an"
@@ -815,7 +815,7 @@ behavior = "Input — None; anything that reads input gets an end-of-file."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.how-a-command-runs.environment-inherited-plus-tinycast-1"
@@ -825,7 +825,7 @@ behavior = "Environment — Inherited, plus TINYCAST=1."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.how-a-command-runs.commands-run-without-a-terminal-window-and-w"
@@ -835,7 +835,7 @@ behavior = "Commands run without a Terminal window and without a timeout. Tinyca
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.how-a-command-runs.if-the-run-in-folder-no-longer-exists-the-co"
@@ -845,7 +845,7 @@ behavior = "If the Run In folder no longer exists, the command doesn't run, and 
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.select-a-command-with-arguments-and-small-fi"
@@ -855,7 +855,7 @@ behavior = "Select a command with arguments and small fields appear beside the s
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.kbd-tab-kbd-moves-through-the-fields-kbd-kbd"
@@ -865,7 +865,7 @@ behavior = "<kbd>tab</kbd> moves through the fields; <kbd>⇧</kbd><kbd>tab</kbd
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.kbd-return-kbd-runs-the-command-once-every-r"
@@ -875,7 +875,7 @@ behavior = "<kbd>return</kbd> runs the command once every required value is pres
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.first-missing-field"
@@ -885,7 +885,7 @@ behavior = "First missing field."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.kbd-esc-kbd-leaves-an-argument-field-and-ret"
@@ -895,7 +895,7 @@ behavior = "<kbd>esc</kbd> leaves an argument field and returns to search."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.a-required-argument-can-t-be-left-empty"
@@ -905,7 +905,7 @@ behavior = "A required argument can't be left empty."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.this-works-from-the-launcher-search-custom-c"
@@ -915,7 +915,7 @@ behavior = "This works from the launcher, Search Custom Commands, a favorite num
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.arguments.values-are-passed-to-the-shell-as-1-2-and-ar"
@@ -925,7 +925,7 @@ behavior = "Values are passed to the shell as $1, $2 …, and are never inserted
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.this-setting-is-off-by-default-and-it-s-the"
@@ -935,7 +935,7 @@ behavior = "This setting is off by default, and it's the most common reason a co
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.zsh-only-reads-zshrc-for-interactive-shells"
@@ -945,7 +945,7 @@ behavior = "Zsh only reads ~/.zshrc for interactive shells. The default -lc read
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.turning-the-setting-on-uses-ilc-which-reads"
@@ -955,7 +955,7 @@ behavior = "Turning the setting on uses -ilc, which reads .zshrc. That also runs
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.tinycast-sets-tinycast-1-so-your-zshrc-can-s"
@@ -965,7 +965,7 @@ behavior = "Tinycast sets TINYCAST=1, so your .zshrc can skip that work:"
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.the-documentation-shows-this-example-n-tinyc"
@@ -975,7 +975,7 @@ behavior = "The documentation shows this example:\n\n```\n[[ -n $TINYCAST ]] && 
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.with-a-typical-zshrc-a-command-starts-in-abo"
@@ -985,7 +985,7 @@ behavior = "With a typical .zshrc, a command starts in about 10 ms with the sett
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.when-a-command-exits-with-127-while-this-set"
@@ -995,7 +995,7 @@ behavior = "When a command exits with 127 while this setting is off, the error m
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.you-can-also-avoid-relying-on-the-shell-conf"
@@ -1005,7 +1005,7 @@ behavior = "You can also avoid relying on the shell configuration by using full 
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.load-shell-environment.the-documentation-shows-this-example-opt-hom"
@@ -1015,7 +1015,7 @@ behavior = "The documentation shows this example:\n\n```\n/opt/homebrew/bin/gh p
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.show-output.with-show-output-on-a-window-opens-as-soon-a"
@@ -1025,7 +1025,7 @@ behavior = "With Show output on, a window opens as soon as the command starts an
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.show-output.the-window-shows-the-command-s-name-and-text"
@@ -1035,7 +1035,7 @@ behavior = "The window shows the command's name and text, the output, the result
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.show-output.the-window-keeps-the-last-256-kb-of-output-i"
@@ -1045,7 +1045,7 @@ behavior = "The window keeps the last 256 KB of output. If you scroll up, it sto
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.show-output.with-load-shell-environment-on-anything-your"
@@ -1055,7 +1055,7 @@ behavior = "With Load shell environment on, anything your .zshrc prints also app
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.needs-confirmation.this-is-on-by-default-for-every-command-the"
@@ -1065,7 +1065,7 @@ behavior = "This is on by default for every command. The palette closes, and a d
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.needs-confirmation.the-dialog-is-a-plain-confirmation-rather-th"
@@ -1075,7 +1075,7 @@ behavior = "The dialog is a plain confirmation rather than a red warning, since 
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.when-it-finishes.success-with-show-confirmation-on-a-short-me"
@@ -1085,7 +1085,7 @@ behavior = "**Success, with Show confirmation on:** a short message shows the la
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.when-it-finishes.ran-if-the-command-printed-nothing"
@@ -1095,7 +1095,7 @@ behavior = "\"Ran \" if the command printed nothing."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.when-it-finishes.failure-a-dialog-shows-the-error-output-up-t"
@@ -1105,7 +1105,7 @@ behavior = "**Failure:** a dialog shows the error output, up to the last 8 KB."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.when-it-finishes.with-show-output-on-the-output-window-shows"
@@ -1115,7 +1115,7 @@ behavior = "**With Show output on:** the output window shows the result instead,
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.when-it-finishes.tinycast-never-writes-the-command-text-to-it"
@@ -1125,7 +1125,7 @@ behavior = "Tinycast never writes the command text to its logs."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.editing-and-backups.editing-a-command-keeps-its-favorite-visibil"
@@ -1135,7 +1135,7 @@ behavior = "Editing a command keeps its favorite, visibility and shortcut. Delet
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.editing-and-backups.custom-commands-and-their-shortcuts-are-incl"
@@ -1145,7 +1145,7 @@ behavior = "Custom commands and their shortcuts are included in backups. When yo
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.settings-commands-import-raycast-scripts-rea"
@@ -1155,7 +1155,7 @@ behavior = "Settings → Commands → Import Raycast Scripts reads a folder of R
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.a-file-counts-as-a-script-command-when-it-ha"
@@ -1165,7 +1165,7 @@ behavior = "A file counts as a script command when it has both a shebang line an
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.raycast-title-the-name"
@@ -1175,7 +1175,7 @@ behavior = "@raycast.title — The name."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.raycast-mode-compact-and-fulloutput-turn-sho"
@@ -1185,7 +1185,7 @@ behavior = "@raycast.mode — compact and fullOutput turn Show output on."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.raycast-needsconfirmation-needs-confirmation"
@@ -1195,7 +1195,7 @@ behavior = "@raycast.needsConfirmation — Needs confirmation."
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.raycast-argument1-to-3-arguments-named-after"
@@ -1205,7 +1205,7 @@ behavior = "@raycast.argument1 to 3 — Arguments, named after their placeholder
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.raycast-currentdirectorypath-run-in-otherwis"
@@ -1215,7 +1215,7 @@ behavior = "@raycast.currentDirectoryPath — Run In; otherwise the script's own
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."
 
 [[row]]
 id = "launcher-commands.importing-raycast-script-commands.raycast-icons-aren-t-imported-imported-comma"
@@ -1225,4 +1225,4 @@ behavior = "Raycast icons aren't imported. Imported commands use the terminal sy
 windows = "\"Built-in command list unchanged apart from OS nouns. Custom commands run with no console window, under a pseudo-console so color and in-place progress bars work; stdin is closed; environment is inherited plus TINYCAST=1; working folder is Run In or the home folder; no timeout; the process tree survives the app quitting and Stop ends the whole tree (job object). Shell: PowerShell by default, with a per-command Shell field (PowerShell, cmd, Git Bash, WSL) as a Windows addition. Arguments are passed positionally and never spliced into the command text: $1...$n and $args in PowerShell, %1...%n in cmd, $1...$n in bash. Load shell environment means loading the PowerShell profile (off by default); upstream''s exit-code-127 hint maps to PowerShell''s command-not-found error. The output window keeps the last 256 KB, follows the tail, and shows result and duration; the failure dialog shows the last 8 KB. Command text is never written to logs. Raycast script-command import maps the same @raycast.* fields and resolves the shebang interpreter on Windows (python, node, bash via Git Bash or WSL), with a clear message when it is missing."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 46 command identifiers are ported in `tc-core`, but no command is executed yet."

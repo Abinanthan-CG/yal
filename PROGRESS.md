@@ -133,6 +133,9 @@ PORTED row whose evidence names a crate that does not exist or a function that i
 12 rows are PORTED today, all on docs/launcher/: the matching rules, the names an entry is
 found by, the Latin spellings, and the learned ranking.
 
+The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
+each open row names the piece that is missing rather than repeating `not yet implemented`.
+
 
 Status: **not started**
 

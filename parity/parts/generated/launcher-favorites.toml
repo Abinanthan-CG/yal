@@ -40,7 +40,7 @@ behavior = "Pin the things you open most, and open them by number."
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.favorites.favorites-appear-above-everything-else-when"
@@ -50,7 +50,7 @@ behavior = "Favorites appear above everything else when you open the launcher wi
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.adding-one.select-an-entry-and-press-f-or-choose-k-add"
@@ -60,7 +60,7 @@ behavior = "Select an entry and press ⇧⌘F, or choose ⌘K → Add to Favorit
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.adding-one.after-you-add-a-favorite-the-selection-moves"
@@ -70,7 +70,7 @@ behavior = "After you add a favorite, the selection moves to your first favorite
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.files-and-folders-can-be-favorites-too-while"
@@ -80,7 +80,7 @@ behavior = "Files and folders can be favorites too, while File Search is on. Sel
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.a-favorite-file-is-found-by-its-name-at-any"
@@ -90,7 +90,7 @@ behavior = "A favorite file is found by its name at any length, even with File S
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.off-it-shows-in-the-files-section-above-othe"
@@ -100,7 +100,7 @@ behavior = "Off. It shows in the Files section, above other matches."
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.tinycast-keeps-the-path-you-saved-if-you-mov"
@@ -110,7 +110,7 @@ behavior = "Tinycast keeps the path you saved. If you move or rename the file, a
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.place"
@@ -120,7 +120,7 @@ behavior = "Place."
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.turning-off-file-search-hides-favorite-files"
@@ -130,7 +130,7 @@ behavior = "Turning off File Search hides favorite files and folders, but keeps 
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.files-and-folders.on"
@@ -140,7 +140,7 @@ behavior = "On."
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.reordering.favorites-keep-the-order-you-give-them-with"
@@ -150,7 +150,7 @@ behavior = "Favorites keep the order you give them. With nothing typed, select o
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.reordering.the-selection-moves-with-the-favorite-so-you"
@@ -160,7 +160,7 @@ behavior = "The selection moves with the favorite, so you can keep pressing the 
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.launching-by-number.1-opens-your-first-favorite-2-the-second-and"
@@ -170,7 +170,7 @@ behavior = "⌘1 opens your first favorite, ⌘2 the second, and so on up to ⌘
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.launching-by-number.the-numbers-follow-key-positions-so-they-wor"
@@ -180,7 +180,7 @@ behavior = "The numbers follow key positions, so they work the same on any keybo
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.launching-by-number.hold-for-a-moment-and-each-numbered-favorite"
@@ -190,7 +190,7 @@ behavior = "Hold ⌘ for a moment and each numbered favorite shows its number on
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.launching-by-number.the-numbers-only-work-while-the-favorites-se"
@@ -200,7 +200,7 @@ behavior = "The numbers only work while the Favorites section is visible, which 
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.launching-by-number.in-the-clipboard-screen-the-same-number-keys"
@@ -210,7 +210,7 @@ behavior = "In the clipboard screen, the same number keys paste your pinned entr
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.in-compact-mode.the-slim-search-bar-of-compact-mode-doesn-t"
@@ -220,7 +220,7 @@ behavior = "The slim search bar of compact mode doesn't show your favorites, but
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.favorites-and-ranking.opening-a-favorite-with-nothing-typed-or-by"
@@ -230,7 +230,7 @@ behavior = "Opening a favorite with nothing typed, or by its number, counts as a
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."
 
 [[row]]
 id = "launcher-favorites.favorites-and-ranking.favorites-are-included-in-backups-and-the-ra"
@@ -240,4 +240,4 @@ behavior = "Favorites are included in backups, and the Raycast importer can brin
 windows = "\"Ctrl+1 ... Ctrl+9 and Ctrl+0 open favorites 1-10 by physical key position; holding Ctrl shows the numbers on the rows. Files and folders can be favorites while File Search is on. Selection-follows-favorite behavior, compact-mode behavior and learned-ranking rules unchanged."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "Favorites have no store and no rows in the palette yet."

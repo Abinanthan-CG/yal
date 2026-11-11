@@ -40,7 +40,7 @@ behavior = "32 built-in actions for your Mac, like lock, sleep, volume, micropho
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.system-actions.system-actions-control-your-mac-itself-like"
@@ -50,7 +50,7 @@ behavior = "System actions control your Mac itself, like locking the screen or e
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.system-actions.they-have-their-own-system-actions-section-i"
@@ -60,7 +60,7 @@ behavior = "They have their own System Actions section in the launcher and their
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-lock-screen"
@@ -71,7 +71,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-sleep"
@@ -82,7 +82,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-sleep-displays"
@@ -93,7 +93,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-restart"
@@ -104,7 +104,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-shut-down"
@@ -115,7 +115,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-log-out"
@@ -126,7 +126,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.session-show-screen-saver"
@@ -137,7 +137,7 @@ group = "Session"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.media-play-pause"
@@ -148,7 +148,7 @@ group = "Media"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.media-next-track"
@@ -159,7 +159,7 @@ group = "Media"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.media-previous-track"
@@ -170,7 +170,7 @@ group = "Media"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-toggle-mute"
@@ -181,7 +181,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-turn-volume-up"
@@ -192,7 +192,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-turn-volume-down"
@@ -203,7 +203,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-set-volume"
@@ -214,7 +214,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-set-volume-to-0"
@@ -225,7 +225,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-set-volume-to-25"
@@ -236,7 +236,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-set-volume-to-50"
@@ -247,7 +247,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-set-volume-to-75"
@@ -258,7 +258,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.volume-set-volume-to-100"
@@ -269,7 +269,7 @@ group = "Volume"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-show-desktop"
@@ -280,7 +280,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-toggle-system-appearance"
@@ -291,7 +291,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-toggle-stage-manager"
@@ -302,7 +302,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-hide-all-apps-except-frontmost"
@@ -313,7 +313,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-unhide-all-hidden-apps"
@@ -324,7 +324,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-quit-all-applications"
@@ -335,7 +335,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.desktop-dismiss-notifications"
@@ -346,7 +346,7 @@ group = "Desktop"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.files-open-trash"
@@ -357,7 +357,7 @@ group = "Files"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.files-empty-trash"
@@ -368,7 +368,7 @@ group = "Files"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.files-eject-all-disks"
@@ -379,7 +379,7 @@ group = "Files"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.files-toggle-hidden-files"
@@ -390,7 +390,7 @@ group = "Files"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.hardware-toggle-bluetooth"
@@ -401,7 +401,7 @@ group = "Hardware"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.the-full-list.microphone-toggle-microphone-mute"
@@ -412,7 +412,7 @@ group = "Microphone"
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.five-actions-ask-for-confirmation-first-beca"
@@ -422,7 +422,7 @@ behavior = "Five actions ask for confirmation first, because running them by acc
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.restart"
@@ -432,7 +432,7 @@ behavior = "Restart."
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.shut-down"
@@ -442,7 +442,7 @@ behavior = "Shut Down."
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.log-out"
@@ -452,7 +452,7 @@ behavior = "Log Out."
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.empty-trash"
@@ -462,7 +462,7 @@ behavior = "Empty Trash."
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.quit-all-applications"
@@ -472,7 +472,7 @@ behavior = "Quit All Applications."
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.return-runs-the-action-and-esc-cancels-each"
@@ -482,7 +482,7 @@ behavior = "Return runs the action and esc cancels. Each dialog shows the action
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.empty-trash-follows-your-finder-setting-it-o"
@@ -492,7 +492,7 @@ behavior = "Empty Trash follows your Finder setting. It only asks while Show war
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.confirmation.the-same-confirmation-appears-when-you-use-a"
@@ -502,7 +502,7 @@ behavior = "The same confirmation appears when you use a shortcut. You can't ski
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.what-you-see-afterward.actions-without-a-visible-effect-show-a-shor"
@@ -512,7 +512,7 @@ behavior = "Actions without a visible effect show a short message with the resul
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.what-you-see-afterward.a-green-check-means-something-changed-a-plai"
@@ -522,7 +522,7 @@ behavior = "A green check means something changed. A plain dot means there was n
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.a-few-details.volume-turn-volume-up-and-turn-volume-down-m"
@@ -532,7 +532,7 @@ behavior = "Volume. Turn Volume Up and Turn Volume Down move in 5% steps: from 3
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.a-few-details.eject-all-disks-ejects-external-and-removabl"
@@ -542,7 +542,7 @@ behavior = "Eject All Disks ejects external and removable drives, including a ha
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.a-few-details.toggle-microphone-mute-changes-the-default-i"
@@ -552,7 +552,7 @@ behavior = "Toggle Microphone Mute changes the default input device's own mute s
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.a-few-details.when-you-run-hide-all-apps-except-frontmost"
@@ -562,7 +562,7 @@ behavior = "When you run Hide All Apps Except Frontmost or Quit All Applications
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.a-few-details.toggle-system-appearance-changes-the-appeara"
@@ -572,7 +572,7 @@ behavior = "Toggle System Appearance changes the appearance of macOS itself, not
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.permissions.some-actions-need-automation-accessibility-o"
@@ -582,7 +582,7 @@ behavior = "Some actions need Automation, Accessibility or Bluetooth access. Tin
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.settings.settings-system-actions-has-enable-system-ac"
@@ -592,7 +592,7 @@ behavior = "Settings → System Actions has Enable System Actions at the top and
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."
 
 [[row]]
 id = "launcher-system-actions.settings.turning-off-enable-system-actions-removes-ev"
@@ -602,4 +602,4 @@ behavior = "Turning off Enable System Actions removes every action from search a
 windows = "\"All 32 actions, one to one. Session: Lock, Sleep, Sleep Displays, Restart, Shut Down, Log Out, Show Screen Saver. Media keys. Volume through the default playback device in 5% steps with the app''s own indicator (number, Muted instead of 0%, fades after 1.6 s). Show Desktop. Toggle System Appearance (apps and system light/dark). Toggle Stage Manager becomes Toggle Task View. Hide All Apps Except Frontmost minimizes every other window; Unhide All Hidden Apps restores them. Quit All Applications leaves Explorer and the app running and states the count. Dismiss Notifications clears the notification center. Open / Empty Trash act on the Recycle Bin, and the confirmation follows the Recycle Bin''s own display-delete-confirmation setting. Eject All Disks ejects removable and external drives only. Toggle Hidden Files flips the Explorer setting and refreshes open windows. Toggle Bluetooth uses the radio API. Toggle Microphone Mute acts on the default recording device. Result messages keep the changed / nothing-to-do distinction."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The 32 action identifiers are ported in `tc-core`, but no action is executed yet."

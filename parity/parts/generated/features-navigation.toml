@@ -30,7 +30,7 @@ behavior = "Switch to any open window, or click any menu bar item, from the laun
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.navigation-adds-three-keyboard-commands"
@@ -40,7 +40,7 @@ behavior = "Navigation adds three keyboard commands:"
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.switch-windows-lists-every-open-window-of-ev"
@@ -50,7 +50,7 @@ behavior = "**Switch Windows** lists every open window of every running app and 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.the-front"
@@ -60,7 +60,7 @@ behavior = "The front."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.switch-windows-backwards-opens-the-same-list"
@@ -70,7 +70,7 @@ behavior = "**Switch Windows Backwards** opens the same list and moves through i
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.search-menu-bar-items-lists-every-item-in-th"
@@ -80,7 +80,7 @@ behavior = "**Search Menu Bar Items** lists every item in the frontmost app's me
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.choose"
@@ -90,7 +90,7 @@ behavior = "Choose."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.turn-it-on-in-settings-navigation-enable-nav"
@@ -100,7 +100,7 @@ behavior = "Turn it on in Settings → Navigation → Enable navigation. It's of
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.all-three-need-the-accessibility-permission"
@@ -110,7 +110,7 @@ behavior = "All three need the Accessibility permission. None needs Screen Recor
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.navigation.each-command-has-a-checkbox-a-shortcut-recor"
@@ -120,7 +120,7 @@ behavior = "Each command has a checkbox, a shortcut recorder and an alias field 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.the-list-groups-windows-by-app-with-the-app"
@@ -130,7 +130,7 @@ behavior = "The list groups windows by app, with the app whose window is frontmo
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.return-switch-to-window-brings-the-window-to"
@@ -140,7 +140,7 @@ behavior = "Return (Switch to Window) brings the window to the front:"
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.a-minimized-window-is-restored-first"
@@ -150,7 +150,7 @@ behavior = "A minimized window is restored first."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.a-window-on-another-space-switches-you-to-th"
@@ -160,7 +160,7 @@ behavior = "A window on another Space switches you to that Space."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.if-the-app-quit-after-the-list-opened-tinyca"
@@ -170,7 +170,7 @@ behavior = "If the app quit after the list opened, Tinycast tells you instead of
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.switch-to-window-return-brings-the-window-to"
@@ -180,7 +180,7 @@ behavior = "Switch to Window — return — Brings the window to the front."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.minimize-window-m-minimizes-it-and-keeps-the"
@@ -190,7 +190,7 @@ behavior = "Minimize Window — ⌃⇧M — Minimizes it and keeps the list open
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.hide-application-h-hides-the-window-s-app-an"
@@ -200,7 +200,7 @@ behavior = "Hide Application — ⌃⇧H — Hides the window's app and closes t
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.quit-application-q-quits-the-app-its-windows"
@@ -210,7 +210,7 @@ behavior = "Quit Application — ⌃⇧Q — Quits the app. Its windows leave th
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.minimize-window-isn-t-offered-for-a-window-t"
@@ -220,7 +220,7 @@ behavior = "Minimize Window isn't offered for a window that's already minimized,
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.press-the-switch-windows-shortcut-again-whil"
@@ -230,7 +230,7 @@ behavior = "Press the Switch Windows shortcut again while the list is open to mo
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.switch-windows.the-switch-windows-backwards-shortcut-moves"
@@ -240,7 +240,7 @@ behavior = "The Switch Windows Backwards shortcut moves up the list instead, wra
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.search-menu-bar-items.open-it-over-any-app-and-every-menu-item-app"
@@ -250,7 +250,7 @@ behavior = "Open it over any app and every menu item appears as a row, with the 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.search-menu-bar-items.with-an-empty-search-rows-are-grouped-by-top"
@@ -260,7 +260,7 @@ behavior = "With an empty search, rows are grouped by top-level menu, like File,
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.it-always-acts-on-the-app-that-was-in-front"
@@ -270,7 +270,7 @@ behavior = "**It always acts on the app that was in front when you opened it.** 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.doesn-t-change-the-target"
@@ -280,7 +280,7 @@ behavior = "Doesn't change the target."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.only-items-you-could-click-are-listed-disabl"
@@ -290,7 +290,7 @@ behavior = "**Only items you could click are listed.** Disabled items, separator
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.out"
@@ -300,7 +300,7 @@ behavior = "Out."
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.tinycast-never-opens-menus-to-read-them-some"
@@ -310,7 +310,7 @@ behavior = "**Tinycast never opens menus to read them.** Some apps only build a 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.those-items-may-be-missing-opening-menus-in"
@@ -320,7 +320,7 @@ behavior = "Those items may be missing. Opening menus in the background would ma
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.good-to-know.very-large-menus-are-limited-to-4-000-items"
@@ -330,7 +330,7 @@ behavior = "Very large menus are limited to 4,000 items, and reading stops after
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.settings.show-apple-menu-items-off-adds-the-apple-men"
@@ -340,7 +340,7 @@ behavior = "Show Apple menu items — Off — Adds the Apple menu, which is the 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.settings.excluded-applications-empty-apps-whose-menus"
@@ -350,7 +350,7 @@ behavior = "Excluded Applications — Empty — Apps whose menus Tinycast never 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.settings.tinycast-checks-the-excluded-applications-li"
@@ -360,7 +360,7 @@ behavior = "Tinycast checks the Excluded Applications list before reading any me
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."
 
 [[row]]
 id = "features-navigation.settings.when-there-s-nothing-to-search-you-see-a-sho"
@@ -370,4 +370,4 @@ behavior = "When there's nothing to search, you see a short explanation instead 
 windows = "\"Switch Windows lists the Alt+Tab-eligible windows of every app across virtual desktops, grouped by app, minimized last; activating a window on another desktop switches to it. Hold-modifier cycling (press again to advance, release to switch) runs through the low-level hook, including when the user binds Alt+Tab itself. Hide Application minimizes that app''s windows. Search Menu Bar Items reads the foreground window''s menus without opening them: classic Win32 menus through the menu APIs, otherwise the UI Automation menu bar; it activates by command message or Invoke. Show Apple menu items becomes Show window menu items (Restore, Move, Size, Minimize, Maximize, Close). Apps without a menu bar get the documented explanation."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The navigation features are not implemented in YAL yet."

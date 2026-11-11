@@ -40,7 +40,7 @@ behavior = "A searchable grid of every emoji and symbol, with skin tones, pins a
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.emoji-symbols.search-emoji-and-symbols-then-paste-one-into"
@@ -50,7 +50,7 @@ behavior = "Search emoji and symbols, then paste one into the app you were using
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.emoji-symbols.open-it-with-the-search-emoji-symbols-comman"
@@ -60,7 +60,7 @@ behavior = "Open it with the Search Emoji & Symbols command, or with its own glo
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.emoji-symbols.search-matches-names-and-keywords-in-english"
@@ -70,7 +70,7 @@ behavior = "Search matches names and keywords in English. If your Mac's preferre
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.actions.paste-return"
@@ -80,7 +80,7 @@ behavior = "Paste — return."
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.actions.copy-to-clipboard-return"
@@ -90,7 +90,7 @@ behavior = "Copy to Clipboard — ⌘return."
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.actions.paste-and-keep-window-open-return"
@@ -100,7 +100,7 @@ behavior = "Paste and Keep Window Open — ⌥return."
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.actions.pin-or-unpin"
@@ -110,7 +110,7 @@ behavior = "Pin or unpin — ⌘."
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.actions.move-a-pin-up-or-down"
@@ -120,7 +120,7 @@ behavior = "Move a pin up or down — ⌥⌘↑ / ↓."
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.actions.pasting-needs-the-accessibility-permission-t"
@@ -130,7 +130,7 @@ behavior = "Pasting needs the Accessibility permission. The footer shows where t
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.moving-around-the-grid.this-is-the-only-screen-where-all-four-arrow"
@@ -140,7 +140,7 @@ behavior = "This is the only screen where all four arrow keys and all four Emacs
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.moving-around-the-grid.moving-into-the-first-row-scrolls-all-the-wa"
@@ -150,7 +150,7 @@ behavior = "Moving into the first row scrolls all the way to the top, so the sec
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.moving-around-the-grid.you-can-also-use-the-mouse-to-click-double-c"
@@ -160,7 +160,7 @@ behavior = "You can also use the mouse to click, double-click, right-click and h
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.moving-around-the-grid.use-the-category-menu-in-the-header-or-p-to"
@@ -170,7 +170,7 @@ behavior = "Use the category menu in the header (or ⌘P) to show all categories
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.pinned.pin-an-emoji-or-symbol-from-the-actions-menu"
@@ -180,7 +180,7 @@ behavior = "Pin an emoji or symbol from the Actions menu to keep it at the top o
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.frequently-used.the-emoji-you-used-most-recently-appear-in-a"
@@ -190,7 +190,7 @@ behavior = "The emoji you used most recently appear in a Frequently Used section
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.settings-emoji-symbols-emoji-skin-tone"
@@ -200,7 +200,7 @@ behavior = "Settings → Emoji & Symbols → Emoji Skin Tone."
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.default-light"
@@ -211,7 +211,7 @@ group = "Default"
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.default-medium-light"
@@ -222,7 +222,7 @@ group = "Default"
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.default-medium"
@@ -233,7 +233,7 @@ group = "Default"
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.default-medium-dark"
@@ -244,7 +244,7 @@ group = "Default"
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.default-dark"
@@ -255,7 +255,7 @@ group = "Default"
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.the-skin-tone-applies-to-every-emoji-that-su"
@@ -265,7 +265,7 @@ behavior = "The skin tone applies to every emoji that supports one, including wh
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.skin-tone.your-skin-tone-is-one-of-the-settings-the-ra"
@@ -275,7 +275,7 @@ behavior = "Your skin tone is one of the settings the Raycast importer can bring
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."
 
 [[row]]
 id = "features-emoji.grid-size.the-actions-menu-has-actual-size-0-zoom-in-a"
@@ -285,4 +285,4 @@ behavior = "The Actions menu has Actual Size (⌘0), Zoom In (⌘+) and Zoom Out
 windows = "\"The full Unicode emoji and symbol set with color rendering. English names and keywords plus the 8 additional keyword languages (CLDR annotations), English matches first. Pins with reordering, Frequently Used (up to two rows), skin tone applied on paste, category filter with counts, 6-10 columns with zoom shortcuts. Pasting goes to the previously focused window and the footer names it."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The emoji picker is not implemented in YAL yet."

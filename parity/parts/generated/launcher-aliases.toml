@@ -30,7 +30,7 @@ behavior = "Give any launcher entry a short name that comes first when you type 
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.aliases.an-alias-is-your-own-short-name-for-a-launch"
@@ -40,7 +40,7 @@ behavior = "An alias is your own short name for a launcher entry. Type ps to get
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.aliases.aliases-work-on-any-entry-apps-system-settin"
@@ -50,7 +50,7 @@ behavior = "Aliases work on any entry: apps, System Settings panes, commands, Qu
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.setting-one.set-aliases-in-settings-in-the-alias-field-o"
@@ -60,7 +60,7 @@ behavior = "Set aliases in Settings, in the alias field on the item's row. Every
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.setting-one.each-entry-can-have-one-alias-the-field-has"
@@ -70,7 +70,7 @@ behavior = "Each entry can have one alias. The field has a button to clear it."
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.setting-one.aliases-aren-t-in-the-k-menu-because-naming"
@@ -80,7 +80,7 @@ behavior = "Aliases aren't in the ⌘K menu, because naming something is a one-t
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.typing-the-whole-alias-exactly-always-puts-t"
@@ -90,7 +90,7 @@ behavior = "**Typing the whole alias exactly always puts that entry first**, no 
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.or-what-else-has-that-name"
@@ -100,7 +100,7 @@ behavior = "Or what else has that name."
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.typing-the-start-of-an-alias-ranks-just-abov"
@@ -110,7 +110,7 @@ behavior = "**Typing the start of an alias** ranks just above names that start t
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.pick-very-often-can-still-rank-higher"
@@ -120,7 +120,7 @@ behavior = "Pick very often can still rank higher."
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.a-match-in-the-middle-of-an-alias-ranks-the"
@@ -130,7 +130,7 @@ behavior = "A match in the **middle** of an alias ranks the same as the other na
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.scattered-letters-never-match-an-alias-ps-wo"
@@ -140,7 +140,7 @@ behavior = "**Scattered letters never match an alias.** `ps` won't match an alia
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.skipping-letters-because-that-would-make-sho"
@@ -150,7 +150,7 @@ behavior = "Skipping letters, because that would make short aliases useless."
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.how-an-alias-ranks.the-first-rule-matters-most-a-two-letter-ali"
@@ -160,7 +160,7 @@ behavior = "The first rule matters most. A two-letter alias is only worth settin
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.in-the-list.an-entry-with-an-alias-shows-it-as-a-small-t"
@@ -170,7 +170,7 @@ behavior = "An entry with an alias shows it as a small tag after its name, so yo
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.backups-and-cleanup.aliases-are-included-in-backups"
@@ -180,7 +180,7 @@ behavior = "Aliases are included in backups."
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.backups-and-cleanup.an-alias-is-removed-along-with-the-thing-it"
@@ -190,7 +190,7 @@ behavior = "An alias is removed along with the thing it names. If you uninstall 
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."
 
 [[row]]
 id = "launcher-aliases.backups-and-cleanup.raycast-exports-include-an-alias-for-each-co"
@@ -200,4 +200,4 @@ behavior = "Raycast exports include an alias for each command. The importer brin
 windows = "\"Unchanged. One alias per entry, set on the item''s row in every Settings pane that lists launcher items; shown as a tag after the name; removed together with the thing it names."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "An entry's alias is not stored, and the alias editor is not built yet."

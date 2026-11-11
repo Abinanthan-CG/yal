@@ -45,7 +45,7 @@ behavior = "How Tinycast finds, verifies and installs new versions."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.updates.tinycast-keeps-itself-up-to-date-and-there-s"
@@ -55,7 +55,7 @@ behavior = "Tinycast keeps itself up to date, and there's nothing to set up."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.once-a-day-tinycast-checks-github-for-a-newe"
@@ -65,7 +65,7 @@ behavior = "**Once a day**, Tinycast checks GitHub for a newer release on its ch
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.tries-again-two-hours-later-the-first-check"
@@ -75,7 +75,7 @@ behavior = "Tries again two hours later. The first check runs 30 seconds after l
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.when-there-s-a-new-release-a-window-shows-wh"
@@ -85,7 +85,7 @@ behavior = "When there's a new release, a window shows **what changed**, taken f
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.one-click-downloads-it-with-a-progress-bar-a"
@@ -95,7 +95,7 @@ behavior = "One click downloads it, with a progress bar and a **Cancel** button 
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.tinycast-verifies-the-download-installs-it-a"
@@ -105,7 +105,7 @@ behavior = "Tinycast verifies the download, installs it and offers to **relaunch
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.if-you-choose-later-tinycast-stops-offering"
@@ -115,7 +115,7 @@ behavior = "If you choose Later, Tinycast stops offering that version. It still 
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.the-first-time-the-new-version-opens-it-show"
@@ -125,7 +125,7 @@ behavior = "The first time the new version opens, it shows Updated to Tinycast a
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.how-it-works.check-for-updates-always-looks-for-a-newer-v"
@@ -135,7 +135,7 @@ behavior = "Check for Updates always looks for a newer version, including one yo
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.turning-off-automatic-checks.settings-general-automatically-check-for-upd"
@@ -145,7 +145,7 @@ behavior = "Settings → General → Automatically check for updates is on by de
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.it-waits-until-you-re-not-busy.the-update-window-never-interrupts-you-it-wa"
@@ -155,7 +155,7 @@ behavior = "The update window never interrupts you. It waits while the palette i
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.it-waits-until-you-re-not-busy.each-version-is-offered-at-most-once-per-lau"
@@ -165,7 +165,7 @@ behavior = "Each version is offered at most once per launch."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.channels-stay-separate.the-stable-version-only-updates-to-stable-re"
@@ -175,7 +175,7 @@ behavior = "The stable version only updates to stable releases, and the beta onl
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.nothing-is-installed-unless-every-check-pass"
@@ -185,7 +185,7 @@ behavior = "Nothing is installed unless every check passes. If any check fails, 
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.the-signature-must-show-that-the-download-is"
@@ -195,7 +195,7 @@ behavior = "**The signature must show that the download is Tinycast**, signed th
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.running"
@@ -205,7 +205,7 @@ behavior = "Running."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.the-app-identifier-and-version-must-match-wh"
@@ -215,7 +215,7 @@ behavior = "The app identifier and version must match what's expected."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.tinycast-never-asks-for-an-administrator-pas"
@@ -225,7 +225,7 @@ behavior = "Tinycast never asks for an administrator password. If it can't write
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.applications-it-tells-you-instead-of-working"
@@ -235,7 +235,7 @@ behavior = "/Applications, it tells you instead of working around it."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.safety-checks.updating-never-changes-your-settings-clipboa"
@@ -245,7 +245,7 @@ behavior = "Updating never changes your settings, clipboard history, notes, snip
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.homebrew.tinycast-s-homebrew-casks-tell-homebrew-that"
@@ -255,7 +255,7 @@ behavior = "Tinycast's Homebrew casks tell Homebrew that the app updates itself,
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.homebrew.brew-install-brew-uninstall-and-brew-list-wo"
@@ -265,7 +265,7 @@ behavior = "Brew install, brew uninstall and brew list work as usual."
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.supporting-tinycast.tinycast-is-free-and-open-source-support-tin"
@@ -275,7 +275,7 @@ behavior = "Tinycast is free and open source. Support Tinycast, in the launcher,
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
 
 [[row]]
 id = "reference-updates.supporting-tinycast.about-once-a-month-this-window-may-open-by-i"
@@ -285,4 +285,4 @@ behavior = "About once a month, this window may open by itself, but never on the
 windows = "\"A daily check of GitHub Releases for the app''s own channel (first check 30 s after launch, retry after 2 h), a window with the release notes, download with progress and Cancel, verification, install, relaunch, and an Updated to ... notice. Verification: an Ed25519 (minisign-style) signature made in CI and checked against a public key compiled into the app, the matching Authenticode signer when the running build is signed, and product id and version checks. Per-user install, so there is never an administrator prompt. It waits while the user is busy (same conditions, retry every 2 minutes for half an hour, each version offered once per launch). Stable and beta are separate apps. winget and Scoop manifests replace the Homebrew section. Support opens the original author''s page: https://tinycast.dev/support."
 status = "NOT PORTED"
 evidence = []
-reason = "Not yet implemented."
+reason = "The update check is not built yet."
