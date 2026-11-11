@@ -31,11 +31,12 @@ pub mod math;
 pub mod parser;
 pub mod result;
 pub mod rounding;
-#[cfg(test)]
-mod tests;
 pub mod token;
 pub mod tokenizer;
 pub mod value;
+
+#[cfg(test)]
+mod tests;
 
 pub use catalog::{Catalog, CurrencyInfo, NameCatalog, UnitInfo};
 pub use engine::{evaluate, CalcOutcome};

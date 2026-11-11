@@ -104,7 +104,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-	c-search has 150 tests. The workspace has 275.
+	c-search has 150 tests. The workspace has 328.
 
 ### The launcher core
 
@@ -127,6 +127,19 @@ Linux for the types and on Windows for the installer.
 The palette asks the Rust side for the rows that match what was typed, shows them, and opens the
 chosen one.
 
+### The calculator's arithmetic core (crates/tc-calc)
+
+The tokenizer, the expression parser, the evaluation engine, the math functions and the number
+formatting, ported from upstream's `Features/Calculator/Model/` with upstream's own
+`Tests/calc-test.swift` as the oracle. **52 tests.**
+
+The engine asks a catalog about the units and the currencies it meets and answers
+`Unsupported` for a query it cannot finish, so the unit catalog can be added later without
+touching the engine. The units, the currencies, the dates, the time zones, the percentages and
+the history are still to come.
+
+See [port note 006](docs/port-notes/006-calculator-core.md).
+
 ### The parity ledger
 
 The ledger's scope is generated (cargo xtask ledger); the port's verdict on each row lives in
@@ -135,6 +148,10 @@ PORTED row whose evidence names a crate that does not exist or a function that i
 
 19 rows are PORTED today, all on docs/launcher/: the matching rules, the names an entry is
 found by, the Latin spellings, the learned ranking, and the quicklink destinations.
+
+With the calculator's arithmetic core, 40 rows are PORTED: 19 on the launcher and 21 on
+docs/features/calculator/ — the arithmetic, the rounding, the fractions, the base conversion,
+the function list, the magnitude words and the rule that a malformed query earns no card.
 
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
@@ -153,8 +170,9 @@ The order to work in, with what is done so far:
 8. Quicklinks — the destinations are done; the store, the editor and the section are not
 9. System settings
 10. System actions — all 32, with their confirmations
-11. Calculator — **in progress**: the tokenizer, the parser, the engine and the number
-    formatting are being ported to `crates/tc-calc` against upstream's own calculator tests
+11. Calculator — **the arithmetic core is done**: the tokenizer, the parser, the engine and the
+    number formatting are ported to `crates/tc-calc` against upstream's own calculator tests.
+    The units, the currencies, the dates and the time zones are stage 2.
 12. Clipboard history
 13. Emoji
 14. Snippets — **in progress**: the record, the keyword policy, the markdown serializer, the
