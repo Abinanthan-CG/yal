@@ -10,3 +10,7 @@ description = "YAL port: tc-search"
 
 [dependencies]
 tc-core = { path = "../tc-core" }
+unicode-normalization = { workspace = true }
+pinyin = { version = "0.11", default-features = false, features = ["plain"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
