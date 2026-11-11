@@ -15,6 +15,10 @@ mod system_actions;
 mod windows;
 
 pub use clipboard::WindowsClipboard;
+/// The Windows clipboard, as text.
+pub fn clipboard() -> WindowsClipboard {
+    WindowsClipboard::new()
+}
 pub use hotkey::WindowsHotkey;
 pub use launch::{open, reveal};
 pub use paths::is_portable;

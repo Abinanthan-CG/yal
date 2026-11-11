@@ -8,18 +8,20 @@
 //!
 //! # What is not here
 //!
-//! Upstream's calculator also carries units, currencies, dates, percentages, finance
-//! and more. Those are ported separately, so this crate asks a
-//! [`catalog::Catalog`] about the units and the currencies it meets and answers
-//! [`engine::CalcOutcome::Unsupported`] for a query that needs one of them. It never
-//! answers a made-up number.
+//! Upstream's calculator also carries currencies, dates, percentages, finance and more.
+//! Those are ported separately, so this crate asks a [`catalog::Catalog`] about the
+//! currencies it meets and answers [`engine::CalcOutcome::Unsupported`] for a query that
+//! needs one of them. It never answers a made-up number.
+//!
+//! The **units** are here: [`units::UnitCatalog`] holds upstream's whole unit table, and
+//! the engine answers the conversions between two of them.
 //!
 //! # Example
 //!
 //! ```
-//! use tc_calc::{evaluate, CalcOutcome, NameCatalog};
+//! use tc_calc::{evaluate, CalcOutcome, UnitCatalog};
 //!
-//! let outcome = evaluate("2^3^2", &NameCatalog::new());
+//! let outcome = evaluate("2^3^2", &UnitCatalog::new());
 //! assert_eq!(outcome.display(), Some("512"));
 //! assert!(matches!(outcome, CalcOutcome::Card(_)));
 //! ```
@@ -28,15 +30,19 @@ pub mod catalog;
 pub mod engine;
 pub mod formatter;
 pub mod math;
+pub mod mixed_units;
 pub mod parser;
 pub mod result;
 pub mod rounding;
 pub mod token;
 pub mod tokenizer;
+pub mod units;
 pub mod value;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod units_tests;
 
 pub use catalog::{Catalog, CurrencyInfo, NameCatalog, UnitInfo};
 pub use engine::{evaluate, CalcOutcome};
@@ -46,4 +52,5 @@ pub use parser::Parser;
 pub use result::{CalcResult, Payload};
 pub use token::{NumberBase, Operator, Token};
 pub use tokenizer::tokenize;
+pub use units::{UnitCatalog, UnitCategory, UnitDef};
 pub use value::{ParseError, UnsupportedArea, Value};

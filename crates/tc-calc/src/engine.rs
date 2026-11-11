@@ -15,6 +15,7 @@ use crate::result::{CalcResult, Payload};
 use crate::rounding;
 use crate::token::{NumberBase, Operator, Token};
 use crate::tokenizer::tokenize;
+use crate::units;
 use crate::value::{ParseError, UnsupportedArea};
 
 /// Every integer up to 2^53 is exactly representable as a double.
@@ -103,6 +104,12 @@ fn evaluate_tokens(
 
     // "255 to hex": an expression on the left, like a unit conversion.
     if let Some(result) = base_conversion(tokens, query, catalog)? {
+        return Ok(Some(result));
+    }
+
+    // The unit conversions, before the typed arithmetic: a unit makes the plain
+    // parser stop, and the conversions are what a query with a unit is asking for.
+    if let Some(result) = units::evaluate(tokens, query, catalog) {
         return Ok(Some(result));
     }
 
