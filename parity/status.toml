@@ -768,3 +768,57 @@ evidence = ["tc-snippets::template_tests::json_stringify_escapes_without_adding_
 id = "features-snippets.modifiers.raw"
 status = "PORTED"
 evidence = ["tc-snippets::template_tests::an_encoded_value_is_not_encoded_twice"]
+
+# ---------------------------------------------------------------------------
+# The snippets: the library on disk, the store, the keyword and the import
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-snippets.keyword-expansion.keywords-aren-t-case-sensitive-and-the-longe"
+status = "PORTED"
+evidence = [
+  "tc-snippets::library_tests::a_keyword_is_trimmed_and_lowercased",
+  "tc-snippets::library_tests::the_longest_match_wins",
+  "tc-snippets::library_tests::an_empty_keyword_is_rejected",
+]
+
+# ---------------------------------------------------------------------------
+# The clipboard: the model layer
+#
+# The entry kinds, the filters, the colours, the capture policy, the Raycast
+# import and the paste sequence are ported in `tc-clipboard`.
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-clipboard.filtering-by-type.links-and-emails-are-detected-from-the-text"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_link_is_classified_as_a_link",
+  "tc-clipboard::tests::an_address_is_classified_as_an_address",
+  "tc-clipboard::tests::a_filename_is_never_a_link",
+  "tc-clipboard::tests::an_over_long_token_is_plain_by_definition",
+]
+
+[[status]]
+id = "features-clipboard.filtering-by-type.copied-urls-count-as-links-rather-than-text"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::each_filter_returns_only_its_own_kind",
+  "tc-clipboard::tests::a_colour_is_its_own_form",
+]
+
+[[status]]
+id = "features-clipboard.pinning.unpinning-an-entry-makes-it-the-newest-entry"
+status = "PORTED"
+evidence = ["tc-clipboard::tests::unpinning_rejoins_as_the_newest_entry"]
+
+[[status]]
+id = "features-clipboard.paste-sequentially.it-works-with-text-images-and-files-and-does"
+status = "PORTED"
+evidence = [
+  "tc-clipboard::tests::a_copy_since_the_last_paste_ends_the_walk",
+  "tc-clipboard::tests::a_pause_of_the_full_timeout_ends_the_walk",
+  "tc-clipboard::tests::a_pause_under_the_timeout_keeps_the_walk_going",
+  "tc-clipboard::tests::an_empty_history_has_nothing_to_paste",
+  "tc-clipboard::tests::clearing_the_history_ends_the_walk",
+]

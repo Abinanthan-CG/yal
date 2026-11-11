@@ -10209,9 +10209,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.paste-sequentially"
 behavior = "It works with text, images and files, and doesn't change the order of your history. Copying something new, or waiting a minute between presses, starts again from the newest entry. After the oldest entry, it shows Nothing left to paste instead of starting over."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_copy_since_the_last_paste_ends_the_walk", "tc-clipboard::tests::a_pause_of_the_full_timeout_ends_the_walk", "tc-clipboard::tests::a_pause_under_the_timeout_keeps_the_walk_going", "tc-clipboard::tests::an_empty_history_has_nothing_to_paste", "tc-clipboard::tests::clearing_the_history_ends_the_walk"]
+reason = ""
 
 [[row]]
 id = "features-clipboard.what-it-keeps.text-with-a-preview-text-longer-than-32-000"
@@ -10310,9 +10310,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.filtering-by-type"
 behavior = "Copied URLs count as links rather than text, and colors aren't text either, so Text Only shows regular text."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::each_filter_returns_only_its_own_kind", "tc-clipboard::tests::a_colour_is_its_own_form"]
+reason = ""
 count_check = "clipboard.type-filters"
 
 [[row]]
@@ -10332,9 +10332,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.filtering-by-type"
 behavior = "Links and emails are detected from the text each time and never stored separately. Text over 2,048 bytes, or text containing a space, counts as plain text. A bare domain must be lowercase and end in a common domain ending, so Safari.app, report.pdf and index.html stay text."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::a_link_is_classified_as_a_link", "tc-clipboard::tests::an_address_is_classified_as_an_address", "tc-clipboard::tests::a_filename_is_never_a_link", "tc-clipboard::tests::an_over_long_token_is_plain_by_definition"]
+reason = ""
 count_check = "clipboard.type-filters"
 
 [[row]]
@@ -10431,9 +10431,9 @@ page = "docs/features/clipboard/"
 heading = "features-clipboard.pinning"
 behavior = "**Unpinning an entry makes it the newest entry**, instead of returning it to an old date group."
 windows = "\"Event-driven capture of text, images (saved as PNG), file lists and colors, keeping rich formats (HTML, RTF) so a normal paste differs from Paste as Plain Text. Honor Windows'' confidential-clipboard markers (ExcludeClipboardContentFromMonitorProcessing, CanIncludeInClipboardHistory) as the equivalent of copies that apps mark confidential; default excluded apps are installed password managers and credential dialogs. Pasting restores focus to the previous window and sends Ctrl+V (terminals receive the saved image path) and explains itself when the target is an administrator window. Text recognition runs in the OCR helper (files up to 32 MB, first 64 PDF pages). Rows can be dragged out. Stored in clipboard.sqlite3 with images beside it. The app''s own pastes are recognized and never recorded."
-status = "NOT PORTED"
-evidence = []
-reason = "The clipboard history has no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-clipboard::tests::unpinning_rejoins_as_the_newest_entry"]
+reason = ""
 count_check = "clipboard.pinned-survives"
 
 [[row]]
@@ -14472,9 +14472,9 @@ page = "docs/features/snippets/"
 heading = "features-snippets.keyword-expansion"
 behavior = "Keywords **aren't case-sensitive, and the longest match wins**, so a more specific keyword takes"
 windows = "\"Markdown files with the same optional frontmatter and validation messages; same placeholders, modifiers, nesting and loop rules. Keyword expansion uses a listen-only low-level keyboard hook; the buffer resets on app switch, modifier shortcuts, arrow keys, password or secure contexts and after 15 s without typing. Insertion ladder: UI Automation replace-and-verify, then typed input for single-line text up to 100 characters, then clipboard paste with exact clipboard restore that never appears in clipboard history. Status reads Off / Blocked / Active (Blocked replaces Needs Accessibility: the hook is unavailable or the front window is elevated). Folder watcher; save refuses on a conflict with the file on disk."
-status = "NOT PORTED"
-evidence = []
-reason = "The snippet store has no editor and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-snippets::library_tests::a_keyword_is_trimmed_and_lowercased", "tc-snippets::library_tests::the_longest_match_wins", "tc-snippets::library_tests::an_empty_keyword_is_rejected"]
+reason = ""
 count_check = "snippets.typing-buffer"
 
 [[row]]

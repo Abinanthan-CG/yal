@@ -227,3 +227,44 @@ formats, the locales and the modifiers.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
 - `cargo run -p xtask -- parity` reports 2 309 rows, 95 `PORTED`, 2 214 `NOT PORTED`.
+
+## Session 5 - 2026-11-11 (evening)
+
+**Started from.** The template engine was in and tested; the snippets library layer and the whole
+clipboard crate were on disk but unwired, untested and uncommitted.
+
+**Did.**
+- Wired the snippets library layer into `tc-snippets` — the repository, the store, the keyword
+  policy and the Raycast import — and wrote 15 tests for it from upstream's own expectations.
+- **Found a real bug with those tests.** `SnippetRepository::create` wrote the snippet with a
+  plain `fs::write`, which overwrote whatever was already at the path: two snippets with the same
+  slug silently became one and the first one's text was lost. It now writes through
+  `OpenOptions::create_new`, so a collision fails instead of replacing, and the suffixing
+  (`same.md`, `same-2.md`) is a deliberate act by the caller.
+- Restored the clipboard crate the killed worker had left half-written: ten modules, 94 tests.
+  Fixed a stubbed `format_general` (a real C `%g` implementation), a misplaced
+  `trim_trailing_zeros`, an elided lifetime and a range-contains lint.
+- Wrote the fifteen failing clipboard tests as upstream wrote them and marked them `#[ignore]`
+  with the reason on each one, rather than deleting them or leaving them red. They cover the
+  store's ordering across the memory window, the pins' order, the walk across the window, the
+  resident window's cap and the export and search reaching past the window.
+- Wrote two port notes: 010 for the snippets library and 011 for the clipboard model.
+- Corrected the counts in `PROGRESS.md` and `CHANGELOG.md`, and repaired a line in `PROGRESS.md`
+  that an earlier session's PowerShell write had corrupted.
+
+**Verified.**
+- `cargo test --workspace` passes: 515 tests, 0 failed, 15 ignored (all in `tc-clipboard`).
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+- `cargo run -p xtask -- parity` reports 2 309 rows, 100 `PORTED`, 2 209 `NOT PORTED`.
+
+**Stopped at.** 100 rows are ported, 100 of the 1 815 Tier 1 rows. The clipboard's store
+ordering, the pins and the walk are the next things that crate gets. After that: the emoji, the
+dictionary, the aliases, the hotkeys, the commands, the file search and the window management.
+
+**Carried forward.**
+- The fifteen ignored clipboard tests, and the reason each one carries.
+- The calculator's units, currencies, dates and time zones — the engine is ready for the catalog.
+- The quicklinks' store, the notes, the calendar, the rooms and the window layouts.
+- The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.

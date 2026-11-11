@@ -38,6 +38,18 @@ has got.
   and 66 tests. The engine asks a catalog about the units and the currencies it meets and
   answers `Unsupported` for a query it cannot finish, so the unit catalog can be added
   without touching the engine.
+- **The snippet library** in `tc-snippets`: the repository that reads and writes the
+  Markdown files, the store that holds them, the keyword policy that pastes a snippet
+  by typing `!keyword` (the longest match wins), and the Raycast import, with 15 tests
+  written from upstream's own expectations. Creating a snippet now writes a new file
+  instead of overwriting one that was already there.
+- **The clipboard model** in `tc-clipboard`: what an entry is, how its text is
+  classified as plain text, a link, an e-mail address or a colour, how a colour is
+  written in every notation and parsed back, the filters, the capture policy, the
+  paste sequence that tells one gesture from three, and the store with its pins and
+  its resident window. 94 tests, of which 69 pass; the other fifteen are marked
+  `#[ignore]` with the reason on each one, because the store's ordering across the
+  memory window, the pins' order and the walk across the window are not ported yet.
 - **The search slice** in `tc-search`, ported from upstream's launcher model:
   the fold and the tiered match, the scorer where a word start outscores any
   other letter, the relevance cells that weigh a name against the thing that

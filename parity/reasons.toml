@@ -18,7 +18,7 @@
 "docs/launcher/system-actions/" = "Twenty of the thirty-two actions are ported and run on Windows, and the five that ask first still ask; the twelve that Windows cannot do (an absolute volume level, Stage Manager, the notification centre, ejecting a disk, the hidden-files toggle, the Bluetooth radio, the microphone) are not, and there is no Settings pane and no per-action shortcut yet."
 "docs/launcher/uninstall/" = "The installer removes the program files and keeps the data; the in-app uninstaller and the per-application uninstall are not built yet."
 "docs/features/calculator/" = "The calculator's arithmetic core is ported, but the units, the currencies, the dates, the time zones, the percentages, the statistics and the history are not."
-"docs/features/clipboard/" = "The clipboard history has no store and no rows in the palette yet."
+"docs/features/clipboard/" = "The clipboard model layer is ported in `tc-clipboard` — the entry kinds, the filters, the colours, the capture policy, the Raycast import and the paste sequence — but the store's ordering across the memory window, the pins' order and the colour notation round-trip are still failing, and there are no rows in the palette yet."
 "docs/features/snippets/" = "The snippet record, the Markdown file format and the template engine are ported in `tc-snippets`, but there is no repository reading and writing the files, no keyword expansion, no editor, no browser and no rows in the palette yet."
 "docs/features/file-search/" = "The file indexer helper exists, but the palette does not search the index yet."
 "docs/features/window-management/" = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."

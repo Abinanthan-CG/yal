@@ -88,14 +88,11 @@ Ported from upstream's Tinycast/Features/Launcher/Model/:
 
 | Module | Upstream | What it does |
 | --- | --- | --- |
-| uzzy | SearchRelevance.swift (the FuzzyMatch half) | the fold, and the tiered match |
+| fuzzy | SearchRelevance.swift (the FuzzyMatch half) | the fold, and the tiered match |
 | matcher | LauncherMatch.swift | the scorer, where a word start outscores any other letter |
-| 
-elevance | SearchRelevance.swift (the SearchRelevance half) | which alias matched, and how well |
-| 
-anking | LauncherRankingStore.swift | what the user opens, and by which query |
-| 
-omanization | ScriptRomanization.swift | how a name in another script is read |
+| relevance | SearchRelevance.swift (the SearchRelevance half) | which alias matched, and how well |
+| ranking | LauncherRankingStore.swift | what the user opens, and by which query |
+| romanization | ScriptRomanization.swift | how a name in another script is read |
 | entry_naming | EntryNaming.swift | which names an entry is found by at all |
 | order | LauncherOrder.swift | which entry comes first |
 
@@ -104,7 +101,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-	c-search has 150 tests. The workspace has 431.
+tc-search has 150 tests. The workspace has 515.
 
 ### The launcher core
 
@@ -152,16 +149,35 @@ asks about still ask first.
 
 See [port note 007](docs/port-notes/007-system-actions.md).
 
-### The snippet file format and the template engine (crates/tc-snippets)
+### The snippet file format, the template engine and the library (crates/tc-snippets)
 
 The snippet record, the Markdown file it is stored in — front matter, the body kept exactly as
 written, the rejected files — and the template engine: every placeholder (`{clipboard}`,
 `{selection}`, `{date}`, `{uuid}`, `{cursor}`, `{argument …}`, `{snippet:Name}`), every modifier,
-the offsets and the formats. **55 tests.** The repository that reads and writes the files, the
-keyword expansion, the editor and the browser are not written yet.
+the offsets and the formats.
 
-See [port note 008](docs/port-notes/008-snippet-file-format.md) and
-[port note 009](docs/port-notes/009-snippet-template-engine.md).
+The library around them: the repository that reads and writes the files, the store that holds
+them, the keyword policy that pastes a snippet by typing `!keyword`, and the Raycast import.
+**70 tests.**
+
+The editor, the browser and the palette rows are not written yet.
+
+See [port note 008](docs/port-notes/008-snippet-file-format.md),
+[port note 009](docs/port-notes/009-snippet-template-engine.md) and
+[port note 010](docs/port-notes/010-snippets-library.md).
+
+### The clipboard model (crates/tc-clipboard)
+
+What a clipboard entry is, how its text is classified (plain, link, e-mail, colour), how a colour
+is written in each notation and parsed back, the filters, the capture policy, the paste sequence
+that tells one gesture from three, and the store with its pins and its resident window.
+**94 tests: 69 pass, 15 are marked `#[ignore]`** because the store's ordering across the memory
+window, the pins' order and the walk across the window are not ported yet. The ignored tests
+carry that reason on each one, and the ledger rows that depend on them stay `NOT PORTED`.
+
+The capture loop, the Windows clipboard watcher and the palette rows are not written yet.
+
+See [port note 011](docs/port-notes/011-clipboard-model.md).
 
 ### The parity ledger
 
@@ -179,7 +195,13 @@ With the system actions, 68 rows were PORTED: the twenty actions Windows can do,
 that ask for confirmation first, the favorites slots, the calculator's arithmetic core and the
 launcher's matching rules.
 
-With the snippet file format and the template engine, 95 rows are PORTED.
+With the snippet file format, the template engine and the library on disk, 96 rows are PORTED.
+
+With the clipboard model, 100 rows are PORTED: the four rows the clipboard model answers today
+are the link and e-mail classification, the URLs offered as links, the unpinned entry becoming
+the newest, and the rules of the paste sequence. The store's ordering, the pins and the walk
+across the memory window are still open, and the fifteen tests that would show them are marked
+`#[ignore]` until they pass.
 
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
@@ -197,14 +219,17 @@ The order to work in, with what is done so far:
 7. Fallbacks
 8. Quicklinks — the destinations are done; the store, the editor and the section are not
 9. System settings
-10. System actions — all 32, with their confirmations
+10. System actions — **twenty of the thirty-two run on Windows**; the other twelve have no Windows
+    answer and the port says so instead of doing something else
 11. Calculator — **the arithmetic core is done**: the tokenizer, the parser, the engine and the
     number formatting are ported to `crates/tc-calc` against upstream's own calculator tests.
     The units, the currencies, the dates and the time zones are stage 2.
-12. Clipboard history
+12. Clipboard history — **the model is done** (`crates/tc-clipboard`): the items, the
+    classification, the colours, the filters, the policy, the paste sequence and the store.
+    The capture loop, the Windows watcher and the palette rows are not.
 13. Emoji
-14. Snippets — the record, the Markdown file format and the template engine are ported to
-    `crates/tc-snippets`; the repository, the keyword policy and the Raycast import are not
+14. Snippets — **the record, the Markdown file format, the template engine and the library on
+    disk are done** (`crates/tc-snippets`); the editor, the browser and the palette rows are not
 15. File search
 16. Window management
 17. Window layouts
