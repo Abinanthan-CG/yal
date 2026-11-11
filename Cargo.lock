@@ -4102,7 +4102,6 @@ name = "tc-windows"
 version = "0.1.0"
 dependencies = [
  "tc-core",
- "tc-platform",
 ]
 
 [[package]]

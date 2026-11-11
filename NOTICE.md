@@ -394,3 +394,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## The parallel YAL project - the window geometry
+
+The window-management geometry in `crates/tc-windows/src/geometry.rs` follows the
+shape of the **YAL** project by Abinanthan-CG, <https://github.com/Abinanthan-CG/yal>,
+which is licensed under the GNU General Public License version 3. YAL is a
+community rebuild of the same launcher written in Rust with an egui interface;
+its window geometry keeps the arithmetic in one pure function and the platform
+calls beside it, and that is the shape this port follows.
+
+Every rule in the file comes from upstream Tinycast's own Swift
+(`Tinycast/Features/WindowManagement/Model/WindowPlacementEngine.swift`); the
+donor contributed the shape of the module and the vocabulary of its tests. The
+audit of what was taken and what was not is in
+`docs/audits/2026-11-11-parallel-yal-review.md`.
+
+AGPL-3.0 is GPL-3.0 plus section 13, so this combination is lawful and the
+combined work is distributed under AGPL-3.0, the licence this repository
+already carries. The donor's notice follows.
+
+```
+GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+
+Copyright (C) 2026 Abinanthan-CG
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+```

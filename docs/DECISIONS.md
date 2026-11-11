@@ -526,3 +526,38 @@ app's own shell, and YAL has a first version of it and needs the rest.
 **What the shortcut reference is.** Not macros. It is which key does what, per screen: return
 pastes in the clipboard, command-return copies, the number keys open the favorites. The
 shortcuts you record yourself are the separate hotkeys page.
+
+## 2026-11-11 - We take machinery from the parallel YAL project, and only machinery
+
+**Question.** The user pointed out a second YAL on this machine - `C:\Users\dabin\development\yal`,
+the community project at `github.com/Abinanthan-CG/yal` - which builds the same product a
+different way and was left in a corner. Should we use it, and how much of it?
+
+**Options.** (a) Ignore it: it is another product's code and our brief says upstream's Swift
+is the authority. (b) Port it wholesale, replacing the parts of YAL we have already built and
+tested. (c) Take the proven algorithms from the parts that match our scope, and nothing else.
+
+**Decision.** (c). Four pieces are taken: the incremental file-index walker (nanosecond
+directory mtime freshness, reparse-point rejection, exact per-directory deletion), the window
+placement geometry, the currency registry with its rate vintage, and the natural-language
+phrase pre-parser in front of one evaluator. Each adapted module states its origin in its
+module doc-comment and carries the donor's GPL-3.0 notice (`crates/tc-files/ATTRIBUTION.md`).
+The egui UI is not ported - YAL is Tauri 2 and Solid by decision - and the donor's extra
+features (QR, TOTP, password generator, regex, colour picker, screenshots, fonts, timers,
+reminders, scripts, bookmarks) are not built, because upstream Tinycast has no such features
+and they would be scope creep against the 2026-11-11 scope decision.
+
+**Why.** (a) throws away machinery that has already paid for its bugs - the donor's index
+walk was measured at 159 524 files cold in 52 s and warm under a second, and it already
+solved the millisecond-floor and junction bugs we would otherwise meet on our first real
+disk. (b) would trade 120 tested rows and a Tauri shell for an egui rewrite, and would put
+a GPL-3.0 UI in front of a Solid frontend. (c) takes what is proven and keeps upstream's
+behaviour as the specification: where the donor's product model differs from upstream's -
+whole fixed drives against user-chosen scopes, for instance - upstream wins. A copied
+algorithm still needs its own tests against upstream's behaviour before its rows may be
+called `PORTED`.
+
+**What this does not change.** No scope, no order, no milestones: the daily driver, then the
+memory features, then the long tail. The saving is real but modest - about 18-28 hours of
+roughly 330, or 5-8%, and the full reasoning with the verified evidence is in
+`docs/audits/2026-11-11-parallel-yal-review.md`.
