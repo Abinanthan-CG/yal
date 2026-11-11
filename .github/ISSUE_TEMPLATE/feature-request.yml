@@ -7,7 +7,7 @@ body:
       value: |
         YAL is a port of [Tinycast](https://github.com/abue-ammar/tinycast).
         If the feature exists in Tinycast and is missing here, it is already
-        tracked in [PARITY.md](https://github.com/OWNER/REPO/blob/main/PARITY.md)
+        tracked in [PARITY.md](https://github.com/Abinanthan-CG/yal/blob/main/PARITY.md)
         — please say which row it is, so it can be prioritised.
 
   - type: textarea

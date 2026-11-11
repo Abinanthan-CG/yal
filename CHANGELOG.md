@@ -161,5 +161,5 @@ AGPL-3.0-only, as a derivative work of Tinycast. See
 [`LICENSE`](LICENSE), [`NOTICE.md`](NOTICE.md) and
 [`UPSTREAM.md`](UPSTREAM.md).
 
-[Unreleased]: https://github.com/OWNER/REPO/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/REPO/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Abinanthan-CG/yal/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Abinanthan-CG/yal/releases/tag/v0.1.0

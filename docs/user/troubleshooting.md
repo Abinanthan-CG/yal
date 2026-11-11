@@ -148,7 +148,7 @@ tell which part is unhappy.
 
 ## Reporting a bug
 
-Open an issue at <https://github.com/OWNER/REPO/issues> with:
+Open an issue at <https://github.com/Abinanthan-CG/yal/issues> with:
 
 - what you did,
 - what you expected,

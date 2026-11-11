@@ -84,7 +84,7 @@ Everything else is in the ledger as `NOT PORTED`, with the reason.
 ### The installer
 
 Download `yal-setup-<version>-x64.exe` (or `-arm64.exe`) from the
-[releases page](https://github.com/OWNER/REPO/releases) and run it.
+[releases page](https://github.com/Abinanthan-CG/yal/releases) and run it.
 
 The install is **per user**. It never asks for administrator rights, it never
 writes outside your own profile, and it can be undone completely from
@@ -112,7 +112,7 @@ Get-FileHash .\yal-setup-0.1.0-x64.exe -Algorithm SHA256
 ## Building from source
 
 ```powershell
-git clone https://github.com/OWNER/REPO.git
+git clone https://github.com/Abinanthan-CG/yal.git
 cd REPO
 .\scripts\bootstrap.ps1     # installs the pinned toolchain and NSIS
 .\scripts\build.ps1         # formats, lints, tests, then builds the installer

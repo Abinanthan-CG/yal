@@ -404,3 +404,33 @@ was written by hand instead - as the geometry was.
 - `cargo test -p tc-files` passes: 55 tests, 0 failed, 0 ignored.
 - `cargo clippy -p tc-windows --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all` leaves no diff.
+## Session 8 - 2026-11-12 (early morning)
+
+The person who will use this port answered the question the previous session asked: the other YAL
+project was **theirs**, so nothing had to be held back for the licence - and when the port is
+finished, that repository is to be **flushed and replaced by this one**.
+
+**What was done.**
+
+- The repository slug is set: `Abinanthan-CG/yal`, written down once in `tc-core::REPOSITORY` and
+  repeated in the eight places that cannot read a constant - `Cargo.toml`, the README, SECURITY.md,
+  the changelog, the two issue templates and the troubleshooting page. The `origin` remote is set,
+  and the branch is renamed from `master` to `main` to match the repository's default branch.
+- `docs/PUBLISHING.md` was written: what the publish does, what it destroys, the six checks that
+  have to pass first, the commands, what the repository's own page should say, and what to do when
+  a push goes wrong.
+- The decision is recorded in `docs/DECISIONS.md`.
+
+**What was not done.** The flush and the push. The build is not finished, and a forced push that
+replaces a public repository's contents is not something to do early or quietly: it is the last
+step of Phase 4, and it happens once, with the confirmation stated at the moment it is made.
+
+**The notices stay.** The donor is the same person, so the licence question does not arise. The
+notices in `NOTICE.md` and `crates/tc-files/ATTRIBUTION.md` stay anyway, because they say which
+code came from where, which is worth more than a licence line.
+
+**Verified.**
+- `cargo test --workspace` passes: 706 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.

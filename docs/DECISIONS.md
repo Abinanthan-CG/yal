@@ -561,3 +561,29 @@ called `PORTED`.
 memory features, then the long tail. The saving is real but modest - about 18-28 hours of
 roughly 330, or 5-8%, and the full reasoning with the verified evidence is in
 `docs/audits/2026-11-11-parallel-yal-review.md`.
+## 2026-11-12 - The port is published from `Abinanthan-CG/yal`, over the earlier build
+
+**Question.** The other YAL project - the one at `C:\Users\dabin\development\yal` - was written
+by the same person who is writing this port, and its repository is `github.com/Abinanthan-CG/yal`.
+Should this port be published under a different name and leave that repository alone, or should it
+take that repository's place?
+
+**Options.** (a) Publish under a new repository, leaving the earlier build where it is. (b) Publish
+under `Abinanthan-CG/yal`, replacing its contents, and keep the notices so the reused code says
+where it came from.
+
+**Decision.** (b). The repository slug is written down once, in `tc-core::REPOSITORY`, and is
+`Abinanthan-CG/yal`; the `origin` remote is set to it and the branch is `main`, which is that
+repository's default branch. The flush happens **at the end of the build**, not now, and it is one
+confirmed action with the procedure written down in `docs/PUBLISHING.md`.
+
+**Why.** Two builds of one product under two names is worse for the person who will use it than
+one repository that holds the finished thing: the earlier build's issues, tags and README point at
+a launcher that is not the one being maintained. The earlier build had no release and no tags, so
+nothing installable disappears when it is replaced, and its history stays on this machine in
+`C:\Users\dabin\development\yal`. The notices stay either way - they cost nothing, and they say
+which code came from where, which is worth more than the licence question, since the donor is the
+same person.
+
+**What this does not change.** The scope, the order and the milestones. The flush is the last step
+of Phase 4, after the tests, the ledger, the builds and the checksums are all in place.

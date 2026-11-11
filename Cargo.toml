@@ -31,7 +31,7 @@ edition = "2021"
 rust-version = "1.82"
 license = "AGPL-3.0-only"
 authors = ["YAL community port"]
-repository = "https://github.com/OWNER/REPO"
+repository = "https://github.com/Abinanthan-CG/yal"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
