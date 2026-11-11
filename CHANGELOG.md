@@ -14,7 +14,27 @@ has got.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **The search slice** in `tc-search`, ported from upstream's launcher model:
+  the fold and the tiered match, the scorer where a word start outscores any
+  other letter, the relevance cells that weigh a name against the thing that
+  provides it, the learned ranking that remembers what the user opens, the
+  Latin spellings for names in other scripts, the rules that decide which
+  names an entry is found by, and the ordering that decides which entry comes
+  first.
+- **Upstream's own tests as the oracle.** All 19 pinned matcher scores, the
+  sensitivity levels, the transliterations, the 25 comparator rules and the
+  12 category rules, plus the frecency curve and the learned-term rules, are
+  tests in this repository with upstream's own numbers.
+- **A second ledger file.** `parity/status.toml` holds the port's verdict on
+  each generated row, with the evidence that shows it, so regenerating the
+  ledger's scope from upstream's documentation never loses it.
+
+### Changed
+
+- The parity ledger's evidence may now name the module a test lives in, as
+  `crate::module::test_name`.
 
 ## [0.1.0] — 2026-11-10
 

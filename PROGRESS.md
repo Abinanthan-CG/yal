@@ -80,6 +80,39 @@ Status: **done**
 
 ## Phase 2 - Tier 1 vertical slices
 
+Status: **in progress** — the search slice is done
+
+### The search slice (crates/tc-search)
+
+Ported from upstream's Tinycast/Features/Launcher/Model/:
+
+| Module | Upstream | What it does |
+| --- | --- | --- |
+| uzzy | SearchRelevance.swift (the FuzzyMatch half) | the fold, and the tiered match |
+| matcher | LauncherMatch.swift | the scorer, where a word start outscores any other letter |
+| elevance | SearchRelevance.swift (the SearchRelevance half) | which alias matched, and how well |
+| anking | LauncherRankingStore.swift | what the user opens, and by which query |
+| omanization | ScriptRomanization.swift | how a name in another script is read |
+| entry_naming | EntryNaming.swift | which names an entry is found by at all |
+| order | LauncherOrder.swift | which entry comes first |
+
+Upstream's own test files are the acceptance oracle: upstream/Tests/fuzz-test.swift pins the
+matcher's 19 scores, the sensitivity levels, the transliterations, the 25 comparator rules and
+the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
+terms. All of them are ported as tests here, with upstream's own numbers.
+
+	c-search has 150 tests. The workspace has 222.
+
+### The parity ledger
+
+The ledger's scope is generated (cargo xtask ledger); the port's verdict on each row lives in
+parity/status.toml, one entry per row, with the evidence that shows it. The validator refuses a
+PORTED row whose evidence names a crate that does not exist or a function that is not there.
+
+12 rows are PORTED today, all on docs/launcher/: the matching rules, the names an entry is
+found by, the Latin spellings, and the learned ranking.
+
+
 Status: **not started**
 
 The order to work in:
