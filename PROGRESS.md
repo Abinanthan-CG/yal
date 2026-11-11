@@ -90,9 +90,12 @@ Ported from upstream's Tinycast/Features/Launcher/Model/:
 | --- | --- | --- |
 | uzzy | SearchRelevance.swift (the FuzzyMatch half) | the fold, and the tiered match |
 | matcher | LauncherMatch.swift | the scorer, where a word start outscores any other letter |
-| elevance | SearchRelevance.swift (the SearchRelevance half) | which alias matched, and how well |
-| anking | LauncherRankingStore.swift | what the user opens, and by which query |
-| omanization | ScriptRomanization.swift | how a name in another script is read |
+| 
+elevance | SearchRelevance.swift (the SearchRelevance half) | which alias matched, and how well |
+| 
+anking | LauncherRankingStore.swift | what the user opens, and by which query |
+| 
+omanization | ScriptRomanization.swift | how a name in another script is read |
 | entry_naming | EntryNaming.swift | which names an entry is found by at all |
 | order | LauncherOrder.swift | which entry comes first |
 
@@ -130,25 +133,24 @@ The ledger's scope is generated (cargo xtask ledger); the port's verdict on each
 parity/status.toml, one entry per row, with the evidence that shows it. The validator refuses a
 PORTED row whose evidence names a crate that does not exist or a function that is not there.
 
-12 rows are PORTED today, all on docs/launcher/: the matching rules, the names an entry is
-found by, the Latin spellings, and the learned ranking.
+19 rows are PORTED today, all on docs/launcher/: the matching rules, the names an entry is
+found by, the Latin spellings, the learned ranking, and the quicklink destinations.
 
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
 
+### Where the Tier 1 work stands
 
-Status: **not started**
+The order to work in, with what is done so far:
 
-The order to work in:
-
-1. The palette's real interface — search field, result list, keyboard navigation
-2. Launcher search and ranking, and `launcher-ranking.json`
+1. ~~The palette's real interface — search field, result list, keyboard navigation~~ — **done**
+2. ~~Launcher search and ranking, and `launcher-ranking.json`~~ — **done**
 3. Favorites
 4. Aliases
 5. Hotkeys — recording, modifier taps, conflicts
 6. Commands
 7. Fallbacks
-8. Quicklinks
+8. Quicklinks — the destinations are done; the store, the editor and the section are not
 9. System settings
 10. System actions — all 32, with their confirmations
 11. Calculator
@@ -195,6 +197,8 @@ Status: **not started**
 - Building for ARM64 needs the Visual Studio ARM64 cross-compiler. It was installed on this
   machine on 2026-11-10; see [port note 004](docs/port-notes/004-arm64-build.md) for what it
   takes and what does not work.
+- The palette's built page is not committed, so a plain `cargo build` on a fresh clone fails
+  until the interface has been built. `scripts/build.ps1` builds it first, and CI does too.
 
 ## Notes for the next session
 

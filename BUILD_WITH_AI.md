@@ -31,8 +31,9 @@ gap is fine; a fake implementation is not.
 
 A parity row is `PORTED` only when a test actually ran and actually passed.
 
-The evidence field names a test as `crate::test_name`, for example
-`tc-core::the_built_in_command_list_is_complete`. The validator loads that
+The evidence field names a test as `crate::test_name`, or
+`crate::module::test_name` when the function lives in a module, for example
+`tc-core::quicklink::tests::https_is_a_website`. The validator loads that
 crate's sources and checks that a function with that name exists. If it does
 not, the row is rejected.
 
@@ -47,10 +48,41 @@ cargo run -p xtask -- parity          # regenerate
 cargo run -p xtask -- parity --check  # what CI runs
 ```
 
-The rows themselves come from `parity/parts/generated/*.toml`, which in turn
-comes from the upstream documentation via `cargo run -p xtask -- ledger`. When
-you change a row's status or its evidence, change it in the part file and
-regenerate.
+The **scope** of the ledger — which behaviors upstream documents — is
+generated too, from the upstream documentation:
+
+```powershell
+cargo run -p xtask -- ledger
+```
+
+The **status** is not generated, because it is the port's own state. It lives
+in `parity/status.toml`, one `[[status]]` entry per row:
+
+```toml
+[[status]]
+id = "launcher.how-matching-works.how-the-letters-match-also-counts-from-stron"
+status = "PORTED"
+evidence = [
+  "tc-search::fuzzy::tests::the_tiers_score_in_order",
+]
+```
+
+A row that is not ported says why, in one line:
+
+```toml
+[[status]]
+id = "launcher.how-matching-works.settings-general-search-search-sensitivity-s"
+status = "NOT PORTED"
+reason = "The Low/Medium/High rules are ported in `tc-search::matcher`, but the Settings → General → Search pane that changes them is not built yet."
+```
+
+The reason for a row that has not been reached yet comes from
+`parity/reasons.toml`, one line per page, so an open row names the piece that
+is missing rather than repeating "not yet implemented".
+
+Because the two live apart, regenerating the scope never loses the verdict —
+and a status naming a row that no longer exists is reported as a problem
+rather than silently dropped.
 
 ### 1.4 Write the test before the implementation
 
@@ -72,8 +104,9 @@ differently.
 ## 2. The shape of the repository
 
 ```text
-crates/tc-core/         pure domain: commands, rows, deeplinks, ids
+crates/tc-core/         pure domain: commands, rows, deeplinks, ids, quicklinks
 crates/tc-search/       matching and ranking
+crates/tc-apps/         the programs the launcher can open
 crates/tc-calc/         the calculator engine
 crates/tc-snippets/     the snippet engine
 crates/tc-clipboard/    clipboard history
@@ -91,6 +124,7 @@ apps/yal/               the Tauri shell
 apps/yal-indexer/       the file indexer helper
 apps/yal-ocr/           the text recognition helper
 apps/yal-dictation/     the dictation helper
+frontend/               the palette's interface: Solid and TypeScript
 xtask/                  the build tool
 ```
 
@@ -162,15 +196,23 @@ Write the smallest thing that makes the test pass.
 
 ### Step 5 — record the evidence
 
-Update the row's `status` and `evidence` in the part file:
+Update the row's `status` and `evidence` in `parity/status.toml`. The row's
+`id` is `<page>.<heading>.<slug-of-behaviour>`:
 
 ```toml
-[[row]]
+[[status]]
 id = "launcher.system-actions.set-the-volume-to-a-level"
-page = "launcher/system-actions"
-behavior = "Set Volume to 25%"
 status = "PORTED"
-evidence = ["tc-core::the_volume_action_can_be_set_to_a_percentage"]
+evidence = ["tc-core::entry::tests::the_volume_action_can_be_set_to_a_percentage"]
+```
+
+A row that is not ported says why:
+
+```toml
+[[status]]
+id = "launcher.system-actions.set-the-volume-to-a-level"
+status = "NOT PORTED"
+reason = "The action identifier is ported in `tc-core`, but the volume is not set yet."
 ```
 
 ### Step 6 — regenerate and check
@@ -250,6 +292,12 @@ cargo run -p xtask -- parity --summary
 cargo run -p xtask -- parity --check
 cargo run -p xtask -- tags
 
+# The palette's interface
+cd frontend
+npm ci
+npm run check
+npm run build
+
 # The build
 cargo run -p xtask -- dist
 cargo run -p xtask -- dist --arch x64
@@ -263,9 +311,26 @@ cargo run -p xtask -- i18n
 .\scripts\smoke-test.ps1
 ```
 
+> `npm` on Windows is a PowerShell script, and a restricted execution policy
+> refuses to run it. Use `npm.cmd` when you are calling it from PowerShell.
+
 ---
 
-## 6. What "done" means
+## 6. How this document is kept honest
+
+A document of commands that no longer work is worse than no document, so the
+commands in section 5 are run by a script:
+
+```powershell
+.\scripts\check-build-with-ai.ps1
+```
+
+It runs each of them and reports which passed. CI runs it too, so a command
+that stops working fails the build rather than misleading the next reader.
+
+---
+
+## 7. What "done" means
 
 A feature is done when all of these are true:
 
@@ -282,7 +347,7 @@ A feature is done when all of these are true:
 
 ---
 
-## 7. Your report
+## 8. Your report
 
 When you finish, write a report that contains **only verified claims**.
 
@@ -298,7 +363,7 @@ confident and wrong.
 
 ---
 
-## 8. Things that will bite you
+## 9. Things that will bite you
 
 **The `read` tool mis-decodes UTF-8 in this environment.** Use an explicit
 UTF-8 decode when the content matters.
@@ -327,7 +392,7 @@ evidence is reported as pending, never as passed.
 
 ---
 
-## 9. Where things are
+## 10. Where things are
 
 | You want to know | Look in |
 |---|---|
