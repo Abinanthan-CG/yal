@@ -30,6 +30,11 @@ has got.
 - **A second ledger file.** `parity/status.toml` holds the port's verdict on
   each generated row, with the evidence that shows it, so regenerating the
   ledger's scope from upstream's documentation never loses it.
+- **The quicklink destination rules** in `tc-core`: what a saved link points
+  at is worked out from its shape alone — a path, a web page, a share, a link
+  into another application, or a bare domain written down from memory. The
+  `url` crate's own conversion is per-platform, so a `file:` URL is read here
+  instead: a host is a UNC share, and a leading `/C:` is a drive.
 
 ### Changed
 

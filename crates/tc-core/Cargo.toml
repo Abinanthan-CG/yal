@@ -10,3 +10,4 @@ description = "YAL port: domain types, settings model, command registry and deep
 
 [dependencies]
 serde_json = { workspace = true }
+url = { workspace = true }
