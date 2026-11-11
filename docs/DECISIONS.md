@@ -221,3 +221,91 @@ assert that the marker survives.
 **Why.** (a) passes for the wrong reason: an empty folder that was never there satisfies "the
 folder is still there" only by accident, and it cannot tell "the uninstaller kept the data" from
 "there was no data". A marker file is a real thing to preserve, so the check says what it means.
+
+## 2026-11-11 - The ledger's scope is generated, its status is written by hand
+
+**Question.** The ledger's rows come from upstream's documentation, which changes when upstream
+changes. The port's verdict on each row is the port's own state. Where does each live?
+
+**Options.** (a) Write the rows and the status together, by hand. (b) Generate the rows, and keep
+the status in a second file that the generator reads and the validator checks.
+
+**Decision.** (b). `cargo xtask ledger` generates the scope into `parity/parts/generated/`, and
+`parity/status.toml` holds one `[[status]]` entry per row: its status, its evidence, and, when it
+is not ported, the reason. The generator applies the status file on top of the generated scope, so
+regenerating the scope never loses the port's own verdict.
+
+**Why.** (a) mixes two things that change for different reasons: upstream's documentation changes
+when upstream ships, and the port's verdict changes when the port ships. Writing them together
+means every upstream documentation change asks the porter to re-read the whole ledger. With the
+two apart, a status entry is only touched when the port itself changes, and a status entry naming
+a row that no longer exists is reported as a problem rather than silently dropped.
+
+## 2026-11-11 - A row is ported when a test shows the behavior, not when the mechanism exists
+
+**Question.** Upstream's documentation rows describe behaviors, but many of them are one sentence
+that mixes a rule with the place the data comes from. How is a row judged?
+
+**Options.** (a) A row is ported when the code that would implement it exists. (b) A row is ported
+when a test demonstrates the behavior the row describes.
+
+**Decision.** (b). Evidence is a test that ran, named as `crate::module::test_name`; the validator
+refuses a row whose evidence names a crate that does not exist or a function that is not there.
+
+**Why.** (a) lets a claim drift: a matcher that can score an alias is not the same as a launcher
+that finds an entry by that alias, and the difference is exactly what a reader of `PARITY.md` is
+asking about. (b) forces the distinction to be made in the open, one row at a time, and it makes
+the ledger impossible to fill in with hope. It also makes the `NOT PORTED` reasons useful: they
+name the piece that is missing rather than saying "not yet implemented".
+
+## 2026-11-11 - Windows has no ICU, so each script gets its own table
+
+**Question.** Upstream reads a name in another script with ICU's `toLatin` transform. Windows
+ships no ICU.
+
+**Options.** (a) Bundle ICU. (b) Use one transliteration library for every script. (c) Write the
+tables the scripts need, and leave the rest alone.
+
+**Decision.** (c), with one exception: Han is read with the `pinyin` crate, which is a table
+underneath. Japanese kana, Hangul, Cyrillic and Greek each have an explicit table. Every other
+script is not romanized at all.
+
+**Why.** (a) would add a very large dependency to a launcher that has to start in milliseconds.
+(b) is what ICU already is, and no single small library covers kana, Hangul, Cyrillic and Greek
+at the quality upstream needs. Leaving the other scripts alone costs little: a name in Thai or
+Hebrew is still an exact hit in its own script, which is the behavior that matters, and the
+documented rule is that the Latin spelling is an extra, not a requirement.
+
+## 2026-11-11 - A saved float comes back as the same float
+
+**Question.** A learned ranking is written to `launcher-ranking.json` and read back. The score is
+a double. After a round trip through JSON the score was one unit in the last place away from the
+one that was written, and upstream compares the two exactly.
+
+**Options.** (a) Compare the two with a tolerance. (b) Store the score as a string. (c) Make the
+JSON round trip exact.
+
+**Decision.** (c). `serde_json`'s `float_roundtrip` feature is enabled for the whole workspace, so
+a persisted double parses back to the bits it was written from.
+
+**Why.** (a) hides the difference rather than removing it, and a tolerance that is wide enough to
+be harmless is also wide enough to swallow a real drift. (b) changes the file's shape away from
+upstream's, for no gain. (c) is a one-line change with no runtime cost: the default `serde_json`
+number parser is an approximation, and the feature turns on the correctly-rounded one.
+
+## 2026-11-11 - Names are compared the way a file list compares them
+
+**Question.** Upstream breaks a tie between two entries with
+`localizedStandardCompare`, which is numeric and case-blind, so `Item 2` comes before `Item 10`.
+Rust's `str` ordering is neither.
+
+**Options.** (a) Use `str::cmp`. (b) Use a natural-ordering crate. (c) Write the comparison.
+
+**Decision.** (c). `tc-search::order` splits both names into runs of digits and runs of other
+characters, compares the digit runs as numbers, and compares the other runs without regard to
+case.
+
+**Why.** (a) puts `Item 10` first, which reads as a bug to anyone who has used a file list. (b)
+adds a dependency for forty lines of behavior, and the crate would still need case-blindness
+added on top. (c) is the behavior upstream documents, and it is the only place in the port where
+two entries are otherwise indistinguishable.
