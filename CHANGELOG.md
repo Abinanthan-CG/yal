@@ -16,6 +16,18 @@ has got.
 
 ### Added
 
+- **The snippet record and its Markdown file** in `tc-snippets`: the front matter, the body kept
+  exactly as written, the files that are rejected and why, and the small locale table the date
+  tokens format with.
+- **The system actions, working on Windows**: twenty of the thirty-two now run for real — the
+  session actions, the media and volume keys, Show Desktop, the light and dark theme, hiding and
+  showing the windows, quitting them, and the Recycle Bin — and they are rows in the palette
+  under their own section. The twelve Windows has no answer for say so instead of doing
+  something else, and the five that upstream asks about still ask first.
+- **The favorites slots**: the number keys that open a favorite, with the tenth on the digit `0`,
+  addressed by the ANSI number row so the layout does not matter.
+- **The fallbacks**: the four built-in fallbacks, a quicklink fallback, the stored order and the
+  section header that elides a long query in the middle.
 - **The calculator's arithmetic core** in `tc-calc`, ported from upstream's calculator model:
   the tokenizer, the expression parser, the evaluation engine, the math functions, the
   rounding and the number formatting, with upstream's own `calc-test.swift` as the oracle

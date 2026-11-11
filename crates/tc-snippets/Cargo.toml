@@ -6,7 +6,14 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "YAL port: tc-snippets"
+description = "YAL port: snippet records, markdown storage, keyword policy and template expansion"
 
 [dependencies]
 tc-core = { path = "../tc-core" }
+chrono = { workspace = true }
+serde_json = { workspace = true }
+unicode-segmentation = { workspace = true }
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tempfile = "3"

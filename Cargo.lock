@@ -4014,7 +4014,12 @@ dependencies = [
 name = "tc-snippets"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "serde_json",
  "tc-core",
+ "tempfile",
+ "unicode-segmentation",
+ "uuid",
 ]
 
 [[package]]

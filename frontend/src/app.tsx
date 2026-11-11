@@ -15,6 +15,7 @@ export function App() {
   const [rows, setRows] = createSignal<ResultRow[]>([]);
   const [selected, setSelected] = createSignal(0);
   const [failed, setFailed] = createSignal<string | null>(null);
+  const [confirming, setConfirming] = createSignal<string | null>(null);
   let input: HTMLInputElement | undefined;
   let pending: number | undefined;
 
@@ -24,6 +25,7 @@ export function App() {
       setRows(found);
       setSelected(0);
       setFailed(null);
+      setConfirming(null);
     } catch (error) {
       setRows([]);
       setFailed(String(error));
@@ -55,16 +57,27 @@ export function App() {
     setSelected((current) => (current + delta + count) % count);
   };
 
+  // A row that has to be confirmed is asked for first: the first Enter only
+  // asks, and the second one does it.
+  const activate = async (row: ResultRow): Promise<void> => {
+    if (row.needsConfirm && confirming() !== row.id) {
+      setConfirming(row.id);
+      return;
+    }
+    setConfirming(null);
+    try {
+      await openResult(row.id, query(), row.needsConfirm);
+    } catch (error) {
+      setFailed(String(error));
+    }
+  };
+
   const openSelected = async (): Promise<void> => {
     const row = rows()[selected()];
     if (!row) {
       return;
     }
-    try {
-      await openResult(row.id, query());
-    } catch (error) {
-      setFailed(String(error));
-    }
+    await activate(row);
   };
 
   const onKeyDown = (event: KeyboardEvent): void => {
@@ -122,7 +135,7 @@ export function App() {
                 class="palette__row"
                 classList={{ "palette__row--selected": index() === selected() }}
                 onMouseEnter={() => setSelected(index())}
-                onClick={() => void openResult(row.id, query())}
+                onClick={() => void activate(row)}
               >
                 <span class="palette__name">{row.name}</span>
                 <span class="palette__detail">{row.detail}</span>
@@ -132,9 +145,18 @@ export function App() {
         </ul>
       </section>
       <footer class="palette__footer">
-        <span>↑↓ to choose</span>
-        <span>↵ to open</span>
-        <span>esc to hide</span>
+        <Show
+          when={confirming()}
+          fallback={
+            <>
+              <span>↑↓ to choose</span>
+              <span>↵ to open</span>
+              <span>esc to hide</span>
+            </>
+          }
+        >
+          <span class="palette__confirm">Press ↵ again to confirm</span>
+        </Show>
       </footer>
     </main>
   );

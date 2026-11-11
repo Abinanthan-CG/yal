@@ -11,6 +11,7 @@ mod paths;
 mod programs;
 mod quit;
 mod single_instance;
+mod system_actions;
 mod windows;
 
 pub use clipboard::WindowsClipboard;
@@ -21,6 +22,7 @@ pub use paths::windows_paths;
 pub use programs::programs;
 pub use quit::{signal_quit, QuitWatcher};
 pub use single_instance::{another_instance_is_running, WindowsSingleInstance};
+pub use system_actions::{is_available, mechanism, run, unavailable_reason, ExitMode, Mechanism};
 pub use windows::{extended_frame_bounds, own_integrity_level, WindowsWindows};
 
 use std::collections::BTreeMap;

@@ -104,7 +104,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-	c-search has 150 tests. The workspace has 361.
+	c-search has 150 tests. The workspace has 402.
 
 ### The launcher core
 
@@ -140,18 +140,44 @@ the history are still to come.
 
 See [port note 006](docs/port-notes/006-calculator-core.md).
 
+### The system actions (crates/tc-platform-win, apps/yal)
+
+Twenty of the thirty-two system actions are ported and really run on Windows: the session
+actions, the media and volume keys, Show Desktop, the light and dark theme, hiding and showing
+the windows, quitting them, and the Recycle Bin. The other twelve have no Windows answer — an
+absolute volume level, Stage Manager, the notification centre, ejecting a disk, the hidden-files
+toggle, the Bluetooth radio and the microphone — and the port says so instead of doing something
+else. The actions are rows in the palette under their own section, and the five that upstream
+asks about still ask first.
+
+See [port note 007](docs/port-notes/007-system-actions.md).
+
+### The snippet file format (crates/tc-snippets)
+
+The snippet record, the Markdown file it is stored in — front matter, the body kept exactly as
+written, the rejected files — and the small locale table the date tokens format with. **26 tests.**
+The template engine, the repository that reads and writes the files, and the editor are not
+written yet.
+
+See [port note 008](docs/port-notes/008-snippet-file-format.md).
+
 ### The parity ledger
 
 The ledger's scope is generated (cargo xtask ledger); the port's verdict on each row lives in
 parity/status.toml, one entry per row, with the evidence that shows it. The validator refuses a
 PORTED row whose evidence names a crate that does not exist or a function that is not there.
 
-19 rows are PORTED today, all on docs/launcher/: the matching rules, the names an entry is
+19 rows were PORTED first, all on docs/launcher/: the matching rules, the names an entry is
 found by, the Latin spellings, the learned ranking, and the quicklink destinations.
 
-With the calculator's arithmetic core, 40 rows are PORTED: 19 on the launcher and 21 on
-docs/features/calculator/ — the arithmetic, the rounding, the fractions, the base conversion,
-the function list, the magnitude words and the rule that a malformed query earns no card.
+With the calculator's arithmetic core, 42 rows were PORTED: 19 on the launcher, 21 on
+docs/features/calculator/ and 2 on the favorites slots.
+
+With the system actions, 68 rows were PORTED: the twenty actions Windows can do, the five
+that ask for confirmation first, the favorites slots, the calculator's arithmetic core and the
+launcher's matching rules.
+
+With the snippet file format, 72 rows are PORTED.
 
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
@@ -175,9 +201,8 @@ The order to work in, with what is done so far:
     The units, the currencies, the dates and the time zones are stage 2.
 12. Clipboard history
 13. Emoji
-14. Snippets — **in progress**: the record, the keyword policy, the markdown serializer, the
-    repository, the store, the template engine and the Raycast import are being ported to
-    `crates/tc-snippets`
+14. Snippets — the record and the Markdown file format are ported to `crates/tc-snippets`; the
+    template engine, the repository, the keyword policy and the Raycast import are not
 15. File search
 16. Window management
 17. Window layouts

@@ -180,3 +180,38 @@ workers.
   permutations, proportions and clamp questions.
 - The snippets slice and the clipboard slice, both with background workers in flight.
 - The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.
+
+## Session 4 - 2026-11-11 (afternoon, continued)
+
+**Started from.** The calculator's arithmetic core was in, 42 rows were ported, and the two
+background workers for the snippets and clipboard slices had been aborted by the runtime.
+
+**Did.**
+- Found out why the workers kept dying: the session's own status showed a provider bearer that
+  was not synced, and one child session died with "insufficient balance". The workers are not
+  going to be reliable in this session, so the slices were done in this thread instead.
+- Ported the favorites slots and the fallbacks into `tc-core`: the number keys that open a
+  favorite, and the destinations that take the typed query as their input.
+- Ported the system actions into `tc-platform-win` and put them in the palette: twenty of the
+  thirty-two now run on Windows for real, and the twelve that Windows cannot do say so.
+- The palette asks before the five actions that need asking, and the Rust side refuses to run
+  one until it is told the user confirmed.
+- Reverted the half-written clipboard crate the killed worker left behind.
+
+**Verified.**
+- `cargo test --workspace` passes: 376 tests, exit 0.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+- `cargo run -p xtask -- parity` reports 2 309 rows, 68 `PORTED`, 2 241 `NOT PORTED`.
+
+**Stopped at.** 68 rows are ported. The calculator's units and currencies, the snippets, the
+clipboard, the emoji, the dictionary and the window management are all still ahead.
+
+**Carried forward.**
+- The snippets slice: the record, the keyword policy, the markdown serializer, the repository,
+  the store, the template engine and the Raycast import.
+- The clipboard model slice: the entry, the filter, the colours, the paste sequence, the store
+  and the Raycast import.
+- The twelve system actions Windows cannot do, each with its reason in the ledger.
+- The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.

@@ -416,6 +416,56 @@ against this port's 2,309, so the two verdicts cannot even be compared row for r
 candidate piece would have to be re-verified against upstream's Swift before it could be called
 ported, and at that point it is a port of upstream rather than a salvage.
 
+## 2026-11-11 - A Windows action that cannot be done says so, and does nothing else
+
+**Question.** Twelve of upstream's thirty-two system actions have no Windows answer: an
+absolute volume level, Stage Manager, the notification centre, ejecting a disk, the
+hidden-files toggle, the Bluetooth radio, the microphone. What should YAL do with them?
+
+**Options.** (a) Approximate each one with the nearest Windows thing. (b) Leave them out of the
+list. (c) Keep them in the list, answer "Windows cannot do that", and do nothing else.
+
+**Decision.** (c). `Mechanism::Unavailable(reason)` carries the reason, the palette says it, and
+nothing happens.
+
+**Why.** (a) would be a lie: a "Toggle Bluetooth" that opens the Bluetooth settings page is not
+a toggle, and a "Toggle Hidden Files" that needs Explorer to restart is not a toggle either.
+(b) would make the list shorter than upstream's without saying why. (c) keeps the thirty-two
+rows honest — the ledger says which twenty run and names the reason for each of the twelve that
+do not.
+
+## 2026-11-11 - The system actions are matched by a whole word
+
+**Question.** The launcher matches a program by scattered letters, so "vsc" finds "Visual Studio
+Code". Should the system actions be matched the same way?
+
+**Decision.** No. A system action is found when the query appears in its name as a whole:
+"lock" finds "Lock Screen", "vsc" finds no action at all.
+
+**Why.** The scattered rule made "vsc" find "Previous Track" as well, which pushed the real
+Visual Studio Code row out of a result list the user was reading to launch a code editor. The
+programs keep the fuzzy rule, because that is upstream's rule and upstream's tests pin it; the
+system actions are a list of thirty-two fixed names, and a word of the name is enough.
+
+## 2026-11-11 - The port is done in this thread when the workers keep dying
+
+**Question.** Three background worker attempts at the snippets and clipboard slices were aborted
+by the runtime: one died with a connection error, one with "insufficient balance", and the
+session's own status showed a provider bearer that was not synced. The workers read the big
+upstream files so their contents never land in this conversation, which is what was wanted.
+
+**Options.** (a) Keep retrying the workers. (b) Do the slices in this thread, reading upstream
+with targeted greps.
+
+**Decision.** (b), for now. The calculator slice was finished by a worker that did survive, so
+the approach is not wrong in itself — but three aborts in a row is a signal, and a half-written
+crate left in the tree is worse than no crate.
+
+**Why.** The cost of the bulk read is real, but the cost of a worker dying half-way through a
+crate is higher: the clipboard worker left a `lib.rs` naming nine modules it never wrote, which
+did not compile until it was reverted. The upstream files can be read in pieces with targeted
+greps, which keeps the context small without depending on a worker that may not finish.
+
 ## 2026-11-11 - The palette's build is not committed
 
 **Question.** Tauri loads the palette's page from `frontend/dist/`. That directory can be
