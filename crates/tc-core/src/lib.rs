@@ -11,6 +11,7 @@ pub mod command;
 pub mod deeplink;
 pub mod entry;
 pub mod ids;
+pub mod quicklink;
 pub mod url;
 
 pub use command::{BuiltInQuickAction, CommandId};
@@ -20,6 +21,7 @@ pub use entry::{
     SystemActionId,
 };
 pub use ids::Uuid;
+pub use quicklink::QuicklinkDestination;
 
 /// The GitHub repository YAL is published from.
 ///

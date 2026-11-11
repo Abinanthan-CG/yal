@@ -18216,9 +18216,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.destinations"
 behavior = "~/Notes, /Users/..., file://... — A file or folder."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::a_tilde_expands_against_the_injected_home", "tc-core::quicklink::tests::an_absolute_path_is_a_path", "tc-core::quicklink::tests::a_file_url_resolves_to_the_path_it_names_not_to_a_deeplink"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.destinations.https-http-a-web-page"
@@ -18226,9 +18226,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.destinations"
 behavior = "Https://..., http://... — A web page."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::https_is_a_website", "tc-core::quicklink::tests::http_is_a_website"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.destinations.smb-afp-nfs-ftp-sftp-ftps-a-network-location"
@@ -18236,9 +18236,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.destinations"
 behavior = "Smb: afp: nfs: ftp: sftp: ftps: — A network location."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::a_share_is_a_network_path"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.destinations.spotify-slack-shortcuts-mailto-a-deeplink-in"
@@ -18246,9 +18246,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.destinations"
 behavior = "Spotify://, slack://, shortcuts://, mailto: — A deeplink into an app."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::an_unknown_scheme_is_a_deeplink", "tc-core::quicklink::tests::a_deeplink_keeps_its_query", "tc-core::quicklink::tests::a_schemeless_authority_scheme_is_still_a_deeplink"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.destinations.github-com-user-repo-a-web-page-with-https-a"
@@ -18256,9 +18256,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.destinations"
 behavior = "Github.com/user/repo — A web page, with https:// added."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::a_bare_host_gains_https_keeping_its_path_and_query", "tc-core::quicklink::tests::a_multi_label_host_is_still_a_website"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.destinations.two-formats-get-special-handling-a-single-le"
@@ -18266,9 +18266,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.destinations"
 behavior = "Two formats get special handling: a single letter followed by a colon is treated as a Windows drive letter, and a name followed by a colon and only digits is treated as a host and port."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::a_drive_letter_is_not_a_scheme", "tc-core::quicklink::tests::a_port_does_not_stop_a_bare_host_being_a_website"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.placeholders.quicklinks-use-the-same-placeholders-as-snip"
@@ -18306,9 +18306,9 @@ page = "docs/launcher/quicklinks/"
 heading = "launcher-quicklinks.encoding"
 behavior = "Values inserted into a web link or deeplink are encoded automatically, so a search term with a space or an & can't break the link. File paths are never encoded, so %20 in a path stays %20."
 windows = "\"Destinations: local paths (~/Notes, drive-letter paths, UNC shares, file://), web pages, network schemes, app deeplinks and bare domains; keep upstream''s drive-letter and host:port rules. Open With saves a specific app; Open in a new window passes the browser''s new-window switch (Chrome, Edge, Firefox). {selection} reads the selected text of the previously focused app (UI Automation TextPattern, with a copy-and-restore clipboard fallback). Stored in quicklinks.sqlite3; the import/export JSON is identical to upstream so files move between macOS and Windows. Date formats use the same Unicode (TR35) patterns as upstream."
-status = "NOT PORTED"
-evidence = []
-reason = "Quicklinks have no store and no rows in the palette yet."
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::values_going_into_a_url_are_encoded", "tc-core::quicklink::tests::values_going_into_a_path_are_not_encoded"]
+reason = ""
 
 [[row]]
 id = "launcher-quicklinks.encoding.raw-turns-encoding-off-it-also-lets-the-valu"

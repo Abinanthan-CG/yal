@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 12 | 1803 |
+| 1 | 1815 | 19 | 1796 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **12** | **2297** |
+| **All** | **2309** | **19** | **2290** |
 
 ### Totals per docs page
 
@@ -23,7 +23,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/aliases/` | 1 | 18 | 0 | 18 |
 | `docs/launcher/fallbacks/` | 1 | 15 | 0 | 15 |
 | `docs/launcher/commands/` | 1 | 113 | 0 | 113 |
-| `docs/launcher/quicklinks/` | 1 | 71 | 0 | 71 |
+| `docs/launcher/quicklinks/` | 1 | 71 | 7 | 64 |
 | `docs/launcher/system-settings/` | 1 | 16 | 0 | 16 |
 | `docs/launcher/system-actions/` | 1 | 54 | 0 | 54 |
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
@@ -336,13 +336,13 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Feature | Sub-feature | Behavior | Status | Evidence |
 | --- | --- | --- | --- | --- |
 | Quicklinks | Quicklinks | A quicklink with an {argument} also appears under "Use … with" at the bottom of every search. What you typed fills in its first argument. See Fallbacks. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks | Github.com/user/repo — A web page, with https:// added. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks | Https://..., http://... — A web page. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks | ~/Notes, /Users/..., file://... — A file or folder. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks | Smb: afp: nfs: ftp: sftp: ftps: — A network location. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks | Spotify://, slack://, shortcuts://, mailto: — A deeplink into an app. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
+| Quicklinks | Quicklinks | Github.com/user/repo — A web page, with https:// added. | PORTED | `tc-core::quicklink::tests::a_bare_host_gains_https_keeping_its_path_and_query`, `tc-core::quicklink::tests::a_multi_label_host_is_still_a_website` |
+| Quicklinks | Quicklinks | Https://..., http://... — A web page. | PORTED | `tc-core::quicklink::tests::https_is_a_website`, `tc-core::quicklink::tests::http_is_a_website` |
+| Quicklinks | Quicklinks | ~/Notes, /Users/..., file://... — A file or folder. | PORTED | `tc-core::quicklink::tests::a_tilde_expands_against_the_injected_home`, `tc-core::quicklink::tests::an_absolute_path_is_a_path`, `tc-core::quicklink::tests::a_file_url_resolves_to_the_path_it_names_not_to_a_deeplink` |
+| Quicklinks | Quicklinks | Smb: afp: nfs: ftp: sftp: ftps: — A network location. | PORTED | `tc-core::quicklink::tests::a_share_is_a_network_path` |
+| Quicklinks | Quicklinks | Spotify://, slack://, shortcuts://, mailto: — A deeplink into an app. | PORTED | `tc-core::quicklink::tests::an_unknown_scheme_is_a_deeplink`, `tc-core::quicklink::tests::a_deeplink_keeps_its_query`, `tc-core::quicklink::tests::a_schemeless_authority_scheme_is_still_a_deeplink` |
 | Quicklinks | Quicklinks | Tinycast works out what kind of link you entered from its format: | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks | Two formats get special handling: a single letter followed by a colon is treated as a Windows drive letter, and a name followed by a colon and only digits is treated as a host and port. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
+| Quicklinks | Quicklinks | Two formats get special handling: a single letter followed by a colon is treated as a Windows drive letter, and a name followed by a colon and only digits is treated as a host and port. | PORTED | `tc-core::quicklink::tests::a_drive_letter_is_not_a_scheme`, `tc-core::quicklink::tests::a_port_does_not_stop_a_bare_host_being_a_website` |
 | Quicklinks | Quicklinks | A field only turns red after you've visited it and left it empty. Fields you haven't reached yet aren't marked. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
 | Quicklinks | Quicklinks | A field with `options=` opens a menu of choices. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
 | Quicklinks | Quicklinks | A shortcut for a quicklink that still needs values opens Search Quicklinks with that quicklink selected and its first empty field ready for typing. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
@@ -403,7 +403,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Quicklinks | Quicklinks | Turning off **Show in root search** keeps a quicklink out of the main search, but you can still | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
 | Quicklinks | Quicklinks | Quicklinks are stored in quicklinks.sqlite3 in Tinycast's Application Support folder. If that file can't be opened, Tinycast reports the problem and never deletes the file, because your links can't be rebuilt from anywhere else. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
 | Quicklinks | Quicklinks › Placeholders | \| raw turns encoding off. It also lets the value decide what kind of link it is: a {clipboard \| raw} containing file:///Users/me/notes.md opens a file instead of a web page. This can be useful but also surprising, so you have to turn it on yourself. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
-| Quicklinks | Quicklinks › Placeholders | Values inserted into a web link or deeplink are encoded automatically, so a search term with a space or an & can't break the link. File paths are never encoded, so %20 in a path stays %20. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
+| Quicklinks | Quicklinks › Placeholders | Values inserted into a web link or deeplink are encoded automatically, so a search term with a space or an & can't break the link. File paths are never encoded, so %20 in a path stays %20. | PORTED | `tc-core::quicklink::tests::values_going_into_a_url_are_encoded`, `tc-core::quicklink::tests::values_going_into_a_path_are_not_encoded` |
 | Quicklinks | Quicklinks › Filling in values | Turn on Pass selected text as argument to fill a quicklink's first argument with the text you selected, when you open it with its own shortcut. Select a word, press the shortcut, and the search opens. This works only when the first argument is one you type, not a list of options. If nothing is selected, or the quicklink needs more values, the usual fields appear. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
 | Quicklinks | Quicklinks › Filling in values | If a link uses {selection} and no text is selected, the quicklink doesn't open. Tinycast shows "Couldn’t get the selected text" instead. If Tinycast doesn't have Accessibility permission, the message asks you to allow it in System Settings. | NOT PORTED | Quicklinks have no store and no rows in the palette yet. |
 
@@ -4196,15 +4196,8 @@ Tier 1 first, then Tier 2.
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.reordering.favorites-keep-the-order-you-give-them-with` | Favorites keep the order you give them. With nothing typed, select one and press ⌥⌘↑ or ⌥⌘↓, or choose ⌘K → Move Favorite Up or Move Favorite Down. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/favorites/` | 1 | `launcher-favorites.reordering.the-selection-moves-with-the-favorite-so-you` | The selection moves with the favorite, so you can keep pressing the keys until it's where you want it. | Favorites have no store and no rows in the palette yet. |
 | `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.as-a-fallback.a-quicklink-with-an-argument-also-appears-un` | A quicklink with an {argument} also appears under "Use … with" at the bottom of every search. What you typed fills in its first argument. See Fallbacks. | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.github-com-user-repo-a-web-page-with-https-a` | Github.com/user/repo — A web page, with https:// added. | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.https-http-a-web-page` | Https://..., http://... — A web page. | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.notes-users-file-a-file-or-folder` | ~/Notes, /Users/..., file://... — A file or folder. | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.smb-afp-nfs-ftp-sftp-ftps-a-network-location` | Smb: afp: nfs: ftp: sftp: ftps: — A network location. | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.spotify-slack-shortcuts-mailto-a-deeplink-in` | Spotify://, slack://, shortcuts://, mailto: — A deeplink into an app. | Quicklinks have no store and no rows in the palette yet. |
 | `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.tinycast-works-out-what-kind-of-link-you-ent` | Tinycast works out what kind of link you entered from its format: | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.destinations.two-formats-get-special-handling-a-single-le` | Two formats get special handling: a single letter followed by a colon is treated as a Windows drive letter, and a name followed by a colon and only digits is treated as a host and port. | Quicklinks have no store and no rows in the palette yet. |
 | `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.encoding.raw-turns-encoding-off-it-also-lets-the-valu` | \| raw turns encoding off. It also lets the value decide what kind of link it is: a {clipboard \| raw} containing file:///Users/me/notes.md opens a file instead of a web page. This can be useful but also surprising, so you have to turn it on yourself. | Quicklinks have no store and no rows in the palette yet. |
-| `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.encoding.values-inserted-into-a-web-link-or-deeplink` | Values inserted into a web link or deeplink are encoded automatically, so a search term with a space or an & can't break the link. File paths are never encoded, so %20 in a path stays %20. | Quicklinks have no store and no rows in the palette yet. |
 | `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.filling-in-values.a-field-only-turns-red-after-you-ve-visited` | A field only turns red after you've visited it and left it empty. Fields you haven't reached yet aren't marked. | Quicklinks have no store and no rows in the palette yet. |
 | `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.filling-in-values.a-field-with-options-opens-a-menu-of-choices` | A field with `options=` opens a menu of choices. | Quicklinks have no store and no rows in the palette yet. |
 | `docs/launcher/quicklinks/` | 1 | `launcher-quicklinks.filling-in-values.a-shortcut-for-a-quicklink-that-still-needs` | A shortcut for a quicklink that still needs values opens Search Quicklinks with that quicklink selected and its first empty field ready for typing. | Quicklinks have no store and no rows in the palette yet. |

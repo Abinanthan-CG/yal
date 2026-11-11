@@ -181,3 +181,62 @@ reason = "The store can forget one entry and forget everything, but the ⌘K →
 id = "launcher.learned-ranking.this-data-is-stored-in-launcher-ranking-json"
 status = "NOT PORTED"
 reason = "The store writes `launcher-ranking.json` with upstream's shape, but the app does not yet place it in its own data folder."
+
+# ---------------------------------------------------------------------------
+# The launcher: quicklinks
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher-quicklinks.destinations.notes-users-file-a-file-or-folder"
+status = "PORTED"
+evidence = [
+  "tc-core::quicklink::tests::a_tilde_expands_against_the_injected_home",
+  "tc-core::quicklink::tests::an_absolute_path_is_a_path",
+  "tc-core::quicklink::tests::a_file_url_resolves_to_the_path_it_names_not_to_a_deeplink",
+]
+
+[[status]]
+id = "launcher-quicklinks.destinations.https-http-a-web-page"
+status = "PORTED"
+evidence = [
+  "tc-core::quicklink::tests::https_is_a_website",
+  "tc-core::quicklink::tests::http_is_a_website",
+]
+
+[[status]]
+id = "launcher-quicklinks.destinations.smb-afp-nfs-ftp-sftp-ftps-a-network-location"
+status = "PORTED"
+evidence = ["tc-core::quicklink::tests::a_share_is_a_network_path"]
+
+[[status]]
+id = "launcher-quicklinks.destinations.spotify-slack-shortcuts-mailto-a-deeplink-in"
+status = "PORTED"
+evidence = [
+  "tc-core::quicklink::tests::an_unknown_scheme_is_a_deeplink",
+  "tc-core::quicklink::tests::a_deeplink_keeps_its_query",
+  "tc-core::quicklink::tests::a_schemeless_authority_scheme_is_still_a_deeplink",
+]
+
+[[status]]
+id = "launcher-quicklinks.destinations.github-com-user-repo-a-web-page-with-https-a"
+status = "PORTED"
+evidence = [
+  "tc-core::quicklink::tests::a_bare_host_gains_https_keeping_its_path_and_query",
+  "tc-core::quicklink::tests::a_multi_label_host_is_still_a_website",
+]
+
+[[status]]
+id = "launcher-quicklinks.destinations.two-formats-get-special-handling-a-single-le"
+status = "PORTED"
+evidence = [
+  "tc-core::quicklink::tests::a_drive_letter_is_not_a_scheme",
+  "tc-core::quicklink::tests::a_port_does_not_stop_a_bare_host_being_a_website",
+]
+
+[[status]]
+id = "launcher-quicklinks.encoding.values-inserted-into-a-web-link-or-deeplink"
+status = "PORTED"
+evidence = [
+  "tc-core::quicklink::tests::values_going_into_a_url_are_encoded",
+  "tc-core::quicklink::tests::values_going_into_a_path_are_not_encoded",
+]
