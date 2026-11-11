@@ -3,6 +3,11 @@
 # The installer is published with every release. This manifest points at the
 # latest one.
 #
+# This is a template. `cargo xtask dist` fills in the checksums and the
+# repository slug, and writes the result to `dist/packaging/winget/YAL.YAML`,
+# which the release workflow uploads. A published release's artifacts are
+# signed, so their checksums are only known once the release exists.
+#
 # To submit it:
 #   1. Fork https://github.com/microsoft/winget-pkgs
 #   2. Add this file under manifests/a/YAL/YAL/<version>/, with the
@@ -10,7 +15,7 @@
 #   3. Open a pull request
 
 PackageIdentifier: YAL.YAL
-PackageVersion: 0.1.0
+PackageVersion: {{VERSION}}
 DefaultLocale: en-US
 
 ManifestType: installer
@@ -19,21 +24,21 @@ ManifestVersion: 1.6.0
 InstallerType: exe
 NestedInstallerType: null
 NestedInstallerFiles: null
-ReleaseDate: 2026-11-10
+ReleaseDate: {{RELEASE_DATE}}
 Installers:
 - Architecture: x64
-  InstallerUrl: https://github.com/OWNER/REPO/releases/download/v0.1.0/yal-setup-0.1.0-x64.exe
-  InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+  InstallerUrl: https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-setup-{{VERSION}}-x64.exe
+  InstallerSha256: {{INSTALLER_SHA256_X64}}
 - Architecture: arm64
-  InstallerUrl: https://github.com/OWNER/REPO/releases/download/v0.1.0/yal-setup-0.1.0-arm64.exe
-  InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+  InstallerUrl: https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-setup-{{VERSION}}-arm64.exe
+  InstallerSha256: {{INSTALLER_SHA256_ARM64}}
 
 ManifestType: installer
 ManifestVersion: 1.6.0
 
 InstallerType: portable
-InstallerUrl: https://github.com/OWNER/REPO/releases/download/v0.1.0/yal-0.1.0-x64-portable.zip
-InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+InstallerUrl: https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-{{VERSION}}-x64-portable.zip
+InstallerSha256: {{PORTABLE_SHA256_X64}}
 NestedInstallerType: portable
 NestedInstallerFiles: yal.exe
 PortableCommandAlias: yal

@@ -314,17 +314,20 @@ pub fn dist(args: &[String]) -> Result<()> {
 
     // Checksums
     let mut sums = String::new();
+    let mut digests: Vec<(String, String)> = Vec::new();
     for path in &produced {
         let digest = sha256_file(path)?;
-        sums.push_str(&format!(
-            "{}  {}\n",
-            digest,
-            path.file_name().unwrap().to_string_lossy()
-        ));
+        let name = path.file_name().unwrap().to_string_lossy().to_string();
+        digests.push((name.clone(), digest.clone()));
+        sums.push_str(&format!("{digest}  {name}\n"));
     }
     let sums_path = dist_dir.join("SHA256SUMS.txt");
     std::fs::write(&sums_path, sums).context("writing SHA256SUMS.txt")?;
     println!("dist: wrote {}", sums_path.display());
+
+    // The packaging manifests, with the checksums of what was just built.
+    write_packaging_manifests(&root, &dist_dir, &version, &digests)?;
+
     for path in &produced {
         println!(
             "  {} ({})",
@@ -333,6 +336,71 @@ pub fn dist(args: &[String]) -> Result<()> {
         );
     }
     Ok(())
+}
+
+/// Fill in the packaging templates and write them next to the artifacts.
+///
+/// The templates in `packaging/` hold the shape; the checksums and the
+/// repository slug are only known here, once the artifacts exist. A published
+/// release's artifacts are signed, so their checksums differ from a local
+/// build's, and the release workflow uploads the filled-in copies.
+fn write_packaging_manifests(
+    root: &std::path::Path,
+    dist_dir: &std::path::Path,
+    version: &str,
+    digests: &[(String, String)],
+) -> Result<()> {
+    let digest_of = |name: &str| -> Option<String> {
+        digests
+            .iter()
+            .find(|(file, _)| file == name)
+            .map(|(_, digest)| digest.clone())
+    };
+    let installer_x64 = digest_of(&format!("yal-setup-{version}-x64.exe"));
+    let installer_arm64 = digest_of(&format!("yal-setup-{version}-arm64.exe"));
+    let portable_x64 = digest_of(&format!("yal-{version}-x64-portable.zip"));
+    let (Some(installer_x64), Some(installer_arm64), Some(portable_x64)) =
+        (installer_x64, installer_arm64, portable_x64)
+    else {
+        // A single architecture was built, so there is nothing complete to
+        // write. The release workflow builds both.
+        return Ok(());
+    };
+
+    let replacements: Vec<(&str, String)> = vec![
+        ("{{VERSION}}", version.to_string()),
+        ("{{REPOSITORY}}", tc_core::REPOSITORY.to_string()),
+        ("{{RELEASE_DATE}}", release_date()),
+        ("{{INSTALLER_SHA256_X64}}", installer_x64),
+        ("{{INSTALLER_SHA256_ARM64}}", installer_arm64),
+        ("{{PORTABLE_SHA256_X64}}", portable_x64),
+    ];
+
+    let out_dir = dist_dir.join("packaging");
+    for (template, relative) in [
+        ("packaging/winget/YAL.YAML", "winget/YAL.YAML"),
+        ("packaging/scoop/yal.json", "scoop/yal.json"),
+    ] {
+        let source = root.join(template);
+        let text = std::fs::read_to_string(&source)
+            .with_context(|| format!("reading {}", source.display()))?;
+        let mut filled = text.clone();
+        for (placeholder, value) in &replacements {
+            filled = filled.replace(placeholder, value);
+        }
+        let destination = out_dir.join(relative);
+        std::fs::create_dir_all(destination.parent().expect("a parent directory"))
+            .with_context(|| format!("creating {}", destination.parent().unwrap().display()))?;
+        std::fs::write(&destination, filled)
+            .with_context(|| format!("writing {}", destination.display()))?;
+        println!("dist: wrote {}", destination.display());
+    }
+    Ok(())
+}
+
+/// Today's date, for the manifests' release date.
+fn release_date() -> String {
+    chrono::Local::now().format("%Y-%m-%d").to_string()
 }
 
 fn copy_if_present(dir: &Path, stage: &Path) -> Result<()> {

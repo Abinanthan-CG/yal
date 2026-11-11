@@ -1,0 +1,98 @@
+# Runs every command that BUILD_WITH_AI.md tells a reader to run, and reports
+# which of them worked.
+#
+# A document of commands that no longer work is worse than no document, so the
+# commands are checked rather than trusted. CI runs this too.
+#
+# Usage:
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-build-with-ai.ps1
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\check-build-with-ai.ps1 -SkipDist
+#
+# -SkipDist leaves out the release build, which takes the longest.
+
+param(
+    [switch]$SkipDist,
+    [switch]$SkipFrontend
+)
+
+$ErrorActionPreference = 'Stop'
+$root = Split-Path -Parent $PSScriptRoot
+Set-Location $root
+
+$failures = 0
+$checks = 0
+
+function Invoke-Check {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][scriptblock]$Body
+    )
+    $script:checks++
+    Write-Host "==> $Name" -ForegroundColor Cyan
+    try {
+        & $Body | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "the command exited with $LASTEXITCODE"
+        }
+        Write-Host "    ok: $Name" -ForegroundColor Green
+    }
+    catch {
+        $script:failures++
+        Write-Host "    FAILED: $Name - $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+# The ledger.
+Invoke-Check 'cargo xtask parity --summary' { cargo run -q -p xtask -- parity --summary }
+Invoke-Check 'cargo xtask parity --check' { cargo run -q -p xtask -- parity --check }
+Invoke-Check 'cargo xtask tags' { cargo run -q -p xtask -- tags }
+Invoke-Check 'cargo xtask selftest' { cargo run -q -p xtask -- selftest }
+
+# The linters.
+Invoke-Check 'cargo fmt --all -- --check' { cargo fmt --all -- --check }
+Invoke-Check 'cargo clippy --workspace --all-targets -- -D warnings' {
+    cargo clippy --workspace --all-targets -- -D warnings
+}
+
+# The tests.
+Invoke-Check 'cargo test --workspace' { cargo test --workspace }
+Invoke-Check 'cargo test -p tc-core' { cargo test -p tc-core }
+
+# The palette's interface.
+if (-not $SkipFrontend) {
+    if (Get-Command npm.cmd -ErrorAction SilentlyContinue) {
+        Push-Location (Join-Path $root 'frontend')
+        try {
+            Invoke-Check 'npm run check' { npm.cmd run check }
+            Invoke-Check 'npm run build' { npm.cmd run build }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+    else {
+        Write-Host "    skipped: the palette's interface (npm is not installed)" -ForegroundColor Yellow
+    }
+}
+
+# The application.
+Invoke-Check 'yal.exe --self-test' {
+    $binary = Join-Path $root 'target\x86_64-pc-windows-msvc\release\yal.exe'
+    if (-not (Test-Path $binary)) {
+        throw "$binary has not been built yet"
+    }
+    & $binary --self-test
+}
+
+# The release build.
+if (-not $SkipDist) {
+    Invoke-Check 'cargo xtask dist --arch x64' { cargo run -q -p xtask -- dist --arch x64 }
+}
+
+Write-Host ""
+if ($failures -eq 0) {
+    Write-Host "Every command in BUILD_WITH_AI.md works. $checks checks passed." -ForegroundColor Green
+    exit 0
+}
+Write-Host "$failures of $checks checks failed." -ForegroundColor Red
+exit 1

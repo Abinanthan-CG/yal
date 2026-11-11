@@ -83,3 +83,59 @@ listed in `PROGRESS.md`.
 - The `read` tool mis-decodes UTF-8 as Latin-1. Use `grep` or an explicit UTF-8 decode.
 - The repository slug is `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.
 - The packaging manifests carry placeholder checksums and need the real ones before submission.
+## Session 2 - 2026-11-11
+
+**Started from.** Phase 1 complete: the shell, the platform layer, the domain model, the build and
+the ledger. 2 309 rows in the ledger, none of them ported.
+
+**Did.**
+- Ported upstream's launcher model into `crates/tc-search`, as seven modules: `fuzzy`,
+  `matcher`, `relevance`, `ranking`, `romanization`, `entry_naming` and `order`. Upstream's own
+  tests are the oracle — all 19 pinned matcher scores, the sensitivity levels, the
+  transliterations, the 25 comparator rules and the 12 category rules from `fuzz-test.swift`,
+  and the frecency curve and learned-term rules from `ranking-test.swift`. **150 tests.**
+- Found the three things that are easy to get wrong in that port, and wrote them down in
+  [port note 005](port-notes/005-search-slice.md): the matcher works in UTF-16 units while the
+  humps are byte offsets; the alignment walks backwards from the query's last letter; and
+  `ScriptRomanization.latin` returns nothing for a name that is already Latin.
+- Gave the ledger a second file. The scope is generated; the verdict is written by hand in
+  `parity/status.toml`, with the evidence that shows it, so regenerating the scope never loses
+  the verdict. The evidence may now name the module a test lives in.
+- Gave every open row a reason that names the missing piece, from `parity/reasons.toml`, one
+  line per page, instead of the same sentence 2 297 times.
+- Ported the quicklink destination rules into `crates/tc-core::quicklink`: a path, a web page, a
+  share, a deeplink or a bare domain, worked out from the shape of the text alone.
+- Built the program index. Windows has no application bundle, so the launcher asks three places:
+  the Start Menu, the registry's uninstall key and the registry's App Paths. **400 programs** are
+  found on this machine. A shortcut is opened as a shortcut, so nothing has to resolve it to an
+  executable first.
+- Built the palette's real interface: Solid and TypeScript in `frontend/src`, built by Vite,
+  talking to the Rust side through four commands. The built page is not committed, because a
+  committed build output goes stale the moment anyone edits the sources.
+- Found and fixed a gap: the repository had **no frontend source at all**, only a hand-written
+  page in a git-ignored directory. A fresh clone could not have built the application.
+- Wrote `scripts/check-build-with-ai.ps1`, which runs every command `BUILD_WITH_AI.md` tells a
+  reader to run, and added it to CI.
+
+**Verified.**
+- `cargo build --workspace` succeeds with no warnings.
+- `cargo test --workspace` passes: 275 tests, exit 0.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+- `yal.exe --self-test` passes all fifteen subsystem checks, including the program index, exit 0.
+- `cargo xtask dist` produces the x64 and arm64 installers, the portable zips and
+  `SHA256SUMS.txt`.
+- `scripts/smoke-test.ps1` passes end to end: silent install, self-test, launch, the palette
+  window appearing, a second launch handing over, quitting, silent uninstall, the program files
+  gone, the protocol unregistered, and the user's data still there.
+
+**Stopped at.** The launcher core is real: the palette searches the programs Windows knows about
+and opens them. 19 of 2 309 rows are ported, the rest are open with a reason each.
+
+**Carried forward.**
+- The calculator is the biggest single page at 326 rows, and it needs the whole engine: the
+  tokenizer, the Pratt parser, the unit catalogue, the formatter and the date and time rules.
+  Upstream's is about 9 600 lines of Swift across 49 files, with a 150 KB test file.
+- `packaging/winget/YAL.YAML` and `packaging/scoop/yal.json` still carry placeholder checksums.
+- The repository slug is still `OWNER/REPO`, written down once in `tc-core::REPOSITORY`.

@@ -40,6 +40,18 @@ has got.
 
 - The parity ledger's evidence may now name the module a test lives in, as
   `crate::module::test_name`.
+- Every open parity row now carries a reason that names the piece that is
+  missing, from `parity/reasons.toml`, one line per page.
+- `BUILD_WITH_AI.md` describes the ledger's two files and the new frontend
+  build step, and `scripts/check-build-with-ai.ps1` runs every command it
+  lists. CI runs it too.
+
+### Fixed
+
+- The repository had no frontend source: the palette was a hand-written page
+  in a directory that is not committed, so a fresh clone could not build the
+  application. The interface is now Solid and TypeScript in `frontend/src/`,
+  built by Vite.
 
 ## [0.1.0] — 2026-11-10
 

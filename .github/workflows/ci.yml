@@ -98,6 +98,9 @@ jobs:
       - name: The parity ledger is current
         run: cargo run --quiet -p xtask -- parity --check
 
+      - name: Check that every command in BUILD_WITH_AI.md works
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-build-with-ai.ps1 -SkipDist
+
       - name: No placeholders in shipped code
         shell: pwsh
         run: |
