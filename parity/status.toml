@@ -1,0 +1,183 @@
+# The port's own verdict on every generated row.
+#
+# The *scope* of the ledger is generated from upstream's documentation
+# (`cargo xtask ledger`), because a hand-written list drifts from the docs.
+# The *status* is written here by hand, because it is the port's own state and
+# a regeneration must never lose it.
+#
+# A row is `PORTED` only when the cited evidence is a test that actually ran
+# and shows the behavior the row describes. A row is `NOT PORTED` only with a
+# one-line reason saying what is missing.
+#
+# The evidence is written as `crate::test_name`; the crate must exist in the
+# workspace and the function must exist in its sources, or the ledger fails to
+# validate.
+
+# ---------------------------------------------------------------------------
+# The launcher: how matching works
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher.how-matching-works.tinycast-checks-several-names-for-each-entry"
+status = "PORTED"
+evidence = [
+  "tc-search::relevance::tests::the_strongest_alias_wins",
+  "tc-search::relevance::tests::a_name_hit_outscores_an_owner_hit",
+  "tc-search::entry_naming::tests::an_alternate_title_is_folded_never_transliterated",
+]
+
+[[status]]
+id = "launcher.how-matching-works.your-alias-ps-for-photoshop"
+status = "PORTED"
+evidence = [
+  "tc-search::order::tests::an_exact_alias_beats_an_exact_title",
+  "tc-search::order::tests::an_alias_prefix_beats_a_stronger_alignment",
+  "tc-search::order::tests::a_later_word_of_an_alias_finds_its_entry",
+]
+
+[[status]]
+id = "launcher.how-matching-works.the-display-name-visual-studio-code"
+status = "PORTED"
+evidence = [
+  "tc-search::order::tests::the_stronger_alignment_wins_before_usage",
+  "tc-search::order::tests::a_title_hit_beats_the_same_score_on_a_subtitle",
+  "tc-search::entry_naming::tests::a_subtitle_equal_to_the_title_is_dropped",
+]
+
+[[status]]
+id = "launcher.how-matching-works.other-names-the-app-is-known-by-ical-for-cal"
+status = "PORTED"
+evidence = [
+  "tc-search::order::tests::an_alternate_title_ranks_where_a_keyword_only_finds",
+  "tc-search::entry_naming::tests::an_alternate_title_is_folded_never_transliterated",
+]
+
+[[status]]
+id = "launcher.how-matching-works.the-extension-a-command-comes-from-lucide-fo"
+status = "NOT PORTED"
+reason = "The owner-role cell that ranks an extension's name low is ported in `tc-search::relevance`, but no entry source yet hands the launcher an extension's name."
+
+[[status]]
+id = "launcher.how-matching-works.the-bundle-identifier-or-program-name-apple"
+status = "NOT PORTED"
+reason = "The owner-role cell is ported in `tc-search::relevance`, but no entry source yet hands the launcher a program name or a bundle identifier."
+
+[[status]]
+id = "launcher.how-matching-works.how-the-letters-match-also-counts-from-stron"
+status = "PORTED"
+evidence = [
+  "tc-search::fuzzy::tests::the_tiers_score_in_order",
+  "tc-search::fuzzy::tests::letters_in_order_but_not_together_still_match",
+  "tc-search::fuzzy::tests::a_prefix_beats_a_word_start",
+  "tc-search::fuzzy::tests::a_word_start_beats_a_substring",
+]
+
+[[status]]
+id = "launcher.how-matching-works.an-exact-alias-has-the-strongest-priority-ex"
+status = "PORTED"
+evidence = [
+  "tc-search::order::tests::an_exact_alias_beats_an_exact_title",
+  "tc-search::order::tests::past_three_letters_an_exact_title_beats_any_habit",
+  "tc-search::order::tests::at_three_letters_an_exact_search_term_beats_an_exact_title",
+  "tc-search::order::tests::frecency_breaks_an_equal_alignment",
+]
+
+[[status]]
+id = "launcher.how-matching-works.a-few-more-rules-keep-results-useful"
+status = "NOT PORTED"
+reason = "One of the two rules it introduces — matching a program name without its vendor prefix — still needs the app index that is not built yet."
+
+[[status]]
+id = "launcher.how-matching-works.bundle-identifiers-only-match-as-typed-never"
+status = "PORTED"
+evidence = ["tc-search::relevance::tests::an_owner_never_takes_a_subsequence_hit"]
+
+[[status]]
+id = "launcher.how-matching-works.search-would-match-almost-every-app-they-als"
+status = "NOT PORTED"
+reason = "The app index that gives an entry both `apple.Photos` and `com.apple.Photos` is not built yet."
+
+[[status]]
+id = "launcher.how-matching-works.an-extension-s-name-ranks-low-an-extension-c"
+status = "PORTED"
+evidence = [
+  "tc-search::relevance::tests::a_name_hit_outscores_an_owner_hit",
+  "tc-search::relevance::tests::a_stronger_tier_outscores_a_weaker_one_in_the_same_role",
+]
+
+[[status]]
+id = "launcher.how-matching-works.first-place"
+status = "PORTED"
+evidence = ["tc-search::relevance::tests::a_name_hit_outscores_an_owner_hit"]
+
+[[status]]
+id = "launcher.how-matching-works.settings-general-search-search-sensitivity-s"
+status = "NOT PORTED"
+reason = "The Low/Medium/High rules are ported in `tc-search::matcher`, but the Settings → General → Search pane that changes them is not built yet."
+
+# ---------------------------------------------------------------------------
+# The launcher: names in your language
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher.names-in-your-language.apps-are-shown-the-way-finder-shows-them-in"
+status = "NOT PORTED"
+reason = "No app index yet, so a localized Windows program name is never read."
+
+[[status]]
+id = "launcher.names-in-your-language.apps-also-match-alternate-names-from-their-o"
+status = "NOT PORTED"
+reason = "The alternate-name matching is ported in `tc-search::entry_naming`, but no program-metadata source yet supplies the alternate names."
+
+[[status]]
+id = "launcher.names-in-your-language.names-in-other-scripts-also-get-a-latin-spel"
+status = "PORTED"
+evidence = [
+  "tc-search::matcher::tests::han_reads_as_spaced_pinyin",
+  "tc-search::matcher::tests::so_its_initials_hit_word_starts",
+  "tc-search::matcher::tests::the_kana_romanize_and_the_kanji_drop",
+  "tc-search::matcher::tests::cyrillic_reads_the_way_users_type_it",
+  "tc-search::romanization::tests::a_cyrillic_name_reads_the_way_the_docs_say",
+]
+
+[[status]]
+id = "launcher.names-in-your-language.if-you-renamed-an-app-in-finder-both-the-old"
+status = "NOT PORTED"
+reason = "No app index yet, so a renamed program's old name and new name are not both known."
+
+# ---------------------------------------------------------------------------
+# The launcher: learned ranking
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher.learned-ranking.tinycast-remembers-which-result-you-pick-for"
+status = "PORTED"
+evidence = [
+  "tc-search::order::tests::frecency_breaks_an_equal_alignment",
+  "tc-search::ranking::tests::one_visit_scores_101",
+  "tc-search::ranking::tests::a_visit_survives_a_relaunch",
+]
+
+[[status]]
+id = "launcher.learned-ranking.if-you-pick-whatsapp-after-typing-wha-it-als"
+status = "PORTED"
+evidence = [
+  "tc-search::order::tests::a_term_the_query_prefixes_reaches_back_to_shorter_queries",
+  "tc-search::ranking::tests::only_the_newest_three_distinct_terms_stay",
+  "tc-search::ranking::tests::ten_days_halve_it",
+]
+
+[[status]]
+id = "launcher.learned-ranking.opening-something-with-its-own-global-shortc"
+status = "NOT PORTED"
+reason = "No launcher actions yet, so which interactions count as a use, and which teach a word, is not decided."
+
+[[status]]
+id = "launcher.learned-ranking.resetting-for-one-entry-choose-k-reset-ranki"
+status = "NOT PORTED"
+reason = "The store can forget one entry and forget everything, but the ⌘K → Reset Ranking item and the Settings → Learned ranking pane are not built yet."
+
+[[status]]
+id = "launcher.learned-ranking.this-data-is-stored-in-launcher-ranking-json"
+status = "NOT PORTED"
+reason = "The store writes `launcher-ranking.json` with upstream's shape, but the app does not yet place it in its own data folder."

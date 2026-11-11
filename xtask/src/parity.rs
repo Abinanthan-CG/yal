@@ -28,6 +28,9 @@ struct Ledger {
     count_check: Vec<CountCheck>,
     #[serde(default)]
     addition: Vec<Addition>,
+    /// Statuses written for rows the generator does not produce.
+    #[serde(default)]
+    unknown_status: Vec<String>,
 }
 
 #[derive(Deserialize, Clone)]
@@ -98,6 +101,27 @@ struct PageFile {
     page: Vec<PageEntry>,
 }
 
+/// A hand-authored status for a generated row.
+///
+/// The generator owns the *scope* of the ledger: which behaviors upstream
+/// documents. The status is the port's own state, so it is written by hand in
+/// `parity/status.toml` and survives a regeneration of the scope.
+#[derive(Deserialize, Clone)]
+struct RowStatus {
+    id: String,
+    status: String,
+    #[serde(default)]
+    evidence: Vec<String>,
+    #[serde(default)]
+    reason: String,
+}
+
+#[derive(Deserialize)]
+struct StatusFile {
+    #[serde(default)]
+    status: Vec<RowStatus>,
+}
+
 #[derive(Deserialize)]
 struct CountCheckFile {
     #[serde(default)]
@@ -140,6 +164,7 @@ pub fn run(opts: &Options) -> Result<()> {
     let pages = load_pages(&root)?;
     let canonical_checks = load_count_checks(&root)?;
     let mut ledger = merge_parts(&root)?;
+    apply_status(&mut ledger, &root)?;
     let tags = load_tags(&root)?;
     apply_tags(&mut ledger, &tags);
     if !opts.summary_only {
@@ -364,7 +389,41 @@ fn merge_parts(root: &Path) -> Result<Ledger> {
         row,
         count_check,
         addition,
+        unknown_status: Vec::new(),
     })
+}
+
+/// Apply the hand-authored statuses in `parity/status.toml`.
+///
+/// A status the generator does not produce is kept and reported, so a renamed
+/// upstream behavior cannot quietly drop the port's own verdict.
+fn apply_status(ledger: &mut Ledger, root: &Path) -> Result<()> {
+    let path = root.join("parity").join("status.toml");
+    if !path.exists() {
+        return Ok(());
+    }
+    let text =
+        std::fs::read_to_string(&path).with_context(|| format!("reading {}", path.display()))?;
+    let file: StatusFile = toml::from_str(&text).context("parsing parity/status.toml")?;
+
+    let mut wanted: BTreeMap<String, &RowStatus> = BTreeMap::new();
+    for status in &file.status {
+        if wanted.insert(status.id.clone(), status).is_some() {
+            bail!("parity/status.toml has two entries for `{}`", status.id);
+        }
+    }
+
+    for row in ledger.row.iter_mut() {
+        let Some(status) = wanted.remove(&row.id) else {
+            continue;
+        };
+        row.status = status.status.clone();
+        row.evidence = status.evidence.clone();
+        row.reason = status.reason.clone();
+    }
+
+    ledger.unknown_status = wanted.into_keys().collect();
+    Ok(())
 }
 
 fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> Vec<String> {
@@ -373,6 +432,11 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
         problems.push(format!(
             "ledger schema is {} but this tool understands {}",
             ledger.schema, LEDGER_SCHEMA
+        ));
+    }
+    for id in &ledger.unknown_status {
+        problems.push(format!(
+            "parity/status.toml has a status for `{id}`, which is not a row of the ledger"
         ));
     }
     let page_by_name: BTreeMap<&str, &PageEntry> =
@@ -551,15 +615,19 @@ fn validate(ledger: &Ledger, pages: &[PageEntry], canonical: &[CountCheck]) -> V
     problems
 }
 
-/// Evidence is written as `crate::test_name`. The crate must exist in the
-/// workspace and the test function must be present in its sources.
+/// Evidence is written as `crate::test_name`, or `crate::module::path::test_name`
+/// when the function lives in a module. The crate must exist in the workspace
+/// and the function must be present in its sources.
 fn check_evidence(row_id: &str, evidence: &str) -> Vec<String> {
     let mut problems = Vec::new();
-    let Some((crate_name, test_name)) = evidence.split_once("::") else {
+    let Some((crate_name, rest)) = evidence.split_once("::") else {
         return vec![format!(
             "row `{row_id}` has malformed evidence `{evidence}`; expected `crate::test_name`"
         )];
     };
+    // The function is the last segment; what comes before it names the module
+    // it lives in, and is only there to make the evidence readable.
+    let test_name = rest.rsplit("::").next().unwrap_or_default();
     if test_name.is_empty() {
         return vec![format!(
             "row `{row_id}` has malformed evidence `{evidence}`"
