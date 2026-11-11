@@ -23,10 +23,7 @@ impl RaycastSnippetImport {
             return Vec::new();
         };
 
-        entries
-            .iter()
-            .filter_map(|entry| Self::parse_entry(entry))
-            .collect()
+        entries.iter().filter_map(Self::parse_entry).collect()
     }
 
     /// Read one entry of a Raycast export.
@@ -41,7 +38,11 @@ impl RaycastSnippetImport {
         let keyword = object
             .get("keyword")
             .and_then(|keyword| keyword.as_str())
-            .map(|keyword| keyword.trim_matches(|c: char| c.is_whitespace()).to_string())
+            .map(|keyword| {
+                keyword
+                    .trim_matches(|c: char| c.is_whitespace())
+                    .to_string()
+            })
             .filter(|keyword| !keyword.is_empty());
 
         Some(Snippet::with_options(
