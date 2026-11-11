@@ -331,8 +331,12 @@ Status: **not started**
 
 - `xtask i18n` needs the upstream clone present. The generated string table is committed, so a
   plain build never needs it; only regenerating needs upstream.
-- The repository slug is still `OWNER/REPO`. It is written down once, in `tc-core::REPOSITORY`, and
-  `Cargo.toml` repeats it because Cargo cannot read a constant.
+- The repository slug is `Abinanthan-CG/yal` — the repository this port will be published from. It
+  is written down once, in `tc-core::REPOSITORY`, and `Cargo.toml` repeats it because Cargo cannot
+  read a constant. The `origin` remote is set, and the branch is `main` to match the repository's
+  default branch. The old contents of that repository are still there: the flush and the push are
+  the last step of Phase 4, and the procedure is written down in
+  [docs/PUBLISHING.md](docs/PUBLISHING.md).
 - The installer has not been signed. The release workflow signs it when the certificate secret is
   set, and signs the checksums with minisign.
 - `packaging/winget/YAL.YAML` and `packaging/scoop/yal.json` are templates. `cargo xtask dist`

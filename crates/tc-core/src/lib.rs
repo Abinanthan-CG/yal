@@ -33,7 +33,7 @@ pub use quicklink::QuicklinkDestination;
 /// repository - the updater, the support link, the packaging manifests -
 /// reads it from this constant, so there is only one place to change when the
 /// repository is created.
-pub const REPOSITORY: &str = "OWNER/REPO";
+pub const REPOSITORY: &str = "Abinanthan-CG/yal";
 
 /// Where a user is sent when they ask for support.
 ///

@@ -80,7 +80,7 @@ Please **do not open a public issue** for a security problem.
 Report it privately through GitHub's security advisory form for this
 repository:
 
-> <https://github.com/OWNER/REPO/security/advisories/new>
+> <https://github.com/Abinanthan-CG/yal/security/advisories/new>
 
 Include:
 
