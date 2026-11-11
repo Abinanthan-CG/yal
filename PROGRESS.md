@@ -101,7 +101,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-tc-search has 150 tests. The workspace has 604.
+tc-search has 150 tests. The workspace has 651.
 
 ### The launcher core
 
@@ -184,6 +184,22 @@ The picker screen is not built, so none of it is reachable yet, and the localize
 are not in upstream's repository — the English keywords are all this port searches.
 
 See [port note 013](docs/port-notes/013-emoji-catalog-and-search.md).
+
+### The window commands and their geometry (crates/tc-windows)
+
+Upstream's thirty-nine window commands - their ids, their names, the eight
+groups they are listed under, the two flags that decide how the mover treats
+them - and the arithmetic that answers the rectangle a command puts a window
+in: the halves, the quarters, the fourths, the thirds, the sizing commands,
+the nudges, the edge moves, the gap model, the cycling and the restore.
+**47 tests**, all of them written from upstream's own Swift.
+
+The mover that moves a real window is not in this slice, and the palette rows
+and the Settings pane are not either, so **the window-management rows stay
+`NOT PORTED`**: a model behind a screen is not the screen.
+
+See [port note 014](docs/port-notes/014-window-commands-and-geometry.md).
+
 ### The clipboard model (crates/tc-clipboard)
 
 What a clipboard entry is, how its text is classified (plain, link, e-mail, colour), how a colour

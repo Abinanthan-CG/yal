@@ -10,4 +10,3 @@ description = "YAL port: tc-windows"
 
 [dependencies]
 tc-core = { path = "../tc-core" }
-tc-platform = { path = "../tc-platform" }

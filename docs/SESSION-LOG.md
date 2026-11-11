@@ -328,3 +328,68 @@ had been wrong rather than the store.
   packs are not in upstream's repository either — they live in the app bundle — so the English
   keywords are all this port searches.
 - The workspace now has 604 tests, 0 failed, 0 ignored.
+## Session 7 - 2026-11-11 (night)
+
+The question this session answered was asked by the person who will use this
+port: there is another YAL on this machine, in an "open code" folder, built a
+different way and left in a corner - can anything in it shorten this build?
+
+**The finding.** `C:\Users\dabin\development\yal` is the community YAL project
+(`github.com/Abinanthan-CG/yal`, GPL-3.0-only): 89 Rust files, 1 301 117 bytes,
+an egui launcher with a tray, a whole-drive file index, window controls, a
+calculator with dates and currencies, and a pile of features upstream Tinycast
+does not have. It is not a broken scaffold like the other port we audited - it
+**compiles** (`cargo check --workspace --all-targets`, exit 0) and **its own
+tests pass** (291 passed, 0 failed, 0 ignored).
+
+**The verdict.** It is a parallel build of a similar product, not a source of
+upstream parity rows. What it has that we want is *proven machinery* in four
+places - the incremental file index, the window placement geometry, the
+currency registry with its rate vintage, and the natural-language phrase
+layer. The realistic saving is **18-28 hours of the ~330 the agreed scope
+needs, about 5-8%**, not the shortcut it first looked like. The full
+evidence is in `docs/audits/2026-11-11-parallel-yal-review.md`, and the
+decision is in `docs/DECISIONS.md`.
+
+**What was taken, in this session.**
+
+- **The window commands and their geometry**, into a new crate `crates/tc-windows`:
+  upstream's thirty-nine commands with their ids, names, groups and flags,
+  and upstream's placement arithmetic - the halves, the quarters, the fourths,
+  the thirds, the sizing commands, the nudges, the edge moves, the gap model,
+  the cycling and the restore. 47 tests, all written from upstream's own Swift
+  (`WindowCommand.swift`, `WindowPlacementEngine.swift`, `WindowCycle.swift`).
+  Four of the tests failed on the first run and all four were *my expectations*
+  being wrong, not the port: a nudge moves by five per cent of the screen (50
+  points, not 40), Center Two Thirds rounds to 666 points, the display cycle
+  walks Display 1 left - Display 2 right - Display 2 left - Display 1 right,
+  and a window across the seam of two displays belongs to the one it overlaps
+  most. Each was checked against upstream's arithmetic before the expectation
+  was changed.
+- **The licence trail.** AGPL-3.0 is GPL-3.0 plus section 13, so the donor's
+  code may be combined into this repository and the combined work stays
+  AGPL-3.0 - provided the notice travels with it. `NOTICE.md` now carries the
+  donor's GPL-3.0 notice, and the port note says which module came from where.
+
+**What was not taken, and why.** The egui interface (213 KB) - YAL is Tauri and
+Solid by decision. The extra features (QR, TOTP, password generator, regex,
+colour picker, screenshots, fonts, timers, reminders, scripts, bookmarks) - they
+have no rows in the ledger, and building them would be scope creep against the
+scope decided on 2026-11-11. Their emoji catalog (1 906 entries), their
+clipboard (text only) and their search (26 tests) - ours are better and ours
+are already built.
+
+**The rows did not move.** No row is `PORTED` by this session. The window
+geometry proves the arithmetic, but nothing moves a real window yet and no
+command is reachable from the launcher, so the window-management rows stay
+`NOT PORTED` until a test on this machine moves a window and reads its
+rectangle back.
+
+**The worker failed.** The background worker that was to build the file-search
+backend died on a provider balance error before writing a file, so that slice
+is not started. The geometry above was written by hand instead.
+
+**Verified.**
+- `cargo test -p tc-windows` passes: 47 tests, 0 failed, 0 ignored.
+- `cargo clippy -p tc-windows --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all` leaves no diff.
