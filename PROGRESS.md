@@ -101,7 +101,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-tc-search has 150 tests. The workspace has 571.
+tc-search has 150 tests. The workspace has 604.
 
 ### The launcher core
 
@@ -174,6 +174,16 @@ See [port note 008](docs/port-notes/008-snippet-file-format.md),
 [port note 009](docs/port-notes/009-snippet-template-engine.md) and
 [port note 010](docs/port-notes/010-snippets-library.md).
 
+### The emoji model (crates/tc-emoji)
+
+The whole catalog of 2 136 emoji and symbols, upstream's search with upstream's ranking, the pins,
+the frequency, the skin tones and the grid's navigation. **32 tests**, every one of them written
+from upstream's own test files.
+
+The picker screen is not built, so none of it is reachable yet, and the localized keyword packs
+are not in upstream's repository — the English keywords are all this port searches.
+
+See [port note 013](docs/port-notes/013-emoji-catalog-and-search.md).
 ### The clipboard model (crates/tc-clipboard)
 
 What a clipboard entry is, how its text is classified (plain, link, e-mail, colour), how a colour
@@ -241,7 +251,9 @@ The order to work in, with what is done so far:
     classification, the colours, the filters, the policy, the paste sequence and the store with
     its pins, its memory window and its retention. The capture loop, the Windows watcher, the OCR
     and the palette rows are not.
-13. Emoji
+13. Emoji — **the model is done** (`crates/tc-emoji`): the whole catalog, the search with
+    upstream's ranking, the pins, the frequency, the skin tones and the grid. The picker screen
+    is not.
 14. Snippets — **the record, the Markdown file format, the template engine and the library on
     disk are done** (`crates/tc-snippets`); the editor, the browser and the palette rows are not
 15. File search

@@ -27,7 +27,7 @@
 "docs/features/navigation/" = "The navigation features are not implemented in YAL yet."
 "docs/features/notes/" = "The note store has no editor and no rows in the palette yet."
 "docs/features/calendar/" = "The calendar is not implemented in YAL yet."
-"docs/features/emoji/" = "The emoji picker is not implemented in YAL yet."
+"docs/features/emoji/" = "The model is ported in `tc-emoji` - the whole catalog of 2 136 emoji and symbols, the search with upstream's ranking, the pins, the frequency, the skin tones and the grid navigation - but the picker screen is not built, so nothing is reachable yet, and the localized keyword packs are not in upstream's repository."
 "docs/features/dictation/" = "The dictation helper process exists, but the palette neither records nor transcribes yet."
 "docs/features/dictionary/" = "The dictionary is not implemented in YAL yet."
 "docs/features/camera/" = "The camera feature is not implemented in YAL yet."
