@@ -121,7 +121,7 @@ fn an_unknown_word_is_not_a_currency() {
 #[test]
 fn an_amount_of_money_keeps_its_currency() {
     assert_eq!(display("100 usd").as_deref(), Some("100.00 USD"));
-    assert_eq!(copy_text("100 usd").as_deref(), Some("100 USD"));
+    assert_eq!(copy_text("100 usd").as_deref(), Some("100.00 USD"));
     assert_eq!(target_badge("100 usd").as_deref(), Some("US Dollar"));
 }
 

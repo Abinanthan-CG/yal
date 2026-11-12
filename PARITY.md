@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 208 | 1607 |
+| 1 | 1815 | 225 | 1590 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **208** | **2101** |
+| **All** | **2309** | **225** | **2084** |
 
 ### Totals per docs page
 
@@ -27,7 +27,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/system-settings/` | 1 | 16 | 0 | 16 |
 | `docs/launcher/system-actions/` | 1 | 54 | 26 | 28 |
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
-| `docs/features/calculator/` | 1 | 326 | 67 | 259 |
+| `docs/features/calculator/` | 1 | 326 | 84 | 242 |
 | `docs/features/clipboard/` | 1 | 85 | 15 | 70 |
 | `docs/features/snippets/` | 1 | 87 | 28 | 59 |
 | `docs/features/file-search/` | 1 | 68 | 0 | 68 |
@@ -628,23 +628,23 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | Base conversion works both ways: 0xff shows Hexadecimal → Decimal, 256 as hex is 0x100, and 2m / 2m to hex is 0x1. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Functions take comma-separated values: hypot(3,4), round(3.14159,2), log(8,2), gcd(12,18), lcm(4,6), atan2(1,1), pow(2,10) and root(-8,3). There are also inverse and hyperbolic trig functions, cbrt, exp, log2, sign and trunc, and the constants tau and phi. | PORTED | `tc-calc::tests::upstream_the_whole_function_list`, `tc-calc::tests::upstream_functions_with_several_arguments` |
 | Calculator | Calculator | Min, max, sum, avg, mean, average, median and stddev take lists, including measurements, and count counts them: sum(1km,500m) is 1.5 km. Inside a function, write 1000 instead of 1,000, because commas separate the values. If your number format uses a decimal comma, separate values with ; instead, as in max(2,5; 3). | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20 after 5 years at 5% decay every year — 15.47561875. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20 after 5 years at 5% every year — 25.52563125. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Growth every year from 20 to 30 over 5 years — 8.44717712%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Time from 20 to 30 at 2 every day — 5 day. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Time from 20 to 30 at 5% every year — 8.310386223 yr. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | $2,000 after 5 years at 4% — 2,433.31 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | $2,000 at 4% for 5 years compounding quarterly — 2,440.38 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 500 invested 1000 returned — 100%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Annual return on 500 invested 1000 returned after 5 years — 14.8698355%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Interest is added once a year unless you add compounding monthly, quarterly or daily. Loan payments are monthly; annual payment gives twelve of them. annual return is the yearly growth rate (CAGR), and investment required is the amount whose yearly interest pays that much. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Interest on $2,000 after 5 years at 4% — 433.31 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Investment required for $50000/year at 4% — 1,250,000.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Monthly interest on $10,000 for 5 years at 6% — 26.66 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Monthly payment on $20,000 over 5 years at 6% — 386.66 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Present value of $1000 after 5 years at 5% — 783.53 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Total interest on $10,000 for 5 years at 6% — 1,599.68 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Total payment on $20,000 over 5 years at 6% — 23,199.36 USD. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 20 after 5 years at 5% decay every year — 15.47561875. | PORTED | `tc-calc::growth_tests::a_decay_shrinks_the_amount` |
+| Calculator | Calculator | 20 after 5 years at 5% every year — 25.52563125. | PORTED | `tc-calc::growth_tests::an_amount_after_a_term_at_a_rate_every_period_compounds` |
+| Calculator | Calculator | Growth every year from 20 to 30 over 5 years — 8.44717712%. | PORTED | `tc-calc::growth_tests::the_rate_that_explains_a_change_is_a_percentage` |
+| Calculator | Calculator | Time from 20 to 30 at 2 every day — 5 day. | PORTED | `tc-calc::growth_tests::a_steady_amount_each_step_is_a_duration_too` |
+| Calculator | Calculator | Time from 20 to 30 at 5% every year — 8.310386223 yr. | PORTED | `tc-calc::growth_tests::the_time_it_takes_to_reach_a_value_is_a_duration` |
+| Calculator | Calculator | $2,000 after 5 years at 4% — 2,433.31 USD. | PORTED | `tc-calc::finance_tests::an_amount_after_a_term_at_a_rate_is_worth_more` |
+| Calculator | Calculator | $2,000 at 4% for 5 years compounding quarterly — 2,440.38 USD. | PORTED | `tc-calc::finance_tests::the_term_and_the_rate_come_in_either_order` |
+| Calculator | Calculator | 500 invested 1000 returned — 100%. | PORTED | `tc-calc::finance_tests::an_investment_that_returned_is_a_percentage` |
+| Calculator | Calculator | Annual return on 500 invested 1000 returned after 5 years — 14.8698355%. | PORTED | `tc-calc::finance_tests::the_return_can_be_a_yearly_one` |
+| Calculator | Calculator | Interest is added once a year unless you add compounding monthly, quarterly or daily. Loan payments are monthly; annual payment gives twelve of them. annual return is the yearly growth rate (CAGR), and investment required is the amount whose yearly interest pays that much. | PORTED | `tc-calc::finance_tests::the_term_and_the_rate_come_in_either_order`, `tc-calc::finance_tests::a_payment_is_what_has_to_be_paid`, `tc-calc::finance_tests::the_total_payment_is_all_of_them`, `tc-calc::finance_tests::the_return_can_be_a_yearly_one`, `tc-calc::finance_tests::the_capital_an_investment_needs_is_the_income_over_the_rate` |
+| Calculator | Calculator | Interest on $2,000 after 5 years at 4% — 433.31 USD. | PORTED | `tc-calc::finance_tests::the_interest_is_what_the_amount_earned` |
+| Calculator | Calculator | Investment required for $50000/year at 4% — 1,250,000.00 USD. | PORTED | `tc-calc::finance_tests::the_capital_an_investment_needs_is_the_income_over_the_rate` |
+| Calculator | Calculator | Monthly interest on $10,000 for 5 years at 6% — 26.66 USD. | PORTED | `tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add` |
+| Calculator | Calculator | Monthly payment on $20,000 over 5 years at 6% — 386.66 USD. | PORTED | `tc-calc::finance_tests::a_payment_is_what_has_to_be_paid` |
+| Calculator | Calculator | Present value of $1000 after 5 years at 5% — 783.53 USD. | PORTED | `tc-calc::finance_tests::the_present_value_is_what_the_amount_is_worth_now` |
+| Calculator | Calculator | Total interest on $10,000 for 5 years at 6% — 1,599.68 USD. | PORTED | `tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add` |
+| Calculator | Calculator | Total payment on $20,000 over 5 years at 6% — 23,199.36 USD. | PORTED | `tc-calc::finance_tests::the_total_payment_is_all_of_them` |
 | Calculator | Calculator | 10 to 20 as multiplier — 2x. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 1000 is 10 to the power of what — 3. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 2 km is to 4 km as what is to 10 kg — 5 kg. | NOT PORTED | The calculator engine is not ported yet. |
@@ -3062,11 +3062,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.and-compare-numbers-or-compatible-units-1km` | ==, !=, and >= compare numbers or compatible units: 1km == 1000m is true. Whole numbers support &, \|, xor, ~, >. ^ always means a power. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.base-conversion-works-both-ways-0xff-shows-h` | Base conversion works both ways: 0xff shows Hexadecimal → Decimal, 256 as hex is 0x100, and 2m / 2m to hex is 0x1. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.functions-and-comparisons.min-max-sum-avg-mean-average-median-and-stdd` | Min, max, sum, avg, mean, average, median and stddev take lists, including measurements, and count counts them: sum(1km,500m) is 1.5 km. Inside a function, write 1000 instead of 1,000, because commas separate the values. If your number format uses a decimal comma, separate values with ; instead, as in max(2,5; 3). | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.20-after-5-years-at-5-decay-every-year-15-47` | 20 after 5 years at 5% decay every year — 15.47561875. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.20-after-5-years-at-5-every-year-25-52563125` | 20 after 5 years at 5% every year — 25.52563125. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.growth-every-year-from-20-to-30-over-5-years` | Growth every year from 20 to 30 over 5 years — 8.44717712%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.time-from-20-to-30-at-2-every-day-5-day` | Time from 20 to 30 at 2 every day — 5 day. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.growth-and-decay.time-from-20-to-30-at-5-every-year-8-3103862` | Time from 20 to 30 at 5% every year — 8.310386223 yr. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.chinese-new-year-chinese-new-year-2027-6-feb` | Chinese New Year — chinese new year 2027 — 6 February, 2027. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.easter-and-its-days-easter-2027-good-friday` | Easter and its days — easter 2027, good friday 2027 — 28 March, 2027. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.eid-al-adha-eid-al-adha-2027-eid-ul-azha-202` | Eid al-Adha — eid al-adha 2027, eid-ul-azha 2027 — 16 May, 2027 (±1 day). | The calculator engine is not ported yet. |
@@ -3078,18 +3073,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.ramadan-and-the-two-eids-depend-on-the-moon` | Ramadan and the two Eids depend on the moon. Tinycast uses the Umm al-Qura calendar. Where the day is decided by a local moon sighting, it can come a day earlier or later, so the card adds (±1 day) to any answer that depends on one, like days until eid al-adha. Copying the answer gives it without the note. eid on its own could mean either Eid, so write eid al-fitr or eid al-adha. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.ramadan-start-and-end-ramadan-2027-end-of-ra` | Ramadan, start and end — ramadan 2027, end of ramadan 2027 — 8 February, 2027 (±1 day). | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.the-fixed-days-are-christmas-xmas-christmas` | The fixed days are Christmas (xmas), Christmas Eve, Boxing Day, New Year's Day, New Year's Eve (nye), Halloween, Valentine's Day and Orthodox Christmas. Easter follows the Western church calendar, and Orthodox Easter the Eastern one. Hanukkah starts on the evening the first candle is lit. Holidays that differ by country, like Thanksgiving, aren't included. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.2-000-after-5-years-at-4-2-433-31-usd` | $2,000 after 5 years at 4% — 2,433.31 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.2-000-at-4-for-5-years-compounding-quarterly` | $2,000 at 4% for 5 years compounding quarterly — 2,440.38 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.500-invested-1000-returned-100` | 500 invested 1000 returned — 100%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.annual-return-on-500-invested-1000-returned` | Annual return on 500 invested 1000 returned after 5 years — 14.8698355%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.interest-is-added-once-a-year-unless-you-add` | Interest is added once a year unless you add compounding monthly, quarterly or daily. Loan payments are monthly; annual payment gives twelve of them. annual return is the yearly growth rate (CAGR), and investment required is the amount whose yearly interest pays that much. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.interest-on-2-000-after-5-years-at-4-433-31` | Interest on $2,000 after 5 years at 4% — 433.31 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.investment-required-for-50000-year-at-4-1-25` | Investment required for $50000/year at 4% — 1,250,000.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.monthly-interest-on-10-000-for-5-years-at-6` | Monthly interest on $10,000 for 5 years at 6% — 26.66 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.monthly-payment-on-20-000-over-5-years-at-6` | Monthly payment on $20,000 over 5 years at 6% — 386.66 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.present-value-of-1000-after-5-years-at-5-783` | Present value of $1000 after 5 years at 5% — 783.53 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.total-interest-on-10-000-for-5-years-at-6-1` | Total interest on $10,000 for 5 years at 6% — 1,599.68 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.interest-and-loans.total-payment-on-20-000-over-5-years-at-6-23` | Total payment on $20,000 over 5 years at 6% — 23,199.36 USD. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.average-of-10-20-30-20` | Average of 10, 20, 30 — 20. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.count-of-4-8-15-16-23-42-6` | Count of 4, 8, 15, 16, 23, 42 — 6. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.gcd-of-12-and-18-6` | Gcd of 12 and 18 — 6. | The calculator engine is not ported yet. |

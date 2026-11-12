@@ -28,8 +28,11 @@
 
 pub mod catalog;
 pub mod currency;
+pub mod duration;
 pub mod engine;
+pub mod finance;
 pub mod formatter;
+pub mod growth;
 pub mod math;
 pub mod mixed_units;
 pub mod parser;
@@ -52,6 +55,12 @@ mod currency_tests;
 
 #[cfg(test)]
 mod split_tests;
+
+#[cfg(test)]
+mod finance_tests;
+
+#[cfg(test)]
+mod growth_tests;
 
 pub use catalog::{Catalog, CurrencyInfo, FullCatalog, NameCatalog, UnitInfo};
 pub use currency::{CurrencyCatalog, CurrencyDef};

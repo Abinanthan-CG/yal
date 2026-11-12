@@ -8427,9 +8427,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "$2,000 after 5 years at 4% — 2,433.31 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::an_amount_after_a_term_at_a_rate_is_worth_more"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.2-000-at-4-for-5-years-compounding-quarterly"
@@ -8437,9 +8437,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "$2,000 at 4% for 5 years compounding quarterly — 2,440.38 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_term_and_the_rate_come_in_either_order"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.interest-on-2-000-after-5-years-at-4-433-31"
@@ -8447,9 +8447,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Interest on $2,000 after 5 years at 4% — 433.31 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_interest_is_what_the_amount_earned"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.monthly-payment-on-20-000-over-5-years-at-6"
@@ -8457,9 +8457,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Monthly payment on $20,000 over 5 years at 6% — 386.66 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::a_payment_is_what_has_to_be_paid"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.total-payment-on-20-000-over-5-years-at-6-23"
@@ -8467,9 +8467,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Total payment on $20,000 over 5 years at 6% — 23,199.36 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_total_payment_is_all_of_them"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.total-interest-on-10-000-for-5-years-at-6-1"
@@ -8477,9 +8477,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Total interest on $10,000 for 5 years at 6% — 1,599.68 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.monthly-interest-on-10-000-for-5-years-at-6"
@@ -8487,9 +8487,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Monthly interest on $10,000 for 5 years at 6% — 26.66 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.present-value-of-1000-after-5-years-at-5-783"
@@ -8497,9 +8497,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Present value of $1000 after 5 years at 5% — 783.53 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_present_value_is_what_the_amount_is_worth_now"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.500-invested-1000-returned-100"
@@ -8507,9 +8507,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "500 invested 1000 returned — 100%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::an_investment_that_returned_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.annual-return-on-500-invested-1000-returned"
@@ -8517,9 +8517,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Annual return on 500 invested 1000 returned after 5 years — 14.8698355%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_return_can_be_a_yearly_one"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.investment-required-for-50000-year-at-4-1-25"
@@ -8527,9 +8527,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Investment required for $50000/year at 4% — 1,250,000.00 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_capital_an_investment_needs_is_the_income_over_the_rate"]
+reason = ""
 
 [[row]]
 id = "features-calculator.interest-and-loans.interest-is-added-once-a-year-unless-you-add"
@@ -8537,9 +8537,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.interest-and-loans"
 behavior = "Interest is added once a year unless you add compounding monthly, quarterly or daily. Loan payments are monthly; annual payment gives twelve of them. annual return is the yearly growth rate (CAGR), and investment required is the amount whose yearly interest pays that much."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::finance_tests::the_term_and_the_rate_come_in_either_order", "tc-calc::finance_tests::a_payment_is_what_has_to_be_paid", "tc-calc::finance_tests::the_total_payment_is_all_of_them", "tc-calc::finance_tests::the_return_can_be_a_yearly_one", "tc-calc::finance_tests::the_capital_an_investment_needs_is_the_income_over_the_rate"]
+reason = ""
 
 [[row]]
 id = "features-calculator.growth-and-decay.20-after-5-years-at-5-every-year-25-52563125"
@@ -8547,9 +8547,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.growth-and-decay"
 behavior = "20 after 5 years at 5% every year — 25.52563125."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::growth_tests::an_amount_after_a_term_at_a_rate_every_period_compounds"]
+reason = ""
 
 [[row]]
 id = "features-calculator.growth-and-decay.20-after-5-years-at-5-decay-every-year-15-47"
@@ -8557,9 +8557,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.growth-and-decay"
 behavior = "20 after 5 years at 5% decay every year — 15.47561875."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::growth_tests::a_decay_shrinks_the_amount"]
+reason = ""
 
 [[row]]
 id = "features-calculator.growth-and-decay.time-from-20-to-30-at-5-every-year-8-3103862"
@@ -8567,9 +8567,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.growth-and-decay"
 behavior = "Time from 20 to 30 at 5% every year — 8.310386223 yr."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::growth_tests::the_time_it_takes_to_reach_a_value_is_a_duration"]
+reason = ""
 
 [[row]]
 id = "features-calculator.growth-and-decay.time-from-20-to-30-at-2-every-day-5-day"
@@ -8577,9 +8577,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.growth-and-decay"
 behavior = "Time from 20 to 30 at 2 every day — 5 day."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::growth_tests::a_steady_amount_each_step_is_a_duration_too"]
+reason = ""
 
 [[row]]
 id = "features-calculator.growth-and-decay.growth-every-year-from-20-to-30-over-5-years"
@@ -8587,9 +8587,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.growth-and-decay"
 behavior = "Growth every year from 20 to 30 over 5 years — 8.44717712%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::growth_tests::the_rate_that_explains_a_change_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.rates-downloads-and-playback-speed.50-hr-for-3-hours-150-00-usd"
