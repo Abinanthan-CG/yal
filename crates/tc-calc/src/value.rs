@@ -2,10 +2,12 @@
 
 use std::fmt;
 
+use crate::currency::CurrencyDef;
+
 /// The scalar projection of upstream's `CalcValue`.
 ///
-/// Upstream's value carries a unit or a currency as well; both live outside this crate,
-/// so only the scalar part is modelled here.
+/// Upstream's value carries a unit or a currency as well; the units live outside
+/// this crate, but the currency table is here, so a value can carry its money.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Value {
     /// The amount the value carries.
@@ -14,6 +16,8 @@ pub struct Value {
     pub is_percent: bool,
     /// Whether the value is the answer of a comparison.
     pub is_boolean: bool,
+    /// The currency the amount is in, if it is money.
+    pub currency: Option<CurrencyDef>,
 }
 
 impl Value {
@@ -23,6 +27,17 @@ impl Value {
             amount,
             is_percent: false,
             is_boolean: false,
+            currency: None,
+        }
+    }
+
+    /// An amount of money, as upstream's `CalcValue(kind: .currency(def))`.
+    pub fn money(amount: f64, currency: CurrencyDef) -> Self {
+        Self {
+            amount,
+            is_percent: false,
+            is_boolean: false,
+            currency: Some(currency),
         }
     }
 

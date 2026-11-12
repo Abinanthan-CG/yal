@@ -10,7 +10,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use tc_apps::Program;
-use tc_calc::{evaluate, CalcOutcome, UnitCatalog};
+use tc_calc::{evaluate, CalcOutcome, FullCatalog};
 use tc_core::SystemActionId;
 use tc_search::entry_naming::SearchProfile;
 use tc_search::matcher::SearchSensitivity;
@@ -318,7 +318,7 @@ fn calculator_row(query: &str) -> Option<ResultRow> {
     if trimmed.is_empty() {
         return None;
     }
-    let CalcOutcome::Card(card) = evaluate(trimmed, &UnitCatalog::new()) else {
+    let CalcOutcome::Card(card) = evaluate(trimmed, &FullCatalog) else {
         return None;
     };
     let tc_calc::Payload::Value { display, copy_text } = &card.payload else {
@@ -529,5 +529,20 @@ mod tests {
         assert!(calculator_row("5").is_none());
         assert!(calculator_row("").is_none());
         assert!(calculator_row("notepad").is_none());
+    }
+
+    #[test]
+    fn a_percentage_is_a_row_of_its_own() {
+        let row = calculator_row("20% off 500").expect("the query is a discount");
+        assert_eq!(row.name, "400");
+        assert_eq!(row.detail, "20% off 500");
+        assert_eq!(row.kind, CALCULATOR_SECTION);
+    }
+
+    #[test]
+    fn an_amount_of_money_is_a_row_of_its_own() {
+        let row = calculator_row("20% discount off $100").expect("the query is a money discount");
+        assert_eq!(row.name, "80.00 USD");
+        assert_eq!(row.kind, CALCULATOR_SECTION);
     }
 }

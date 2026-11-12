@@ -23,12 +23,14 @@ impl Formatter {
     ///
     /// The spacing is collapsed and the operators are shown with their pretty glyphs.
     pub fn expression(query: &str) -> String {
-        query
-            .split_whitespace()
-            .collect::<Vec<&str>>()
-            .join(" ")
-            .replace('*', "×")
-            .replace('/', "÷")
+        Self::collapsed(query).replace('*', "×").replace('/', "÷")
+    }
+
+    /// The query with its spacing collapsed, as upstream's `CalcResult.phrase` shows it.
+    ///
+    /// The operators keep the glyphs they were typed with.
+    pub fn collapsed(query: &str) -> String {
+        query.split_whitespace().collect::<Vec<&str>>().join(" ")
     }
 
     /// The human-facing form of a number, as upstream's `CalcFormatter.display`.

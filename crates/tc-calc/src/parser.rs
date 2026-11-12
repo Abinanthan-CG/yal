@@ -5,6 +5,7 @@
 //! catalog knows is reported as unsupported instead of being guessed at.
 
 use crate::catalog::Catalog;
+use crate::currency::CurrencyDef;
 use crate::math::Math;
 use crate::token::{Operator, Token};
 use crate::value::{ParseError, UnsupportedArea, Value};
@@ -201,6 +202,7 @@ impl<'a> Parser<'a> {
                     amount: if result { 1.0 } else { 0.0 },
                     is_percent: false,
                     is_boolean: true,
+                    currency: None,
                 })
             }
             Operator::Percent => Ok(Value::scalar(left.effective() % right.effective())),
@@ -217,18 +219,41 @@ impl<'a> Parser<'a> {
                 let direction = if op == Operator::Add { 1.0 } else { -1.0 };
                 if right.is_percent {
                     let output = left.effective() * (1.0 + direction * right.amount / 100.0);
-                    return Ok(Value::scalar(output));
+                    return Ok(Value {
+                        amount: output,
+                        is_percent: false,
+                        is_boolean: false,
+                        currency: left.currency,
+                    });
                 }
-                Ok(Value::scalar(
-                    left.effective() + direction * right.effective(),
-                ))
+                let currency = combine_currency(left.currency, right.currency)?;
+                Ok(Value {
+                    amount: left.effective() + direction * right.effective(),
+                    is_percent: false,
+                    is_boolean: false,
+                    currency,
+                })
             }
-            Operator::Multiply => Ok(Value::scalar(left.effective() * right.effective())),
+            Operator::Multiply => {
+                let currency = combine_currency(left.currency, right.currency)?;
+                Ok(Value {
+                    amount: left.effective() * right.effective(),
+                    is_percent: false,
+                    is_boolean: false,
+                    currency,
+                })
+            }
             Operator::Divide => {
                 if right.effective() == 0.0 {
                     return Err(ParseError::NotACalculation);
                 }
-                Ok(Value::scalar(left.effective() / right.effective()))
+                let currency = combine_currency(left.currency, right.currency)?;
+                Ok(Value {
+                    amount: left.effective() / right.effective(),
+                    is_percent: false,
+                    is_boolean: false,
+                    currency,
+                })
             }
             Operator::Power => Ok(Value::scalar(left.effective().powf(right.effective()))),
             _ => Err(ParseError::NotACalculation),
@@ -244,6 +269,14 @@ impl<'a> Parser<'a> {
                 Some(Token::Ident(name)) => {
                     if value.is_percent || value.is_boolean {
                         return Ok(value);
+                    }
+                    // `100 usd` is money in US dollars.
+                    if value.currency.is_none() {
+                        if let Some(currency) = catalog.currency_definition(name) {
+                            value.currency = Some(currency);
+                            self.position += 1;
+                            continue;
+                        }
                     }
                     check_dimension(name, catalog)?;
                     return Ok(value);
@@ -378,6 +411,13 @@ impl<'a> Parser<'a> {
                 .ok_or(ParseError::NotACalculation)?;
             return Ok(Value::scalar(result));
         }
+        // A currency before its amount: `$100`.
+        if let Some(currency) = catalog.currency_definition(name) {
+            if let Some(amount) = self.number_at(self.position + 1) {
+                self.position += 2;
+                return Ok(Value::money(amount, currency));
+            }
+        }
         check_dimension(name, catalog)?;
         Err(ParseError::NotACalculation)
     }
@@ -497,8 +537,9 @@ fn root(value: Value, degree: f64) -> Value {
 /// Reports a word the catalog knows as a unit or a currency.
 ///
 /// Upstream resolves those names into a dimension and carries them through the
-/// calculation; the units and the currencies live outside this crate, so the name is
-/// reported as unsupported rather than answered with a made-up number.
+/// calculation; the units live outside this crate, so a unit is reported as
+/// unsupported rather than answered with a made-up number. A currency the catalog
+/// can define is carried; one it can only name is reported as unsupported too.
 fn check_dimension(name: &str, catalog: &dyn Catalog) -> Result<(), ParseError> {
     let lowered = name.to_lowercase();
     if catalog.unit(name).is_some() || catalog.unit(&lowered).is_some() {
@@ -506,10 +547,35 @@ fn check_dimension(name: &str, catalog: &dyn Catalog) -> Result<(), ParseError> 
             name.to_string(),
         )));
     }
+    if catalog.currency_definition(name).is_some()
+        || catalog.currency_definition(&lowered).is_some()
+    {
+        return Ok(());
+    }
     if catalog.currency(name).is_some() || catalog.currency(&lowered).is_some() {
         return Err(ParseError::Unsupported(UnsupportedArea::currency(
             name.to_string(),
         )));
     }
     Ok(())
+}
+
+/// The currency a calculation of two values keeps, as upstream's
+/// `CalcExpressionParser.apply` decides.
+///
+/// A currency beside a plain amount stays in the currency, and two amounts of the
+/// same currency stay in it too. Two *different* currencies need the rate feed,
+/// which the port does not have, so the calculation is refused rather than answered
+/// with a made-up number.
+fn combine_currency(
+    left: Option<CurrencyDef>,
+    right: Option<CurrencyDef>,
+) -> Result<Option<CurrencyDef>, ParseError> {
+    match (left, right) {
+        (Some(first), Some(second)) if first.code != second.code => {
+            Err(ParseError::NotACalculation)
+        }
+        (Some(first), _) => Ok(Some(first)),
+        (None, second) => Ok(second),
+    }
 }
