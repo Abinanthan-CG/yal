@@ -5325,6 +5325,7 @@ dependencies = [
  "tc-platform",
  "tc-platform-win",
  "tc-search",
+ "tc-windows",
 ]
 
 [[package]]

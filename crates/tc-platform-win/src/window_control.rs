@@ -382,6 +382,129 @@ pub fn toggle_fullscreen(
     }
 }
 
+/// The window the user was last using.
+///
+/// The palette is a window too, so the foreground window while the palette is
+/// open is the palette. The window that was in front *before* it opened is
+/// remembered instead, and that is the one the commands move.
+static LAST_WINDOW: std::sync::Mutex<Option<WindowHandle>> = std::sync::Mutex::new(None);
+
+/// Remember the window that is in front right now.
+///
+/// The shell calls this before the palette is shown.
+pub fn remember_foreground() {
+    let Some(handle) = foreground_window() else {
+        return;
+    };
+    if let Ok(mut last) = LAST_WINDOW.lock() {
+        *last = Some(handle);
+    }
+}
+
+/// The window the user was last using, if there is one.
+pub fn last_foreground() -> Option<WindowHandle> {
+    LAST_WINDOW.lock().ok().and_then(|last| *last)
+}
+
+/// The window commands, with the memory of the windows they moved.
+///
+/// This is the whole of upstream's window management on the Windows side: the
+/// commands, the memory of where each window started, and the code that
+/// writes the rectangles.
+#[derive(Debug)]
+pub struct WindowCommands {
+    memory: std::sync::Mutex<tc_windows::action_memory::WindowActionMemory<WindowHandle>>,
+    gap: f64,
+    cycle: WindowCycle,
+}
+
+impl WindowCommands {
+    /// The commands, with the gap between windows and the cycling mode.
+    pub fn new(gap: f64, cycle: WindowCycle) -> WindowCommands {
+        WindowCommands {
+            memory: std::sync::Mutex::new(tc_windows::action_memory::WindowActionMemory::new(
+                tc_windows::action_memory::DEFAULT_CAPACITY,
+            )),
+            gap,
+            cycle,
+        }
+    }
+
+    /// The gap between windows, in points.
+    pub fn gap(&self) -> f64 {
+        self.gap
+    }
+
+    /// Set the gap between windows, in points.
+    pub fn set_gap(&mut self, gap: f64) {
+        self.gap = tc_windows::geometry::sanitize_gap_setting(gap);
+    }
+
+    /// The cycling mode.
+    pub fn cycle(&self) -> WindowCycle {
+        self.cycle
+    }
+
+    /// Set the cycling mode.
+    pub fn set_cycle(&mut self, cycle: WindowCycle) {
+        self.cycle = cycle;
+    }
+
+    /// Run a command against a window.
+    ///
+    /// The memory decides which step of the cycle this press is and where the
+    /// window goes back to; the rectangle is written, read back, and what
+    /// actually landed is remembered.
+    pub fn run(
+        &self,
+        handle: WindowHandle,
+        command: WindowCommandId,
+    ) -> Result<Outcome, ControlError> {
+        let current = window_rect(handle)?;
+        let screens = screens();
+        let host = tc_windows::geometry::screen_containing(current, &screens)
+            .ok_or_else(|| ControlError::Refused("there is no display".to_string()))?;
+        let cycle_length = tc_windows::geometry::cycle_length(command, &screens, self.cycle);
+        let now = std::time::Instant::now();
+        let press = tc_windows::action_memory::Press {
+            command: Some(command),
+            current_frame: current,
+            current_screen_id: host.id,
+            cycle_length,
+            now,
+            is_fullscreen: false,
+        };
+        let decision = {
+            let memory = self.memory.lock().expect("the window memory lock");
+            memory.decide(&handle, &press)
+        };
+        let outcome = apply_command(
+            handle,
+            command,
+            self.gap,
+            self.cycle,
+            decision.step,
+            if decision.can_restore {
+                Some(decision.restore_frame)
+            } else {
+                None
+            },
+        )?;
+        let mut memory = self.memory.lock().expect("the window memory lock");
+        memory.commit(
+            handle,
+            &press,
+            &decision,
+            &tc_windows::action_memory::Applied {
+                frame: outcome.frame,
+                screen_id: outcome.screen_id,
+                fullscreen: false,
+            },
+        );
+        Ok(outcome)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -763,6 +886,32 @@ mod tests {
         assert!(
             (back.width() - start.width()).abs() <= 1.0,
             "the window is back to its own size"
+        );
+    }
+
+    #[test]
+    fn the_commands_keep_the_memory_of_the_windows_they_moved() {
+        let window = TestWindow::new(200, 200, 400, 300);
+        let start = window.rect();
+        let commands = WindowCommands::new(0.0, WindowCycle::Off);
+
+        commands
+            .run(window.handle, WindowCommandId::LeftHalf)
+            .expect("the first command");
+        let half = window.rect();
+        assert!(
+            (half.width() - start.width() / 2.0).abs() > 1.0,
+            "the window is in the left half now"
+        );
+
+        commands
+            .run(window.handle, WindowCommandId::Restore)
+            .expect("the restore");
+        let back = window.rect();
+        assert!(
+            (back.min_x() - start.min_x()).abs() <= 1.0
+                && (back.width() - start.width()).abs() <= 1.0,
+            "the window is back where it started: {back:?}"
         );
     }
 }

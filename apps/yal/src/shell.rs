@@ -7,12 +7,21 @@
 use tauri::Emitter;
 use tauri::Manager;
 use tauri::State;
-use tc_platform::{Clipboard, FileSystem};
+use tc_platform::{Clipboard, FileSystem, Settings};
 
 use crate::launcher::{LauncherState, ResultRow, CALCULATOR_PREFIX, RANKING_FILE};
 
 /// The palette's label, so the window can be found again.
 const PALETTE: &str = "palette";
+
+/// The setting that turns window management on.
+const WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
+/// The setting that lists the window commands in the launcher.
+const WINDOW_MANAGEMENT_SHOW: &str = "windowManagement.showInLauncher";
+/// The setting that holds the gap between windows, in points.
+const WINDOW_MANAGEMENT_GAP: &str = "windowManagement.gap";
+/// The setting that holds the cycling mode.
+const WINDOW_MANAGEMENT_CYCLE: &str = "windowManagement.cycle";
 
 /// The tray menu's items, in the order they appear.
 const TRAY_ITEMS: [&str; 6] = [
@@ -82,8 +91,31 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             let _ = data.ensure_dir(&paths.cache_dir);
             // The index and the learned ranking live in the app's own folder,
             // the way upstream keeps them in Application Support.
-            let launcher = LauncherState::new(paths.data_dir.join(RANKING_FILE));
+            let mut launcher = LauncherState::new(paths.data_dir.join(RANKING_FILE));
+            // The settings say whether window management is on, whether its
+            // commands are listed in the launcher, how far apart two windows
+            // sit and what a repeated half does. Window management is off
+            // until it is turned on, the way upstream ships it.
+            let settings = tc_platform_win::WindowsSettings::load(paths.settings_file.clone());
+            if settings.get(WINDOW_MANAGEMENT_ENABLED).as_deref() == Some("true") {
+                let show = settings.get(WINDOW_MANAGEMENT_SHOW).as_deref() != Some("false");
+                launcher.set_show_window_commands(show);
+            }
             app.manage(launcher);
+            // The window commands, with the memory of the windows they have
+            // moved. The memory lives in this process and is never written
+            // down.
+            let gap = settings
+                .get(WINDOW_MANAGEMENT_GAP)
+                .and_then(|value| value.parse::<f64>().ok())
+                .unwrap_or(0.0);
+            let cycle = settings
+                .get(WINDOW_MANAGEMENT_CYCLE)
+                .and_then(|value| tc_windows::geometry::WindowCycle::parse(&value))
+                .unwrap_or(tc_windows::geometry::WindowCycle::Off);
+            app.manage(tc_platform_win::window_control::WindowCommands::new(
+                gap, cycle,
+            ));
             // The installer asks a running instance to quit before it replaces
             // the program files, so the app has to be listening for that. The
             // watcher holds the quit event open, so it is kept in the app's
@@ -152,6 +184,21 @@ fn open_result(
         }
         return Ok(());
     }
+    // A window command is not opened either; it moves the window the user
+    // was last using.
+    if let Some(command) = LauncherState::window_command_of(&id) {
+        let commands: State<'_, tc_platform_win::window_control::WindowCommands> = app.state();
+        let Some(handle) = tc_platform_win::window_control::last_foreground() else {
+            return Err("there is no window to move".to_string());
+        };
+        commands
+            .run(handle, command)
+            .map_err(|error| error.to_string())?;
+        if let Some(window) = app.get_webview_window(PALETTE) {
+            let _ = window.hide();
+        }
+        return Ok(());
+    }
     // A calculator row is not opened; its answer is copied.
     if let Some(text) = id.strip_prefix(CALCULATOR_PREFIX) {
         tc_platform_win::clipboard().write_text(text)?;
@@ -182,6 +229,10 @@ fn hide_palette(app: tauri::AppHandle) {
 
 /// Show the palette when it is hidden, hide it when it is shown.
 fn toggle_palette(app: &tauri::AppHandle) {
+    // The palette is a window too, so the window that was in front before it
+    // opened is the one the commands move. It is remembered here, before the
+    // palette takes the front.
+    tc_platform_win::window_control::remember_foreground();
     if let Some(window) = app.get_webview_window(PALETTE) {
         match window.is_visible() {
             Ok(true) => {
