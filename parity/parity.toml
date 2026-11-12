@@ -6791,9 +6791,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.currency-and-crypto"
 behavior = "Tinycast supports 159 currencies and a selected list of cryptocurrencies."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::currency_tests::the_table_holds_the_currencies_upstream_lists"]
+reason = ""
 
 [[row]]
 id = "features-calculator.currency-and-crypto.an-amount-on-its-own-is-converted-to-your-ma"
@@ -6821,9 +6821,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.words-with-two-meanings"
 behavior = "Some currency words are shared by several countries: dollars could mean 22 currencies, francs 10, pounds 9, pesos 8 and rupees 6. Tinycast maps each of these to one currency. If a word is still ambiguous, Tinycast shows no card. For example, krona could be Swedish or Icelandic, so Tinycast doesn't guess."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::currency_tests::a_currency_is_named_by_its_code_and_its_own_nouns", "tc-calc::currency_tests::a_word_several_countries_share_is_not_guessed_at"]
+reason = ""
 
 [[row]]
 id = "features-calculator.words-with-two-meanings.slang-isn-t-supported-quid-and-bucks-show-no"
@@ -7611,9 +7611,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "20% off 500 — 400."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_discount_off_an_amount_is_the_amount_less_the_percentage", "tc-calc::percent::tests::a_discount_off_money_keeps_the_money"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.25-off-60-45-00-usd"
@@ -7621,9 +7621,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "25% off $60 — 45.00 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_discount_off_money_keeps_the_money", "tc-calc::currency_tests::a_discount_off_money_keeps_the_money"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.take-20-off-100-80"
@@ -7631,9 +7631,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "Take 20% off 100 — 80."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::take_a_percentage_off_an_amount_is_a_discount"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.20-discount-off-100-80-00-usd"
@@ -7641,9 +7641,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "20% discount off $100 — 80.00 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_word_between_the_percentage_and_the_relation_only_names_it", "tc-calc::currency_tests::a_discount_off_money_keeps_the_money"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.15-on-80-92"
@@ -7651,9 +7651,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "15% on 80 — 92."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_markup_on_an_amount_is_the_amount_plus_the_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.15-tip-on-42-6-3"
@@ -7661,9 +7661,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "15% tip on 42 — 6.3."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_tip_is_the_tip_alone"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.50-as-of-200-25"
@@ -7671,9 +7671,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "50 as % of 200 — 25%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.30-as-a-of-120-25"
@@ -7681,9 +7681,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "30 as a % of 120 — 25%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.50-is-what-of-200-25"
@@ -7691,9 +7691,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "50 is what % of 200 — 25%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.what-is-25-of-100-25"
@@ -7701,9 +7701,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "What % is 25 of 100 — 25%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.750-m-as-of-3-km-25"
@@ -7721,9 +7721,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "4 out of 10 — 40%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.10-is-what-with-20-33-33333333"
@@ -7731,9 +7731,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "10 is what % with 20 — 33.33333333%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_share_of_the_two_together_is_a_third"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.30-is-20-of-what-150"
@@ -7741,9 +7741,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "30 is 20% of what — 150."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::thirty_is_twenty_percent_of_what_solves_for_the_whole"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.20-of-what-is-30-150"
@@ -7751,9 +7751,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "20% of what is 30 — 150."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::twenty_percent_of_what_is_thirty_solves_for_the_whole"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.90-is-10-off-what-100"
@@ -7761,9 +7761,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "90 is 10% off what — 100."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::the_off_and_on_forms_solve_for_the_whole_too"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.45-is-what-off-50-10"
@@ -7771,9 +7771,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "45 is what % off 50 — 10%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_discount_reads_as_the_change_it_makes"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.80-to-100-is-what-25"
@@ -7781,9 +7781,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "80 to 100 is what % — 25%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_change_between_two_amounts_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.change-from-10-to-20-100"
@@ -7791,9 +7791,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "% change from 10 to 20 — 100%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_change_from_one_amount_to_another_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.decrease-from-20-to-10-50"
@@ -7801,9 +7801,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "% decrease from 20 to 10 — -50%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_change_from_one_amount_to_another_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.15-as-after-adding-3-25"
@@ -7811,9 +7811,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "15 as % after adding 3 — 25%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::the_growth_that_reached_a_total_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.if-30-is-20-what-is-50-75"
@@ -7821,9 +7821,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "If 30 is 20%, what is 50% — 75."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::the_rule_of_three_with_an_amount_asked_for"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.if-30-is-20-what-is-60-40"
@@ -7831,9 +7831,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "If 30 is 20% what is 60 — 40%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::the_rule_of_three_with_a_percentage_asked_for"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.10-tax-on-100-110"
@@ -7841,9 +7841,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "10% tax on 100 — 110."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_tax_on_an_amount_is_added_to_it"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.20-vat-in-120-20-the-tax-inside-the-price"
@@ -7851,9 +7851,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "20% vat in 120 — 20 (the tax inside the price)."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_tax_in_a_price_is_already_inside_it"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.100-10-tax-110-00-usd"
@@ -7861,9 +7861,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "$100 + 10% tax — 110.00 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_query_that_ends_in_a_tax_is_a_total", "tc-calc::currency_tests::a_tax_on_money_keeps_the_money"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.0-125-as-12-5"
@@ -7871,9 +7871,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "0.125 as % — 12.5%."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_fraction_read_as_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.half-of-90-45-00-usd"
@@ -7891,9 +7891,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "Ratio of 1920 to 1080 — 16 : 9."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_ratio_is_reduced"]
+reason = ""
 
 [[row]]
 id = "features-calculator.percent-ratios-and-lists.a-word-between-the-percentage-and-of-on-or-o"
@@ -7901,9 +7901,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.percent-ratios-and-lists"
 behavior = "A word between the percentage and of, on or off only names it, so 20% discount off $100 is 20% off $100. The exception is tip: 15% tip on 42 is the tip on its own. tax, sales tax, vat and gst all work the same way."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::percent::tests::a_word_between_the_percentage_and_the_relation_only_names_it", "tc-calc::percent::tests::a_tip_is_the_tip_alone", "tc-calc::percent::tests::a_tax_in_a_price_is_already_inside_it", "tc-calc::percent::tests::sales_tax_is_a_tax"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.average-of-10-20-30-20"
@@ -8757,9 +8757,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "$120 split 4 — 30.00 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::a_share_of_money_keeps_the_money"]
+reason = ""
 
 [[row]]
 id = "features-calculator.splitting-a-bill.split-120-between-4-30"
@@ -8767,9 +8767,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "Split 120 between 4 — 30."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::an_amount_shared_between_four_is_a_quarter_of_it"]
+reason = ""
 
 [[row]]
 id = "features-calculator.splitting-a-bill.85-20-split-3-34"
@@ -8777,9 +8777,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "85 + 20% split 3 — 34."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::a_calculation_is_shared_out_after_it_is_calculated"]
+reason = ""
 
 [[row]]
 id = "features-calculator.splitting-a-bill.20-tip-on-85-split-3-5-666666667"
@@ -8787,9 +8787,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "20% tip on 85 split 3 — 5.666666667."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::a_tip_is_shared_out_as_it_is"]
+reason = ""
 
 [[row]]
 id = "features-calculator.splitting-a-bill.eur-99-among-3-friends-33-00-eur"
@@ -8797,9 +8797,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "Eur 99 among 3 friends — 33.00 EUR."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::the_currency_can_be_named_before_the_amount"]
+reason = ""
 
 [[row]]
 id = "features-calculator.splitting-a-bill.120-4-people-30"
@@ -8807,9 +8807,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "120 / 4 people — 30."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::a_divide_by_a_people_is_the_same_share"]
+reason = ""
 
 [[row]]
 id = "features-calculator.splitting-a-bill.the-card-labels-the-answer-per-person-the-am"
@@ -8817,9 +8817,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.splitting-a-bill"
 behavior = "The card labels the answer Per Person. The amount keeps the currency or unit you typed, so $120 split 4 is 30.00 USD on any Mac."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::split_tests::an_amount_shared_between_four_is_a_quarter_of_it", "tc-calc::split_tests::a_share_of_money_keeps_the_money"]
+reason = ""
 
 [[row]]
 id = "features-calculator.functions-and-comparisons.functions-take-comma-separated-values-hypot"
