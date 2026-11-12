@@ -490,3 +490,31 @@ not answered, and `Half of $90` waits for the arithmetic asked in words.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 208 PORTED, 2101 NOT PORTED.
 - `cargo run -q -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+
+## Session 9 - 2026-11-13 (second part)
+
+The calculator's two phrase layers about time: the money phrases about growth, loans and returns,
+and the phrases about a steady rate.
+
+**What was done.**
+
+- **`crates/tc-calc/src/finance.rs`** - upstream's `CalcFinance`: the future value, the interest,
+  the present value, the monthly, annual and total payments, the interest a loan earns, the
+  return on an investment, its yearly return - the CAGR - and the capital an investment needs.
+  The principal, the term and the rate come in either order, and `after` and `over` both read as
+  `for`.
+- **`crates/tc-calc/src/growth.rs`** - upstream's `CalcGrowth`: the compounded change, the time it
+  takes to reach a value, and the rate that explains a change.
+- **`crates/tc-calc/src/duration.rs`** - the duration reader. Upstream's arithmetic carries a unit
+  on the value, so `5 years` is a unit value and `5 years / year` is the number five. This port's
+  arithmetic core does not carry units yet, so the phrases that need a term read the duration
+  themselves, the way upstream does.
+
+**What was not done.** The rates that carry a unit (`$50/hr for 3 hours`), the statistics, and the
+arithmetic asked in words.
+
+**Verified.**
+- `cargo test --workspace` passes: 819 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 225 PORTED, 2084 NOT PORTED.

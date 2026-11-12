@@ -67,11 +67,13 @@ impl Payload {
 
     /// The payload of an amount of money, as upstream's `CalcResult.Payload.money`.
     ///
-    /// The code follows the amount, so `80.00 USD` reads the way a bill does.
+    /// The code follows the amount, so `80.00 USD` reads the way a bill does, and the
+    /// digits are grouped the way they are on one.
     pub fn money(value: f64, code: &str) -> Self {
+        let text = Formatter::currency(value);
         Self::Value {
-            display: format!("{} {}", Formatter::currency(value), code),
-            copy_text: format!("{} {}", Formatter::copy_text(value), code),
+            display: format!("{} {}", Formatter::grouped(&text), code),
+            copy_text: format!("{text} {code}"),
         }
     }
 }

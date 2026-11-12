@@ -172,6 +172,27 @@ seven of *Splitting a bill*, and two of *Currency and crypto*. 171 → 208.
 
 See [port note 017](docs/port-notes/017-calculator-percentages-money-and-splits.md).
 
+### The calculator's money over time (crates/tc-calc)
+
+Upstream's `CalcFinance` and `CalcGrowth`: what money does over time.
+
+- **The money phrases** - the future value, the interest, the present value, the monthly, annual
+  and total payments, the interest a loan earns, the return on an investment, its yearly return
+  (the CAGR) and the capital an investment needs. `$2,000 after 5 years at 4%` is `2,433.31 USD`,
+  `monthly payment on $20,000 over 5 years at 6%` is `386.66 USD`, and the card says what it
+  answered.
+- **The steady rate** - `20 after 5 years at 5% every year` is `25.52563125`, `time from 20 to 30
+  at 5% every year` is `8.310386223 yr`, and `growth every year from 20 to 30 over 5 years` is
+  `8.44717712%`.
+- **The duration reader** - upstream's arithmetic carries a unit on the value, so `5 years / year`
+  is the number five. This port's arithmetic core does not carry units yet, so the phrases that
+  need a term read the duration themselves.
+
+**Seventeen calculator rows are now `PORTED`**: the twelve of *Interest and loans* and the five of
+*Growth and decay*. 208 → 225.
+
+See [port note 018](docs/port-notes/018-calculator-finance-and-growth.md).
+
 ### The system actions (crates/tc-platform-win, apps/yal)
 
 Twenty of the thirty-two system actions are ported and really run on Windows: the session
@@ -307,7 +328,8 @@ PORTED**. The clipboard now answers for its pins, its memory window and its rete
 calculator answers for the units it knows.
 
 **208 rows are PORTED** now: the window mover and its memory added fifty-one, and the
-calculator's percentages, its money and its shared amounts added thirty-seven.
+calculator's percentages, its money and its shared amounts added thirty-seven, and its phrases
+about growth, loans and returns seventeen more.
 
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.

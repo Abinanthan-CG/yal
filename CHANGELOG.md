@@ -28,6 +28,12 @@ has got.
   carries its currency through the calculation, so `20% discount off $100` is `80.00 USD`.
 - **The calculator's shared amounts**: `85 + 20% split 3` is `34`, `$120 split 4` is `30.00 USD`,
   and the card says `Per Person`.
+- **The calculator's money over time**: the compound growth, loans and returns of upstream's
+  `CalcFinance` — the future value, the interest, the present value, the monthly, annual and
+  total payments, the interest a loan earns, the return on an investment, its yearly return and
+  the capital an investment needs — and upstream's `CalcGrowth`, the phrases about a steady rate:
+  `20 after 5 years at 5% every year` is `25.52563125` and `time from 20 to 30 at 5% every year`
+  is `8.310386223 yr`.
 - **The snippet record and its Markdown file** in `tc-snippets`: the front matter, the body kept
   exactly as written, the files that are rejected and why, and the small locale table the date
   tokens format with.

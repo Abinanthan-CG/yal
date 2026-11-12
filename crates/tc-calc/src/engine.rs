@@ -8,7 +8,9 @@
 //! either a card or [`CalcOutcome::Unsupported`], and never a made-up answer.
 
 use crate::catalog::Catalog;
+use crate::finance;
 use crate::formatter::Formatter;
+use crate::growth;
 use crate::math::Math;
 use crate::parser::Parser;
 use crate::percent;
@@ -134,6 +136,16 @@ fn evaluate_tokens(
 
     // Rounding and fraction phrasings.
     if let Some(result) = rounding::evaluate(tokens, query, catalog)? {
+        return Ok(Some(result));
+    }
+
+    // The money phrases about growth, loans and returns.
+    if let Some(result) = finance::evaluate(tokens, query, catalog)? {
+        return Ok(Some(result));
+    }
+
+    // The phrases about a steady rate.
+    if let Some(result) = growth::evaluate(tokens, query, catalog)? {
         return Ok(Some(result));
     }
 

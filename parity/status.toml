@@ -1742,3 +1742,126 @@ evidence = [
   "tc-calc::currency_tests::a_currency_is_named_by_its_code_and_its_own_nouns",
   "tc-calc::currency_tests::a_word_several_countries_share_is_not_guessed_at",
 ]
+
+[[status]]
+id = "features-calculator.interest-and-loans.2-000-after-5-years-at-4-2-433-31-usd"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::an_amount_after_a_term_at_a_rate_is_worth_more",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.2-000-at-4-for-5-years-compounding-quarterly"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_term_and_the_rate_come_in_either_order",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.interest-on-2-000-after-5-years-at-4-433-31"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_interest_is_what_the_amount_earned",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.monthly-payment-on-20-000-over-5-years-at-6"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::a_payment_is_what_has_to_be_paid",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.total-payment-on-20-000-over-5-years-at-6-23"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_total_payment_is_all_of_them",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.total-interest-on-10-000-for-5-years-at-6-1"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.monthly-interest-on-10-000-for-5-years-at-6"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.present-value-of-1000-after-5-years-at-5-783"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_present_value_is_what_the_amount_is_worth_now",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.500-invested-1000-returned-100"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::an_investment_that_returned_is_a_percentage",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.annual-return-on-500-invested-1000-returned"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_return_can_be_a_yearly_one",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.investment-required-for-50000-year-at-4-1-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_capital_an_investment_needs_is_the_income_over_the_rate",
+]
+
+[[status]]
+id = "features-calculator.interest-and-loans.interest-is-added-once-a-year-unless-you-add"
+status = "PORTED"
+evidence = [
+  "tc-calc::finance_tests::the_term_and_the_rate_come_in_either_order",
+  "tc-calc::finance_tests::a_payment_is_what_has_to_be_paid",
+  "tc-calc::finance_tests::the_total_payment_is_all_of_them",
+  "tc-calc::finance_tests::the_return_can_be_a_yearly_one",
+  "tc-calc::finance_tests::the_capital_an_investment_needs_is_the_income_over_the_rate",
+]
+
+[[status]]
+id = "features-calculator.growth-and-decay.20-after-5-years-at-5-every-year-25-52563125"
+status = "PORTED"
+evidence = [
+  "tc-calc::growth_tests::an_amount_after_a_term_at_a_rate_every_period_compounds",
+]
+
+[[status]]
+id = "features-calculator.growth-and-decay.20-after-5-years-at-5-decay-every-year-15-47"
+status = "PORTED"
+evidence = [
+  "tc-calc::growth_tests::a_decay_shrinks_the_amount",
+]
+
+[[status]]
+id = "features-calculator.growth-and-decay.time-from-20-to-30-at-5-every-year-8-3103862"
+status = "PORTED"
+evidence = [
+  "tc-calc::growth_tests::the_time_it_takes_to_reach_a_value_is_a_duration",
+]
+
+[[status]]
+id = "features-calculator.growth-and-decay.time-from-20-to-30-at-2-every-day-5-day"
+status = "PORTED"
+evidence = [
+  "tc-calc::growth_tests::a_steady_amount_each_step_is_a_duration_too",
+]
+
+[[status]]
+id = "features-calculator.growth-and-decay.growth-every-year-from-20-to-30-over-5-years"
+status = "PORTED"
+evidence = [
+  "tc-calc::growth_tests::the_rate_that_explains_a_change_is_a_percentage",
+]
