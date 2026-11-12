@@ -15130,9 +15130,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.the-commands"
 behavior = "Move and resize the window you were last using, without installing another app."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-platform-win::window_control::tests::the_foreground_window_is_a_real_window", "tc-platform-win::window_control::tests::the_window_list_sees_a_window_with_a_title", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15141,9 +15141,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.the-commands"
 behavior = "It doesn't need any new permissions. It uses the same Accessibility permission as clipboard pasting."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window", "tc-platform-win::window_control::tests::the_machine_has_at_least_one_display_with_a_work_area"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15175,9 +15175,9 @@ heading = "features-window-management.the-commands"
 behavior = "Halves: Left Half."
 group = "Halves"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_left_half_takes_the_left_half_of_the_display", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15187,9 +15187,9 @@ heading = "features-window-management.the-commands"
 behavior = "Halves: Right Half."
 group = "Halves"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_right_half_takes_the_right_half", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15199,9 +15199,9 @@ heading = "features-window-management.the-commands"
 behavior = "Halves: Top Half."
 group = "Halves"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_top_and_bottom_halves_split_the_height", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15211,9 +15211,9 @@ heading = "features-window-management.the-commands"
 behavior = "Halves: Bottom Half."
 group = "Halves"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_top_and_bottom_halves_split_the_height", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15223,9 +15223,9 @@ heading = "features-window-management.the-commands"
 behavior = "Quarters: Top Left Quarter."
 group = "Quarters"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_four_quarters_split_both_axes", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15235,9 +15235,9 @@ heading = "features-window-management.the-commands"
 behavior = "Quarters: Top Right Quarter."
 group = "Quarters"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_four_quarters_split_both_axes", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15247,9 +15247,9 @@ heading = "features-window-management.the-commands"
 behavior = "Quarters: Bottom Left Quarter."
 group = "Quarters"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_four_quarters_split_both_axes", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15259,9 +15259,9 @@ heading = "features-window-management.the-commands"
 behavior = "Quarters: Bottom Right Quarter."
 group = "Quarters"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_four_quarters_split_both_axes", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15271,9 +15271,9 @@ heading = "features-window-management.the-commands"
 behavior = "Fourths: First Three Fourths."
 group = "Fourths"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_three_fourths_overlap_in_the_middle_by_a_quarter", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15283,9 +15283,9 @@ heading = "features-window-management.the-commands"
 behavior = "Fourths: Last Three Fourths."
 group = "Fourths"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_three_fourths_overlap_in_the_middle_by_a_quarter", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15295,9 +15295,9 @@ heading = "features-window-management.the-commands"
 behavior = "Thirds: First Third."
 group = "Thirds"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_thirds_tile_the_width_without_gaps", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15307,9 +15307,9 @@ heading = "features-window-management.the-commands"
 behavior = "Thirds: Center Third."
 group = "Thirds"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_thirds_tile_the_width_without_gaps", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15319,9 +15319,9 @@ heading = "features-window-management.the-commands"
 behavior = "Thirds: Last Third."
 group = "Thirds"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_thirds_tile_the_width_without_gaps", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15331,9 +15331,9 @@ heading = "features-window-management.the-commands"
 behavior = "Thirds: First Two Thirds."
 group = "Thirds"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_two_thirds_take_the_rest_of_the_width", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15343,9 +15343,9 @@ heading = "features-window-management.the-commands"
 behavior = "Thirds: Last Two Thirds."
 group = "Thirds"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_two_thirds_take_the_rest_of_the_width", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15355,9 +15355,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Maximize."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-platform-win::window_control::tests::the_maximize_command_fills_the_display", "tc-windows::geometry::tests::maximize_fills_the_display"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15367,9 +15367,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Almost Maximize."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::almost_maximize_leaves_a_tenth_around_the_window", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15379,9 +15379,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Reasonable Size."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::reasonable_size_is_sixty_per_cent_of_the_display", "tc-windows::geometry::tests::reasonable_size_never_grows_past_the_ceiling"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15391,9 +15391,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Maximize Height."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::maximize_height_keeps_the_width_and_clamps_it_on_screen", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15403,9 +15403,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Maximize Width."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::maximize_width_keeps_the_height_and_clamps_it_on_screen", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15415,9 +15415,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Center."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::center_keeps_the_window_size_and_centres_it", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15427,9 +15427,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Center Half."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_center_half_is_half_the_width_at_full_height", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15439,9 +15439,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Center Two Thirds."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_center_two_thirds_is_two_thirds_at_full_height", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15451,9 +15451,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Make Larger."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::make_larger_and_make_smaller_are_exactly_invertible", "tc-windows::geometry::tests::make_smaller_stops_at_the_floor"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15463,9 +15463,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Make Smaller."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::make_larger_and_make_smaller_are_exactly_invertible", "tc-windows::geometry::tests::make_smaller_stops_at_the_floor"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15475,9 +15475,9 @@ heading = "features-window-management.the-commands"
 behavior = "Sizing: Restore Window."
 group = "Sizing"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-platform-win::window_control::tests::the_restore_chain_puts_the_window_back_where_it_started", "tc-windows::action_memory::tests::the_first_sight_has_nothing_to_restore"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15487,9 +15487,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move Left."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it", "tc-windows::geometry::tests::a_nudge_stops_at_the_edge_of_the_display"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15499,9 +15499,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move Right."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15511,9 +15511,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move Up."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15523,9 +15523,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move Down."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15535,9 +15535,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move to Left Edge."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15547,9 +15547,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move to Right Edge."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15559,9 +15559,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move to Top Edge."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15571,9 +15571,9 @@ heading = "features-window-management.the-commands"
 behavior = "Moving: Move to Bottom Edge."
 group = "Moving"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge", "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15607,9 +15607,9 @@ heading = "features-window-management.the-commands"
 behavior = "Fullscreen: Toggle Fullscreen."
 group = "Fullscreen"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-platform-win::window_control::tests::a_window_can_be_made_to_fill_the_display_and_back"]
+reason = ""
 count_check = "window-management.command-count"
 
 [[row]]
@@ -15752,9 +15752,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.how-sizes-are-calculated"
 behavior = "Gaps. Edges next to the screen border get the full gap, and edges between two windows get half, so two windows side by side have exactly one gap between them, and every screen edge is inset by one gap. Edges are rounded so thirds never overlap or leave a one-point line between them."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::a_gap_insets_the_screen_edge_by_one_gap_and_splits_the_middle_by_half", "tc-windows::geometry::tests::two_tiles_never_overlap_and_never_leave_a_line_between_them", "tc-windows::geometry::tests::a_gap_is_capped_at_a_tenth_of_the_display"]
+reason = ""
 count_check = "window-management.sizing-values"
 
 [[row]]
@@ -15763,9 +15763,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.how-sizes-are-calculated"
 behavior = "Make Larger and Make Smaller change the size by 5% of the screen, not the window, so each one exactly undoes the other. The largest size is the full screen. The smallest is 200 × 150 points or 15% of the screen, whichever is larger. Beyond those limits, they do nothing."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::make_larger_and_make_smaller_are_exactly_invertible", "tc-windows::geometry::tests::make_smaller_stops_at_the_floor"]
+reason = ""
 count_check = "window-management.sizing-values"
 
 [[row]]
@@ -15774,9 +15774,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.how-sizes-are-calculated"
 behavior = "Reasonable Size is 60% of the screen, centered, and never larger than 1025 × 900 points, so on a large 5K display you get a comfortably sized window. Pressing it again doesn't change anything."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::reasonable_size_is_sixty_per_cent_of_the_display", "tc-windows::geometry::tests::reasonable_size_never_grows_past_the_ceiling"]
+reason = ""
 count_check = "window-management.sizing-values"
 
 [[row]]
@@ -15785,9 +15785,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.how-sizes-are-calculated"
 behavior = "Center Half is half the screen's width at full height, centered. Center Two Thirds is the same at two thirds of the width."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_center_half_is_half_the_width_at_full_height", "tc-windows::geometry::tests::the_center_two_thirds_is_two_thirds_at_full_height"]
+reason = ""
 count_check = "window-management.sizing-values"
 
 [[row]]
@@ -15796,9 +15796,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.how-sizes-are-calculated"
 behavior = "A window that's too large or partly off-screen is always moved back onto the display. The usable area already excludes the menu bar, the Dock and the notch."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::maximize_height_keeps_the_width_and_clamps_it_on_screen", "tc-windows::geometry::tests::a_restore_point_stranded_off_every_display_comes_back_centred", "tc-platform-win::window_control::tests::the_machine_has_at_least_one_display_with_a_work_area"]
+reason = ""
 count_check = "window-management.sizing-values"
 
 [[row]]
@@ -15837,9 +15837,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "Cycling only applies to the four halves and Center Half, and it's off by default. With cycling off, pressing Left Half again leaves the window where it is. The two cycling modes work like this:"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::command::tests::the_five_cycling_commands_are_the_halves_and_the_center_half", "tc-windows::geometry::tests::without_cycling_a_half_keeps_its_frame", "tc-windows::action_memory::tests::a_non_cycling_command_never_steps"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15848,9 +15848,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "**Cycle ½, ⅓ and ⅔** changes the width with each press, keeping the same side. Top Half and Bottom"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_cycling_half_steps_through_half_a_third_and_two_thirds", "tc-windows::action_memory::tests::a_second_press_of_the_same_command_steps_the_cycle"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15859,9 +15859,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "Half cycle through heights instead. Center Half stays centered as its width changes."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_cycling_half_steps_through_half_a_third_and_two_thirds", "tc-windows::geometry::tests::the_center_half_is_half_the_width_at_full_height"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15870,9 +15870,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "**Cycle displays** moves the window through every half of every display, so one shortcut can reach"
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_display_cycle_walks_the_strip_of_displays", "tc-windows::action_memory::tests::a_press_on_another_display_starts_a_new_chain"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15881,9 +15881,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "Your whole setup. With two displays, Left Half goes from Display 1 left → Display 2 right → Display 2 left → Display 1 right, then starts over. With one display, it does nothing. Center Half stays where it is in this mode."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::geometry::tests::the_display_cycle_walks_the_strip_of_displays", "tc-windows::geometry::tests::the_cycle_length_is_one_for_a_command_that_does_not_cycle"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15892,9 +15892,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "The cycle starts over when you move or resize the window yourself (by more than 2 points), use a different command, or move the window to a different display. Waiting between presses doesn't reset it."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::action_memory::tests::a_drag_of_three_points_is_the_users_own", "tc-windows::action_memory::tests::a_drift_of_two_points_is_still_untouched", "tc-windows::action_memory::tests::a_different_command_starts_a_new_chain", "tc-windows::action_memory::tests::a_press_on_another_display_starts_a_new_chain", "tc-windows::action_memory::tests::waiting_between_presses_does_not_reset_the_chain"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15903,9 +15903,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "Restore Window returns to the saved starting position. Left Half → Maximize → Top Right Quarter → Restore Window puts the window back where it started, not where it was before the last command."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-platform-win::window_control::tests::the_restore_chain_puts_the_window_back_where_it_started", "tc-windows::action_memory::tests::a_window_the_user_moved_starts_a_new_chain"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15914,9 +15914,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.cycling-and-restore"
 behavior = "Tinycast saves the starting position before its first change. Restore Window does nothing until Tinycast has moved that window. Moving or resizing the window yourself gives the next command a new starting position. Tinycast remembers up to 64 windows, forgets an app's windows when the app quits, and never saves this information to disk."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::action_memory::tests::the_first_sight_has_nothing_to_restore", "tc-windows::action_memory::tests::the_memory_is_bounded_and_forgets_the_oldest", "tc-windows::action_memory::tests::the_windows_of_an_app_that_quits_are_forgotten"]
+reason = ""
 count_check = "window-management.restore-memory"
 
 [[row]]
@@ -15945,9 +15945,9 @@ page = "docs/features/window-management/"
 heading = "features-window-management.fullscreen"
 behavior = "It resets the cycle but keeps the Restore point."
 windows = "\"All 39 commands act on the window you were last using, computed against the monitor work area with DWM extended-frame-bounds compensation so tiled windows meet exactly. Gap 0-64 in steps of 2 device-independent pixels with the full-edge / half-edge rule. Shortcut presets Rectangle / Magnet and Spectacle are translated through the global modifier mapping. Toggle Fullscreen uses the window''s own fullscreen when it exposes one, otherwise app-managed borderless fullscreen with exact restore; it never sends F11. Switch to Previous / Next Space switches virtual desktops without animation (internal interface behind a trait, Win+Ctrl+Arrow fallback) and ignores presses that arrive mid-switch. Minimized, modal, cloaked and elevated windows follow the won''t-move rules."
-status = "NOT PORTED"
-evidence = []
-reason = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+status = "PORTED"
+evidence = ["tc-windows::action_memory::tests::forgetting_the_cycle_keeps_the_restore_point", "tc-platform-win::window_control::tests::a_window_can_be_made_to_fill_the_display_and_back"]
+reason = ""
 
 [[row]]
 id = "features-window-management.spaces.switch-to-previous-space-and-switch-to-next"

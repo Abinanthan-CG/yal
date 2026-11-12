@@ -395,6 +395,20 @@ rectangle back.
   when it is ready, so a search that is running keeps the old index until the
   new one is complete.
 
+- **The window mover and the memory of the windows it moved**: the displays
+  and their work areas, the window list, the foreground window, and the code
+  that writes a rectangle into a real window and reads it back - plus
+  upstream's memory of where each window was before YAL touched it, the cycle
+  step, the two-point tolerance and the bound of sixty-four windows. 19 tests
+  for the memory, 12 for the mover. The load-bearing test runs **every**
+  command in the catalogue against a real window and reads the rectangle
+  back; another runs upstream's own example - Left Half, Maximize, Top Right
+  Quarter, Restore Window - and checks the window ends up where it started.
+
+**Fifty-one window-management rows moved to `PORTED`, 120 -> 171.** The
+ledger's validator resolved every piece of evidence to a real test in a real
+crate, which is what keeps the claim honest.
+
 **The worker failed.** The background worker that was to build the file-search
 backend died on a provider balance error before writing a file, so that slice
 was written by hand instead - as the geometry was.
@@ -402,6 +416,7 @@ was written by hand instead - as the geometry was.
 **Verified.**
 - `cargo test -p tc-windows` passes: 47 tests, 0 failed, 0 ignored.
 - `cargo test -p tc-files` passes: 55 tests, 0 failed, 0 ignored.
+- `cargo test --workspace` passes: 737 tests, 0 failed, 0 ignored.
 - `cargo clippy -p tc-windows --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all` leaves no diff.
 ## Session 8 - 2026-11-12 (early morning)
