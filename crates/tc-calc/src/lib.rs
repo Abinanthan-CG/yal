@@ -40,6 +40,8 @@ pub mod percent;
 pub mod result;
 pub mod rounding;
 pub mod split;
+pub mod spoken;
+pub mod statistics;
 pub mod token;
 pub mod tokenizer;
 pub mod units;
@@ -61,6 +63,9 @@ mod finance_tests;
 
 #[cfg(test)]
 mod growth_tests;
+
+#[cfg(test)]
+mod statistics_tests;
 
 pub use catalog::{Catalog, CurrencyInfo, FullCatalog, NameCatalog, UnitInfo};
 pub use currency::{CurrencyCatalog, CurrencyDef};

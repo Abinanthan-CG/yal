@@ -50,10 +50,18 @@ impl Payload {
     ///
     /// The sign sits outside the grouped digits, so `1234.5%` reads as it should.
     pub fn percentage(value: f64) -> Self {
+        Self::suffixed(value, "%")
+    }
+
+    /// The payload of a number with a sign after it, as upstream's
+    /// `CalcResult.Payload.number(_:suffix:)`.
+    ///
+    /// `5x` is a multiplier and `25%` is a percentage.
+    pub fn suffixed(value: f64, suffix: &str) -> Self {
         let text = Formatter::copy_text(value);
         Self::Value {
-            display: format!("{}%", Formatter::grouped(&text)),
-            copy_text: format!("{text}%"),
+            display: format!("{}{suffix}", Formatter::grouped(&text)),
+            copy_text: format!("{text}{suffix}"),
         }
     }
 

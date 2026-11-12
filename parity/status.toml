@@ -1865,3 +1865,150 @@ status = "PORTED"
 evidence = [
   "tc-calc::growth_tests::the_rate_that_explains_a_change_is_a_percentage",
 ]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.median-of-3-1-2-2"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_list_is_reduced_by_the_statistic_asked_for",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.count-of-4-8-15-16-23-42-6"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_list_is_reduced_by_the_statistic_asked_for",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.standard-deviation-of-2-4-4-4-5-5-7-9-2-1380"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::the_standard_deviation_is_the_sample_one",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.larger-of-3-and-7-7"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_list_may_be_separated_by_and",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.midpoint-between-10-and-30-20"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_midpoint_is_the_average_of_the_two",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.gcd-of-12-and-18-6"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.gcf-of-20-and-30-10"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.lowest-common-multiple-of-4-and-6-12"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.is-97-prime-true"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_whole_number_is_told_whether_it_is_prime",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.is-91-a-prime-number-false"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_whole_number_is_told_whether_it_is_prime",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.prime-checks-work-for-every-whole-number-up"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_prime_check_works_for_the_whole_range",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.remainder-of-20-divided-by-3-2"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_remainder_is_what_is_left_of_a_division",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.clamp-20-between-5-and-15-15"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_value_is_held_between_two_bounds",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.6-is-to-600-as-8-is-to-what-800"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_proportion_is_solved_for_the_missing_term",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.5-choose-3-10"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::the_combinations_and_the_permutations_are_told_apart",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.5-permutation-3-60"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::the_combinations_and_the_permutations_are_told_apart",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.logarithm-81-base-3-4"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_logarithm_is_answered_in_both_orders",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.1000-is-10-to-the-power-of-what-3"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_logarithm_is_answered_in_both_orders",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.5-root-of-32-2"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_root_is_answered_in_the_degree_first_order",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.5-as-multiplier-of-1-5x"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_multiplier_is_written_with_an_x",
+]
+
+[[status]]
+id = "features-calculator.math-in-words.10-to-20-as-multiplier-2x"
+status = "PORTED"
+evidence = [
+  "tc-calc::statistics_tests::a_multiplier_is_written_with_an_x",
+]

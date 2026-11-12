@@ -17,6 +17,8 @@ use crate::percent;
 use crate::result::{CalcResult, Payload};
 use crate::rounding;
 use crate::split;
+use crate::spoken;
+use crate::statistics;
 use crate::token::{NumberBase, Operator, Token};
 use crate::tokenizer::tokenize;
 use crate::units;
@@ -90,21 +92,28 @@ pub fn evaluate(query: &str, catalog: &dyn Catalog) -> CalcOutcome {
 
 /// Evaluates a tokenized query, as upstream's `CalcEngine.evaluate` does once the query
 /// is tokenized.
+///
+/// Upstream's engine tries every layer before it gives up, so a query that one layer
+/// cannot finish may still be answered by another: `5 as multiplier of 1` has a word
+/// the arithmetic reads as a unit, and the phrase layer answers it anyway. The area
+/// that could not be answered is kept and reported only when nothing else answers.
 fn evaluate_tokens(
     tokens: &[Token],
     query: &str,
     catalog: &dyn Catalog,
 ) -> Result<Option<CalcResult>, UnsupportedArea> {
+    let mut unsupported: Option<UnsupportedArea> = None;
+
     // A shared amount, before the partial result: `85 + 20% split 3`.
     if split::mentions(tokens) {
-        if let Some(result) = split::evaluate(query, catalog)? {
+        if let Some(result) = layer(split::evaluate(query, catalog), &mut unsupported) {
             return Ok(Some(result));
         }
     }
 
     // A trailing operator keeps the last complete prefix on the card while the user
     // still types.
-    if let Some(result) = partial_result(tokens, query, catalog)? {
+    if let Some(result) = layer(partial_result(tokens, query, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
@@ -114,7 +123,7 @@ fn evaluate_tokens(
     }
 
     // "255 to hex": an expression on the left, like a unit conversion.
-    if let Some(result) = base_conversion(tokens, query, catalog)? {
+    if let Some(result) = layer(base_conversion(tokens, query, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
@@ -125,31 +134,70 @@ fn evaluate_tokens(
     }
 
     // Typed arithmetic.
-    if let Some(result) = quantity_result(tokens, query, catalog, false)? {
+    if let Some(result) = layer(
+        quantity_result(tokens, query, catalog, false),
+        &mut unsupported,
+    ) {
         return Ok(Some(result));
     }
 
     // The percentage phrasings: `15% tip on 42`, `50 as % of 200`, `20% off 500`.
-    if let Some(result) = percent::evaluate(tokens, query, catalog)? {
+    if let Some(result) = layer(percent::evaluate(tokens, query, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
     // Rounding and fraction phrasings.
-    if let Some(result) = rounding::evaluate(tokens, query, catalog)? {
+    if let Some(result) = layer(rounding::evaluate(tokens, query, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
     // The money phrases about growth, loans and returns.
-    if let Some(result) = finance::evaluate(tokens, query, catalog)? {
+    if let Some(result) = layer(finance::evaluate(tokens, query, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
     // The phrases about a steady rate.
-    if let Some(result) = growth::evaluate(tokens, query, catalog)? {
+    if let Some(result) = layer(growth::evaluate(tokens, query, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
-    Ok(None)
+    // The reductions over a spoken list.
+    if let Some(result) = layer(
+        statistics::evaluate(tokens, query, catalog),
+        &mut unsupported,
+    ) {
+        return Ok(Some(result));
+    }
+
+    // The math asked in words.
+    if let Some(result) = layer(spoken::evaluate(tokens, query, catalog), &mut unsupported) {
+        return Ok(Some(result));
+    }
+
+    match unsupported {
+        Some(area) => Err(area),
+        None => Ok(None),
+    }
+}
+
+/// The card a layer produced, keeping the area it could not answer.
+///
+/// The first area is kept: it is the one the query met first, and it is the one
+/// worth reporting when no layer answers.
+fn layer(
+    result: Result<Option<CalcResult>, UnsupportedArea>,
+    unsupported: &mut Option<UnsupportedArea>,
+) -> Option<CalcResult> {
+    match result {
+        Ok(Some(card)) => Some(card),
+        Ok(None) => None,
+        Err(area) => {
+            if unsupported.is_none() {
+                *unsupported = Some(area);
+            }
+            None
+        }
+    }
 }
 
 /// The card of a lone literal, as upstream's `CalcEngine.evaluate` shows it.

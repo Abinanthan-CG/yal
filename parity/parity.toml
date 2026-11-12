@@ -7921,9 +7921,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Median of 3, 1, 2 — 2."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_list_is_reduced_by_the_statistic_asked_for"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.count-of-4-8-15-16-23-42-6"
@@ -7931,9 +7931,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Count of 4, 8, 15, 16, 23, 42 — 6."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_list_is_reduced_by_the_statistic_asked_for"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.standard-deviation-of-2-4-4-4-5-5-7-9-2-1380"
@@ -7941,9 +7941,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Standard deviation of 2, 4, 4, 4, 5, 5, 7, 9 — 2.138089935."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::the_standard_deviation_is_the_sample_one"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.sum-of-1-km-and-500-m-1-5-km"
@@ -7961,9 +7961,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Larger of 3 and 7 — 7."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_list_may_be_separated_by_and"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.midpoint-between-10-and-30-20"
@@ -7971,9 +7971,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Midpoint between 10 and 30 — 20."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_midpoint_is_the_average_of_the_two"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.gcd-of-12-and-18-6"
@@ -7981,9 +7981,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Gcd of 12 and 18 — 6."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.gcf-of-20-and-30-10"
@@ -7991,9 +7991,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Gcf of 20 and 30 — 10."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.lowest-common-multiple-of-4-and-6-12"
@@ -8001,9 +8001,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Lowest common multiple of 4 and 6 — 12."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.separate-items-with-commas-or-and-units-are"
@@ -8031,9 +8031,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "Is 97 prime — true."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_whole_number_is_told_whether_it_is_prime"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.is-91-a-prime-number-false"
@@ -8041,9 +8041,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "Is 91 a prime number — false."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_whole_number_is_told_whether_it_is_prime"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.remainder-of-20-divided-by-3-2"
@@ -8051,9 +8051,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "Remainder of 20 divided by 3 — 2."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_remainder_is_what_is_left_of_a_division"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.clamp-20-between-5-and-15-15"
@@ -8061,9 +8061,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "Clamp 20 between 5 and 15 — 15."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_value_is_held_between_two_bounds"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.6-is-to-600-as-8-is-to-what-800"
@@ -8071,9 +8071,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "6 is to 600 as 8 is to what — 800."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_proportion_is_solved_for_the_missing_term"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.2-km-is-to-4-km-as-what-is-to-10-kg-5-kg"
@@ -8091,9 +8091,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "5 choose 3 — 10."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::the_combinations_and_the_permutations_are_told_apart"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.5-permutation-3-60"
@@ -8101,9 +8101,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "5 permutation 3 — 60."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::the_combinations_and_the_permutations_are_told_apart"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.logarithm-81-base-3-4"
@@ -8111,9 +8111,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "Logarithm 81 base 3 — 4."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_logarithm_is_answered_in_both_orders"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.1000-is-10-to-the-power-of-what-3"
@@ -8121,9 +8121,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "1000 is 10 to the power of what — 3."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_logarithm_is_answered_in_both_orders"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.5-root-of-32-2"
@@ -8131,9 +8131,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "5 root of 32 — 2."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_root_is_answered_in_the_degree_first_order"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.5-as-multiplier-of-1-5x"
@@ -8141,9 +8141,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "5 as multiplier of 1 — 5x."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_multiplier_is_written_with_an_x"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.10-to-20-as-multiplier-2x"
@@ -8151,9 +8151,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "10 to 20 as multiplier — 2x."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_multiplier_is_written_with_an_x"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.prime-checks-work-for-every-whole-number-up"
@@ -8161,9 +8161,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.math-in-words"
 behavior = "Prime checks work for every whole number up to 9,007,199,254,740,992 and answer instantly."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::statistics_tests::a_prime_check_works_for_the_whole_range"]
+reason = ""
 
 [[row]]
 id = "features-calculator.rounding-and-fractions.2-3-to-3-dp-0-667"

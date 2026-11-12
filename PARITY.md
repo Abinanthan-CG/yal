@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 225 | 1590 |
+| 1 | 1815 | 246 | 1569 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **225** | **2084** |
+| **All** | **2309** | **246** | **2063** |
 
 ### Totals per docs page
 
@@ -27,7 +27,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/system-settings/` | 1 | 16 | 0 | 16 |
 | `docs/launcher/system-actions/` | 1 | 54 | 26 | 28 |
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
-| `docs/features/calculator/` | 1 | 326 | 84 | 242 |
+| `docs/features/calculator/` | 1 | 326 | 105 | 221 |
 | `docs/features/clipboard/` | 1 | 85 | 15 | 70 |
 | `docs/features/snippets/` | 1 | 87 | 28 | 59 |
 | `docs/features/file-search/` | 1 | 68 | 0 | 68 |
@@ -645,20 +645,20 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | Present value of $1000 after 5 years at 5% — 783.53 USD. | PORTED | `tc-calc::finance_tests::the_present_value_is_what_the_amount_is_worth_now` |
 | Calculator | Calculator | Total interest on $10,000 for 5 years at 6% — 1,599.68 USD. | PORTED | `tc-calc::finance_tests::the_interest_of_a_loan_is_what_the_payments_add` |
 | Calculator | Calculator | Total payment on $20,000 over 5 years at 6% — 23,199.36 USD. | PORTED | `tc-calc::finance_tests::the_total_payment_is_all_of_them` |
-| Calculator | Calculator | 10 to 20 as multiplier — 2x. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 1000 is 10 to the power of what — 3. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 10 to 20 as multiplier — 2x. | PORTED | `tc-calc::statistics_tests::a_multiplier_is_written_with_an_x` |
+| Calculator | Calculator | 1000 is 10 to the power of what — 3. | PORTED | `tc-calc::statistics_tests::a_logarithm_is_answered_in_both_orders` |
 | Calculator | Calculator | 2 km is to 4 km as what is to 10 kg — 5 kg. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5 as multiplier of 1 — 5x. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5 choose 3 — 10. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5 permutation 3 — 60. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5 root of 32 — 2. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 6 is to 600 as 8 is to what — 800. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Clamp 20 between 5 and 15 — 15. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Is 91 a prime number — false. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Is 97 prime — true. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Logarithm 81 base 3 — 4. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Prime checks work for every whole number up to 9,007,199,254,740,992 and answer instantly. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Remainder of 20 divided by 3 — 2. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 5 as multiplier of 1 — 5x. | PORTED | `tc-calc::statistics_tests::a_multiplier_is_written_with_an_x` |
+| Calculator | Calculator | 5 choose 3 — 10. | PORTED | `tc-calc::statistics_tests::the_combinations_and_the_permutations_are_told_apart` |
+| Calculator | Calculator | 5 permutation 3 — 60. | PORTED | `tc-calc::statistics_tests::the_combinations_and_the_permutations_are_told_apart` |
+| Calculator | Calculator | 5 root of 32 — 2. | PORTED | `tc-calc::statistics_tests::a_root_is_answered_in_the_degree_first_order` |
+| Calculator | Calculator | 6 is to 600 as 8 is to what — 800. | PORTED | `tc-calc::statistics_tests::a_proportion_is_solved_for_the_missing_term` |
+| Calculator | Calculator | Clamp 20 between 5 and 15 — 15. | PORTED | `tc-calc::statistics_tests::a_value_is_held_between_two_bounds` |
+| Calculator | Calculator | Is 91 a prime number — false. | PORTED | `tc-calc::statistics_tests::a_whole_number_is_told_whether_it_is_prime` |
+| Calculator | Calculator | Is 97 prime — true. | PORTED | `tc-calc::statistics_tests::a_whole_number_is_told_whether_it_is_prime` |
+| Calculator | Calculator | Logarithm 81 base 3 — 4. | PORTED | `tc-calc::statistics_tests::a_logarithm_is_answered_in_both_orders` |
+| Calculator | Calculator | Prime checks work for every whole number up to 9,007,199,254,740,992 and answer instantly. | PORTED | `tc-calc::statistics_tests::a_prime_check_works_for_the_whole_range` |
+| Calculator | Calculator | Remainder of 20 divided by 3 — 2. | PORTED | `tc-calc::statistics_tests::a_remainder_is_what_is_left_of_a_division` |
 | Calculator | Calculator | 440 hz to pitch is A4, the nearest note with A4 at 440 Hz, and c4 to hz is 261.6255653 Hz. Write notes as a letter, an optional b for flat, and an octave, like bb3. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Settings → General → Calculator → Number format sets how you write numbers and how answers are shown. System (the default) follows your Mac's Language & Region settings, so with a decimal comma, 2,3 + 1,5 is 3,8. English always uses a decimal point and comma grouping. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | With a decimal comma, separate function values and list items with ;. If a number could be read two ways, the calculator shows no card rather than guessing. | NOT PORTED | The calculator engine is not ported yet. |
@@ -818,15 +818,15 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator › Dates and times | Ramadan, start and end — ramadan 2027, end of ramadan 2027 — 8 February, 2027 (±1 day). | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Dates and times | The fixed days are Christmas (xmas), Christmas Eve, Boxing Day, New Year's Day, New Year's Eve (nye), Halloween, Valentine's Day and Orthodox Christmas. Easter follows the Western church calendar, and Orthodox Easter the Eastern one. Hanukkah starts on the evening the first candle is lit. Holidays that differ by country, like Thanksgiving, aren't included. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Percent, ratios and lists | Average of 10, 20, 30 — 20. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Count of 4, 8, 15, 16, 23, 42 — 6. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Gcd of 12 and 18 — 6. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Gcf of 20 and 30 — 10. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Larger of 3 and 7 — 7. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Lowest common multiple of 4 and 6 — 12. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Median of 3, 1, 2 — 2. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Midpoint between 10 and 30 — 20. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator › Percent, ratios and lists | Count of 4, 8, 15, 16, 23, 42 — 6. | PORTED | `tc-calc::statistics_tests::a_list_is_reduced_by_the_statistic_asked_for` |
+| Calculator | Calculator › Percent, ratios and lists | Gcd of 12 and 18 — 6. | PORTED | `tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart` |
+| Calculator | Calculator › Percent, ratios and lists | Gcf of 20 and 30 — 10. | PORTED | `tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart` |
+| Calculator | Calculator › Percent, ratios and lists | Larger of 3 and 7 — 7. | PORTED | `tc-calc::statistics_tests::a_list_may_be_separated_by_and` |
+| Calculator | Calculator › Percent, ratios and lists | Lowest common multiple of 4 and 6 — 12. | PORTED | `tc-calc::statistics_tests::the_greatest_common_divisor_and_the_least_common_multiple_are_told_apart` |
+| Calculator | Calculator › Percent, ratios and lists | Median of 3, 1, 2 — 2. | PORTED | `tc-calc::statistics_tests::a_list_is_reduced_by_the_statistic_asked_for` |
+| Calculator | Calculator › Percent, ratios and lists | Midpoint between 10 and 30 — 20. | PORTED | `tc-calc::statistics_tests::a_midpoint_is_the_average_of_the_two` |
 | Calculator | Calculator › Percent, ratios and lists | Separate items with commas or and. Units are kept, as in sum of 1 km and 500 m. The standard deviation is the sample deviation, the same as STDEV in a spreadsheet. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Percent, ratios and lists | Standard deviation of 2, 4, 4, 4, 5, 5, 7, 9 — 2.138089935. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator › Percent, ratios and lists | Standard deviation of 2, 4, 4, 4, 5, 5, 7, 9 — 2.138089935. | PORTED | `tc-calc::statistics_tests::the_standard_deviation_is_the_sample_one` |
 | Calculator | Calculator › Percent, ratios and lists | Sum of 1 km and 500 m — 1.5 km. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Percent, ratios and lists | The amount keeps its currency or unit. The card labels the answer, like Tip, Discounted, Percent Change, Ratio or Median, instead of a generic "Result". | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Rounding and fractions | 0.000123 to scientific notation — 1.23e-4. | NOT PORTED | The calculator engine is not ported yet. |
@@ -3074,31 +3074,10 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.ramadan-start-and-end-ramadan-2027-end-of-ra` | Ramadan, start and end — ramadan 2027, end of ramadan 2027 — 8 February, 2027 (±1 day). | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.holidays.the-fixed-days-are-christmas-xmas-christmas` | The fixed days are Christmas (xmas), Christmas Eve, Boxing Day, New Year's Day, New Year's Eve (nye), Halloween, Valentine's Day and Orthodox Christmas. Easter follows the Western church calendar, and Orthodox Easter the Eastern one. Hanukkah starts on the evening the first candle is lit. Holidays that differ by country, like Thanksgiving, aren't included. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.average-of-10-20-30-20` | Average of 10, 20, 30 — 20. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.count-of-4-8-15-16-23-42-6` | Count of 4, 8, 15, 16, 23, 42 — 6. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.gcd-of-12-and-18-6` | Gcd of 12 and 18 — 6. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.gcf-of-20-and-30-10` | Gcf of 20 and 30 — 10. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.larger-of-3-and-7-7` | Larger of 3 and 7 — 7. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.lowest-common-multiple-of-4-and-6-12` | Lowest common multiple of 4 and 6 — 12. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.median-of-3-1-2-2` | Median of 3, 1, 2 — 2. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.midpoint-between-10-and-30-20` | Midpoint between 10 and 30 — 20. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.separate-items-with-commas-or-and-units-are` | Separate items with commas or and. Units are kept, as in sum of 1 km and 500 m. The standard deviation is the sample deviation, the same as STDEV in a spreadsheet. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.standard-deviation-of-2-4-4-4-5-5-7-9-2-1380` | Standard deviation of 2, 4, 4, 4, 5, 5, 7, 9 — 2.138089935. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.sum-of-1-km-and-500-m-1-5-km` | Sum of 1 km and 500 m — 1.5 km. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.lists-and-statistics.the-amount-keeps-its-currency-or-unit-the-ca` | The amount keeps its currency or unit. The card labels the answer, like Tip, Discounted, Percent Change, Ratio or Median, instead of a generic "Result". | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.10-to-20-as-multiplier-2x` | 10 to 20 as multiplier — 2x. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.1000-is-10-to-the-power-of-what-3` | 1000 is 10 to the power of what — 3. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.math-in-words.2-km-is-to-4-km-as-what-is-to-10-kg-5-kg` | 2 km is to 4 km as what is to 10 kg — 5 kg. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.5-as-multiplier-of-1-5x` | 5 as multiplier of 1 — 5x. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.5-choose-3-10` | 5 choose 3 — 10. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.5-permutation-3-60` | 5 permutation 3 — 60. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.5-root-of-32-2` | 5 root of 32 — 2. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.6-is-to-600-as-8-is-to-what-800` | 6 is to 600 as 8 is to what — 800. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.clamp-20-between-5-and-15-15` | Clamp 20 between 5 and 15 — 15. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.is-91-a-prime-number-false` | Is 91 a prime number — false. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.is-97-prime-true` | Is 97 prime — true. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.logarithm-81-base-3-4` | Logarithm 81 base 3 — 4. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.prime-checks-work-for-every-whole-number-up` | Prime checks work for every whole number up to 9,007,199,254,740,992 and answer instantly. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.math-in-words.remainder-of-20-divided-by-3-2` | Remainder of 20 divided by 3 — 2. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.music.440-hz-to-pitch-is-a4-the-nearest-note-with` | 440 hz to pitch is A4, the nearest note with A4 at 440 Hz, and c4 to hz is 261.6255653 Hz. Write notes as a letter, an optional b for flat, and an octave, like bb3. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.number-format.settings-general-calculator-number-format-se` | Settings → General → Calculator → Number format sets how you write numbers and how answers are shown. System (the default) follows your Mac's Language & Region settings, so with a decimal comma, 2,3 + 1,5 is 3,8. English always uses a decimal point and comma grouping. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.number-format.with-a-decimal-comma-separate-function-value` | With a decimal comma, separate function values and list items with ;. If a number could be read two ways, the calculator shows no card rather than guessing. | The calculator engine is not ported yet. |
