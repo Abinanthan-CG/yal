@@ -59,6 +59,44 @@ pub trait Catalog {
     fn unit_definition(&self, _name: &str) -> Option<crate::units::UnitDef> {
         None
     }
+
+    /// The full definition of a currency, when the catalog knows one.
+    ///
+    /// The core carries the currency on a value while it calculates, so it needs the
+    /// definition itself. A catalog that only knows the names answers `None`, and the
+    /// money is then reported as unsupported.
+    fn currency_definition(&self, _name: &str) -> Option<crate::currency::CurrencyDef> {
+        None
+    }
+}
+
+/// A catalog with every unit and every currency in it.
+///
+/// This is the catalog the engine is meant to be driven with: the units come from
+/// [`crate::units::UnitCatalog`] and the money from [`crate::currency::CurrencyCatalog`].
+#[derive(Debug, Clone, Default)]
+pub struct FullCatalog;
+
+impl Catalog for FullCatalog {
+    fn unit(&self, name: &str) -> Option<UnitInfo> {
+        crate::units::UnitCatalog.unit(name)
+    }
+
+    fn currency(&self, name: &str) -> Option<CurrencyInfo> {
+        crate::currency::CurrencyCatalog.currency(name)
+    }
+
+    fn currency_sign(&self, sign: char) -> Option<String> {
+        crate::currency::CurrencyCatalog.currency_sign(sign)
+    }
+
+    fn unit_definition(&self, name: &str) -> Option<crate::units::UnitDef> {
+        crate::units::UnitCatalog.unit_definition(name)
+    }
+
+    fn currency_definition(&self, name: &str) -> Option<crate::currency::CurrencyDef> {
+        crate::currency::CurrencyCatalog.currency_definition(name)
+    }
 }
 
 /// A catalog served from plain tables of names.

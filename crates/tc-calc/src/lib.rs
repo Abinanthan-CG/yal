@@ -27,13 +27,16 @@
 //! ```
 
 pub mod catalog;
+pub mod currency;
 pub mod engine;
 pub mod formatter;
 pub mod math;
 pub mod mixed_units;
 pub mod parser;
+pub mod percent;
 pub mod result;
 pub mod rounding;
+pub mod split;
 pub mod token;
 pub mod tokenizer;
 pub mod units;
@@ -44,7 +47,14 @@ mod tests;
 #[cfg(test)]
 mod units_tests;
 
-pub use catalog::{Catalog, CurrencyInfo, NameCatalog, UnitInfo};
+#[cfg(test)]
+mod currency_tests;
+
+#[cfg(test)]
+mod split_tests;
+
+pub use catalog::{Catalog, CurrencyInfo, FullCatalog, NameCatalog, UnitInfo};
+pub use currency::{CurrencyCatalog, CurrencyDef};
 pub use engine::{evaluate, CalcOutcome};
 pub use formatter::Formatter;
 pub use math::Math;

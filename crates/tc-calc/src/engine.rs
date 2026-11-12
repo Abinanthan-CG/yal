@@ -11,8 +11,10 @@ use crate::catalog::Catalog;
 use crate::formatter::Formatter;
 use crate::math::Math;
 use crate::parser::Parser;
+use crate::percent;
 use crate::result::{CalcResult, Payload};
 use crate::rounding;
+use crate::split;
 use crate::token::{NumberBase, Operator, Token};
 use crate::tokenizer::tokenize;
 use crate::units;
@@ -91,6 +93,13 @@ fn evaluate_tokens(
     query: &str,
     catalog: &dyn Catalog,
 ) -> Result<Option<CalcResult>, UnsupportedArea> {
+    // A shared amount, before the partial result: `85 + 20% split 3`.
+    if split::mentions(tokens) {
+        if let Some(result) = split::evaluate(query, catalog)? {
+            return Ok(Some(result));
+        }
+    }
+
     // A trailing operator keeps the last complete prefix on the card while the user
     // still types.
     if let Some(result) = partial_result(tokens, query, catalog)? {
@@ -115,6 +124,11 @@ fn evaluate_tokens(
 
     // Typed arithmetic.
     if let Some(result) = quantity_result(tokens, query, catalog, false)? {
+        return Ok(Some(result));
+    }
+
+    // The percentage phrasings: `15% tip on 42`, `50 as % of 200`, `20% off 500`.
+    if let Some(result) = percent::evaluate(tokens, query, catalog)? {
         return Ok(Some(result));
     }
 
@@ -194,7 +208,10 @@ fn partial_result(
             Formatter::expression(query),
             "Expression",
             "Result",
-            Payload::number(value.effective()),
+            match value.currency {
+                Some(currency) => Payload::money(value.amount, currency.code),
+                None => Payload::number(value.effective()),
+            },
         ))),
         Ok(_) => Ok(None),
         Err(ParseError::NotACalculation) => Ok(None),
@@ -220,7 +237,7 @@ fn partial_operator_text(token: &Token) -> Option<&'static str> {
 ///
 /// `preserve_standalone` is upstream's `preserveStandaloneUnit`: a lone value that is
 /// not a calculation only earns a card when it is asked for.
-fn quantity_result(
+pub(crate) fn quantity_result(
     tokens: &[Token],
     query: &str,
     catalog: &dyn Catalog,
@@ -235,6 +252,14 @@ fn quantity_result(
     if !value.is_boolean {
         if parser.operation_count() == 0 && (preserve_standalone || tokens.len() <= 1) {
             return Ok(None);
+        }
+        if let Some(currency) = value.currency {
+            return Ok(Some(CalcResult::with_badges(
+                Formatter::expression(query),
+                "Expression",
+                currency.name,
+                Payload::money(value.amount, currency.code),
+            )));
         }
         return Ok(Some(CalcResult::with_badges(
             Formatter::expression(query),

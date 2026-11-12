@@ -45,6 +45,35 @@ impl Payload {
             copy_text: format!("{text}{separator}{}", unit.symbol),
         }
     }
+
+    /// The payload of a percentage, as upstream's `CalcResult.Payload.number(_:suffix:)`.
+    ///
+    /// The sign sits outside the grouped digits, so `1234.5%` reads as it should.
+    pub fn percentage(value: f64) -> Self {
+        let text = Formatter::copy_text(value);
+        Self::Value {
+            display: format!("{}%", Formatter::grouped(&text)),
+            copy_text: format!("{text}%"),
+        }
+    }
+
+    /// The payload of a text answer, as upstream's `CalcResult.Payload.value`.
+    pub fn text(text: &str) -> Self {
+        Self::Value {
+            display: text.to_string(),
+            copy_text: text.to_string(),
+        }
+    }
+
+    /// The payload of an amount of money, as upstream's `CalcResult.Payload.money`.
+    ///
+    /// The code follows the amount, so `80.00 USD` reads the way a bill does.
+    pub fn money(value: f64, code: &str) -> Self {
+        Self::Value {
+            display: format!("{} {}", Formatter::currency(value), code),
+            copy_text: format!("{} {}", Formatter::copy_text(value), code),
+        }
+    }
 }
 
 /// The card the calculator shows, as upstream's `CalcResult`.
@@ -98,7 +127,7 @@ impl CalcResult {
     ///
     /// The query is echoed with its spacing collapsed and badged by what it answers.
     pub fn phrase(query: &str, payload: Payload, target: &str) -> Self {
-        Self::with_badges(Formatter::expression(query), "Expression", target, payload)
+        Self::with_badges(Formatter::collapsed(query), "Expression", target, payload)
     }
 
     /// The same card with another expression, as upstream's `CalcEngine.replacingExpression`.
