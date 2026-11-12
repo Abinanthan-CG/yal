@@ -631,3 +631,26 @@ better than silence. The rows that need the rates stay `NOT PORTED` with their r
 
 **What this does not change.** The decision to build the rate feed, which is still open, and the
 shape of the answer when it arrives: the currency conversion rows are theirs to move.
+
+## 2026-11-13 - The calculator tries every layer before it gives up
+
+**Question.** This port's engine stopped at the first layer that reported an area it could not
+answer - a unit or a currency - and said so. Upstream's engine tries every layer and only gives up
+when none of them answers. `5 as multiplier of 1` has a word the arithmetic reads as a unit (`as`
+is the attosecond), so the port answered "the units are not supported" where upstream answers `5x`.
+Which is right?
+
+**Options.** (a) Keep stopping at the first area: it is the honest answer for a query that needs a
+unit. (b) Try every layer, and report the area only when nothing else answers, as upstream does.
+
+**Decision.** (b). The engine keeps the area it could not answer and reports it only when no layer
+produces a card.
+
+**Why.** The area is not the answer to every query that mentions it: a word that *looks* like a unit
+is not always one. Upstream's parser attaches the unit and carries on, so a query that turns out not
+to be arithmetic falls through to the phrase layers - and the phrase layers are what answer `5 as
+multiplier of 1`. The port's answer for a query that really needs a unit is unchanged: `10 kg` still
+says the units are not supported, because no layer answers it.
+
+**What this does not change.** The arithmetic that carries a unit is still not built. The change
+makes the port answer the phrases it can answer, not make it answer the unit arithmetic.

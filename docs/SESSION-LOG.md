@@ -518,3 +518,30 @@ arithmetic asked in words.
 - `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 225 PORTED, 2084 NOT PORTED.
+
+## Session 9 - 2026-11-13 (third part)
+
+The reductions over a spoken list and the math asked in words.
+
+**What was done.**
+
+- **`crates/tc-calc/src/statistics.rs`** - upstream's `CalcStatistics`: the phrase is lowered to the
+  function call it names, so `median of 3, 1, 2` is reduced by the same arithmetic as
+  `median(3, 1, 2)`, and the badge says which reduction ran - `Median`, `Count`, `Standard
+  Deviation`, `Sum`, `Maximum`, `Average`.
+- **`crates/tc-calc/src/spoken.rs`** - upstream's `CalcSpokenMath`: the remainder, the primality
+  (Miller-Rabin with the bases that are deterministic for every 64-bit whole number, in 128-bit
+  arithmetic), the clamp, the root, the proportion, the combinations and permutations, the logarithm
+  and the multiplier.
+- **The engine now tries every layer**, as upstream does, and reports the area it could not answer
+  only when nothing else answers. It stopped at the first one before, which made `5 as multiplier of
+  1` answer "the units are not supported" - `as` is the attosecond - where upstream answers `5x`.
+
+**What was not done.** The lists that carry a unit (`sum of 1 km and 500 m`), the questions asked in
+words (`what is 20% of 50`), and the exchange rates.
+
+**Verified.**
+- `cargo test --workspace` passes: 834 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 246 PORTED, 2063 NOT PORTED.

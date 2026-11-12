@@ -26,6 +26,14 @@ has got.
   nouns that name one, the contested ones written by hand, and the codes people spell from the
   sign — transcribed from upstream's generated data by `scripts/gen-currency-table.ps1`. A value
   carries its currency through the calculation, so `20% discount off $100` is `80.00 USD`.
+- **The calculator's reductions over a spoken list**: upstream's `CalcStatistics` — the phrase is
+  lowered to the function call it names, so `median of 3, 1, 2` is `2` with the badge `Median`,
+  `count of 4, 8, 15, 16, 23, 42` is `6`, and `standard deviation of 2, 4, 4, 4, 5, 5, 7, 9` is
+  `2.138089935`.
+- **The calculator's math asked in words**: upstream's `CalcSpokenMath` — `is 97 prime` is `true`,
+  `remainder of 20 divided by 3` is `2`, `clamp 20 between 5 and 15` is `15`, `5 choose 3` is
+  `10`, `5 permutation 3` is `60`, `logarithm 81 base 3` is `4`, `5 root of 32` is `2` and
+  `5 as multiplier of 1` is `5x`.
 - **The calculator's shared amounts**: `85 + 20% split 3` is `34`, `$120 split 4` is `30.00 USD`,
   and the card says `Per Person`.
 - **The calculator's money over time**: the compound growth, loans and returns of upstream's

@@ -193,6 +193,26 @@ Upstream's `CalcFinance` and `CalcGrowth`: what money does over time.
 
 See [port note 018](docs/port-notes/018-calculator-finance-and-growth.md).
 
+### The calculator's lists and its math asked in words (crates/tc-calc)
+
+Upstream's `CalcStatistics` and `CalcSpokenMath`.
+
+- **The reductions over a spoken list** - the phrase is lowered to the function call it names, so
+  `median of 3, 1, 2` is reduced by the same arithmetic as `median(3, 1, 2)`, and the badge says
+  which reduction ran: `Median`, `Count`, `Standard Deviation`, `Sum`, `Maximum`, `Average`. A list
+  is separated by commas or by `and`, and the standard deviation is the sample one.
+- **The math asked in words** - the remainder, the primality (Miller-Rabin with the bases that are
+  deterministic for every 64-bit whole number), the clamp, the root, the proportion, the
+  combinations and permutations, the logarithm and the multiplier: `is 97 prime` is `true`,
+  `5 choose 3` is `10`, `6 is to 600 as 8 is to what` is `800` and `5 as multiplier of 1` is `5x`.
+- **The engine now tries every layer**, as upstream does, and reports the area it could not answer
+  only when nothing else answers.
+
+**Twenty-one calculator rows are now `PORTED`**: eight of *Lists and statistics* and thirteen of
+*Math in words*. 225 → 246.
+
+See [port note 019](docs/port-notes/019-calculator-lists-and-spoken-math.md).
+
 ### The system actions (crates/tc-platform-win, apps/yal)
 
 Twenty of the thirty-two system actions are ported and really run on Windows: the session
