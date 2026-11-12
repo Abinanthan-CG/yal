@@ -14,6 +14,7 @@ tc-calc = { path = "../../crates/tc-calc" }
 tc-core = { path = "../../crates/tc-core" }
 tc-platform = { path = "../../crates/tc-platform" }
 tc-platform-win = { path = "../../crates/tc-platform-win" }
+tc-windows = { path = "../../crates/tc-windows" }
 tc-search = { path = "../../crates/tc-search" }
 serde = { workspace = true }
 serde_json = { workspace = true }

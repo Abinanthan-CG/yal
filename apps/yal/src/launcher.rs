@@ -39,6 +39,10 @@ const SYSTEM_ACTION_SECTION: &str = "System Actions";
 ///
 /// A calculator row is not opened; its answer is copied.
 pub const CALCULATOR_PREFIX: &str = "calculator:";
+/// The prefix the launcher opens a window command by.
+pub const WINDOW_COMMAND_PREFIX: &str = "window-command:";
+/// The section the window commands are listed under.
+pub const WINDOW_COMMAND_SECTION: &str = "Window Commands";
 
 /// The section the calculator's answer is listed under.
 const CALCULATOR_SECTION: &str = "Calculator";
@@ -83,6 +87,10 @@ pub struct LauncherState {
     entries: Vec<Entry>,
     ranking: Mutex<LauncherRankingStore>,
     sensitivity: SearchSensitivity,
+    /// Whether the window commands are listed in the results. This is the
+    /// "Show in launcher" switch, and window management is off until it is
+    /// turned on - upstream's own default.
+    show_window_commands: bool,
 }
 
 impl LauncherState {
@@ -116,7 +124,13 @@ impl LauncherState {
             entries,
             ranking: Mutex::new(LauncherRankingStore::open(ranking_file, now_seconds())),
             sensitivity: SearchSensitivity::Medium,
+            show_window_commands: false,
         }
+    }
+
+    /// Show or hide the window commands in the results.
+    pub fn set_show_window_commands(&mut self, show: bool) {
+        self.show_window_commands = show;
     }
 
     /// The programs the launcher knows about.
@@ -170,7 +184,42 @@ impl LauncherState {
         // The system actions are matched by their name, and they sit under the
         // applications: a program is what the user is usually looking for.
         rows.extend(self.system_actions_matching(query));
+        // The window commands come last of all.
+        rows.extend(self.window_commands_matching(query));
         rows
+    }
+
+    /// The window commands whose name the query finds.
+    ///
+    /// The query has to appear in the name as a whole, the way the system
+    /// actions are found: "left" finds "Left Half" and "Top Left Quarter",
+    /// and "lhf" finds nothing at all.
+    pub fn window_commands_matching(&self, query: &str) -> Vec<ResultRow> {
+        if !self.show_window_commands {
+            return Vec::new();
+        }
+        let wanted = query.trim().to_lowercase();
+        if wanted.is_empty() {
+            return Vec::new();
+        }
+        tc_windows::command::WindowCommandCatalog::all()
+            .into_iter()
+            .filter(|command| command.name.to_lowercase().contains(&wanted))
+            .map(|command| ResultRow {
+                id: format!("{WINDOW_COMMAND_PREFIX}{}", command.id.as_str()),
+                name: command.name.to_string(),
+                detail: command.group.label().to_string(),
+                kind: WINDOW_COMMAND_SECTION.to_string(),
+                target: command.id.as_str().to_string(),
+                needs_confirm: false,
+            })
+            .collect()
+    }
+
+    /// The window command a row id names, if it names one.
+    pub fn window_command_of(id: &str) -> Option<tc_windows::command::WindowCommandId> {
+        let rest = id.strip_prefix(WINDOW_COMMAND_PREFIX)?;
+        tc_windows::command::WindowCommandId::parse(rest)
     }
 
     /// The system actions whose name the query finds.
@@ -328,6 +377,61 @@ mod tests {
     fn an_empty_query_finds_nothing() {
         let launcher = launcher(vec![program("Notepad")]);
         assert!(launcher.search("").is_empty());
+    }
+
+    #[test]
+    fn a_window_command_is_found_by_its_name() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_show_window_commands(true);
+        let rows = launcher.search("left half");
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].name, "Left Half");
+        assert_eq!(rows[0].kind, "Window Commands");
+        assert_eq!(rows[0].id, "window-command:left-half");
+    }
+
+    #[test]
+    fn the_window_commands_are_listed_under_their_own_section() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_show_window_commands(true);
+        let rows = launcher.search("quarter");
+        assert_eq!(rows.len(), 4, "the four quarters");
+        for row in &rows {
+            assert_eq!(row.kind, "Window Commands");
+        }
+    }
+
+    #[test]
+    fn the_window_commands_can_be_hidden_from_the_launcher() {
+        let mut launcher = launcher(vec![]);
+        // Window management is off until it is turned on, so the commands are
+        // not in the results to begin with.
+        assert!(launcher.search("left half").is_empty());
+        launcher.set_show_window_commands(true);
+        assert!(!launcher.search("left half").is_empty());
+        launcher.set_show_window_commands(false);
+        assert!(launcher.search("left half").is_empty());
+    }
+
+    #[test]
+    fn a_window_command_row_names_the_command_it_runs() {
+        let command = LauncherState::window_command_of("window-command:top-left-quarter");
+        assert_eq!(
+            command,
+            Some(tc_windows::command::WindowCommandId::TopLeftQuarter)
+        );
+        assert!(LauncherState::window_command_of("left-half").is_none());
+        assert!(LauncherState::window_command_of("window-command:nope").is_none());
+    }
+
+    #[test]
+    fn a_window_command_is_found_by_a_word_of_its_name() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_show_window_commands(true);
+        // "half" finds the halves, the quarters are not halves.
+        let rows = launcher.search("half");
+        assert!(rows.iter().any(|row| row.name == "Left Half"));
+        assert!(rows.iter().all(|row| row.name.contains("Half")));
     }
 
     #[test]

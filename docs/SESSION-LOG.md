@@ -405,6 +405,13 @@ rectangle back.
   back; another runs upstream's own example - Left Half, Maximize, Top Right
   Quarter, Restore Window - and checks the window ends up where it started.
 
+**The commands are in the launcher too.** They are listed under their own
+section, off until window management is turned on the way upstream ships it,
+and the four settings it has - `windowManagement.enabled`, `.showInLauncher`,
+`.gap` and `.cycle` - are read when the app starts. The window that is moved
+is the one the user was last using: the palette is a window too, so the
+window that was in front before the palette opened is the one remembered.
+
 **Fifty-one window-management rows moved to `PORTED`, 120 -> 171.** The
 ledger's validator resolved every piece of evidence to a real test in a real
 crate, which is what keeps the claim honest.
@@ -416,7 +423,7 @@ was written by hand instead - as the geometry was.
 **Verified.**
 - `cargo test -p tc-windows` passes: 47 tests, 0 failed, 0 ignored.
 - `cargo test -p tc-files` passes: 55 tests, 0 failed, 0 ignored.
-- `cargo test --workspace` passes: 737 tests, 0 failed, 0 ignored.
+- `cargo test --workspace` passes: 743 tests, 0 failed, 0 ignored.
 - `cargo clippy -p tc-windows --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all` leaves no diff.
 ## Session 8 - 2026-11-12 (early morning)

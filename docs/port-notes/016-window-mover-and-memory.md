@@ -133,6 +133,35 @@ that is the shape this port follows. **Every rule came from upstream's
 Swift**; the donor contributed the shape and the vocabulary of its tests, the
 same as in port note 014.
 
+## The commands in the launcher
+
+The commands are listed in the results, under their own section, and they are
+**off until window management is turned on** - upstream's own default: "Turn it
+on in Settings -> Window Management. It's off by default. While it's off, the
+launcher has no window commands."
+
+| Upstream's behaviour | Our test |
+| --- | --- |
+| a window command is found by its name | `a_window_command_is_found_by_its_name` |
+| the commands are listed under their own section | `the_window_commands_are_listed_under_their_own_section` |
+| they can be hidden from the launcher | `the_window_commands_can_be_hidden_from_the_launcher` |
+| a row names the command it runs | `a_window_command_row_names_the_command_it_runs` |
+| a command is found by a word of its name | `a_window_command_is_found_by_a_word_of_its_name` |
+
+The four settings upstream has are read from the settings file when the app
+starts, and they are the keys a Settings pane would write:
+
+| Setting | Key | Default |
+| --- | --- | --- |
+| Enable window management | `windowManagement.enabled` | off |
+| Show in launcher | `windowManagement.showInLauncher` | on, once the feature is on |
+| Gap between windows | `windowManagement.gap` | 0 points |
+| Cycling | `windowManagement.cycle` | none |
+
+**The window that is moved is the one the user was last using**, and the
+palette is a window too - so the window that was in front *before* the palette
+opened is remembered, and that is the one the commands move.
+
 ## What is not in this slice
 
 - **The launcher rows.** The thirty-nine commands are not in the launcher
@@ -166,4 +195,4 @@ rows, and "it resets the cycle but keeps the Restore point".
 
 `tc-windows` has 68 tests (49 for the catalogue and the geometry, 19 for the
 memory). `tc-platform-win` has 37 tests, 12 of them for the window layer.
-The workspace has **737 tests**.
+The workspace has **743 tests**.

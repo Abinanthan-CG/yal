@@ -69,6 +69,50 @@ fn collect() -> Vec<Check> {
     checks.extend(check_platform());
     checks.extend(check_windows());
     checks.extend(check_launcher());
+    checks.extend(check_window_commands());
+    checks
+}
+
+/// The window commands: the catalogue, the displays, and the mover.
+fn check_window_commands() -> Vec<Check> {
+    let mut checks = Vec::new();
+
+    let commands = tc_windows::command::WindowCommandCatalog::all();
+    checks.push(if commands.len() == 39 {
+        Check::pass("window.commands", format!("{} commands", commands.len()))
+    } else {
+        Check::fail(
+            "window.commands",
+            format!("{} commands, expected 39", commands.len()),
+        )
+    });
+
+    let displays = tc_platform_win::window_control::screens();
+    checks.push(if displays.is_empty() {
+        Check::fail("window.displays", "no display was found")
+    } else {
+        Check::pass("window.displays", format!("{} displays", displays.len()))
+    });
+
+    // The mover is only exercised when there is a window to move, which a
+    // headless run may not have.
+    let mover = match tc_platform_win::window_control::foreground_window() {
+        Some(handle) => {
+            let commands_state = tc_platform_win::window_control::WindowCommands::new(
+                0.0,
+                tc_windows::geometry::WindowCycle::Off,
+            );
+            match commands_state.run(handle, tc_windows::command::WindowCommandId::LeftHalf) {
+                Ok(outcome) => Check::pass(
+                    "window.mover",
+                    format!("the window is now at {:?}", outcome.frame),
+                ),
+                Err(error) => Check::fail("window.mover", error.to_string()),
+            }
+        }
+        None => Check::pass("window.mover", "there was no window to move"),
+    };
+    checks.push(mover);
     checks
 }
 

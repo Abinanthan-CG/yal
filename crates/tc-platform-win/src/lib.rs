@@ -12,7 +12,7 @@ mod programs;
 mod quit;
 mod single_instance;
 mod system_actions;
-mod window_control;
+pub mod window_control;
 mod windows;
 
 pub use clipboard::WindowsClipboard;

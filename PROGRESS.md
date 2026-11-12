@@ -232,6 +232,11 @@ windows, never on disk.
 command rows, the five "how sizes are calculated" rows, the six "cycling and
 restore" rows and the rest of that page's behaviour. 120 → 171.
 
+The commands are also **in the launcher**, under their own section, off until
+window management is turned on the way upstream ships it — and the four
+settings it has (`windowManagement.enabled`, `.showInLauncher`, `.gap`,
+`.cycle`) are read when the app starts.
+
 See [port note 015](docs/port-notes/015-file-search-index.md).
 
 ### The clipboard model (crates/tc-clipboard)
