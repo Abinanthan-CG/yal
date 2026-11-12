@@ -145,6 +145,33 @@ in words and the arithmetic that carries a unit are still to come.
 See [port note 006](docs/port-notes/006-calculator-core.md) and
 [port note 012](docs/port-notes/012-unit-table-and-conversions.md).
 
+### The calculator's percentages, its money and its shared amounts (crates/tc-calc)
+
+The three layers the plain arithmetic cannot do on its own, ported from upstream's
+`CalcPercent.swift`, `CalcCurrency.swift` and `CalcSplit.swift`. **66 tests.**
+
+- **The percentages** - upstream's table of shapes, in upstream's order: the comment-word rule (a
+  word between the percentage and of/on/off only names it, so `20% discount off 100` is
+  `20% off 100`), the fourteen adjustments, a tax already inside a price (`20% vat in 120` is
+  `20`), the twenty-six ratio shapes, the rule of three in both its orders, and the badges -
+  `Tip`, `Discounted`, `Increased`, `Total`, `Tax`, `Percentage`, `Percent Change`, `Proportion`,
+  `Ratio` - instead of a generic `Result`.
+- **The money** - upstream's currency table: 159 fiat currencies and 23 coins, the nouns that name
+  one, the contested ones written by hand, and the codes people spell from the sign. A value
+  carries its currency through the calculation, so `20% discount off $100` is `80.00 USD`. The table
+  is transcribed from upstream's generated Swift by `scripts/gen-currency-table.ps1`, so the two
+  cannot drift apart by hand.
+- **The shared amounts** - `85 + 20% split 3` is `34`, `$120 split 4` is `30.00 USD`, and the card
+  says `Per Person`.
+
+**The exchange rates are not here yet**, so the conversions between two currencies are not
+answered: two different currencies in one calculation earn no card rather than a made-up number.
+
+**Thirty-seven calculator rows are now `PORTED`**: twenty-eight of *Percent, ratios and lists*,
+seven of *Splitting a bill*, and two of *Currency and crypto*. 171 → 208.
+
+See [port note 017](docs/port-notes/017-calculator-percentages-money-and-splits.md).
+
 ### The system actions (crates/tc-platform-win, apps/yal)
 
 Twenty of the thirty-two system actions are ported and really run on Windows: the session
@@ -279,6 +306,9 @@ With the unit table and the conversions, and the fifteen clipboard tests fixed, 
 PORTED**. The clipboard now answers for its pins, its memory window and its retention, and the
 calculator answers for the units it knows.
 
+**208 rows are PORTED** now: the window mover and its memory added fifty-one, and the
+calculator's percentages, its money and its shared amounts added thirty-seven.
+
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
 
@@ -300,8 +330,8 @@ The order to work in, with what is done so far:
 11. Calculator — **the arithmetic core and the unit table are done**: the tokenizer, the parser,
     the engine, the number formatting and the whole unit table are ported to `crates/tc-calc`
     against upstream's own calculator tests, and the conversions between two units are in the
-    palette. The currencies, the dates, the time zones and the arithmetic that carries a unit
-    are stage 2.
+    palette. **The percentages, the money and the shared amounts are done too**; the exchange
+    rates, the dates, the time zones and the arithmetic that carries a unit are stage 2.
 12. Clipboard history — **the model is done** (`crates/tc-clipboard`): the items, the
     classification, the colours, the filters, the policy, the paste sequence and the store with
     its pins, its memory window and its retention. The capture loop, the Windows watcher, the OCR

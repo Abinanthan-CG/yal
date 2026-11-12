@@ -16,6 +16,18 @@ has got.
 
 ### Added
 
+- **The calculator's percentage phrasings** in `tc-calc`: upstream's table of shapes, in upstream's
+  order — a word between the percentage and of/on/off only names it (`20% discount off 100` is
+  `20% off 100`), a tip is the tip on its own, a tax already inside a price is inside it
+  (`20% vat in 120` is `20`), the shares, the changes, the rule of three in both its orders and
+  the ratios — and the card says what it answered: `Tip`, `Discounted`, `Increased`, `Total`,
+  `Tax`, `Percentage`, `Percent Change`, `Proportion`, `Ratio`.
+- **The calculator's money**: upstream's currency table — 159 fiat currencies and 23 coins, the
+  nouns that name one, the contested ones written by hand, and the codes people spell from the
+  sign — transcribed from upstream's generated data by `scripts/gen-currency-table.ps1`. A value
+  carries its currency through the calculation, so `20% discount off $100` is `80.00 USD`.
+- **The calculator's shared amounts**: `85 + 20% split 3` is `34`, `$120 split 4` is `30.00 USD`,
+  and the card says `Per Person`.
 - **The snippet record and its Markdown file** in `tc-snippets`: the front matter, the body kept
   exactly as written, the files that are rejected and why, and the small locale table the date
   tokens format with.

@@ -1470,3 +1470,275 @@ evidence = [
   "tc-windows::action_memory::tests::forgetting_the_cycle_keeps_the_restore_point",
   "tc-platform-win::window_control::tests::a_window_can_be_made_to_fill_the_display_and_back",
 ]
+
+# ---------------------------------------------------------------------------
+# The calculator: the percentages, the money and the shared amounts
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.20-off-500-400"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_discount_off_an_amount_is_the_amount_less_the_percentage",
+  "tc-calc::percent::tests::a_discount_off_money_keeps_the_money",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.25-off-60-45-00-usd"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_discount_off_money_keeps_the_money",
+  "tc-calc::currency_tests::a_discount_off_money_keeps_the_money",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.take-20-off-100-80"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::take_a_percentage_off_an_amount_is_a_discount",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.20-discount-off-100-80-00-usd"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_word_between_the_percentage_and_the_relation_only_names_it",
+  "tc-calc::currency_tests::a_discount_off_money_keeps_the_money",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.15-on-80-92"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_markup_on_an_amount_is_the_amount_plus_the_percentage",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.15-tip-on-42-6-3"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_tip_is_the_tip_alone",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.50-as-of-200-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.30-as-a-of-120-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.50-is-what-of-200-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.what-is-25-of-100-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.4-out-of-10-40"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.10-is-what-with-20-33-33333333"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_share_of_the_two_together_is_a_third",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.30-is-20-of-what-150"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::thirty_is_twenty_percent_of_what_solves_for_the_whole",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.20-of-what-is-30-150"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::twenty_percent_of_what_is_thirty_solves_for_the_whole",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.90-is-10-off-what-100"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::the_off_and_on_forms_solve_for_the_whole_too",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.45-is-what-off-50-10"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_discount_reads_as_the_change_it_makes",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.80-to-100-is-what-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_change_between_two_amounts_is_a_percentage",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.change-from-10-to-20-100"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_change_from_one_amount_to_another_is_a_percentage",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.decrease-from-20-to-10-50"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_change_from_one_amount_to_another_is_a_percentage",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.15-as-after-adding-3-25"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::the_growth_that_reached_a_total_is_a_percentage",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.if-30-is-20-what-is-50-75"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::the_rule_of_three_with_an_amount_asked_for",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.if-30-is-20-what-is-60-40"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::the_rule_of_three_with_a_percentage_asked_for",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.10-tax-on-100-110"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_tax_on_an_amount_is_added_to_it",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.20-vat-in-120-20-the-tax-inside-the-price"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_tax_in_a_price_is_already_inside_it",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.100-10-tax-110-00-usd"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_query_that_ends_in_a_tax_is_a_total",
+  "tc-calc::currency_tests::a_tax_on_money_keeps_the_money",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.0-125-as-12-5"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_fraction_read_as_a_percentage",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.ratio-of-1920-to-1080-16-9"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_ratio_is_reduced",
+]
+
+[[status]]
+id = "features-calculator.percent-ratios-and-lists.a-word-between-the-percentage-and-of-on-or-o"
+status = "PORTED"
+evidence = [
+  "tc-calc::percent::tests::a_word_between_the_percentage_and_the_relation_only_names_it",
+  "tc-calc::percent::tests::a_tip_is_the_tip_alone",
+  "tc-calc::percent::tests::a_tax_in_a_price_is_already_inside_it",
+  "tc-calc::percent::tests::sales_tax_is_a_tax",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.120-split-4-30-00-usd"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::a_share_of_money_keeps_the_money",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.split-120-between-4-30"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::an_amount_shared_between_four_is_a_quarter_of_it",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.85-20-split-3-34"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::a_calculation_is_shared_out_after_it_is_calculated",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.20-tip-on-85-split-3-5-666666667"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::a_tip_is_shared_out_as_it_is",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.eur-99-among-3-friends-33-00-eur"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::the_currency_can_be_named_before_the_amount",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.120-4-people-30"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::a_divide_by_a_people_is_the_same_share",
+]
+
+[[status]]
+id = "features-calculator.splitting-a-bill.the-card-labels-the-answer-per-person-the-am"
+status = "PORTED"
+evidence = [
+  "tc-calc::split_tests::an_amount_shared_between_four_is_a_quarter_of_it",
+  "tc-calc::split_tests::a_share_of_money_keeps_the_money",
+]
+
+[[status]]
+id = "features-calculator.currency-and-crypto.tinycast-supports-159-currencies-and-a-selec"
+status = "PORTED"
+evidence = [
+  "tc-calc::currency_tests::the_table_holds_the_currencies_upstream_lists",
+]
+
+[[status]]
+id = "features-calculator.words-with-two-meanings.some-currency-words-are-shared-by-several-co"
+status = "PORTED"
+evidence = [
+  "tc-calc::currency_tests::a_currency_is_named_by_its_code_and_its_own_nouns",
+  "tc-calc::currency_tests::a_word_several_countries_share_is_not_guessed_at",
+]

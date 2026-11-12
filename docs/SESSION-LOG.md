@@ -456,3 +456,37 @@ code came from where, which is worth more than a licence line.
 - `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+
+## Session 9 - 2026-11-13
+
+The calculator's three phrase layers were built: the percentages, the money and the shared amounts.
+
+**What was done.**
+
+- **`crates/tc-calc/src/percent.rs`** - upstream's `CalcPercent` ported whole: the comment-word rule
+  (a word between the percentage and of/on/off only names it), the fourteen adjustments, the tax
+  inside a price, the twenty-six ratio shapes, the rule of three in both its orders, and the
+  badges - `Tip`, `Discounted`, `Increased`, `Total`, `Tax`, `Percentage`, `Percent Change`,
+  `Proportion`, `Ratio` - instead of a generic `Result`.
+- **`crates/tc-calc/src/currency.rs`** - upstream's currency table: 159 fiat currencies and 23
+  coins, the nouns that name one, the contested ones written by hand, and the codes people spell
+  from the sign. The table is transcribed from upstream's generated Swift by
+  `scripts/gen-currency-table.ps1`, so the two cannot drift apart by hand. A value now carries its
+  currency through the calculation, so `20% discount off $100` is `80.00 USD` and not `80`.
+- **`crates/tc-calc/src/split.rs`** - the shared amounts: `85 + 20% split 3` is `34`, `$120 split 4`
+  is `30.00 USD`, and the card says `Per Person`.
+- The calculator's phrase card now echoes the query the way upstream does - with its spacing
+  collapsed and its operators left as they were typed.
+
+**What was not done.** The exchange rates, and everything that needs them: the conversions
+between two currencies, the amount of money on its own converted to the user's own currency, and
+the rate on its own. Two different currencies in one calculation earn no card rather than a
+made-up number. The arithmetic that carries a unit is still missing, so `750 m as % of 3 km` is
+not answered, and `Half of $90` waits for the arithmetic asked in words.
+
+**Verified.**
+- `cargo test --workspace` passes: 794 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 208 PORTED, 2101 NOT PORTED.
+- `cargo run -q -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.

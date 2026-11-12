@@ -587,3 +587,47 @@ same person.
 
 **What this does not change.** The scope, the order and the milestones. The flush is the last step
 of Phase 4, after the tests, the ledger, the builds and the checksums are all in place.
+
+## 2026-11-13 - The currency table is transcribed, not typed
+
+**Question.** Upstream's currency table is generated: `Scripts/gen-currencies.js` writes
+`CurrencyData.generated.swift` from the CLDR data, and it holds 159 fiat currencies, 26 signs and
+130 nouns. How should the port hold it?
+
+**Options.** (a) Type the table into Rust by hand. (b) Write the table into Rust by hand once and
+never touch it again. (c) Transcribe upstream's generated file with a script, so the two can be
+regenerated together.
+
+**Decision.** (c). `scripts/gen-currency-table.ps1` reads upstream's generated Swift and writes
+`crates/tc-calc/src/currency/table.rs`; the hand-written tables - the contested nouns, the ISO
+names, the codes people spell from the sign, and the coins - are written out in
+`crates/tc-calc/src/currency.rs`, because upstream writes those by hand too.
+
+**Why.** 159 currencies typed by hand is 159 chances to spell a name wrongly, and no way to notice.
+The generated file is the authority, and a script keeps the port's copy honest: when upstream's
+CLDR data moves, one command moves ours with it. The script is part of the repository, so the
+table's origin is written down where the table is.
+
+**What this does not change.** The rates. Upstream's `CurrencyRateStore` and its feed are a
+separate piece of work, and until they are here the port answers an amount of money and refuses to
+convert between two currencies rather than answer a made-up number.
+
+## 2026-11-13 - A calculation that mixes two currencies earns no card
+
+**Question.** Upstream fetches the exchange rates and converts. The port has no rate feed yet. What
+should `100 usd + 5 eur` answer?
+
+**Options.** (a) Answer with a made-up conversion. (b) Answer the error card upstream shows when
+the rates are missing. (c) Earn no card.
+
+**Decision.** (c), for now. A single currency is carried through the calculation and shown as
+money - `100 usd + 50` is `150.00 USD` - and two *different* currencies in one calculation earn
+no card at all, because any number would be invented.
+
+**Why.** The port's rule is that it never answers a made-up number. Upstream's error card is
+"Exchange rates unavailable - check your connection", which is a true statement about a machine
+that is online; here the honest statement is that the feature is not built, and no card says that
+better than silence. The rows that need the rates stay `NOT PORTED` with their reasons.
+
+**What this does not change.** The decision to build the rate feed, which is still open, and the
+shape of the answer when it arrives: the currency conversion rows are theirs to move.

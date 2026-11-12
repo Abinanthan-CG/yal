@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 171 | 1644 |
+| 1 | 1815 | 208 | 1607 |
 | 2 | 494 | 0 | 494 |
-| **All** | **2309** | **171** | **2138** |
+| **All** | **2309** | **208** | **2101** |
 
 ### Totals per docs page
 
@@ -27,7 +27,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/system-settings/` | 1 | 16 | 0 | 16 |
 | `docs/launcher/system-actions/` | 1 | 54 | 26 | 28 |
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
-| `docs/features/calculator/` | 1 | 326 | 30 | 296 |
+| `docs/features/calculator/` | 1 | 326 | 67 | 259 |
 | `docs/features/clipboard/` | 1 | 85 | 15 | 70 |
 | `docs/features/snippets/` | 1 | 87 | 28 | 59 |
 | `docs/features/file-search/` | 1 | 68 | 0 | 68 |
@@ -567,7 +567,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | An amount on its own is converted to your Mac's currency. On a Mac set to Bangladesh, 1 usd shows 122.84 BDT. If you type an amount in your own currency, it's converted to US dollars, or to euros if your currency is the dollar. Your currency comes from your Mac's region setting. Tinycast never asks for your location. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Eur to usd — An amount of 1. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Exchange rate for usd to eur — The same, in words. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Tinycast supports 159 currencies and a selected list of cryptocurrencies. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | Tinycast supports 159 currencies and a selected list of cryptocurrencies. | PORTED | `tc-calc::currency_tests::the_table_holds_the_currencies_upstream_lists` |
 | Calculator | Calculator | MB/s and MBps are megabytes per second and Mbps is megabits per second, so 100Mbps to MB/s is 12.5 MB/s. Binary units like MiB/s and bit amounts like kbit also work. | PORTED | `tc-calc::units_tests::a_transfer_rate_is_converted_into_another_one` |
 | Calculator | Calculator | Other supported units include tonnes (t), stone (st), carats (ct), troy ounces (ozt), nautical miles (nmi), light years (ly), parsecs (pc), astronomical units (au), fathoms, furlongs, barrels (bbl), bushels (bu), acre feet, metric cups, microliters and kiloliters, cubic kilometers and miles, GWh and TWh, horsepower (hp), BTU, rpm, rps and rad/s, pound-force (lbf), poundals (pdl), ksi, ft/s2, and data sizes up to yottabytes. Spelled-out names work too, like nautical miles, sq ft, square feet and cubic feet. ° means degrees, so cos(60°) is 0.5. | PORTED | `tc-calc::units_tests::the_table_holds_the_remaining_measures`, `tc-calc::units_tests::the_table_holds_the_spelled_out_names` |
 | Calculator | Calculator | A chain of shifts — 17.2.26 + 100 weekdays - 4 + 2. | NOT PORTED | The calculator engine is not ported yet. |
@@ -662,36 +662,36 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | 440 hz to pitch is A4, the nearest note with A4 at 440 Hz, and c4 to hz is 261.6255653 Hz. Write notes as a letter, an optional b for flat, and an octave, like bb3. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Settings → General → Calculator → Number format sets how you write numbers and how answers are shown. System (the default) follows your Mac's Language & Region settings, so with a decimal comma, 2,3 + 1,5 is 3,8. English always uses a decimal point and comma grouping. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | With a decimal comma, separate function values and list items with ;. If a number could be read two ways, the calculator shows no card rather than guessing. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 0.125 as % — 12.5%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 10 is what % with 20 — 33.33333333%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 10% tax on 100 — 110. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | $100 + 10% tax — 110.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 15 as % after adding 3 — 25%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 15% on 80 — 92. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 15% tip on 42 — 6.3. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20% discount off $100 — 80.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20% of what is 30 — 150. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20% off 500 — 400. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20% vat in 120 — 20 (the tax inside the price). | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 25% off $60 — 45.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 30 as a % of 120 — 25%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 30 is 20% of what — 150. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 4 out of 10 — 40%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 45 is what % off 50 — 10%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 50 as % of 200 — 25%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 50 is what % of 200 — 25%. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 0.125 as % — 12.5%. | PORTED | `tc-calc::percent::tests::a_fraction_read_as_a_percentage` |
+| Calculator | Calculator | 10 is what % with 20 — 33.33333333%. | PORTED | `tc-calc::percent::tests::a_share_of_the_two_together_is_a_third` |
+| Calculator | Calculator | 10% tax on 100 — 110. | PORTED | `tc-calc::percent::tests::a_tax_on_an_amount_is_added_to_it` |
+| Calculator | Calculator | $100 + 10% tax — 110.00 USD. | PORTED | `tc-calc::percent::tests::a_query_that_ends_in_a_tax_is_a_total`, `tc-calc::currency_tests::a_tax_on_money_keeps_the_money` |
+| Calculator | Calculator | 15 as % after adding 3 — 25%. | PORTED | `tc-calc::percent::tests::the_growth_that_reached_a_total_is_a_percentage` |
+| Calculator | Calculator | 15% on 80 — 92. | PORTED | `tc-calc::percent::tests::a_markup_on_an_amount_is_the_amount_plus_the_percentage` |
+| Calculator | Calculator | 15% tip on 42 — 6.3. | PORTED | `tc-calc::percent::tests::a_tip_is_the_tip_alone` |
+| Calculator | Calculator | 20% discount off $100 — 80.00 USD. | PORTED | `tc-calc::percent::tests::a_word_between_the_percentage_and_the_relation_only_names_it`, `tc-calc::currency_tests::a_discount_off_money_keeps_the_money` |
+| Calculator | Calculator | 20% of what is 30 — 150. | PORTED | `tc-calc::percent::tests::twenty_percent_of_what_is_thirty_solves_for_the_whole` |
+| Calculator | Calculator | 20% off 500 — 400. | PORTED | `tc-calc::percent::tests::a_discount_off_an_amount_is_the_amount_less_the_percentage`, `tc-calc::percent::tests::a_discount_off_money_keeps_the_money` |
+| Calculator | Calculator | 20% vat in 120 — 20 (the tax inside the price). | PORTED | `tc-calc::percent::tests::a_tax_in_a_price_is_already_inside_it` |
+| Calculator | Calculator | 25% off $60 — 45.00 USD. | PORTED | `tc-calc::percent::tests::a_discount_off_money_keeps_the_money`, `tc-calc::currency_tests::a_discount_off_money_keeps_the_money` |
+| Calculator | Calculator | 30 as a % of 120 — 25%. | PORTED | `tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share` |
+| Calculator | Calculator | 30 is 20% of what — 150. | PORTED | `tc-calc::percent::tests::thirty_is_twenty_percent_of_what_solves_for_the_whole` |
+| Calculator | Calculator | 4 out of 10 — 40%. | PORTED | `tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share` |
+| Calculator | Calculator | 45 is what % off 50 — 10%. | PORTED | `tc-calc::percent::tests::a_discount_reads_as_the_change_it_makes` |
+| Calculator | Calculator | 50 as % of 200 — 25%. | PORTED | `tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share` |
+| Calculator | Calculator | 50 is what % of 200 — 25%. | PORTED | `tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share` |
 | Calculator | Calculator | 750 m as % of 3 km — 25%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 80 to 100 is what % — 25%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 90 is 10% off what — 100. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | A word between the percentage and of, on or off only names it, so 20% discount off $100 is 20% off $100. The exception is tip: 15% tip on 42 is the tip on its own. tax, sales tax, vat and gst all work the same way. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | % change from 10 to 20 — 100%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | % decrease from 20 to 10 — -50%. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 80 to 100 is what % — 25%. | PORTED | `tc-calc::percent::tests::a_change_between_two_amounts_is_a_percentage` |
+| Calculator | Calculator | 90 is 10% off what — 100. | PORTED | `tc-calc::percent::tests::the_off_and_on_forms_solve_for_the_whole_too` |
+| Calculator | Calculator | A word between the percentage and of, on or off only names it, so 20% discount off $100 is 20% off $100. The exception is tip: 15% tip on 42 is the tip on its own. tax, sales tax, vat and gst all work the same way. | PORTED | `tc-calc::percent::tests::a_word_between_the_percentage_and_the_relation_only_names_it`, `tc-calc::percent::tests::a_tip_is_the_tip_alone`, `tc-calc::percent::tests::a_tax_in_a_price_is_already_inside_it`, `tc-calc::percent::tests::sales_tax_is_a_tax` |
+| Calculator | Calculator | % change from 10 to 20 — 100%. | PORTED | `tc-calc::percent::tests::a_change_from_one_amount_to_another_is_a_percentage` |
+| Calculator | Calculator | % decrease from 20 to 10 — -50%. | PORTED | `tc-calc::percent::tests::a_change_from_one_amount_to_another_is_a_percentage` |
 | Calculator | Calculator | Half of $90 — 45.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | If 30 is 20%, what is 50% — 75. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | If 30 is 20% what is 60 — 40%. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Ratio of 1920 to 1080 — 16 : 9. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Take 20% off 100 — 80. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | What % is 25 of 100 — 25%. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | If 30 is 20%, what is 50% — 75. | PORTED | `tc-calc::percent::tests::the_rule_of_three_with_an_amount_asked_for` |
+| Calculator | Calculator | If 30 is 20% what is 60 — 40%. | PORTED | `tc-calc::percent::tests::the_rule_of_three_with_a_percentage_asked_for` |
+| Calculator | Calculator | Ratio of 1920 to 1080 — 16 : 9. | PORTED | `tc-calc::percent::tests::a_ratio_is_reduced` |
+| Calculator | Calculator | Take 20% off 100 — 80. | PORTED | `tc-calc::percent::tests::take_a_percentage_off_an_amount_is_a_discount` |
+| Calculator | Calculator | What % is 25 of 100 — 25%. | PORTED | `tc-calc::percent::tests::an_amount_as_a_percentage_of_another_is_a_share` |
 | Calculator | Calculator | 10 cm to px at 300 ppi — 1,181.102362 px. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 3000 px to inches at 300 ppi — 10 in. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 3000px / 10in to ppi — 300 ppi. | NOT PORTED | The calculator engine is not ported yet. |
@@ -726,13 +726,13 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | Round 56.789 to 1 digit — 56.8. | PORTED | `tc-calc::tests::upstream_rounds_to_decimal_places` |
 | Calculator | Calculator | Round 56 up to 10 — 60. | PORTED | `tc-calc::tests::upstream_rounds_to_a_step` |
 | Calculator | Calculator | Round 59 down to last 10 — 50. | PORTED | `tc-calc::tests::upstream_rounds_to_a_step` |
-| Calculator | Calculator | 120 / 4 people — 30. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | $120 split 4 — 30.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 20% tip on 85 split 3 — 5.666666667. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 85 + 20% split 3 — 34. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Eur 99 among 3 friends — 33.00 EUR. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Split 120 between 4 — 30. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | The card labels the answer Per Person. The amount keeps the currency or unit you typed, so $120 split 4 is 30.00 USD on any Mac. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 120 / 4 people — 30. | PORTED | `tc-calc::split_tests::a_divide_by_a_people_is_the_same_share` |
+| Calculator | Calculator | $120 split 4 — 30.00 USD. | PORTED | `tc-calc::split_tests::a_share_of_money_keeps_the_money` |
+| Calculator | Calculator | 20% tip on 85 split 3 — 5.666666667. | PORTED | `tc-calc::split_tests::a_tip_is_shared_out_as_it_is` |
+| Calculator | Calculator | 85 + 20% split 3 — 34. | PORTED | `tc-calc::split_tests::a_calculation_is_shared_out_after_it_is_calculated` |
+| Calculator | Calculator | Eur 99 among 3 friends — 33.00 EUR. | PORTED | `tc-calc::split_tests::the_currency_can_be_named_before_the_amount` |
+| Calculator | Calculator | Split 120 between 4 — 30. | PORTED | `tc-calc::split_tests::an_amount_shared_between_four_is_a_quarter_of_it` |
+| Calculator | Calculator | The card labels the answer Per Person. The amount keeps the currency or unit you typed, so $120 split 4 is 30.00 USD on any Mac. | PORTED | `tc-calc::split_tests::an_amount_shared_between_four_is_a_quarter_of_it`, `tc-calc::split_tests::a_share_of_money_keeps_the_money` |
 | Calculator | Calculator | 10am utc+5:30 in london — A UTC offset, in London. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 1pm et in london, tokyo, sydney — Several places on one card. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 5pm ldn in sf + 2h — The same, two hours later. | NOT PORTED | The calculator engine is not ported yet. |
@@ -849,7 +849,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator › Pixels and density | Rem and em use the browser's default root font size of 16px. pt means pints, not points. When you copy a px, rem or em result, the space is removed (24px) so you can paste it into CSS. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Dates and times | Now to unix, current timestamp and new timestamp give whole seconds, and now to unix ms gives milliseconds. now to iso gives an ISO 8601 date like 2026-07-24T00:18:00+00:00. unix 0 to date, 1000 unix ms and 1800000000 to date convert back to dates. A 13-digit number is read as milliseconds. Timestamps like 2026-07-24T07:30:00+02:00 + 30min work with either a Z or an offset. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Currency and crypto | Slang isn't supported: quid and bucks show no card. rmb and renminbi work, because the ISO 4217 standard names the currency "Yuan Renminbi". | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator › Currency and crypto | Some currency words are shared by several countries: dollars could mean 22 currencies, francs 10, pounds 9, pesos 8 and rupees 6. Tinycast maps each of these to one currency. If a word is still ambiguous, Tinycast shows no card. For example, krona could be Swedish or Icelandic, so Tinycast doesn't guess. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator › Currency and crypto | Some currency words are shared by several countries: dollars could mean 22 currencies, francs 10, pounds 9, pesos 8 and rupees 6. Tinycast maps each of these to one currency. If a word is still ambiguous, Tinycast shows no card. For example, krona could be Swedish or Icelandic, so Tinycast doesn't guess. | PORTED | `tc-calc::currency_tests::a_currency_is_named_by_its_code_and_its_own_nouns`, `tc-calc::currency_tests::a_word_several_countries_share_is_not_guessed_at` |
 | Calculator | Calculator › Currency and crypto | Units take priority over currencies, so 10 pounds to kg is a weight, 10 pounds to euros is money, and 1 cup to ml is a volume even though CUP is also the Cuban peso. Crypto tickers take priority over words: 1 sol is Solana, while soles means the Peruvian sol. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Dates and times | As a unit on its own, a workday is eight hours: 55h in workdays. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator › Dates and times | To count workdays between two dates, use workdays between july 27 and august 7 or august 3 to august 14 in workdays. | NOT PORTED | The calculator engine is not ported yet. |
@@ -3008,7 +3008,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.currency-and-crypto.an-amount-on-its-own-is-converted-to-your-ma` | An amount on its own is converted to your Mac's currency. On a Mac set to Bangladesh, 1 usd shows 122.84 BDT. If you type an amount in your own currency, it's converted to US dollars, or to euros if your currency is the dollar. Your currency comes from your Mac's region setting. Tinycast never asks for your location. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.currency-and-crypto.eur-to-usd-an-amount-of-1` | Eur to usd — An amount of 1. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.currency-and-crypto.exchange-rate-for-usd-to-eur-the-same-in-wor` | Exchange rate for usd to eur — The same, in words. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.currency-and-crypto.tinycast-supports-159-currencies-and-a-selec` | Tinycast supports 159 currencies and a selected list of cryptocurrencies. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.dates-and-times.a-chain-of-shifts-17-2-26-100-weekdays-4-2` | A chain of shifts — 17.2.26 + 100 weekdays - 4 + 2. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.dates-and-times.a-day-from-now-in-3-days-next-week-last-mont` | A day from now — in 3 days, next week, last month. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.dates-and-times.a-day-with-an-ordinal-days-until-29th-of-oct` | A day with an ordinal — days until 29th of october, october 28th. | The calculator engine is not ported yet. |
@@ -3126,36 +3125,8 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.51-4772-to-dms-51-28-37-92` | 51.4772° to dms — 51° 28′ 37.92″. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.5400-seconds-to-hms-1h-30m-0s` | 5400 seconds to hms — 1h 30m 0s. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.other-formats.75-5-seconds-to-laptime-00-01-15-5` | 75.5 seconds to laptime — 00:01:15.5. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.0-125-as-12-5` | 0.125 as % — 12.5%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.10-is-what-with-20-33-33333333` | 10 is what % with 20 — 33.33333333%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.10-tax-on-100-110` | 10% tax on 100 — 110. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.100-10-tax-110-00-usd` | $100 + 10% tax — 110.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.15-as-after-adding-3-25` | 15 as % after adding 3 — 25%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.15-on-80-92` | 15% on 80 — 92. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.15-tip-on-42-6-3` | 15% tip on 42 — 6.3. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.20-discount-off-100-80-00-usd` | 20% discount off $100 — 80.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.20-of-what-is-30-150` | 20% of what is 30 — 150. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.20-off-500-400` | 20% off 500 — 400. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.20-vat-in-120-20-the-tax-inside-the-price` | 20% vat in 120 — 20 (the tax inside the price). | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.25-off-60-45-00-usd` | 25% off $60 — 45.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.30-as-a-of-120-25` | 30 as a % of 120 — 25%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.30-is-20-of-what-150` | 30 is 20% of what — 150. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.4-out-of-10-40` | 4 out of 10 — 40%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.45-is-what-off-50-10` | 45 is what % off 50 — 10%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.50-as-of-200-25` | 50 as % of 200 — 25%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.50-is-what-of-200-25` | 50 is what % of 200 — 25%. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.750-m-as-of-3-km-25` | 750 m as % of 3 km — 25%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.80-to-100-is-what-25` | 80 to 100 is what % — 25%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.90-is-10-off-what-100` | 90 is 10% off what — 100. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.a-word-between-the-percentage-and-of-on-or-o` | A word between the percentage and of, on or off only names it, so 20% discount off $100 is 20% off $100. The exception is tip: 15% tip on 42 is the tip on its own. tax, sales tax, vat and gst all work the same way. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.change-from-10-to-20-100` | % change from 10 to 20 — 100%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.decrease-from-20-to-10-50` | % decrease from 20 to 10 — -50%. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.half-of-90-45-00-usd` | Half of $90 — 45.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.if-30-is-20-what-is-50-75` | If 30 is 20%, what is 50% — 75. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.if-30-is-20-what-is-60-40` | If 30 is 20% what is 60 — 40%. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.ratio-of-1920-to-1080-16-9` | Ratio of 1920 to 1080 — 16 : 9. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.take-20-off-100-80` | Take 20% off 100 — 80. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.percent-ratios-and-lists.what-is-25-of-100-25` | What % is 25 of 100 — 25%. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.pixels-and-density.10-cm-to-px-at-300-ppi-1-181-102362-px` | 10 cm to px at 300 ppi — 1,181.102362 px. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.pixels-and-density.3000-px-to-inches-at-300-ppi-10-in` | 3000 px to inches at 300 ppi — 10 in. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.pixels-and-density.3000px-10in-to-ppi-300-ppi` | 3000px / 10in to ppi — 300 ppi. | The calculator engine is not ported yet. |
@@ -3185,13 +3156,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.rem-and-em.2rem-32-px` | 2rem — 32 px. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.rem-and-em.rem-and-em-use-the-browser-s-default-root-fo` | Rem and em use the browser's default root font size of 16px. pt means pints, not points. When you copy a px, rem or em result, the space is removed (24px) so you can paste it into CSS. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.rounding-and-fractions.1-240-rounded-to-nearest-hundred-1-200-00-us` | $1,240 rounded to nearest hundred — 1,200.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.120-4-people-30` | 120 / 4 people — 30. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.120-split-4-30-00-usd` | $120 split 4 — 30.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.20-tip-on-85-split-3-5-666666667` | 20% tip on 85 split 3 — 5.666666667. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.85-20-split-3-34` | 85 + 20% split 3 — 34. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.eur-99-among-3-friends-33-00-eur` | Eur 99 among 3 friends — 33.00 EUR. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.split-120-between-4-30` | Split 120 between 4 — 30. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.splitting-a-bill.the-card-labels-the-answer-per-person-the-am` | The card labels the answer Per Person. The amount keeps the currency or unit you typed, so $120 split 4 is 30.00 USD on any Mac. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.time-zones.10am-utc-5-30-in-london-a-utc-offset-in-lond` | 10am utc+5:30 in london — A UTC offset, in London. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.time-zones.1pm-et-in-london-tokyo-sydney-several-places` | 1pm et in london, tokyo, sydney — Several places on one card. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.time-zones.5pm-ldn-in-sf-2h-the-same-two-hours-later` | 5pm ldn in sf + 2h — The same, two hours later. | The calculator engine is not ported yet. |
@@ -3262,7 +3226,6 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.volume-and-flow.60l-min-to-m3-h-3-6-m-h` | 60l/min to m3/h — 3.6 m³/h. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.volume-and-flow.pi-10cm-2-30cm-to-l-9-424777961-l-cylinder` | Pi (10cm)^2 30cm to l — 9.424777961 L (cylinder). | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.words-with-two-meanings.slang-isn-t-supported-quid-and-bucks-show-no` | Slang isn't supported: quid and bucks show no card. rmb and renminbi work, because the ISO 4217 standard names the currency "Yuan Renminbi". | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.words-with-two-meanings.some-currency-words-are-shared-by-several-co` | Some currency words are shared by several countries: dollars could mean 22 currencies, francs 10, pounds 9, pesos 8 and rupees 6. Tinycast maps each of these to one currency. If a word is still ambiguous, Tinycast shows no card. For example, krona could be Swedish or Icelandic, so Tinycast doesn't guess. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.words-with-two-meanings.units-take-priority-over-currencies-so-10-po` | Units take priority over currencies, so 10 pounds to kg is a weight, 10 pounds to euros is money, and 1 cup to ml is a volume even though CUP is also the Cuban peso. Crypto tickers take priority over words: 1 sol is Solana, while soles means the Peruvian sol. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.workdays.as-a-unit-on-its-own-a-workday-is-eight-hour` | As a unit on its own, a workday is eight hours: 55h in workdays. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.workdays.to-count-workdays-between-two-dates-use-work` | To count workdays between two dates, use workdays between july 27 and august 7 or august 3 to august 14 in workdays. | The calculator engine is not ported yet. |
