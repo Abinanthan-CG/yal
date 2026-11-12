@@ -21,7 +21,7 @@
 "docs/features/clipboard/" = "The clipboard model layer is ported in `tc-clipboard` — the entry kinds, the filters, the colours, the capture policy, the Raycast import, the paste sequence and the store with its pins, its memory window and its retention — but the capture loop, the Windows clipboard watcher, the OCR of the copied images and the rows in the palette are not."
 "docs/features/snippets/" = "The snippet record, the Markdown file format and the template engine are ported in `tc-snippets`, but there is no repository reading and writing the files, no keyword expansion, no editor, no browser and no rows in the palette yet."
 "docs/features/file-search/" = "The file indexer helper exists, but the palette does not search the index yet."
-"docs/features/window-management/" = "Windows can enumerate and move windows, but the launcher's window commands are not built yet."
+"docs/features/window-management/" = "The commands themselves are built and proven against real windows: the catalogue of thirty-nine, the placement geometry, the gap model, the cycling, the restore memory and the Win32 mover. What is still missing is everything around them - the launcher rows, the Settings pane with its switches, the custom sizes, the two Space switches, and the display moves, which need a second display to be proven on."
 "docs/features/window-layouts/" = "Window layouts have no store and no rows in the palette yet."
 "docs/features/rooms/" = "Rooms are not implemented in YAL yet."
 "Switching windows is built with Win32: every open window of every running app, brought to the front. Reading an app's menu bar has no Windows answer."

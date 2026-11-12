@@ -1055,3 +1055,418 @@ pages = ["docs/reference/updates/"]
 [[cut]]
 reason = "Out of scope by decision (2026-11-11): macOS has a menu bar and YAL does not, so the menu items of the app in front cannot be read. Switching windows stays."
 headings = ["features-navigation.search-menu-bar-items"]
+
+[[status]]
+id = "features-window-management.the-commands.halves-left-half"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_left_half_takes_the_left_half_of_the_display",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.halves-right-half"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_right_half_takes_the_right_half",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.halves-top-half"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_top_and_bottom_halves_split_the_height",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.halves-bottom-half"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_top_and_bottom_halves_split_the_height",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.quarters-top-left-quarter"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_four_quarters_split_both_axes",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.quarters-top-right-quarter"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_four_quarters_split_both_axes",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.quarters-bottom-left-quarter"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_four_quarters_split_both_axes",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.quarters-bottom-right-quarter"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_four_quarters_split_both_axes",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.fourths-first-three-fourths"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_three_fourths_overlap_in_the_middle_by_a_quarter",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.fourths-last-three-fourths"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_three_fourths_overlap_in_the_middle_by_a_quarter",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.thirds-first-third"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_thirds_tile_the_width_without_gaps",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.thirds-center-third"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_thirds_tile_the_width_without_gaps",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.thirds-last-third"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_thirds_tile_the_width_without_gaps",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.thirds-first-two-thirds"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_two_thirds_take_the_rest_of_the_width",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.thirds-last-two-thirds"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_two_thirds_take_the_rest_of_the_width",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-maximize"
+status = "PORTED"
+evidence = [
+  "tc-platform-win::window_control::tests::the_maximize_command_fills_the_display",
+  "tc-windows::geometry::tests::maximize_fills_the_display",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-almost-maximize"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::almost_maximize_leaves_a_tenth_around_the_window",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-reasonable-size"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::reasonable_size_is_sixty_per_cent_of_the_display",
+  "tc-windows::geometry::tests::reasonable_size_never_grows_past_the_ceiling",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-maximize-height"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::maximize_height_keeps_the_width_and_clamps_it_on_screen",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-maximize-width"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::maximize_width_keeps_the_height_and_clamps_it_on_screen",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-center"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::center_keeps_the_window_size_and_centres_it",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-center-half"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_center_half_is_half_the_width_at_full_height",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-center-two-thirds"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_center_two_thirds_is_two_thirds_at_full_height",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-make-larger"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::make_larger_and_make_smaller_are_exactly_invertible",
+  "tc-windows::geometry::tests::make_smaller_stops_at_the_floor",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-make-smaller"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::make_larger_and_make_smaller_are_exactly_invertible",
+  "tc-windows::geometry::tests::make_smaller_stops_at_the_floor",
+]
+
+[[status]]
+id = "features-window-management.the-commands.sizing-restore-window"
+status = "PORTED"
+evidence = [
+  "tc-platform-win::window_control::tests::the_restore_chain_puts_the_window_back_where_it_started",
+  "tc-windows::action_memory::tests::the_first_sight_has_nothing_to_restore",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-left"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it",
+  "tc-windows::geometry::tests::a_nudge_stops_at_the_edge_of_the_display",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-right"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-up"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-down"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::a_nudge_moves_the_window_without_resizing_it",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-to-left-edge"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-to-right-edge"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-to-top-edge"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.moving-move-to-bottom-edge"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::an_edge_move_puts_the_window_against_the_edge",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.the-commands.fullscreen-toggle-fullscreen"
+status = "PORTED"
+evidence = [
+  "tc-platform-win::window_control::tests::a_window_can_be_made_to_fill_the_display_and_back",
+]
+
+[[status]]
+id = "features-window-management.window-management.move-and-resize-the-window-you-were-last-usi"
+status = "PORTED"
+evidence = [
+  "tc-platform-win::window_control::tests::the_foreground_window_is_a_real_window",
+  "tc-platform-win::window_control::tests::the_window_list_sees_a_window_with_a_title",
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+]
+
+[[status]]
+id = "features-window-management.window-management.it-doesn-t-need-any-new-permissions-it-uses"
+status = "PORTED"
+evidence = [
+  "tc-platform-win::window_control::tests::every_geometry_command_moves_a_real_window",
+  "tc-platform-win::window_control::tests::the_machine_has_at_least_one_display_with_a_work_area",
+]
+
+[[status]]
+id = "features-window-management.how-sizes-are-calculated.gaps-edges-next-to-the-screen-border-get-the"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::a_gap_insets_the_screen_edge_by_one_gap_and_splits_the_middle_by_half",
+  "tc-windows::geometry::tests::two_tiles_never_overlap_and_never_leave_a_line_between_them",
+  "tc-windows::geometry::tests::a_gap_is_capped_at_a_tenth_of_the_display",
+]
+
+[[status]]
+id = "features-window-management.how-sizes-are-calculated.make-larger-and-make-smaller-change-the-size"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::make_larger_and_make_smaller_are_exactly_invertible",
+  "tc-windows::geometry::tests::make_smaller_stops_at_the_floor",
+]
+
+[[status]]
+id = "features-window-management.how-sizes-are-calculated.reasonable-size-is-60-of-the-screen-centered"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::reasonable_size_is_sixty_per_cent_of_the_display",
+  "tc-windows::geometry::tests::reasonable_size_never_grows_past_the_ceiling",
+]
+
+[[status]]
+id = "features-window-management.how-sizes-are-calculated.center-half-is-half-the-screen-s-width-at-fu"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_center_half_is_half_the_width_at_full_height",
+  "tc-windows::geometry::tests::the_center_two_thirds_is_two_thirds_at_full_height",
+]
+
+[[status]]
+id = "features-window-management.how-sizes-are-calculated.a-window-that-s-too-large-or-partly-off-scre"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::maximize_height_keeps_the_width_and_clamps_it_on_screen",
+  "tc-windows::geometry::tests::a_restore_point_stranded_off_every_display_comes_back_centred",
+  "tc-platform-win::window_control::tests::the_machine_has_at_least_one_display_with_a_work_area",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.cycling-only-applies-to-the-four-halves-and"
+status = "PORTED"
+evidence = [
+  "tc-windows::command::tests::the_five_cycling_commands_are_the_halves_and_the_center_half",
+  "tc-windows::geometry::tests::without_cycling_a_half_keeps_its_frame",
+  "tc-windows::action_memory::tests::a_non_cycling_command_never_steps",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.cycle-and-changes-the-width-with-each-press"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_cycling_half_steps_through_half_a_third_and_two_thirds",
+  "tc-windows::action_memory::tests::a_second_press_of_the_same_command_steps_the_cycle",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.half-cycle-through-heights-instead-center-ha"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_cycling_half_steps_through_half_a_third_and_two_thirds",
+  "tc-windows::geometry::tests::the_center_half_is_half_the_width_at_full_height",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.cycle-displays-moves-the-window-through-ever"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_display_cycle_walks_the_strip_of_displays",
+  "tc-windows::action_memory::tests::a_press_on_another_display_starts_a_new_chain",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.your-whole-setup-with-two-displays-left-half"
+status = "PORTED"
+evidence = [
+  "tc-windows::geometry::tests::the_display_cycle_walks_the_strip_of_displays",
+  "tc-windows::geometry::tests::the_cycle_length_is_one_for_a_command_that_does_not_cycle",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.the-cycle-starts-over-when-you-move-or-resiz"
+status = "PORTED"
+evidence = [
+  "tc-windows::action_memory::tests::a_drag_of_three_points_is_the_users_own",
+  "tc-windows::action_memory::tests::a_drift_of_two_points_is_still_untouched",
+  "tc-windows::action_memory::tests::a_different_command_starts_a_new_chain",
+  "tc-windows::action_memory::tests::a_press_on_another_display_starts_a_new_chain",
+  "tc-windows::action_memory::tests::waiting_between_presses_does_not_reset_the_chain",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.restore-window-returns-to-the-saved-starting"
+status = "PORTED"
+evidence = [
+  "tc-platform-win::window_control::tests::the_restore_chain_puts_the_window_back_where_it_started",
+  "tc-windows::action_memory::tests::a_window_the_user_moved_starts_a_new_chain",
+]
+
+[[status]]
+id = "features-window-management.cycling-and-restore.tinycast-saves-the-starting-position-before"
+status = "PORTED"
+evidence = [
+  "tc-windows::action_memory::tests::the_first_sight_has_nothing_to_restore",
+  "tc-windows::action_memory::tests::the_memory_is_bounded_and_forgets_the_oldest",
+  "tc-windows::action_memory::tests::the_windows_of_an_app_that_quits_are_forgotten",
+]
+
+[[status]]
+id = "features-window-management.fullscreen.it-resets-the-cycle-but-keeps-the-restore-po"
+status = "PORTED"
+evidence = [
+  "tc-windows::action_memory::tests::forgetting_the_cycle_keeps_the_restore_point",
+  "tc-platform-win::window_control::tests::a_window_can_be_made_to_fill_the_display_and_back",
+]

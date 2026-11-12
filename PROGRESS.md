@@ -101,7 +101,7 @@ matcher's 19 scores, the sensitivity levels, the transliterations, the 25 compar
 the 12 category rules, and upstream/Tests/ranking-test.swift pins the frecency and the learned
 terms. All of them are ported as tests here, with upstream's own numbers.
 
-tc-search has 150 tests. The workspace has 706.
+tc-search has 150 tests. The workspace has 737.
 
 ### The launcher core
 
@@ -214,6 +214,23 @@ the ones that were kept - including the accents, which are folded.
 
 The screen, the Settings pane and the actions on a row are not built, so the
 file-search rows stay `NOT PORTED`.
+
+### The window mover (crates/tc-platform-win/src/window_control.rs)
+
+The part of window management that touches the machine: the displays and
+their work areas, the window list, the foreground window, and the code that
+writes a rectangle into a real window and reads it back. **12 tests**, and
+the load-bearing one runs **every** command in the catalogue against a real
+window on this machine.
+
+The memory of the windows that have been moved lives in
+`crates/tc-windows/src/action_memory.rs` - 19 tests - and holds the starting
+frame, the cycle step, the tolerance of two points and the bound of sixty-four
+windows, never on disk.
+
+**Fifty-one window-management rows are now `PORTED`**: the thirty-five
+command rows, the five "how sizes are calculated" rows, the six "cycling and
+restore" rows and the rest of that page's behaviour. 120 → 171.
 
 See [port note 015](docs/port-notes/015-file-search-index.md).
 

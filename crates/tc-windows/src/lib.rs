@@ -11,9 +11,11 @@
 //!
 //! See `docs/ARCHITECTURE.md` for the crate map.
 
+pub mod action_memory;
 pub mod command;
 pub mod geometry;
 
+pub use action_memory::{Decision, Record, WindowActionMemory, DEFAULT_CAPACITY, TOLERANCE};
 pub use command::{
     WindowCommand, WindowCommandCatalog, WindowCommandGroup, WindowCommandId, WindowCommandKind,
 };

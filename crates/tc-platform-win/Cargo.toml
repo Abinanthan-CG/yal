@@ -12,5 +12,7 @@ description = "YAL port: the only crate that touches Win32, WinRT and COM"
 tc-apps = { path = "../tc-apps" }
 tc-core = { path = "../tc-core" }
 tc-platform = { path = "../tc-platform" }
+tc-windows = { path = "../tc-windows" }
 windows = { workspace = true }
 serde_json = { workspace = true }
+thiserror = { workspace = true }

@@ -4075,6 +4075,8 @@ dependencies = [
  "tc-apps",
  "tc-core",
  "tc-platform",
+ "tc-windows",
+ "thiserror 2.0.21",
  "windows",
 ]
 

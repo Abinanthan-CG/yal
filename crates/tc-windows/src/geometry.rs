@@ -1326,6 +1326,22 @@ mod tests {
     }
 
     #[test]
+    fn maximize_width_keeps_the_height_and_clamps_it_on_screen() {
+        let placement = placement(&input(
+            WindowCommandId::MaximizeWidth,
+            Rect::new(900.0, 10.0, 400.0, 200.0),
+        ))
+        .expect("a placement");
+        assert_eq!(placement.frame.width(), 1000.0);
+        assert_eq!(placement.frame.height(), 200.0);
+        assert_eq!(
+            placement.frame.max_x(),
+            1000.0,
+            "it was pulled back on screen"
+        );
+    }
+
+    #[test]
     fn make_larger_and_make_smaller_are_exactly_invertible() {
         let start = Rect::new(100.0, 100.0, 400.0, 300.0);
         let larger = placement(&input(WindowCommandId::MakeLarger, start)).expect("a placement");
