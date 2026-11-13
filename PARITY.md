@@ -10,9 +10,9 @@ Every documented upstream behavior appears here exactly once, with the status `P
 
 | Tier | Rows | PORTED | NOT PORTED |
 | --- | ---: | ---: | ---: |
-| 1 | 1815 | 372 | 1443 |
+| 1 | 1815 | 400 | 1415 |
 | 2 | 494 | 41 | 453 |
-| **All** | **2309** | **413** | **1896** |
+| **All** | **2309** | **441** | **1868** |
 
 ### Totals per docs page
 
@@ -27,7 +27,7 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | `docs/launcher/system-settings/` | 1 | 16 | 0 | 16 |
 | `docs/launcher/system-actions/` | 1 | 54 | 26 | 28 |
 | `docs/launcher/uninstall/` | 1 | 32 | 0 | 32 |
-| `docs/features/calculator/` | 1 | 326 | 105 | 221 |
+| `docs/features/calculator/` | 1 | 326 | 133 | 193 |
 | `docs/features/clipboard/` | 1 | 85 | 15 | 70 |
 | `docs/features/snippets/` | 1 | 87 | 28 | 59 |
 | `docs/features/file-search/` | 1 | 68 | 39 | 29 |
@@ -754,50 +754,50 @@ Every documented upstream behavior appears here exactly once, with the status `P
 | Calculator | Calculator | Time zone answers work offline. Tinycast doesn't look up cities online. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | Tomorrow 3pm pst — 3 PM tomorrow in Los Angeles, here. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | What time is it in London — The same. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 1 / 20ms to hz — 50 Hz. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 1 / 20ms to hz — 50 Hz. | PORTED | `tc-calc::measure_tests::a_plain_amount_over_a_unit_is_the_inverse_of_that_unit`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
 | Calculator | Calculator | 1.75 m to feet and inches — 5 ft 8.897637795 in. | PORTED | `tc-calc::units_tests::a_measure_is_told_in_two_units`, `tc-calc::units_tests::the_two_units_of_a_split_are_joined_in_three_ways` |
-| Calculator | Calculator | 100 days to weeks and days — 14 week 2 day. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 100 months to years and months — 8 yr 4 mo. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 100km / 2h to km/h — 50 km/h. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 100km / 40km/h to duration — 2 hr 30 min. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 10kg + 500g — 10,500 g. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 10kg + 500g to lb — pounds; a trailing to overrides everything. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 10kg to lb + 3lb — converts, then adds. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 1500w 2h to kwh — 3 kWh. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 1GB / 100mbps to s — 80 s. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 1kg + 500g + 2lb — pounds. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 2.5 kg to lb oz — 5 lb 8.184904874 oz. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 2.75 hours in hours and minutes — 2 hr 45 min. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 2m 3m 4m to l — 24,000 L. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5 km is how many miles — 3.106855961 mi. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5 km is what in miles — 3.106855961 mi. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5feet + 1m — 2.524 m. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 5m 4m — 20 m². | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 60 mph 2.5 hours — 150 mi. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | 90km/h 20min to km — 30 km. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | A conversion can sit in the middle of a calculation. 1000 usd in eur / 12 converts first, then divides, and round(1000 usd in eur) works too. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | A fraction right before a unit is one amount. 5/16" in mm is 7.9375 mm, 1 1/2 cups to ml works, and 5'10" in cm is 177.8 cm. With spaces around it, / still divides, so 1 / 20ms to hz is 50 Hz. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | A number without a unit takes the unit next to it: 5kg+5 is 10 kg, and $10 + 5 is 15.00 USD. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | 100 days to weeks and days — 14 week 2 day. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 100 months to years and months — 8 yr 4 mo. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 100km / 2h to km/h — 50 km/h. | PORTED | `tc-calc::measure_tests::a_calculation_is_told_in_the_unit_that_is_named_after_it`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 100km / 40km/h to duration — 2 hr 30 min. | NOT PORTED | The target `duration` is not read yet, so a duration is not answered in the parts that make it. |
+| Calculator | Calculator | 10kg + 500g — 10,500 g. | PORTED | `tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 10kg + 500g to lb — pounds; a trailing to overrides everything. | PORTED | `tc-calc::measure_tests::a_calculation_is_told_in_the_unit_that_is_named_after_it` |
+| Calculator | Calculator | 10kg to lb + 3lb — converts, then adds. | NOT PORTED | A conversion in the middle of a calculation is not answered yet: the unit the amount is converted into is not carried into the addition that follows. |
+| Calculator | Calculator | 1500w 2h to kwh — 3 kWh. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 1GB / 100mbps to s — 80 s. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 1kg + 500g + 2lb — pounds. | PORTED | `tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 2.5 kg to lb oz — 5 lb 8.184904874 oz. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 2.75 hours in hours and minutes — 2 hr 45 min. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 2m 3m 4m to l — 24,000 L. | PORTED | `tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown` |
+| Calculator | Calculator | 5 km is how many miles — 3.106855961 mi. | NOT PORTED | The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is how many miles`. |
+| Calculator | Calculator | 5 km is what in miles — 3.106855961 mi. | NOT PORTED | The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is what in miles`. |
+| Calculator | Calculator | 5feet + 1m — 2.524 m. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | 5m 4m — 20 m². | PORTED | `tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown` |
+| Calculator | Calculator | 60 mph 2.5 hours — 150 mi. | PORTED | `tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown` |
+| Calculator | Calculator | 90km/h 20min to km — 30 km. | PORTED | `tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown` |
+| Calculator | Calculator | A conversion can sit in the middle of a calculation. 1000 usd in eur / 12 converts first, then divides, and round(1000 usd in eur) works too. | NOT PORTED | The rates of the currencies are not fetched yet, so a conversion of money cannot sit in the middle of a calculation. |
+| Calculator | Calculator | A fraction right before a unit is one amount. 5/16" in mm is 7.9375 mm, 1 1/2 cups to ml works, and 5'10" in cm is 177.8 cm. With spaces around it, / still divides, so 1 / 20ms to hz is 50 Hz. | PORTED | `tc-calc::measure_tests::a_fraction_right_before_a_unit_is_one_amount` |
+| Calculator | Calculator | A number without a unit takes the unit next to it: 5kg+5 is 10 kg, and $10 + 5 is 15.00 USD. | PORTED | `tc-calc::measure_tests::a_bare_amount_takes_the_unit_next_to_it`, `tc-calc::measure_tests::an_amount_of_money_and_a_measure_are_two_different_things` |
 | Calculator | Calculator | A unit on its own converts to a related unit: 1m gives feet and inches, and 1hr gives 60 min. | PORTED | `tc-calc::units_tests::a_measurement_without_a_target_is_converted_into_its_counterpart`, `tc-calc::units_tests::a_metre_is_answered_in_feet_and_inches`, `tc-calc::units_tests::an_hour_on_its_own_is_answered_in_minutes` |
-| Calculator | Calculator | A unit right after / means one of that unit, so 100 / s to hz is 100 Hz. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | After in, the amount needs a number or a/an. Without one, m in ft still means one meter in feet. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | A unit right after / means one of that unit, so 100 / s to hz is 100 Hz. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | After in, the amount needs a number or a/an. Without one, m in ft still means one meter in feet. | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
 | Calculator | Calculator | Cm in 5 inches — 12.7 cm. | PORTED | `tc-calc::units_tests::a_length_is_converted_into_another_length` |
-| Calculator | Calculator | Convert 5 km into miles — 3.106855961 mi. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Cube root of -8m3 — -2 m. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | How many feet in a mile — 5,280 ft. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | How many seconds are in a day — 86,400 s. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Measurements combine into area, volume, speed and more: | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Months and years convert as averages: a year is 365.2425 days and a month is a twelfth of that, so 3 months to days is 91.310625 day and 12 months to years is 1 yr. Adding a month to a date still follows the calendar (see Dates and times). | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | Convert 5 km into miles — 3.106855961 mi. | NOT PORTED | The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`. |
+| Calculator | Calculator | Cube root of -8m3 — -2 m. | PORTED | `tc-calc::measure_tests::a_root_keeps_the_unit`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | How many feet in a mile — 5,280 ft. | NOT PORTED | The spoken layer does not read a count of one unit in another yet, such as `how many feet in a mile`. |
+| Calculator | Calculator | How many seconds are in a day — 86,400 s. | NOT PORTED | The spoken layer does not read a count of one unit in another yet, such as `how many seconds are in a day`. |
+| Calculator | Calculator | Measurements combine into area, volume, speed and more: | PORTED | `tc-calc::measure_tests::two_measures_of_different_kinds_make_a_new_one`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | Months and years convert as averages: a year is 365.2425 days and a month is a twelfth of that, so 3 months to days is 91.310625 day and 12 months to years is 1 yr. Adding a month to a date still follows the calendar (see Dates and times). | PORTED | `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
 | Calculator | Calculator | Name two units of the same kind to split an answer between them. The larger unit is whole, and the rest goes into the smaller one. Join them with and, & or just a space: | PORTED | `tc-calc::units_tests::the_two_units_of_a_split_are_joined_in_three_ways`, `tc-calc::units_tests::two_units_of_different_kinds_are_not_a_mixed_answer` |
-| Calculator | Calculator | Results use base units unless you name a unit with to, in or as. A rate multiplied by time keeps the rate's own unit, so 10 l/min 30 s is 5 L. Power multiplied by minutes or hours gives Wh or kWh, and current multiplied by minutes or hours gives Ah or mAh. m² and m2 both mean square meters, while (2m)^2 squares the whole amount. Use pi (2m)^2 for the area of a circle. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Seconds in 3 days — 259,200 s. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Sqrt(25m2) — 5 m. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | The last unit you type sets the unit of the answer. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | To timespan splits a duration into parts: 145 mins to timespan is 2 hr 25 min. The largest part is weeks, because months vary in length. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | Units written side by side form one amount. 5 feet 3 inches is 5.25 ft and 1hr 30min is 1.5 hr, answered in the first unit. These pairs are evaluated first, so 5w 3h 30min means 5w (3h 30min), and 90km / 1h 30min gives 60 km/h. | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | With + and -, a percentage is relative (10kg + 20% is 12 kg). With and /, it's a plain fraction (10kg 3% is 0.3 kg, 10kg / 25% is 40 kg). | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | You can ask for a conversion in words: | NOT PORTED | The calculator engine is not ported yet. |
-| Calculator | Calculator | You can only add or subtract temperatures in the same scale. Other units combine freely: 2kg / 4m3 is 0.5 kg/m³, and 1kg/m3 to g/cm3 is 0.001 g/cm³. | NOT PORTED | The calculator engine is not ported yet. |
+| Calculator | Calculator | Results use base units unless you name a unit with to, in or as. A rate multiplied by time keeps the rate's own unit, so 10 l/min 30 s is 5 L. Power multiplied by minutes or hours gives Wh or kWh, and current multiplied by minutes or hours gives Ah or mAh. m² and m2 both mean square meters, while (2m)^2 squares the whole amount. Use pi (2m)^2 for the area of a circle. | PORTED | `tc-calc::measure_tests::a_rate_multiplied_by_a_time_keeps_the_numerator_of_the_rate`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | Seconds in 3 days — 259,200 s. | NOT PORTED | The spoken layer does not read a count of one unit in another yet, such as `Seconds in 3 days`. |
+| Calculator | Calculator | Sqrt(25m2) — 5 m. | PORTED | `tc-calc::measure_tests::a_root_keeps_the_unit`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | The last unit you type sets the unit of the answer. | PORTED | `tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | To timespan splits a duration into parts: 145 mins to timespan is 2 hr 25 min. The largest part is weeks, because months vary in length. | NOT PORTED | The target `timespan` is not read yet, so a duration is not answered in the parts that make it. |
+| Calculator | Calculator | Units written side by side form one amount. 5 feet 3 inches is 5.25 ft and 1hr 30min is 1.5 hr, answered in the first unit. These pairs are evaluated first, so 5w 3h 30min means 5w (3h 30min), and 90km / 1h 30min gives 60 km/h. | PORTED | `tc-calc::measure_tests::two_quantities_written_side_by_side_are_one_amount`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | With + and -, a percentage is relative (10kg + 20% is 12 kg). With and /, it's a plain fraction (10kg 3% is 0.3 kg, 10kg / 25% is 40 kg). | PORTED | `tc-calc::measure_tests::a_measure_multiplied_by_a_percentage_is_a_measure`, `tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written` |
+| Calculator | Calculator | You can ask for a conversion in words: | NOT PORTED | The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`. |
+| Calculator | Calculator | You can only add or subtract temperatures in the same scale. Other units combine freely: 2kg / 4m3 is 0.5 kg/m³, and 1kg/m3 to g/cm3 is 0.001 g/cm³. | NOT PORTED | The unit of the answer is ported, but a target that is itself a compound unit, such as `g/cm3`, is not read yet. |
 | Calculator | Calculator | 10l / 2min to l/min — 5 L/min. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 150l / 10l/min to duration — 15 min. | NOT PORTED | The calculator engine is not ported yet. |
 | Calculator | Calculator | 1m3 — 1,000 L. | NOT PORTED | The calculator engine is not ported yet. |
@@ -3139,46 +3139,18 @@ Tier 1 first, then Tier 2.
 | `docs/features/calculator/` | 1 | `features-calculator.time-zones.time-zone-answers-work-offline-tinycast-does` | Time zone answers work offline. Tinycast doesn't look up cities online. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.time-zones.tomorrow-3pm-pst-3-pm-tomorrow-in-los-angele` | Tomorrow 3pm pst — 3 PM tomorrow in Los Angeles, here. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.time-zones.what-time-is-it-in-london-the-same` | What time is it in London — The same. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.1-20ms-to-hz-50-hz` | 1 / 20ms to hz — 50 Hz. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.100-days-to-weeks-and-days-14-week-2-day` | 100 days to weeks and days — 14 week 2 day. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.100-months-to-years-and-months-8-yr-4-mo` | 100 months to years and months — 8 yr 4 mo. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.100km-2h-to-km-h-50-km-h` | 100km / 2h to km/h — 50 km/h. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.100km-40km-h-to-duration-2-hr-30-min` | 100km / 40km/h to duration — 2 hr 30 min. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.10kg-500g-10-500-g` | 10kg + 500g — 10,500 g. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.10kg-500g-to-lb-pounds-a-trailing-to-overrid` | 10kg + 500g to lb — pounds; a trailing to overrides everything. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.10kg-to-lb-3lb-converts-then-adds` | 10kg to lb + 3lb — converts, then adds. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.1500w-2h-to-kwh-3-kwh` | 1500w 2h to kwh — 3 kWh. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.1gb-100mbps-to-s-80-s` | 1GB / 100mbps to s — 80 s. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.1kg-500g-2lb-pounds` | 1kg + 500g + 2lb — pounds. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.2-5-kg-to-lb-oz-5-lb-8-184904874-oz` | 2.5 kg to lb oz — 5 lb 8.184904874 oz. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.2-75-hours-in-hours-and-minutes-2-hr-45-min` | 2.75 hours in hours and minutes — 2 hr 45 min. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.2m-3m-4m-to-l-24-000-l` | 2m 3m 4m to l — 24,000 L. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.5-km-is-how-many-miles-3-106855961-mi` | 5 km is how many miles — 3.106855961 mi. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.5-km-is-what-in-miles-3-106855961-mi` | 5 km is what in miles — 3.106855961 mi. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.5feet-1m-2-524-m` | 5feet + 1m — 2.524 m. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.5m-4m-20-m` | 5m 4m — 20 m². | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.60-mph-2-5-hours-150-mi` | 60 mph 2.5 hours — 150 mi. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.90km-h-20min-to-km-30-km` | 90km/h 20min to km — 30 km. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.a-conversion-can-sit-in-the-middle-of-a-calc` | A conversion can sit in the middle of a calculation. 1000 usd in eur / 12 converts first, then divides, and round(1000 usd in eur) works too. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.a-fraction-right-before-a-unit-is-one-amount` | A fraction right before a unit is one amount. 5/16" in mm is 7.9375 mm, 1 1/2 cups to ml works, and 5'10" in cm is 177.8 cm. With spaces around it, / still divides, so 1 / 20ms to hz is 50 Hz. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.a-number-without-a-unit-takes-the-unit-next` | A number without a unit takes the unit next to it: 5kg+5 is 10 kg, and $10 + 5 is 15.00 USD. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.a-unit-right-after-means-one-of-that-unit-so` | A unit right after / means one of that unit, so 100 / s to hz is 100 Hz. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.after-in-the-amount-needs-a-number-or-a-an-w` | After in, the amount needs a number or a/an. Without one, m in ft still means one meter in feet. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.convert-5-km-into-miles-3-106855961-mi` | Convert 5 km into miles — 3.106855961 mi. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.cube-root-of-8m3-2-m` | Cube root of -8m3 — -2 m. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.how-many-feet-in-a-mile-5-280-ft` | How many feet in a mile — 5,280 ft. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.how-many-seconds-are-in-a-day-86-400-s` | How many seconds are in a day — 86,400 s. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.measurements-combine-into-area-volume-speed` | Measurements combine into area, volume, speed and more: | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.months-and-years-convert-as-averages-a-year` | Months and years convert as averages: a year is 365.2425 days and a month is a twelfth of that, so 3 months to days is 91.310625 day and 12 months to years is 1 yr. Adding a month to a date still follows the calendar (see Dates and times). | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.results-use-base-units-unless-you-name-a-uni` | Results use base units unless you name a unit with to, in or as. A rate multiplied by time keeps the rate's own unit, so 10 l/min 30 s is 5 L. Power multiplied by minutes or hours gives Wh or kWh, and current multiplied by minutes or hours gives Ah or mAh. m² and m2 both mean square meters, while (2m)^2 squares the whole amount. Use pi (2m)^2 for the area of a circle. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.seconds-in-3-days-259-200-s` | Seconds in 3 days — 259,200 s. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.sqrt-25m2-5-m` | Sqrt(25m2) — 5 m. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.the-last-unit-you-type-sets-the-unit-of-the` | The last unit you type sets the unit of the answer. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.to-timespan-splits-a-duration-into-parts-145` | To timespan splits a duration into parts: 145 mins to timespan is 2 hr 25 min. The largest part is weeks, because months vary in length. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.units-written-side-by-side-form-one-amount-5` | Units written side by side form one amount. 5 feet 3 inches is 5.25 ft and 1hr 30min is 1.5 hr, answered in the first unit. These pairs are evaluated first, so 5w 3h 30min means 5w (3h 30min), and 90km / 1h 30min gives 60 km/h. | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.with-and-a-percentage-is-relative-10kg-20-is` | With + and -, a percentage is relative (10kg + 20% is 12 kg). With and /, it's a plain fraction (10kg 3% is 0.3 kg, 10kg / 25% is 40 kg). | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.you-can-ask-for-a-conversion-in-words` | You can ask for a conversion in words: | The calculator engine is not ported yet. |
-| `docs/features/calculator/` | 1 | `features-calculator.units.you-can-only-add-or-subtract-temperatures-in` | You can only add or subtract temperatures in the same scale. Other units combine freely: 2kg / 4m3 is 0.5 kg/m³, and 1kg/m3 to g/cm3 is 0.001 g/cm³. | The calculator engine is not ported yet. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.100km-40km-h-to-duration-2-hr-30-min` | 100km / 40km/h to duration — 2 hr 30 min. | The target `duration` is not read yet, so a duration is not answered in the parts that make it. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.10kg-to-lb-3lb-converts-then-adds` | 10kg to lb + 3lb — converts, then adds. | A conversion in the middle of a calculation is not answered yet: the unit the amount is converted into is not carried into the addition that follows. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.5-km-is-how-many-miles-3-106855961-mi` | 5 km is how many miles — 3.106855961 mi. | The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is how many miles`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.5-km-is-what-in-miles-3-106855961-mi` | 5 km is what in miles — 3.106855961 mi. | The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is what in miles`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.a-conversion-can-sit-in-the-middle-of-a-calc` | A conversion can sit in the middle of a calculation. 1000 usd in eur / 12 converts first, then divides, and round(1000 usd in eur) works too. | The rates of the currencies are not fetched yet, so a conversion of money cannot sit in the middle of a calculation. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.convert-5-km-into-miles-3-106855961-mi` | Convert 5 km into miles — 3.106855961 mi. | The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.how-many-feet-in-a-mile-5-280-ft` | How many feet in a mile — 5,280 ft. | The spoken layer does not read a count of one unit in another yet, such as `how many feet in a mile`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.how-many-seconds-are-in-a-day-86-400-s` | How many seconds are in a day — 86,400 s. | The spoken layer does not read a count of one unit in another yet, such as `how many seconds are in a day`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.seconds-in-3-days-259-200-s` | Seconds in 3 days — 259,200 s. | The spoken layer does not read a count of one unit in another yet, such as `Seconds in 3 days`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.to-timespan-splits-a-duration-into-parts-145` | To timespan splits a duration into parts: 145 mins to timespan is 2 hr 25 min. The largest part is weeks, because months vary in length. | The target `timespan` is not read yet, so a duration is not answered in the parts that make it. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.you-can-ask-for-a-conversion-in-words` | You can ask for a conversion in words: | The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`. |
+| `docs/features/calculator/` | 1 | `features-calculator.units.you-can-only-add-or-subtract-temperatures-in` | You can only add or subtract temperatures in the same scale. Other units combine freely: 2kg / 4m3 is 0.5 kg/m³, and 1kg/m3 to g/cm3 is 0.001 g/cm³. | The unit of the answer is ported, but a target that is itself a compound unit, such as `g/cm3`, is not read yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.unix-time.now-to-unix-current-timestamp-and-new-timest` | Now to unix, current timestamp and new timestamp give whole seconds, and now to unix ms gives milliseconds. now to iso gives an ISO 8601 date like 2026-07-24T00:18:00+00:00. unix 0 to date, 1000 unix ms and 1800000000 to date convert back to dates. A 13-digit number is read as milliseconds. Timestamps like 2026-07-24T07:30:00+02:00 + 30min work with either a Z or an offset. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.volume-and-flow.10l-2min-to-l-min-5-l-min` | 10l / 2min to l/min — 5 L/min. | The calculator engine is not ported yet. |
 | `docs/features/calculator/` | 1 | `features-calculator.volume-and-flow.150l-10l-min-to-duration-15-min` | 150l / 10l/min to duration — 15 min. | The calculator engine is not ported yet. |

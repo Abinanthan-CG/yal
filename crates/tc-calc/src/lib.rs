@@ -34,6 +34,7 @@ pub mod finance;
 pub mod formatter;
 pub mod growth;
 pub mod math;
+pub mod measure;
 pub mod mixed_units;
 pub mod parser;
 pub mod percent;
@@ -47,6 +48,8 @@ pub mod tokenizer;
 pub mod units;
 pub mod value;
 
+#[cfg(test)]
+mod measure_tests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
@@ -72,6 +75,7 @@ pub use currency::{CurrencyCatalog, CurrencyDef};
 pub use engine::{evaluate, CalcOutcome};
 pub use formatter::Formatter;
 pub use math::Math;
+pub use measure::Measurement;
 pub use parser::Parser;
 pub use result::{CalcResult, Payload};
 pub use token::{NumberBase, Operator, Token};

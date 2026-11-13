@@ -3709,3 +3709,279 @@ status = "PORTED"
 evidence = [
   "tc-palette::files::tests::the_images_filter_keeps_the_images",
 ]
+
+#
+# The unit section of the calculator: the arithmetic that carries a unit.
+#
+# The measurement lives in `tc-calc::measure`, and the parser that carries it in
+# `tc-calc::parser`. Every PORTED row below cites a test that ran and shows the
+# behaviour the row describes.
+#
+
+[[status]]
+id = "features-calculator.units.the-last-unit-you-type-sets-the-unit-of-the"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.5feet-1m-2-524-m"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.10kg-500g-10-500-g"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.1kg-500g-2lb-pounds"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.10kg-500g-to-lb-pounds-a-trailing-to-overrid"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_calculation_is_told_in_the_unit_that_is_named_after_it",
+]
+
+[[status]]
+id = "features-calculator.units.10kg-to-lb-3lb-converts-then-adds"
+status = "NOT PORTED"
+reason = "A conversion in the middle of a calculation is not answered yet: the unit the amount is converted into is not carried into the addition that follows."
+
+[[status]]
+id = "features-calculator.units.units-written-side-by-side-form-one-amount-5"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::two_quantities_written_side_by_side_are_one_amount",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.a-number-without-a-unit-takes-the-unit-next"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_bare_amount_takes_the_unit_next_to_it",
+  "tc-calc::measure_tests::an_amount_of_money_and_a_measure_are_two_different_things",
+]
+
+[[status]]
+id = "features-calculator.units.a-fraction-right-before-a-unit-is-one-amount"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_fraction_right_before_a_unit_is_one_amount",
+]
+
+[[status]]
+id = "features-calculator.units.with-and-a-percentage-is-relative-10kg-20-is"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_measure_multiplied_by_a_percentage_is_a_measure",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.you-can-ask-for-a-conversion-in-words"
+status = "NOT PORTED"
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`."
+
+[[status]]
+id = "features-calculator.units.convert-5-km-into-miles-3-106855961-mi"
+status = "NOT PORTED"
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`."
+
+[[status]]
+id = "features-calculator.units.5-km-is-what-in-miles-3-106855961-mi"
+status = "NOT PORTED"
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is what in miles`."
+
+[[status]]
+id = "features-calculator.units.5-km-is-how-many-miles-3-106855961-mi"
+status = "NOT PORTED"
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is how many miles`."
+
+[[status]]
+id = "features-calculator.units.how-many-feet-in-a-mile-5-280-ft"
+status = "NOT PORTED"
+reason = "The spoken layer does not read a count of one unit in another yet, such as `how many feet in a mile`."
+
+[[status]]
+id = "features-calculator.units.how-many-seconds-are-in-a-day-86-400-s"
+status = "NOT PORTED"
+reason = "The spoken layer does not read a count of one unit in another yet, such as `how many seconds are in a day`."
+
+[[status]]
+id = "features-calculator.units.seconds-in-3-days-259-200-s"
+status = "NOT PORTED"
+reason = "The spoken layer does not read a count of one unit in another yet, such as `Seconds in 3 days`."
+
+[[status]]
+id = "features-calculator.units.after-in-the-amount-needs-a-number-or-a-an-w"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.months-and-years-convert-as-averages-a-year"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.a-conversion-can-sit-in-the-middle-of-a-calc"
+status = "NOT PORTED"
+reason = "The rates of the currencies are not fetched yet, so a conversion of money cannot sit in the middle of a calculation."
+
+[[status]]
+id = "features-calculator.units.a-unit-right-after-means-one-of-that-unit-so"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.measurements-combine-into-area-volume-speed"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::two_measures_of_different_kinds_make_a_new_one",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.5m-4m-20-m"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown",
+]
+
+[[status]]
+id = "features-calculator.units.2m-3m-4m-to-l-24-000-l"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown",
+]
+
+[[status]]
+id = "features-calculator.units.sqrt-25m2-5-m"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_root_keeps_the_unit",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.cube-root-of-8m3-2-m"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_root_keeps_the_unit",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.100km-2h-to-km-h-50-km-h"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_calculation_is_told_in_the_unit_that_is_named_after_it",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.90km-h-20min-to-km-30-km"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown",
+]
+
+[[status]]
+id = "features-calculator.units.60-mph-2-5-hours-150-mi"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown",
+]
+
+[[status]]
+id = "features-calculator.units.100km-40km-h-to-duration-2-hr-30-min"
+status = "NOT PORTED"
+reason = "The target `duration` is not read yet, so a duration is not answered in the parts that make it."
+
+[[status]]
+id = "features-calculator.units.1gb-100mbps-to-s-80-s"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.1500w-2h-to-kwh-3-kwh"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.1-20ms-to-hz-50-hz"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_plain_amount_over_a_unit_is_the_inverse_of_that_unit",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.results-use-base-units-unless-you-name-a-uni"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_rate_multiplied_by_a_time_keeps_the_numerator_of_the_rate",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.to-timespan-splits-a-duration-into-parts-145"
+status = "NOT PORTED"
+reason = "The target `timespan` is not read yet, so a duration is not answered in the parts that make it."
+
+[[status]]
+id = "features-calculator.units.2-5-kg-to-lb-oz-5-lb-8-184904874-oz"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.2-75-hours-in-hours-and-minutes-2-hr-45-min"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.100-months-to-years-and-months-8-yr-4-mo"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.100-days-to-weeks-and-days-14-week-2-day"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.units.you-can-only-add-or-subtract-temperatures-in"
+status = "NOT PORTED"
+reason = "The unit of the answer is ported, but a target that is itself a compound unit, such as `g/cm3`, is not read yet."

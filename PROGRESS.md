@@ -423,6 +423,12 @@ behaviour, the compact bar, the appearance settings and the General pane, and wi
 file search's screen, its filter, its actions, its scope rules, its ignore patterns and its
 search rules.
 
+**441 rows are PORTED** after the arithmetic that carries a unit: the unit section of the
+calculator added twenty-eight more - the last unit typed deciding the unit of the answer, the
+composite notation of `5 feet 3 inches`, the measures that combine into area and volume, the
+rate over a time that keeps its own numerator, the root that raises the unit, and the
+conversion that sits at the end of a calculation.
+
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
 
@@ -444,8 +450,10 @@ The order to work in, with what is done so far:
 11. Calculator — **the arithmetic core and the unit table are done**: the tokenizer, the parser,
     the engine, the number formatting and the whole unit table are ported to `crates/tc-calc`
     against upstream's own calculator tests, and the conversions between two units are in the
-    palette. **The percentages, the money and the shared amounts are done too**; the exchange
-    rates, the dates, the time zones and the arithmetic that carries a unit are stage 2.
+    palette. **The percentages, the money and the shared amounts are done too**, and so is the
+    arithmetic that carries a unit: a value carries its measurement, the last unit typed decides
+    the unit of the answer, composite notation answers in the leading unit, and a rate over a
+    time keeps its own numerator. The exchange rates, the dates and the time zones are stage 2.
 12. Clipboard history — **the model is done** (`crates/tc-clipboard`): the items, the
     classification, the colours, the filters, the policy, the paste sequence and the store with
     its pins, its memory window and its retention. The capture loop, the Windows watcher, the OCR

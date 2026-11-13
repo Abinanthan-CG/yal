@@ -625,3 +625,52 @@ an empty screen.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 413 PORTED, 1896 NOT PORTED.
 - `npm.cmd run check` and `npm.cmd run build` in `frontend/` pass.
+## Session 12 - 2026-11-13
+
+**What was done.**
+
+- **The arithmetic that carries a unit.** A value in `tc-calc` now carries its measurement, the
+  way upstream's `CalcValue` does, so the unit is part of the calculation rather than something
+  the card adds afterwards.
+- **`crates/tc-calc/src/measure.rs`** - the measurement: the symbol, the long name, the
+  category, the scale onto the base, the offset and the dimension. It is `Copy`, so a
+  calculation carries it without an allocation on every step. The catalog hands it over through
+  one new method, `unit_ref`.
+- **The compound unit.** Two measures of different kinds make a third: `2kg / 4m3` is
+  `0.5 kg/m³` and `1kg * 1m` is `1 kg·m`. The symbol keeps the way the two were joined, and
+  one copy of every symbol is kept so that two compounds with the same writing are the same
+  measure.
+- **The base unit of a dimension**, so `5m * 4m` answers `20 m²` rather than a compound, and
+  **the unit a rate accrues in**, so `60 mph * 2.5 hours` answers `150 mi` and
+  `500mA * 3h 30min` answers `1,750 mAh`.
+- **The parser carries it.** The last unit typed decides the unit of the answer; composite
+  notation answers in the leading unit; a bare amount takes the unit next to it; two measures of
+  one kind divide into a plain ratio; a plain amount over a unit is the inverse of that unit;
+  and a root raises the unit as well.
+- **The card shows it**, with the unit in the answer and the unit's name on the badge, and a
+  conversion can sit at the end of a calculation: `10kg + 500g to lb` is `23.14853753 lb`.
+- **The documentation's lost multiplication signs.** The unit section of upstream's
+  documentation writes `5m 4m` where the example is `5m * 4m`; the markdown reads the sign as
+  emphasis. Upstream's own tests write the sign out, and both readings are answered the way
+  upstream answers them.
+- **Twenty-two new tests** in `crates/tc-calc/src/measure_tests.rs`, every expectation taken
+  from upstream's `Tests/calc-test.swift` or from its documentation.
+
+**What was not done.** Twelve rows of the unit section stay open, each with its own reason: a
+conversion in the middle of a calculation, a conversion asked in words, a conversion of money
+in the middle of a calculation, the targets `duration` and `timespan`, and a target that is
+itself a compound unit. The multi-argument functions still lose the unit (`min(1km,999m)`
+answers `1`), and a mismatch of measures answers with no card rather than with the error
+upstream shows.
+
+**Decisions.** Three: a value carries its unit and the catalog hands it over as a shared
+reference; a compound unit keeps one copy of its symbol; and the rows whose documentation lost
+a multiplication sign are `PORTED` with the evidence of the example as upstream's tests write
+it.
+
+**Verified.**
+- `cargo test --workspace` passes: 1103 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 441 PORTED, 1868 NOT PORTED.
+- `cargo run -q -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.

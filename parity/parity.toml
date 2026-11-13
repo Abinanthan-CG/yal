@@ -5807,9 +5807,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "The last unit you type sets the unit of the answer."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5818,9 +5818,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "5feet + 1m — 2.524 m."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5829,9 +5829,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "10kg + 500g — 10,500 g."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5840,9 +5840,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "1kg + 500g + 2lb — pounds."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_last_unit_typed_decides_the_unit_of_the_answer", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5851,9 +5851,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "10kg + 500g to lb — pounds; a trailing to overrides everything."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_calculation_is_told_in_the_unit_that_is_named_after_it"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5864,7 +5864,7 @@ behavior = "10kg to lb + 3lb — converts, then adds."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "A conversion in the middle of a calculation is not answered yet: the unit the amount is converted into is not carried into the addition that follows."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5873,9 +5873,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Units written side by side form one amount. 5 feet 3 inches is 5.25 ft and 1hr 30min is 1.5 hr, answered in the first unit. These pairs are evaluated first, so 5w 3h 30min means 5w (3h 30min), and 90km / 1h 30min gives 60 km/h."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::two_quantities_written_side_by_side_are_one_amount", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5884,9 +5884,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "A number without a unit takes the unit next to it: 5kg+5 is 10 kg, and $10 + 5 is 15.00 USD."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_bare_amount_takes_the_unit_next_to_it", "tc-calc::measure_tests::an_amount_of_money_and_a_measure_are_two_different_things"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5895,9 +5895,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "A fraction right before a unit is one amount. 5/16\" in mm is 7.9375 mm, 1 1/2 cups to ml works, and 5'10\" in cm is 177.8 cm. With spaces around it, / still divides, so 1 / 20ms to hz is 50 Hz."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_fraction_right_before_a_unit_is_one_amount"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5906,9 +5906,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "With + and -, a percentage is relative (10kg + 20% is 12 kg). With and /, it's a plain fraction (10kg 3% is 0.3 kg, 10kg / 25% is 40 kg)."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_measure_multiplied_by_a_percentage_is_a_measure", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5930,7 +5930,7 @@ behavior = "You can ask for a conversion in words:"
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5941,7 +5941,7 @@ behavior = "Convert 5 km into miles — 3.106855961 mi."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `Convert 5 km into miles`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5952,7 +5952,7 @@ behavior = "5 km is what in miles — 3.106855961 mi."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is what in miles`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5963,7 +5963,7 @@ behavior = "5 km is how many miles — 3.106855961 mi."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The calculator has no phrase layer that reads a conversion asked in words, such as `5 km is how many miles`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5974,7 +5974,7 @@ behavior = "How many feet in a mile — 5,280 ft."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The spoken layer does not read a count of one unit in another yet, such as `how many feet in a mile`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5985,7 +5985,7 @@ behavior = "How many seconds are in a day — 86,400 s."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The spoken layer does not read a count of one unit in another yet, such as `how many seconds are in a day`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -5996,7 +5996,7 @@ behavior = "Seconds in 3 days — 259,200 s."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The spoken layer does not read a count of one unit in another yet, such as `Seconds in 3 days`."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6016,9 +6016,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "After in, the amount needs a number or a/an. Without one, m in ft still means one meter in feet."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6027,9 +6027,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Months and years convert as averages: a year is 365.2425 days and a month is a twelfth of that, so 3 months to days is 91.310625 day and 12 months to years is 1 yr. Adding a month to a date still follows the calendar (see Dates and times)."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6040,7 +6040,7 @@ behavior = "A conversion can sit in the middle of a calculation. 1000 usd in eur
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The rates of the currencies are not fetched yet, so a conversion of money cannot sit in the middle of a calculation."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6049,9 +6049,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "A unit right after / means one of that unit, so 100 / s to hz is 100 Hz."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6060,9 +6060,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Measurements combine into area, volume, speed and more:"
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::two_measures_of_different_kinds_make_a_new_one", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6071,9 +6071,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "5m 4m — 20 m²."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6082,9 +6082,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "2m 3m 4m to l — 24,000 L."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6093,9 +6093,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Sqrt(25m2) — 5 m."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_root_keeps_the_unit", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6104,9 +6104,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Cube root of -8m3 — -2 m."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_root_keeps_the_unit", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6115,9 +6115,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "100km / 2h to km/h — 50 km/h."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_calculation_is_told_in_the_unit_that_is_named_after_it", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6126,9 +6126,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "90km/h 20min to km — 30 km."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6137,9 +6137,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "60 mph 2.5 hours — 150 mi."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_documentation_loses_a_multiplication_sign_in_its_markdown"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6150,7 +6150,7 @@ behavior = "100km / 40km/h to duration — 2 hr 30 min."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The target `duration` is not read yet, so a duration is not answered in the parts that make it."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6159,9 +6159,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "1GB / 100mbps to s — 80 s."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6170,9 +6170,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "1500w 2h to kwh — 3 kWh."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6181,9 +6181,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "1 / 20ms to hz — 50 Hz."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_plain_amount_over_a_unit_is_the_inverse_of_that_unit", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6192,9 +6192,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "Results use base units unless you name a unit with to, in or as. A rate multiplied by time keeps the rate's own unit, so 10 l/min 30 s is 5 L. Power multiplied by minutes or hours gives Wh or kWh, and current multiplied by minutes or hours gives Ah or mAh. m² and m2 both mean square meters, while (2m)^2 squares the whole amount. Use pi (2m)^2 for the area of a circle."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_rate_multiplied_by_a_time_keeps_the_numerator_of_the_rate", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6205,7 +6205,7 @@ behavior = "To timespan splits a duration into parts: 145 mins to timespan is 2 
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The target `timespan` is not read yet, so a duration is not answered in the parts that make it."
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6236,9 +6236,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "2.5 kg to lb oz — 5 lb 8.184904874 oz."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6247,9 +6247,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "2.75 hours in hours and minutes — 2 hr 45 min."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6258,9 +6258,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "100 months to years and months — 8 yr 4 mo."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6269,9 +6269,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.units"
 behavior = "100 days to weeks and days — 14 week 2 day."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.data-sizes"
 
 [[row]]
@@ -6282,7 +6282,7 @@ behavior = "You can only add or subtract temperatures in the same scale. Other u
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
 status = "NOT PORTED"
 evidence = []
-reason = "The calculator engine is not ported yet."
+reason = "The unit of the answer is ported, but a target that is itself a compound unit, such as `g/cm3`, is not read yet."
 count_check = "calculator.data-sizes"
 
 [[row]]

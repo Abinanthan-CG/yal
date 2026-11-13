@@ -12,6 +12,7 @@ use crate::finance;
 use crate::formatter::Formatter;
 use crate::growth;
 use crate::math::Math;
+use crate::measure::Measurement;
 use crate::parser::Parser;
 use crate::percent;
 use crate::result::{CalcResult, Payload};
@@ -130,6 +131,11 @@ fn evaluate_tokens(
     // The unit conversions, before the typed arithmetic: a unit makes the plain
     // parser stop, and the conversions are what a query with a unit is asking for.
     if let Some(result) = units::evaluate(tokens, query, catalog) {
+        return Ok(Some(result));
+    }
+
+    // The conversion of a calculation into a unit: `10kg + 500g to lb`.
+    if let Some(result) = layer(expression_conversion(tokens, catalog), &mut unsupported) {
         return Ok(Some(result));
     }
 
@@ -310,8 +316,17 @@ pub(crate) fn quantity_result(
         Err(ParseError::Unsupported(area)) => return Err(area),
     };
     if !value.is_boolean {
-        if parser.operation_count() == 0 && (preserve_standalone || tokens.len() <= 1) {
-            return Ok(None);
+        if value.unit.is_none() && value.currency.is_none() {
+            // A plain amount is a calculation only when something was done to it.
+            if parser.operation_count() == 0 && (preserve_standalone || tokens.len() <= 1) {
+                return Ok(None);
+            }
+            return Ok(Some(CalcResult::with_badges(
+                Formatter::expression(query),
+                "Expression",
+                "Result",
+                Payload::number(value.effective()),
+            )));
         }
         if let Some(currency) = value.currency {
             return Ok(Some(CalcResult::with_badges(
@@ -321,12 +336,29 @@ pub(crate) fn quantity_result(
                 Payload::money(value.amount, currency.code),
             )));
         }
-        return Ok(Some(CalcResult::with_badges(
-            Formatter::expression(query),
-            "Expression",
-            "Result",
-            Payload::number(value.effective()),
-        )));
+        if let Some(unit) = value.unit {
+            // A bare `50cm` auto-converts into its counterpart; with an operator the
+            // unit that was typed is kept.
+            if !preserve_standalone
+                && parser.operation_count() == 0
+                && parser.dimension_count() == 1
+                && ends_with_a_unit(tokens, catalog)
+            {
+                return Ok(None);
+            }
+            if parser.operation_count() == 0
+                && parser.dimension_count() <= 1
+                && !preserve_standalone
+            {
+                return Ok(None);
+            }
+            return Ok(Some(CalcResult::with_badges(
+                expression_text(tokens, catalog),
+                "Expression",
+                unit.name,
+                Payload::measured(value.amount, &unit),
+            )));
+        }
     }
     let text = if value.amount == 0.0 { "false" } else { "true" };
     Ok(Some(CalcResult {
@@ -519,6 +551,90 @@ fn to_radix(value: u64, radix: u32, uppercase: bool) -> String {
 }
 
 /// The normalized echo of a calculation, as upstream's `CalcQuantity.expressionText`.
+/// The conversion of a calculation into a unit, as upstream's
+/// `CalcQuantity.splitConversion` and `CalcExpressionParser.converted` answer it.
+///
+/// `10kg + 500g to lb` is `23.14853753 lb`: the calculation is made first, and the
+/// answer is then told in the unit that was named.
+fn expression_conversion(
+    tokens: &[Token],
+    catalog: &dyn Catalog,
+) -> Result<Option<CalcResult>, UnsupportedArea> {
+    let Some(index) = tokens.len().checked_sub(2) else {
+        return Ok(None);
+    };
+    if !is_connector(&tokens[index]) {
+        return Ok(None);
+    }
+    let Token::Ident(target_name) = &tokens[index + 1] else {
+        return Ok(None);
+    };
+    let source = &tokens[..index];
+    if source.is_empty() {
+        return Ok(None);
+    }
+    // A plain amount before the connector is a simple conversion, and the conversion
+    // layer answers it with its own badges.
+    if is_simple_conversion_source(source) {
+        return Ok(None);
+    }
+    let Some(target) = catalog.unit_ref(target_name) else {
+        return Ok(None);
+    };
+    let mut parser = Parser::new(source);
+    let value = match parser.parse(catalog) {
+        Ok(value) => value,
+        Err(_) => return Ok(None),
+    };
+    let Some(unit) = value.unit else {
+        return Ok(None);
+    };
+    let target = Measurement::of(target);
+    if !unit.is_compatible_with(&target) {
+        return Ok(None);
+    }
+    let amount = unit.told_in(value.amount, &target);
+    Ok(Some(CalcResult::with_badges(
+        expression_text(source, catalog),
+        "Expression",
+        target.name,
+        Payload::measured(amount, &target),
+    )))
+}
+
+/// Whether the tokens before a connector are a plain amount, as upstream's
+/// `CalcQuantity.isSimpleConversionSource` asks.
+///
+/// A simple source is answered by the conversion layer, which shows the unit it came
+/// from and the unit it went to; a calculation is answered here, with the expression
+/// itself as the badge.
+fn is_simple_conversion_source(tokens: &[Token]) -> bool {
+    match tokens.len() {
+        1 => matches!(tokens[0], Token::Ident(_)),
+        2 => matches!(
+            (&tokens[0], &tokens[1]),
+            (Token::Number(_), Token::Ident(_))
+                | (Token::CompactNumber(_), Token::Ident(_))
+                | (Token::Ident(_), Token::Number(_))
+                | (Token::Ident(_), Token::CompactNumber(_))
+                | (Token::Ident(_), Token::Ident(_))
+        ),
+        _ => false,
+    }
+}
+
+/// Whether the last token names a unit, as upstream's standalone-unit rule asks.
+///
+/// A bare `50cm` is read as a request to convert it; once something is done to it,
+/// the unit that was typed is the unit of the answer.
+fn ends_with_a_unit(tokens: &[Token], catalog: &dyn Catalog) -> bool {
+    match tokens.last() {
+        Some(Token::Ident(name)) => catalog.unit_ref(name).is_some(),
+        _ => false,
+    }
+}
+
+/// The expression a card echoes, as upstream's `CalcQuantity.expressionText`.
 fn expression_text(tokens: &[Token], catalog: &dyn Catalog) -> String {
     let mut parts: Vec<String> = Vec::new();
     let mut attach_next = true;

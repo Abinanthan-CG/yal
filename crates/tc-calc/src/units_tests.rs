@@ -453,23 +453,18 @@ fn a_bare_c_is_the_temperature_and_not_the_charge() {
 // MARK: - What the catalog does not decide
 
 #[test]
-fn a_calculation_with_a_unit_is_not_answered_yet() {
+fn a_calculation_with_a_unit_answers_in_its_own_numerator() {
     // Upstream `expectDisplay("60 mph * 2.5 hours", "150 mi")`: a rate over time
-    // answers in its own numerator. This port has no quantity algebra yet, so the
-    // query is left unanswered rather than answered wrongly.
-    assert_ne!(
-        display("60 mph * 2.5 hours").as_deref(),
-        Some("150 mi"),
-        "a quantity with a unit must not be answered with the wrong number"
-    );
+    // answers in its own numerator. The quantity algebra lives in `measure.rs`.
+    assert_eq!(display("60 mph * 2.5 hours").as_deref(), Some("150 mi"));
 }
 
 #[test]
 fn a_divisor_that_is_a_unit_is_not_read_as_a_plain_amount() {
     // Upstream `expectDisplay("1 / 20ms to hz", "50 Hz")`: one divided by twenty
-    // milliseconds is fifty hertz. Reading it as a plain amount would answer
-    // `0.00005 Hz`, so this port answers nothing instead.
+    // milliseconds is fifty hertz, not `0.00005 Hz`.
     assert_ne!(display("1 / 20ms to hz").as_deref(), Some("0.00005 Hz"));
+    assert_eq!(display("1 / 20ms").as_deref(), Some("50 Hz"));
 }
 
 #[test]
