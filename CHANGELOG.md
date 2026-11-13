@@ -15,10 +15,14 @@ has got.
 ## [Unreleased]
 
 ### Added
-- **The arithmetic that carries a unit**: a value now carries its measurement, so 10kg + 500g answers
-  10,500 g, 5 feet 3 inches answers 5.25 ft, 5m * 4m answers 20 m², 60 mph * 2.5 hours answers
-  150 mi, and 10kg + 500g to lb answers 23.14853753 lb. The measurement lives in
-  	c-calc::measure; the parser carries it through the calculation.
+- **The arithmetic that carries a unit**: a value now carries its measurement, so `10kg + 500g` answers
+  `10,500 g`, `5 feet 3 inches` answers `5.25 ft`, `5m * 4m` answers `20 m²`, `60 mph * 2.5 hours` answers
+  `150 mi`, and `10kg + 500g to lb` answers `23.14853753 lb`. The measurement lives in
+  `tc-calc::measure`; the parser carries it through the calculation.
+- **The functions of a measurement**: the lists of measures are reduced in the unit of the first one, so
+  `min(1km,999m)` answers `0.999 km` and `sum of 1 km and 500 m` answers `1.5 km`.
+- **The compound a unit makes with another unit name**: `60 miles per hour` answers `60 mi/hr`,
+  `10 kg/m3` answers `10 kg/m³`, and `50 usd per hour` answers `50 USD/hr`.
 - **The palette's screen system** in `tc-palette`: the screens and how they stack, the keys and
   the translation from upstream's Mac chords to Windows, the escape chain, the tab cycle, the
   emacs chords, the slim bar of the compact mode, and the actions menu. The window no longer

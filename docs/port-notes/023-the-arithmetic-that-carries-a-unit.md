@@ -164,3 +164,44 @@ not rows of their own: the multi-argument functions lose the unit
 (`min(1km,999m)` answers `1` rather than `0.999 km`), and a mismatch of
 measures answers with no card rather than with the error upstream shows
 (`5w * 3h + 30min`).
+## The second half of the slice: the functions of a measurement
+
+A function that takes a list of measures answers in the unit of its first
+argument: `min(1km,999m)` is `0.999 km`, not `1`, and `sum(1km,500m)` is
+`1.5 km`. The arguments are told in that unit first, and the answer keeps it.
+
+The functions that do this are upstream's `CalcMath.measurements`: `hypot`,
+`round`, `min`, `max`, `sum`, `avg`, `mean`, `average`, `median`, `stddev` and
+`stdev`. The list was already in `tc-calc::math`; the parser now uses it.
+
+The phrases that reduce a list keep the unit too, because they are lowered to
+the same function call: `sum of 1 km and 500 m` is `1.5 km`, and the card is
+labelled `Sum` rather than `Result`.
+
+### A unit beside another unit name
+
+`60 miles per hour` is `60 mi/hr`, not a division of two measures. The rule is
+upstream's: when a unit is followed by a multiplication or a division and then
+the *name* of another unit, the two make a compound and the amount stands
+alone. `10 kg/m3` is `10 kg/m³` for the same reason, and `50 usd per hour` is
+`50 USD/hr`, because money is a unit of its own dimension.
+
+The compound is read by a small reader of unit expressions, upstream's
+`UnitParser`: a unit, a group of units in brackets, a power, and a run of units
+joined by `*` or `/`.
+
+### The percentage after a measure
+
+Two things had to be true for `50 as % of 200` to be `25%`:
+
+- a percentage is a plain amount, so the parse fails when a percentage follows
+  a measure - upstream's `parseOperand` asks for a scalar there;
+- a phrase that wants a plain amount does not take one that carries a measure -
+  upstream's `CalcExpressionParser.scalar` asks for the scalar kind.
+
+Without the second one, `50 as % of 200` answered `100`: the `as` was read as
+the unit of a coulomb, and the phrase took the fifty as a plain percentage.
+
+The same rule applies to the percentage phrases, the finance phrases, the
+growth phrases, the spoken phrases and the rounding phrases: a run of tokens
+that has to be a plain amount is not one when it carries a measure.

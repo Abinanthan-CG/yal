@@ -429,6 +429,11 @@ composite notation of `5 feet 3 inches`, the measures that combine into area and
 rate over a time that keeps its own numerator, the root that raises the unit, and the
 conversion that sits at the end of a calculation.
 
+**447 rows are PORTED** now: the functions of a measurement added six more - the lists of
+measures that are reduced in the unit of the first one, the compound a unit makes with
+another unit name (`60 miles per hour` is `60 mi/hr`), the operators written as words, and
+the share of two measures.
+
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
 

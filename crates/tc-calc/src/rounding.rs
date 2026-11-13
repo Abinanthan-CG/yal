@@ -376,7 +376,7 @@ fn parse_value(tokens: &[Token], catalog: &dyn Catalog) -> Result<Option<Value>,
 fn scalar_of(tokens: &[Token], catalog: &dyn Catalog) -> Option<f64> {
     let mut parser = Parser::new(tokens);
     match parser.parse(catalog) {
-        Ok(value) if !value.is_boolean => Some(value.effective()),
+        Ok(value) if !value.is_boolean && value.is_scalar() => Some(value.effective()),
         _ => None,
     }
 }

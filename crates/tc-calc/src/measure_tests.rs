@@ -321,3 +321,111 @@ fn a_fraction_right_before_a_unit_is_one_amount() {
     // divided by sixteen inches.
     assert_display("5/16\"", "0.79375 cm");
 }
+
+// MARK: - The functions of a measurement
+
+#[test]
+fn the_functions_of_a_measurement_answer_in_the_unit_of_the_first_argument() {
+    // Upstream's `Tests/calc-test.swift`: the arguments are told in the unit of the
+    // first one, so `min(1km,999m)` is `0.999 km` rather than `1`.
+    assert_display("hypot(3m,400cm)", "5 m");
+    assert_display("min(1km,999m)", "0.999 km");
+    assert_display("sum(1km,500m)", "1.5 km");
+    assert_display("round(2.567km,1)", "2.6 km");
+    assert_display("median(3 km, 1 km, 2 km)", "2 km");
+}
+
+#[test]
+fn the_echo_of_a_function_of_a_measurement_keeps_the_units() {
+    // Upstream's `Tests/calc-test.swift`.
+    assert_eq!(
+        expression("min(1km,999m)").as_deref(),
+        Some("min(1 km, 999 m)")
+    );
+    assert_eq!(
+        expression("round(2.567km,1)").as_deref(),
+        Some("round(2.567 km, 1)")
+    );
+    assert_eq!(
+        expression("hypot(3m,400cm)").as_deref(),
+        Some("hypot(3 m, 400 cm)")
+    );
+}
+
+#[test]
+fn the_measures_combine_through_the_whole_calculation() {
+    // Upstream's `Tests/calc-test.swift`.
+    assert_display("(1m + 50cm) to ft", "4.921259843 ft");
+    assert_display("(2dm)^3 to l", "8 L");
+    assert_display("pi * (10cm)^2 * 30cm to l", "9.424777961 L");
+    assert_display("4/3 * pi * (10cm)^3 to l", "4.188790205 L");
+    assert_display("500l / (2m * 1m) to cm", "25 cm");
+    assert_display("(300ppi * 2.54cm) / 300px", "1");
+    assert_display("pi * (2m)^2 to m2", "12.56637061 m²");
+    assert_display("(2m)^0.5", "1.414213562 m^0.5");
+}
+
+// MARK: - A unit beside another unit name
+
+#[test]
+fn a_unit_beside_another_unit_name_makes_a_compound_of_the_two() {
+    // Upstream's documentation: `60 miles per hour` is `60 mi/hr`, and the money of
+    // a rate is a compound of money and time.
+    assert_display("60 miles per hour", "60 mi/hr");
+    assert_display("10 kg/m3", "10 kg/m³");
+    assert_display("60 mi/hr to km/h", "96.56064 km/h");
+}
+
+#[test]
+fn the_money_of_a_rate_is_a_compound_of_money_and_time() {
+    // Upstream's `Tests/calc-test.swift`: `50 usd per hour` is `50 USD/hr`.
+    let catalog = crate::catalog::FullCatalog;
+    assert_eq!(
+        evaluate("50 usd per hour", &catalog).display(),
+        Some("50 USD/hr")
+    );
+}
+
+#[test]
+fn the_operators_can_be_written_as_words() {
+    // Upstream's documentation.
+    assert_display("10 plus 5", "15");
+    assert_display("10 minus 3", "7");
+    assert_display("6 times 7", "42");
+    assert_display("10 divided by 2", "5");
+    assert_display("10 multiplied by 3", "30");
+    assert_display("2 to the power of 10", "1,024");
+    assert_display("3 raised to 4", "81");
+    assert_display("2 exponent 10", "1,024");
+    assert_display("3 to the 4", "81");
+    assert_display("4 squared", "16");
+    assert_display("3 cubed", "27");
+    assert_display("20 percent of 50", "10");
+}
+
+#[test]
+fn a_list_of_measures_is_reduced_in_the_unit_of_the_first_one() {
+    // Upstream's documentation: the items are told in the unit of the first one.
+    assert_display("sum of 1 km and 500 m", "1.5 km");
+    assert_display("average of 1 km and 500 m", "0.75 km");
+    assert_display("min of 1km and 999m", "0.999 km");
+    assert_display("median of 3 km, 1 km, 2 km", "2 km");
+    assert_display("stdev(1km,500m)", "0.3535533906 km");
+}
+
+#[test]
+fn two_measures_of_one_kind_can_be_compared() {
+    // Upstream's documentation: `1km == 1000m` is true.
+    assert_display("1km == 1000m", "true");
+    assert_display("1km != 1000m", "false");
+    assert_display("1km >= 1000m", "true");
+}
+
+#[test]
+fn a_share_of_a_measure_is_a_percentage() {
+    // Upstream's `Tests/calc-test.swift`: `750 m as % of 3 km` is `25%`. The `as`
+    // there is a word, not the unit of a coulomb.
+    assert_display("750 m as % of 3 km", "25%");
+    assert_display("50 as % of 200", "25%");
+    assert_display("50 is what % of 200", "25%");
+}

@@ -16,7 +16,7 @@ use std::sync::{OnceLock, RwLock};
 
 use crate::catalog::Catalog;
 use crate::formatter::Formatter;
-use crate::units::{by_name, Dimension, UnitCategory, UnitDef};
+use crate::units::{Dimension, UnitCategory, UnitDef};
 
 /// A unit a value carries, as upstream's `UnitDef`.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -106,7 +106,9 @@ fn base_units() -> &'static [(Dimension, Measurement)] {
     BASE.get_or_init(|| {
         let mut base: Vec<(Dimension, Measurement)> = Vec::new();
         for name in BASE_NAMES {
-            let Some(unit) = by_name(name) else { continue };
+            let Some(unit) = crate::units::by_name(name) else {
+                continue;
+            };
             let Some(dimension) = unit.dimension() else {
                 continue;
             };
@@ -149,12 +151,14 @@ pub fn product_unit(left: &Measurement, right: &Measurement) -> Option<Measureme
         return None;
     }
     match measure.category {
-        UnitCategory::Power => named(if measure.factor >= 1000.0 {
+        UnitCategory::Power => by_name(if measure.factor >= 1000.0 {
             "kwh"
         } else {
             "wh"
         }),
-        UnitCategory::ElectricCurrent => named(if measure.factor <= 0.001 { "mah" } else { "ah" }),
+        UnitCategory::ElectricCurrent => {
+            by_name(if measure.factor <= 0.001 { "mah" } else { "ah" })
+        }
         _ => None,
     }
 }
@@ -167,7 +171,7 @@ fn accrued_unit(rate: &Measurement) -> Option<Measurement> {
         .find(|(key, _)| *key == symbol)
         .map(|(_, value)| *value)
         .or_else(|| symbol.split('/').next().filter(|part| *part != symbol))?;
-    let unit = named(numerator).or_else(|| named(&numerator.to_lowercase()))?;
+    let unit = by_name(numerator).or_else(|| by_name(&numerator.to_lowercase()))?;
     let rate_dimension = rate.dimension?;
     let unit_dimension = unit.dimension?;
     let time = Dimension::new(0.0, 0.0, 1.0);
@@ -246,8 +250,118 @@ pub fn power(unit: &Measurement, exponent: f64) -> Option<Measurement> {
 }
 
 /// The measurement of the unit a name stands for in the catalog.
-fn named(name: &str) -> Option<Measurement> {
-    by_name(name).map(Measurement::of)
+pub fn by_name(name: &str) -> Option<Measurement> {
+    crate::units::by_name(name).map(Measurement::of)
+}
+
+/// The measurement of a currency, as upstream's `CalcUnitExpression.named`.
+///
+/// A currency is a unit of its own dimension, so `50 usd per hour` is a compound
+/// of money and time.
+pub fn of_currency(currency: crate::currency::CurrencyDef) -> Measurement {
+    Measurement {
+        symbol: currency.code,
+        name: currency.name,
+        category: UnitCategory::Compound,
+        factor: 1.0,
+        offset: 0.0,
+        dimension: Some(Dimension {
+            currency: 1.0,
+            ..Dimension::new(0.0, 0.0, 0.0)
+        }),
+    }
+}
+
+/// A unit written as an expression, as upstream's `CalcUnitExpression.factor`.
+///
+/// `m`, `m/s`, `m/s2` and `(m/s)2` are all written as an expression, and the
+/// parser reads one of them the way it is written.
+pub fn factor(tokens: &[crate::token::Token], index: usize) -> Option<(Measurement, usize)> {
+    let mut parser = UnitParser { tokens, index };
+    let unit = parser.factor()?;
+    Some((unit, parser.index))
+}
+
+/// The reader of a unit written as an expression, as upstream's `UnitParser`.
+struct UnitParser<'a> {
+    /// The tokens to read.
+    tokens: &'a [crate::token::Token],
+    /// Where the reader is.
+    index: usize,
+}
+
+impl<'a> UnitParser<'a> {
+    /// The token at the cursor.
+    fn current(&self) -> Option<&crate::token::Token> {
+        self.tokens.get(self.index)
+    }
+
+    /// A unit, a group of units, or one of them with a power, as upstream's
+    /// `UnitParser.factor`.
+    fn factor(&mut self) -> Option<Measurement> {
+        let unit = match self.current()? {
+            crate::token::Token::Ident(name) => {
+                let unit = by_name(name)?;
+                self.index += 1;
+                unit
+            }
+            crate::token::Token::Op(crate::token::Operator::Open) => {
+                self.index += 1;
+                let found = self.expression()?;
+                if self.current() != Some(&crate::token::Token::Op(crate::token::Operator::Close)) {
+                    return None;
+                }
+                self.index += 1;
+                found
+            }
+            _ => return None,
+        };
+        if self.current() != Some(&crate::token::Token::Op(crate::token::Operator::Power)) {
+            return Some(unit);
+        }
+        self.index += 1;
+        let negative =
+            self.current() == Some(&crate::token::Token::Op(crate::token::Operator::Subtract));
+        if negative {
+            self.index += 1;
+        }
+        let number = match self.current() {
+            Some(crate::token::Token::Number(number)) => *number,
+            _ => return None,
+        };
+        if number > 16.0 {
+            return None;
+        }
+        self.index += 1;
+        power(&unit, if negative { -number } else { number })
+    }
+
+    /// A run of units joined by `*` or `/`, as upstream's `UnitParser.expression`.
+    fn expression(&mut self) -> Option<Measurement> {
+        let mut left = self.factor()?;
+        while matches!(
+            self.current(),
+            Some(crate::token::Token::Op(
+                crate::token::Operator::Multiply | crate::token::Operator::Divide
+            ))
+        ) {
+            let dividing =
+                self.current() == Some(&crate::token::Token::Op(crate::token::Operator::Divide));
+            let mut next = UnitParser {
+                tokens: self.tokens,
+                index: self.index + 1,
+            };
+            let Some(right) = next.factor() else {
+                break;
+            };
+            let Some(result) = combine(&left, &right, dividing) else {
+                break;
+            };
+            self.index = next.index;
+            left = result;
+        }
+        Some(left)
+    }
 }
 
 /// Keeps one copy of every symbol a compound is written with.
