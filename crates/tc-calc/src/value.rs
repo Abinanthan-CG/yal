@@ -57,6 +57,14 @@ impl Value {
         }
     }
 
+    /// Whether the value is a plain amount, as upstream's `CalcValue.Kind.scalar`.
+    ///
+    /// A value that carries a measure or a currency is not a plain amount, so the
+    /// phrases that want one do not take it.
+    pub fn is_scalar(&self) -> bool {
+        self.unit.is_none() && self.currency.is_none()
+    }
+
     /// The amount the value stands for, as upstream's `CalcValue.effective`.
     ///
     /// A percentage is a hundredth of the amount it carries.

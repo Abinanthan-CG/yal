@@ -166,11 +166,12 @@ fn starts_with(tokens: &[Token], head: &[String]) -> bool {
         .all(|(index, word)| tokens[index] == Token::Ident(word.clone()))
 }
 
-/// The payload of an amount, keeping the money it carries.
+/// The payload of an amount, keeping the money and the measure it carries.
 fn amount_payload(amount: Value) -> Payload {
-    match amount.currency {
-        Some(currency) => Payload::money(amount.amount, currency.code),
-        None => Payload::number(amount.amount),
+    match (amount.currency, amount.unit) {
+        (Some(currency), _) => Payload::money(amount.amount, currency.code),
+        (None, Some(unit)) => Payload::measured(amount.amount, &unit),
+        (None, None) => Payload::number(amount.amount),
     }
 }
 

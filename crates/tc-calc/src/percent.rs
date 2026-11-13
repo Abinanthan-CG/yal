@@ -363,9 +363,10 @@ fn adjusted_value(
 /// Upstream's `.quantity(value)` shows money as money and a plain amount as a
 /// plain number.
 fn amount_payload(amount: Value, scaled: f64) -> Payload {
-    match amount.currency {
-        Some(currency) => Payload::money(scaled, currency.code),
-        None => Payload::number(scaled),
+    match (amount.currency, amount.unit) {
+        (Some(currency), _) => Payload::money(scaled, currency.code),
+        (None, Some(unit)) => Payload::measured(scaled, &unit),
+        (None, None) => Payload::number(scaled),
     }
 }
 
@@ -986,8 +987,8 @@ fn value_of(tokens: &[Token], catalog: &dyn Catalog) -> Result<Option<Value>, Un
 fn scalar_of(tokens: &[Token], catalog: &dyn Catalog) -> Option<f64> {
     let mut parser = Parser::new(tokens);
     match parser.parse(catalog) {
-        Ok(value) => Some(value.effective()),
-        Err(_) => None,
+        Ok(value) if value.is_scalar() => Some(value.effective()),
+        _ => None,
     }
 }
 

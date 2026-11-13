@@ -555,8 +555,41 @@ impl<'a> Parser<'a> {
                     check_dimension(name, catalog)?;
                     return Ok(value);
                 }
+                Some(Token::Op(op)) if *op == Operator::Multiply || *op == Operator::Divide => {
+                    // A unit beside another unit name makes a compound of the two:
+                    // `60 miles per hour` is sixty miles per hour, not a division of
+                    // two measures.
+                    if !matches!(self.tokens.get(self.position + 1), Some(Token::Ident(_))) {
+                        return Ok(value);
+                    }
+                    let Some(unit) = arithmetic_unit(value) else {
+                        return Ok(value);
+                    };
+                    let Some((factor, end)) = measure::factor(self.tokens, self.position + 1)
+                    else {
+                        return Ok(value);
+                    };
+                    // A number after the unit means the unit stands alone.
+                    if end != self.tokens.len() && number_value(&self.tokens[end]).is_some() {
+                        return Ok(value);
+                    }
+                    let Some(combined) = measure::combine(&unit, &factor, *op == Operator::Divide)
+                    else {
+                        return Ok(value);
+                    };
+                    value.currency = None;
+                    value.unit = Some(combined);
+                    self.dimension_count += 1;
+                    self.position = end;
+                }
                 Some(Token::Op(Operator::Percent)) => {
-                    if value.is_percent || value.is_boolean {
+                    // A percentage is a plain amount: `50 as % of 200` is a phrase, and
+                    // the `as` there is not the unit of a coulomb.
+                    if value.is_percent
+                        || value.is_boolean
+                        || value.unit.is_some()
+                        || value.currency.is_some()
+                    {
                         return Err(ParseError::NotACalculation);
                     }
                     value.is_percent = true;
@@ -777,22 +810,46 @@ impl<'a> Parser<'a> {
     /// `CalcExpressionParser.parseFunction`.
     fn parse_function(&mut self, name: &str, catalog: &dyn Catalog) -> Result<Value, ParseError> {
         self.position += 2;
-        let mut amounts: Vec<f64> = Vec::new();
+        let mut values: Vec<Value> = Vec::new();
         loop {
             let end = self.argument_end().ok_or(ParseError::NotACalculation)?;
             let value = self.parse_scope(end, catalog)?;
             if value.is_boolean {
                 return Err(ParseError::NotACalculation);
             }
-            amounts.push(value.effective());
+            values.push(value);
             self.position = end + 1;
             if self.tokens[end] == Token::Op(Operator::Close) {
                 break;
             }
         }
         self.operation_count += 1;
+        let first = values[0];
+        // The functions of a measurement answer in the unit of their first argument,
+        // so `min(1km,999m)` is `0.999 km` rather than `1`.
+        let keeps_unit = Math::MEASUREMENTS.contains(&name);
+        let mut amounts: Vec<f64> = Vec::with_capacity(values.len());
+        for (index, value) in values.iter().enumerate() {
+            if name == "round" && index == 1 {
+                // The number of digits a rounding keeps is a plain number.
+                if value.unit.is_some() || value.currency.is_some() {
+                    return Err(ParseError::NotACalculation);
+                }
+                amounts.push(value.effective());
+            } else if keeps_unit {
+                amounts.push(self.comparable(*value, first)?);
+            } else {
+                if value.unit.is_some() || value.currency.is_some() {
+                    return Err(ParseError::NotACalculation);
+                }
+                amounts.push(value.effective());
+            }
+        }
         let result = Math::evaluate(name, &amounts).ok_or(ParseError::NotACalculation)?;
-        Ok(Value::scalar(result))
+        match (keeps_unit, first.unit) {
+            (true, Some(unit)) => Ok(Value::measurement(result, unit)),
+            _ => Ok(Value::scalar(result)),
+        }
     }
 
     /// Parses a bracketed group, as upstream's `CalcExpressionParser.parseGrouped`.
@@ -900,6 +957,28 @@ fn check_dimension(name: &str, catalog: &dyn Catalog) -> Result<(), ParseError> 
         )));
     }
     Ok(())
+}
+
+/// The unit a value carries into an arithmetic operation, as upstream's
+/// `CalcExpressionParser.arithmeticUnit`.
+///
+/// A currency is a unit of its own dimension, so money can be a compound with a
+/// time: `50 usd per hour` is `50 USD/hr`.
+fn arithmetic_unit(value: Value) -> Option<Measurement> {
+    match (value.unit, value.currency) {
+        (Some(unit), _) => Some(unit),
+        (None, Some(currency)) => Some(measure::of_currency(currency)),
+        (None, None) => None,
+    }
+}
+
+/// The number a token carries, as upstream's `CalcQuantity.numberValue`.
+fn number_value(token: &Token) -> Option<f64> {
+    match token {
+        Token::Number(value) | Token::CompactNumber(value) => Some(*value),
+        Token::IntLiteral(value, _) => Some(*value as f64),
+        _ => None,
+    }
 }
 
 /// The currency a calculation of two values keeps, as upstream's

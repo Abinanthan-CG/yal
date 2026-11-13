@@ -674,3 +674,32 @@ it.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 441 PORTED, 1868 NOT PORTED.
 - `cargo run -q -p xtask -- parity --check` reports the ledger and `PARITY.md` are up to date.
+## Session 13 - 2026-11-13
+
+**What was done.**
+
+- **The functions of a measurement.** The lists of measures are reduced in the unit of the first
+  argument, so `min(1km,999m)` is `0.999 km`, `sum(1km,500m)` is `1.5 km` and
+  `sum of 1 km and 500 m` is `1.5 km` with the card labelled `Sum`.
+- **The compound a unit makes with another unit name.** `60 miles per hour` is `60 mi/hr`,
+  `10 kg/m3` is `10 kg/m³`, and `50 usd per hour` is `50 USD/hr`. The rule is upstream's: a unit
+  followed by a sign and then the name of another unit makes a compound, and the amount stands
+  alone.
+- **A percentage is a plain amount.** Two bugs came out of that: a percentage after a measure
+  did not fail the parse, and a phrase that wanted a plain amount took one that carried a
+  measure. Together they made `50 as % of 200` answer `100` instead of `25%`, because the `as`
+  was read as the unit of a coulomb.
+- **The unit table checked against upstream's.** The two tables hold the same 218 records, the
+  last one being the ohm.
+
+**What was not done.** The unit table's own prefix entries are generated the same way upstream
+generates them, but a table of 617 units like Raycast's is not the goal; and the decimal comma of
+a European Windows is not read yet, so a list of values is separated by a comma only.
+
+**Decisions.** None new; the decisions of session 12 hold.
+
+**Verified.**
+- `cargo test --workspace` passes: 1112 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 447 PORTED, 1862 NOT PORTED.

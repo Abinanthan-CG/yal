@@ -3985,3 +3985,58 @@ evidence = [
 id = "features-calculator.units.you-can-only-add-or-subtract-temperatures-in"
 status = "NOT PORTED"
 reason = "The unit of the answer is ported, but a target that is itself a compound unit, such as `g/cm3`, is not read yet."
+
+#
+# The unit section of the calculator: the functions of a measurement, and the
+# compound a unit beside another unit name makes.
+#
+# The measurement lives in `tc-calc::measure`, and the parser that carries it in
+# `tc-calc::parser`. Every PORTED row below cites a test that ran and shows the
+# behaviour the row describes.
+#
+
+[[status]]
+id = "features-calculator.arithmetic.spoken-roots-work-with-measurements-square-r"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_root_keeps_the_unit",
+  "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written",
+]
+
+[[status]]
+id = "features-calculator.arithmetic.you-can-also-write-the-operators-as-words-10"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_operators_can_be_written_as_words",
+  "tc-calc::measure_tests::a_unit_beside_another_unit_name_makes_a_compound_of_the_two",
+]
+
+[[status]]
+id = "features-calculator.functions-and-comparisons.min-max-sum-avg-mean-average-median-and-stdd"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::the_functions_of_a_measurement_answer_in_the_unit_of_the_first_argument",
+  "tc-calc::measure_tests::a_list_of_measures_is_reduced_in_the_unit_of_the_first_one",
+]
+
+[[status]]
+id = "features-calculator.functions-and-comparisons.and-compare-numbers-or-compatible-units-1km"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::two_measures_of_one_kind_can_be_compared",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.separate-items-with-commas-or-and-units-are"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_list_of_measures_is_reduced_in_the_unit_of_the_first_one",
+]
+
+[[status]]
+id = "features-calculator.lists-and-statistics.the-amount-keeps-its-currency-or-unit-the-ca"
+status = "PORTED"
+evidence = [
+  "tc-calc::measure_tests::a_list_of_measures_is_reduced_in_the_unit_of_the_first_one",
+  "tc-calc::measure_tests::a_share_of_a_measure_is_a_percentage",
+]

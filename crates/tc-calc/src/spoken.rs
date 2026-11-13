@@ -702,8 +702,8 @@ fn value_of(tokens: &[Token], catalog: &dyn Catalog) -> Result<Option<Value>, Un
 fn scalar_of(tokens: &[Token], catalog: &dyn Catalog) -> Option<f64> {
     let mut parser = Parser::new(tokens);
     match parser.parse(catalog) {
-        Ok(value) => Some(value.effective()),
-        Err(_) => None,
+        Ok(value) if value.is_scalar() => Some(value.effective()),
+        _ => None,
     }
 }
 

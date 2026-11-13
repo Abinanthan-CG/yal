@@ -5763,9 +5763,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.arithmetic"
 behavior = "Spoken roots work with measurements: square root of 25m2 is 5 m. root 4 of 81 is 3, and log 81 base 3 is 4."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_root_keeps_the_unit", "tc-calc::measure_tests::the_examples_of_the_documentation_answer_as_they_are_written"]
+reason = ""
 count_check = "calculator.card-actions"
 
 [[row]]
@@ -5774,9 +5774,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.arithmetic"
 behavior = "You can also write the operators as words: 10 plus 5, 10 minus 3, 6 times 7, 10 divided by 2, 10 multiplied by 3 and 2 to the power of 10. 3 raised to 4, 2 exponent 10 and 3 to the 4 are powers too. 4 squared is 16 and 3 cubed is 27. per means divide, so 60 miles per hour is 60 mi/hr. percent, per cent and percentage mean %, so 20 percent of 50 is 10."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_operators_can_be_written_as_words", "tc-calc::measure_tests::a_unit_beside_another_unit_name_makes_a_compound_of_the_two"]
+reason = ""
 count_check = "calculator.card-actions"
 
 [[row]]
@@ -8011,9 +8011,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "Separate items with commas or and. Units are kept, as in sum of 1 km and 500 m. The standard deviation is the sample deviation, the same as STDEV in a spreadsheet."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_list_of_measures_is_reduced_in_the_unit_of_the_first_one"]
+reason = ""
 
 [[row]]
 id = "features-calculator.lists-and-statistics.the-amount-keeps-its-currency-or-unit-the-ca"
@@ -8021,9 +8021,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.lists-and-statistics"
 behavior = "The amount keeps its currency or unit. The card labels the answer, like Tip, Discounted, Percent Change, Ratio or Median, instead of a generic \"Result\"."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::a_list_of_measures_is_reduced_in_the_unit_of_the_first_one", "tc-calc::measure_tests::a_share_of_a_measure_is_a_percentage"]
+reason = ""
 
 [[row]]
 id = "features-calculator.math-in-words.is-97-prime-true"
@@ -8837,9 +8837,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.functions-and-comparisons"
 behavior = "Min, max, sum, avg, mean, average, median and stddev take lists, including measurements, and count counts them: sum(1km,500m) is 1.5 km. Inside a function, write 1000 instead of 1,000, because commas separate the values. If your number format uses a decimal comma, separate values with ; instead, as in max(2,5; 3)."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::the_functions_of_a_measurement_answer_in_the_unit_of_the_first_argument", "tc-calc::measure_tests::a_list_of_measures_is_reduced_in_the_unit_of_the_first_one"]
+reason = ""
 
 [[row]]
 id = "features-calculator.functions-and-comparisons.and-compare-numbers-or-compatible-units-1km"
@@ -8847,9 +8847,9 @@ page = "docs/features/calculator/"
 heading = "features-calculator.functions-and-comparisons"
 behavior = "==, !=, and >= compare numbers or compatible units: 1km == 1000m is true. Whole numbers support &, |, xor, ~, >. ^ always means a power."
 windows = "\"Pure logic: port all of it exactly. Port Tests/calc-test.swift case by case and turn every example row on the docs page into a test with the documented output (several hundred cases). Region, home currency and System number format come from Windows regional settings. Time zones use a bundled IANA database plus upstream''s extra city list, abbreviations and airport codes, and work offline. Use the same rate sources, 24-hour cache, manual refresh and 30-minute crypto retry as upstream. Calculator History is its own screen. The color card accepts hex, rgb() and hsl() and copies as hex, rgba(), hsl() and oklch()."
-status = "NOT PORTED"
-evidence = []
-reason = "The calculator engine is not ported yet."
+status = "PORTED"
+evidence = ["tc-calc::measure_tests::two_measures_of_one_kind_can_be_compared"]
+reason = ""
 
 [[row]]
 id = "features-calculator.functions-and-comparisons.base-conversion-works-both-ways-0xff-shows-h"
