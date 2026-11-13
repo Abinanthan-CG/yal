@@ -46,6 +46,21 @@ impl Payload {
         }
     }
 
+    /// The payload of a measurement that carries its unit, as upstream's
+    /// `CalcResult.Payload.measurement`.
+    pub fn measured(value: f64, unit: &crate::measure::Measurement) -> Self {
+        let text = Formatter::copy_text(value);
+        let separator = if unit.category == crate::units::UnitCategory::Pixels {
+            ""
+        } else {
+            " "
+        };
+        Self::Value {
+            display: format!("{} {}", Formatter::grouped(&text), unit.symbol),
+            copy_text: format!("{text}{separator}{}", unit.symbol),
+        }
+    }
+
     /// The payload of a percentage, as upstream's `CalcResult.Payload.number(_:suffix:)`.
     ///
     /// The sign sits outside the grouped digits, so `1234.5%` reads as it should.

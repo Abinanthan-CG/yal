@@ -1,19 +1,28 @@
 //! The expression parser: tokens in, a value out.
 //!
-//! Mirrors upstream `CalcExpressionParser.swift`. Upstream's parser also carries units
-//! and currencies through a calculation; both live outside this crate, so a name the
-//! catalog knows is reported as unsupported instead of being guessed at.
+//! Mirrors upstream `CalcExpressionParser.swift`. Upstream's parser carries units and
+//! currencies through a calculation; both live in this crate now, so a value keeps the
+//! unit it was written with and answers in the unit the last one named.
 
 use crate::catalog::Catalog;
 use crate::currency::CurrencyDef;
 use crate::math::Math;
+use crate::measure::{self, Measurement};
 use crate::token::{Operator, Token};
+use crate::units::{Dimension, UnitCategory};
 use crate::value::{ParseError, UnsupportedArea, Value};
 
 /// How tightly a unary sign binds, as upstream's `CalcExpressionParser.unaryBindingPower`.
 ///
 /// A unary minus binds looser than `^` and tighter than `*`.
 const UNARY_BINDING_POWER: i32 = 25;
+
+/// How tightly two quantities written side by side bind, as upstream's
+/// `CalcExpressionParser.compositeBindingPower`.
+///
+/// Composite notation binds above multiplication, so `5 feet 3 inches` is one amount
+/// rather than five feet times three inches.
+const COMPOSITE_BINDING_POWER: i32 = 40;
 
 /// A binary operator the parser found, as upstream's `CalcExpressionParser.BinaryOp`.
 struct BinaryOp {
@@ -32,6 +41,7 @@ pub struct Parser<'a> {
     tokens: &'a [Token],
     position: usize,
     operation_count: usize,
+    dimension_count: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -41,6 +51,7 @@ impl<'a> Parser<'a> {
             tokens,
             position: 0,
             operation_count: 0,
+            dimension_count: 0,
         }
     }
 
@@ -49,6 +60,13 @@ impl<'a> Parser<'a> {
     /// The engine uses it to tell a calculation from a lone literal.
     pub fn operation_count(&self) -> usize {
         self.operation_count
+    }
+
+    /// How many units and currencies the parse named, as upstream's `dimensionCount`.
+    ///
+    /// The engine uses it to tell a lone unit from a calculation that carries one.
+    pub fn dimension_count(&self) -> usize {
+        self.dimension_count
     }
 
     /// Parses the tokens into a value, as upstream's `CalcExpressionParser.parse`.
@@ -87,7 +105,7 @@ impl<'a> Parser<'a> {
             return Err(ParseError::NotACalculation);
         }
         loop {
-            let Some(binary) = self.peek_binary() else {
+            let Some(binary) = self.peek_binary(&left, catalog) else {
                 return Ok(left);
             };
             if binary.binding_power < min_binding_power {
@@ -98,7 +116,7 @@ impl<'a> Parser<'a> {
             }
             self.operation_count += 1;
             let right = self.parse_expression(binary.right_binding_power, catalog)?;
-            let combined = self.apply(binary.op, left, right)?;
+            let combined = self.apply(binary.op, left, right, !binary.consumes_token)?;
             if !combined.effective().is_finite() {
                 return Err(ParseError::NotACalculation);
             }
@@ -108,7 +126,10 @@ impl<'a> Parser<'a> {
 
     /// The binary operator that follows, as upstream's
     /// `CalcExpressionParser.peekBinary`.
-    fn peek_binary(&self) -> Option<BinaryOp> {
+    ///
+    /// Two quantities written side by side make an operator that is not written down:
+    /// the `+` between them is invisible, and it binds tighter than a multiplication.
+    fn peek_binary(&self, left: &Value, catalog: &dyn Catalog) -> Option<BinaryOp> {
         match self.current()? {
             Token::Op(op) => {
                 if let Some(power) = op.binding_power() {
@@ -173,14 +194,57 @@ impl<'a> Parser<'a> {
                         consumes_token: false,
                     });
                 }
-                None
+                self.composite(left, catalog)
             }
-            _ => None,
+            _ => self.composite(left, catalog),
+        }
+    }
+
+    /// The invisible `+` between two quantities written side by side, as upstream's
+    /// `CalcExpressionParser.peekBinary` reports it.
+    ///
+    /// `5 feet 3 inches` is one amount rather than a sum, so the operator binds
+    /// tighter than a multiplication.
+    fn composite(&self, left: &Value, catalog: &dyn Catalog) -> Option<BinaryOp> {
+        left.unit?;
+        if !self.starts_quantity(catalog) {
+            return None;
+        }
+        Some(BinaryOp {
+            op: Operator::Add,
+            binding_power: COMPOSITE_BINDING_POWER,
+            right_binding_power: COMPOSITE_BINDING_POWER + 1,
+            consumes_token: false,
+        })
+    }
+    /// Whether a quantity stands at the cursor, as upstream's
+    /// `CalcExpressionParser.startsQuantity`.
+    fn starts_quantity(&self, catalog: &dyn Catalog) -> bool {
+        match self.current() {
+            Some(Token::Number(_))
+            | Some(Token::CompactNumber(_))
+            | Some(Token::IntLiteral(_, _)) => true,
+            Some(Token::Ident(name)) => {
+                // A currency followed by an amount starts a quantity; a unit does not,
+                // so `1hr 30` waits for the unit that is still being typed.
+                catalog.currency(name).is_some() && self.number_at(self.position + 1).is_some()
+            }
+            _ => false,
         }
     }
 
     /// Applies a binary operator, as upstream's `CalcExpressionParser.apply`.
-    fn apply(&mut self, op: Operator, left: Value, right: Value) -> Result<Value, ParseError> {
+    ///
+    /// `implicit` says the operator was not written down: the two quantities stood
+    /// side by side, or a parenthesis followed an amount. Composite notation is
+    /// answered in the leading unit, while a written `+` is answered in the last one.
+    fn apply(
+        &mut self,
+        op: Operator,
+        left: Value,
+        right: Value,
+        implicit: bool,
+    ) -> Result<Value, ParseError> {
         match op {
             Operator::Equal
             | Operator::NotEqual
@@ -188,7 +252,7 @@ impl<'a> Parser<'a> {
             | Operator::Greater
             | Operator::LessEqual
             | Operator::GreaterEqual => {
-                let amount = right.effective();
+                let amount = self.comparable(right, left)?;
                 let left_amount = left.effective();
                 let result = match op {
                     Operator::Equal => left_amount == amount,
@@ -203,6 +267,7 @@ impl<'a> Parser<'a> {
                     is_percent: false,
                     is_boolean: true,
                     currency: None,
+                    unit: None,
                 })
             }
             Operator::Percent => Ok(Value::scalar(left.effective() % right.effective())),
@@ -215,37 +280,176 @@ impl<'a> Parser<'a> {
                     .ok_or(ParseError::NotACalculation)?;
                 Ok(Value::scalar(result))
             }
-            Operator::Add | Operator::Subtract => {
-                let direction = if op == Operator::Add { 1.0 } else { -1.0 };
-                if right.is_percent {
-                    let output = left.effective() * (1.0 + direction * right.amount / 100.0);
-                    return Ok(Value {
-                        amount: output,
-                        is_percent: false,
-                        is_boolean: false,
-                        currency: left.currency,
-                    });
+            Operator::Add | Operator::Subtract => self.add_or_subtract(op, left, right, implicit),
+            Operator::Multiply => self.multiply(left, right),
+            Operator::Divide => self.divide(left, right),
+            Operator::Power => self.power(left, right),
+            _ => Err(ParseError::NotACalculation),
+        }
+    }
+
+    /// The amount the right value stands for in the left value's own unit, as
+    /// upstream's `CalcExpressionParser.comparable`.
+    fn comparable(&self, right: Value, left: Value) -> Result<f64, ParseError> {
+        match (left.unit, right.unit) {
+            (Some(target), Some(source)) => {
+                if !target.is_compatible_with(&source) {
+                    return Err(ParseError::NotACalculation);
                 }
+                Ok(source.told_in(right.effective(), &target))
+            }
+            (None, None) => Ok(right.effective()),
+            _ => Err(ParseError::NotACalculation),
+        }
+    }
+
+    /// Adds or subtracts two values, as upstream's
+    /// `CalcExpressionParser.addOrSubtract`.
+    ///
+    /// The last unit typed decides the unit of the answer; two quantities written side
+    /// by side keep the unit of the first.
+    fn add_or_subtract(
+        &mut self,
+        op: Operator,
+        left: Value,
+        right: Value,
+        implicit: bool,
+    ) -> Result<Value, ParseError> {
+        let direction = if op == Operator::Add { 1.0 } else { -1.0 };
+        if right.is_percent {
+            let output = left.effective() * (1.0 + direction * right.amount / 100.0);
+            return Ok(Value {
+                amount: output,
+                is_percent: false,
+                is_boolean: false,
+                currency: left.currency,
+                unit: left.unit,
+            });
+        }
+        // A measure and an amount of money are two different things.
+        if (left.unit.is_some() && right.currency.is_some())
+            || (left.currency.is_some() && right.unit.is_some())
+        {
+            return Err(ParseError::NotACalculation);
+        }
+        match (left.unit, right.unit) {
+            (Some(lhs), Some(rhs)) => {
+                if !lhs.is_compatible_with(&rhs) {
+                    return Err(ParseError::NotACalculation);
+                }
+                if lhs.category == UnitCategory::Temperature && lhs.symbol != rhs.symbol {
+                    return Err(ParseError::NotACalculation);
+                }
+                // Composite notation answers in the leading unit; a written sign in the last.
+                if implicit {
+                    let converted = rhs.told_in(right.amount, &lhs);
+                    return Ok(Value::measurement(left.amount + direction * converted, lhs));
+                }
+                let converted = lhs.told_in(left.amount, &rhs);
+                Ok(Value::measurement(
+                    converted + direction * right.amount,
+                    rhs,
+                ))
+            }
+            (Some(unit), None) => {
+                // A bare amount takes the unit beside it, unless the two stood side by
+                // side: then the amount is a unit that is still being typed.
+                if implicit {
+                    return Err(ParseError::NotACalculation);
+                }
+                Ok(Value::measurement(
+                    left.amount + direction * right.effective(),
+                    unit,
+                ))
+            }
+            (None, Some(unit)) => {
+                if implicit {
+                    return Err(ParseError::NotACalculation);
+                }
+                Ok(Value::measurement(
+                    left.effective() + direction * right.amount,
+                    unit,
+                ))
+            }
+            (None, None) => {
                 let currency = combine_currency(left.currency, right.currency)?;
                 Ok(Value {
                     amount: left.effective() + direction * right.effective(),
                     is_percent: false,
                     is_boolean: false,
                     currency,
+                    unit: None,
                 })
             }
-            Operator::Multiply => {
+        }
+    }
+
+    /// Multiplies two values, as upstream's `CalcExpressionParser.multiply`.
+    fn multiply(&mut self, left: Value, right: Value) -> Result<Value, ParseError> {
+        if (left.unit.is_some() && right.currency.is_some())
+            || (left.currency.is_some() && right.unit.is_some())
+        {
+            return Err(ParseError::NotACalculation);
+        }
+        match (left.unit, right.unit) {
+            (Some(_), Some(_)) => self.combine(left, right, false),
+            (Some(unit), None) => Ok(Value::measurement(left.amount * right.effective(), unit)),
+            (None, Some(unit)) => Ok(Value::measurement(left.effective() * right.amount, unit)),
+            (None, None) => {
                 let currency = combine_currency(left.currency, right.currency)?;
                 Ok(Value {
                     amount: left.effective() * right.effective(),
                     is_percent: false,
                     is_boolean: false,
                     currency,
+                    unit: None,
                 })
             }
-            Operator::Divide => {
-                if right.effective() == 0.0 {
+        }
+    }
+
+    /// Divides one value by another, as upstream's `CalcExpressionParser.divide`.
+    fn divide(&mut self, left: Value, right: Value) -> Result<Value, ParseError> {
+        if right.effective() == 0.0 {
+            return Err(ParseError::NotACalculation);
+        }
+        if (left.unit.is_some() && right.currency.is_some())
+            || (left.currency.is_some() && right.unit.is_some())
+        {
+            return Err(ParseError::NotACalculation);
+        }
+        match (left.unit, right.unit) {
+            (Some(lhs), Some(rhs)) => {
+                if lhs.is_compatible_with(&rhs) && lhs.category != UnitCategory::Temperature {
+                    // Two measures of one kind divide into a plain ratio.
+                    let numerator = left.amount * lhs.factor;
+                    let denominator = right.amount * rhs.factor;
+                    return Ok(Value::scalar(numerator / denominator));
+                }
+                self.combine(left, right, true)
+            }
+            (Some(unit), None) => Ok(Value::measurement(
+                left.effective() / right.effective(),
+                unit,
+            )),
+            (None, Some(rhs)) => {
+                // A plain amount over a unit is the inverse of that unit: `1 / 20ms`
+                // is fifty hertz.
+                let Some(inverted) = measure::power(&rhs, -1.0) else {
                     return Err(ParseError::NotACalculation);
+                };
+                let Some(dimension) = inverted.dimension else {
+                    return Err(ParseError::NotACalculation);
+                };
+                let unit = measure::base_unit(&dimension).unwrap_or(inverted);
+                let amount = left.effective() / (right.amount * rhs.factor);
+                Ok(Value::measurement(amount / unit.factor, unit))
+            }
+            (None, None) => {
+                // An amount of money over an amount of money is a plain ratio.
+                if left.currency.is_some() && right.currency.is_some() {
+                    combine_currency(left.currency, right.currency)?;
+                    return Ok(Value::scalar(left.effective() / right.effective()));
                 }
                 let currency = combine_currency(left.currency, right.currency)?;
                 Ok(Value {
@@ -253,11 +457,71 @@ impl<'a> Parser<'a> {
                     is_percent: false,
                     is_boolean: false,
                     currency,
+                    unit: None,
                 })
             }
-            Operator::Power => Ok(Value::scalar(left.effective().powf(right.effective()))),
-            _ => Err(ParseError::NotACalculation),
         }
+    }
+
+    /// Raises a value to a power, as upstream's `CalcExpressionParser.power`.
+    fn power(&mut self, left: Value, right: Value) -> Result<Value, ParseError> {
+        if right.unit.is_some() || right.currency.is_some() {
+            return Err(ParseError::NotACalculation);
+        }
+        let Some(unit) = left.unit else {
+            return Ok(Value::scalar(left.effective().powf(right.effective())));
+        };
+        let Some(dimension) = unit.dimension else {
+            return Err(ParseError::NotACalculation);
+        };
+        let raised = dimension.raised(right.effective());
+        let base = left.amount * unit.factor;
+        let amount = base.powf(right.effective());
+        let chosen = match measure::base_unit(&raised) {
+            Some(base_unit) => base_unit,
+            None => match measure::power(&unit, right.effective()) {
+                Some(compound) => compound,
+                None => return Err(ParseError::NotACalculation),
+            },
+        };
+        Ok(Value::measurement(amount / chosen.factor, chosen))
+    }
+
+    /// The product or the quotient of two measures, as upstream's
+    /// `CalcExpressionParser.combine`.
+    ///
+    /// The answer is told in the base unit of the dimension it lands on, so five
+    /// metres times four metres is twenty square metres; a rate multiplied by a time
+    /// keeps the numerator of the rate instead.
+    fn combine(&mut self, left: Value, right: Value, dividing: bool) -> Result<Value, ParseError> {
+        let (Some(lhs), Some(rhs)) = (left.unit, right.unit) else {
+            return Err(ParseError::NotACalculation);
+        };
+        let (Some(left_dimension), Some(right_dimension)) = (lhs.dimension, rhs.dimension) else {
+            return Err(ParseError::NotACalculation);
+        };
+        let dimension = left_dimension.adding(right_dimension, if dividing { -1.0 } else { 1.0 });
+        let base = if dividing {
+            left.amount * lhs.factor / (right.amount * rhs.factor)
+        } else {
+            left.amount * lhs.factor * right.amount * rhs.factor
+        };
+        if dimension == Dimension::scalar() {
+            return Ok(Value::scalar(base));
+        }
+        let preferred = if dividing {
+            None
+        } else {
+            measure::product_unit(&lhs, &rhs)
+        };
+        let unit = match preferred.or_else(|| measure::base_unit(&dimension)) {
+            Some(unit) => unit,
+            None => match measure::combine(&lhs, &rhs, dividing) {
+                Some(compound) => compound,
+                None => return Err(ParseError::NotACalculation),
+            },
+        };
+        Ok(Value::measurement(base / unit.factor, unit))
     }
 
     /// Parses an operand with its postfixes, as upstream's
@@ -271,9 +535,19 @@ impl<'a> Parser<'a> {
                         return Ok(value);
                     }
                     // `100 usd` is money in US dollars.
-                    if value.currency.is_none() {
+                    if value.currency.is_none() && value.unit.is_none() {
                         if let Some(currency) = catalog.currency_definition(name) {
                             value.currency = Some(currency);
+                            self.dimension_count += 1;
+                            self.position += 1;
+                            continue;
+                        }
+                    }
+                    // `10kg` is ten of the unit the name stands for.
+                    if value.currency.is_none() && value.unit.is_none() {
+                        if let Some(unit) = Measurement::named(catalog, name) {
+                            value.unit = Some(unit);
+                            self.dimension_count += 1;
                             self.position += 1;
                             continue;
                         }
@@ -330,7 +604,14 @@ impl<'a> Parser<'a> {
                 if value.is_boolean {
                     return Err(ParseError::NotACalculation);
                 }
-                Ok(Value::scalar(-value.effective()))
+                // The sign turns the amount about; the unit stays.
+                Ok(Value {
+                    amount: -value.effective(),
+                    is_percent: false,
+                    is_boolean: false,
+                    currency: value.currency,
+                    unit: value.unit,
+                })
             }
             Token::Op(Operator::Add) => {
                 self.position += 1;
@@ -362,7 +643,7 @@ impl<'a> Parser<'a> {
             }
             self.operation_count += 1;
             let degree = if name == "square" { 2.0 } else { 3.0 };
-            return Ok(root(value, degree));
+            return self.root(value, degree);
         }
         if name == "root" {
             let degree = self.number_at(self.position + 1);
@@ -378,7 +659,7 @@ impl<'a> Parser<'a> {
                     return Err(ParseError::NotACalculation);
                 }
                 self.operation_count += 1;
-                return Ok(root(value, degree));
+                return self.root(value, degree);
             }
         }
         if let Some(constant) = Math::constant(name) {
@@ -407,19 +688,89 @@ impl<'a> Parser<'a> {
                     .ok_or(ParseError::NotACalculation)?;
                 return Ok(Value::scalar(result));
             }
+            // A function of a measure keeps the unit, or answers in plain numbers.
+            if let Some(result) = self.measure_function(name, argument)? {
+                return Ok(result);
+            }
             let result = Math::apply_single(name, argument.effective())
                 .ok_or(ParseError::NotACalculation)?;
             return Ok(Value::scalar(result));
         }
+        // A unit right after a division means one of that unit: `100 / s` is a
+        // hundred hertz, the way `(s)` is one second.
+        if self.is_after_division() {
+            if let Some(unit) = Measurement::named(catalog, name) {
+                self.dimension_count += 1;
+                self.position += 1;
+                return Ok(Value::measurement(1.0, unit));
+            }
+        }
         // A currency before its amount: `$100`.
         if let Some(currency) = catalog.currency_definition(name) {
             if let Some(amount) = self.number_at(self.position + 1) {
+                self.dimension_count += 1;
                 self.position += 2;
                 return Ok(Value::money(amount, currency));
             }
         }
         check_dimension(name, catalog)?;
         Err(ParseError::NotACalculation)
+    }
+
+    /// Whether the token before the cursor is a division, as upstream's
+    /// `CalcExpressionParser.isAfterDivision`.
+    fn is_after_division(&self) -> bool {
+        self.position > 0 && self.tokens[self.position - 1] == Token::Op(Operator::Divide)
+    }
+
+    /// A function of a measure, as upstream's `CalcExpressionParser.parsePrefix` does.
+    ///
+    /// A root raises the unit as well, and the functions that keep a scale keep the
+    /// unit; the trigonometry of an angle answers in plain numbers.
+    fn measure_function(
+        &mut self,
+        name: &str,
+        argument: Value,
+    ) -> Result<Option<Value>, ParseError> {
+        let Some(unit) = argument.unit else {
+            return Ok(None);
+        };
+        Ok(match name {
+            "sqrt" => Some(self.power(argument, Value::scalar(0.5))?),
+            "cbrt" => Some(self.root(argument, 3.0)?),
+            "abs" | "floor" | "ceil" | "round" | "trunc" => {
+                let result =
+                    Math::apply_single(name, argument.amount).ok_or(ParseError::NotACalculation)?;
+                Some(Value::measurement(result, unit))
+            }
+            "sin" | "cos" | "tan" | "cot" | "sec" | "csc"
+                if unit.category == UnitCategory::Angle =>
+            {
+                let result = Math::apply_single(name, argument.amount * unit.factor)
+                    .ok_or(ParseError::NotACalculation)?;
+                Some(Value::scalar(result))
+            }
+            _ => None,
+        })
+    }
+
+    /// The root of a value, as upstream's `CalcExpressionParser.root`.
+    ///
+    /// Odd roots keep the sign, so the cube root of -8m³ is -2 m rather than no answer.
+    fn root(&mut self, value: Value, degree: f64) -> Result<Value, ParseError> {
+        if degree % 2.0 != 1.0 || value.effective() >= 0.0 {
+            return self.power(value, Value::scalar(1.0 / degree));
+        }
+        let magnitude = Value {
+            amount: -value.amount,
+            is_percent: false,
+            is_boolean: false,
+            currency: value.currency,
+            unit: value.unit,
+        };
+        let mut result = self.power(magnitude, Value::scalar(1.0 / degree))?;
+        result.amount = -result.amount;
+        Ok(result)
     }
 
     /// Parses a function with an argument list, as upstream's
@@ -524,22 +875,13 @@ impl<'a> Parser<'a> {
     }
 }
 
-/// The root of a value, as upstream's `CalcExpressionParser.root`.
-///
-/// Odd roots keep the sign, so the cube root of -8 is -2 rather than no answer.
-fn root(value: Value, degree: f64) -> Value {
-    if degree % 2.0 != 1.0 || value.effective() >= 0.0 {
-        return Value::scalar(value.effective().powf(1.0 / degree));
-    }
-    Value::scalar(-(-value.effective()).powf(1.0 / degree))
-}
-
 /// Reports a word the catalog knows as a unit or a currency.
 ///
 /// Upstream resolves those names into a dimension and carries them through the
-/// calculation; the units live outside this crate, so a unit is reported as
-/// unsupported rather than answered with a made-up number. A currency the catalog
-/// can define is carried; one it can only name is reported as unsupported too.
+/// calculation; the units live in this crate now, so a unit the catalog cannot
+/// define is reported as unsupported rather than answered with a made-up number. A
+/// currency the catalog can define is carried; one it can only name is reported as
+/// unsupported too.
 fn check_dimension(name: &str, catalog: &dyn Catalog) -> Result<(), ParseError> {
     let lowered = name.to_lowercase();
     if catalog.unit(name).is_some() || catalog.unit(&lowered).is_some() {

@@ -793,3 +793,80 @@ next slice, and they are not faked with an empty pane.
 the placement, the input source, the file-search scopes - which stay in the
 model, are tested there, and stay `NOT PORTED` in the ledger because they are
 not in a pane the user can reach.
+## 2026-11-13 - A value carries its unit, and the catalog hands it over as a shared reference
+
+**Question.** Upstream's `CalcValue` carries a unit, so `10kg + 500g` answers
+`10,500 g`. YAL's value carried an amount, a percentage flag, a boolean flag
+and a currency, and no unit at all. How does a value carry one?
+
+**Options.** (a) The unit by name, and the scale and the dimension looked up
+whenever they are needed. (b) The unit as a shared reference into the
+catalog's own table, with the scale and the dimension carried along.
+
+**Decision.** (b). A measurement holds the symbol, the long name, the
+category, the scale onto the base, the offset and the dimension, and it is
+`Copy`, so a calculation carries it without an allocation on every step. The
+catalog hands it over through one new method, `unit_ref`, which answers a
+shared reference into the catalog's table; a catalog that knows the names but
+not the scales answers `None`, and the core carries no unit rather than a
+guessed one.
+
+**Why.** A calculation reads the scale and the dimension of a unit many times
+- once for each operation that touches it - and it compares them for
+compatibility. Carrying the numbers along is cheaper and, more importantly,
+makes the comparison impossible to get wrong: two units are compatible when
+their dimensions are equal, not when their names look alike.
+
+**What this does not change.** The conversions between two plain units, which
+were already ported and are unaffected; and the currency, which stays a
+separate kind of value.
+
+## 2026-11-13 - A compound unit keeps one copy of its symbol
+
+**Question.** Upstream builds the symbol of a compound unit by joining the
+symbols of its two parts: `kg` over `m³` is `kg/m³`, and `kg` times `m` is
+`kg·m`. This port has to keep that symbol in a value that is `Copy`. How?
+
+**Options.** (a) An owned `String` in the value, and the value is no longer
+`Copy`. (b) The parts of the compound, rendered on demand. (c) One copy of
+every symbol that has been met, kept for the life of the process.
+
+**Decision.** (c). The symbol of a compound is interned: the registry in
+`tc-calc::measure` keeps one copy of each distinct symbol and hands out a
+shared reference to it.
+
+**Why.** The symbol is not a decoration. `kg/m³` and `kg·m` are different
+measures, and the way the two parts were joined is part of what the measure
+is. Rendering the parts on demand cannot always recover that: `kg` over
+`m/s` is written `kg/(m/s)`, and a flat list of parts cannot tell it from
+`kg/m·s`. Interning keeps the symbol exactly as upstream writes it, keeps
+the value `Copy`, and the number of distinct symbols a calculator meets is
+small.
+
+**What this does not change.** The unit table itself, which is still
+transcribed by script and never typed by hand.
+
+## 2026-11-13 - The rows whose documentation lost a multiplication sign
+
+**Question.** The unit section of the documentation writes `5m 4m` and expects
+`20 m²`. YAL answers `9 m`, because two quantities written side by side are
+one amount. Upstream's own tests write `5m * 4m`. What do the ledger rows say?
+
+**Options.** (a) Mark the rows `NOT PORTED`, because the query as written does
+not answer as the row says. (b) Mark them `PORTED`, with the evidence of the
+example as upstream's tests write it, and write down why.
+
+**Decision.** (b). The rows are `PORTED` with the evidence of the example with
+the multiplication sign, and `docs/port-notes/023` holds the whole of it: the
+documentation's markdown reads `*` as emphasis and drops it, upstream's tests
+write the sign out, and without the sign the two quantities are one amount -
+which is upstream's behaviour too, and which this port answers the same way.
+
+**Why.** The row describes a feature - measurements that combine into area,
+volume and speed - and the feature is ported and tested. The text of the row
+is a rendering artefact of the documentation, not a behaviour of upstream's
+program. Marking it `NOT PORTED` would say that upstream's own behaviour is
+missing, which is not true.
+
+**What this does not change.** The rule that a row is `PORTED` only when the
+cited evidence is a test that ran; the cited test holds both readings.

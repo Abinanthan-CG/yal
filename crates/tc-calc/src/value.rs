@@ -3,11 +3,12 @@
 use std::fmt;
 
 use crate::currency::CurrencyDef;
+use crate::measure::Measurement;
 
 /// The scalar projection of upstream's `CalcValue`.
 ///
-/// Upstream's value carries a unit or a currency as well; the units live outside
-/// this crate, but the currency table is here, so a value can carry its money.
+/// Upstream's value carries a unit or a currency as well; the units live in this
+/// crate too, so a value carries its money and its measurement.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Value {
     /// The amount the value carries.
@@ -18,6 +19,8 @@ pub struct Value {
     pub is_boolean: bool,
     /// The currency the amount is in, if it is money.
     pub currency: Option<CurrencyDef>,
+    /// The unit the amount is in, if it is a measurement.
+    pub unit: Option<Measurement>,
 }
 
 impl Value {
@@ -28,6 +31,7 @@ impl Value {
             is_percent: false,
             is_boolean: false,
             currency: None,
+            unit: None,
         }
     }
 
@@ -38,6 +42,18 @@ impl Value {
             is_percent: false,
             is_boolean: false,
             currency: Some(currency),
+            unit: None,
+        }
+    }
+
+    /// An amount of a measure, as upstream's `CalcValue(kind: .unit(def))`.
+    pub fn measurement(amount: f64, unit: Measurement) -> Self {
+        Self {
+            amount,
+            is_percent: false,
+            is_boolean: false,
+            currency: None,
+            unit: Some(unit),
         }
     }
 

@@ -60,6 +60,16 @@ pub trait Catalog {
         None
     }
 
+    /// The full definition of a unit, as a shared reference into the catalog's table.
+    ///
+    /// A value that carries a unit needs the scale and the dimension of it, and the
+    /// value is copied around while it is calculated; a shared reference keeps that
+    /// cheap. A catalog that only knows the names answers `None`, so the core carries
+    /// no unit at all rather than a guessed one.
+    fn unit_ref(&self, _name: &str) -> Option<&'static crate::units::UnitDef> {
+        None
+    }
+
     /// The full definition of a currency, when the catalog knows one.
     ///
     /// The core carries the currency on a value while it calculates, so it needs the
@@ -92,6 +102,10 @@ impl Catalog for FullCatalog {
 
     fn unit_definition(&self, name: &str) -> Option<crate::units::UnitDef> {
         crate::units::UnitCatalog.unit_definition(name)
+    }
+
+    fn unit_ref(&self, name: &str) -> Option<&'static crate::units::UnitDef> {
+        crate::units::UnitCatalog.unit_ref(name)
     }
 
     fn currency_definition(&self, name: &str) -> Option<crate::currency::CurrencyDef> {

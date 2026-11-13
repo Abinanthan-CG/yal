@@ -15,6 +15,10 @@ has got.
 ## [Unreleased]
 
 ### Added
+- **The arithmetic that carries a unit**: a value now carries its measurement, so 10kg + 500g answers
+  10,500 g, 5 feet 3 inches answers 5.25 ft, 5m * 4m answers 20 m², 60 mph * 2.5 hours answers
+  150 mi, and 10kg + 500g to lb answers 23.14853753 lb. The measurement lives in
+  	c-calc::measure; the parser carries it through the calculation.
 - **The palette's screen system** in `tc-palette`: the screens and how they stack, the keys and
   the translation from upstream's Mac chords to Windows, the escape chain, the tab cycle, the
   emacs chords, the slim bar of the compact mode, and the actions menu. The window no longer

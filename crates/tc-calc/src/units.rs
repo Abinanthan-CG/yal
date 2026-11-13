@@ -1068,6 +1068,10 @@ impl Catalog for UnitCatalog {
     fn unit_definition(&self, name: &str) -> Option<UnitDef> {
         by_name(name).cloned()
     }
+
+    fn unit_ref(&self, name: &str) -> Option<&'static UnitDef> {
+        by_name(name)
+    }
 }
 
 /// The catalog's records: the symbol, the label, the scale, the aliases and, for the
