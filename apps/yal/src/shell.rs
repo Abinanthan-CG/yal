@@ -15,7 +15,10 @@ use tc_commands::COMMANDS_FILE;
 use tc_core::CommandId;
 use tc_platform::{Clipboard, FileSystem, Settings};
 
-use crate::launcher::{LauncherState, ResultRow, CALCULATOR_PREFIX, RANKING_FILE};
+use crate::launcher::{
+    FileSearch, LauncherState, ResultRow, CALCULATOR_PREFIX, FILE_PREFIX, RANKING_FILE,
+};
+use crate::palette::{KeyOutcome, KeyStroke, PaletteState, PaletteView};
 
 /// The palette's label, so the window can be found again.
 const PALETTE: &str = "palette";
@@ -35,6 +38,17 @@ const COMMANDS_ENABLED: &str = "commands.enabled";
 const CUSTOM_COMMANDS_ENABLED: &str = "commands.custom.enabled";
 /// The setting that lists the custom commands in the launcher.
 const CUSTOM_COMMANDS_SHOW: &str = "commands.custom.showInLauncher";
+
+/// The setting that turns the file search on. Off by default, the way
+/// upstream ships it.
+pub const FILE_SEARCH_ENABLED: &str = "fileSearch.enabled";
+/// The setting that lists the files in the launcher.
+pub const FILE_SEARCH_SHOW: &str = "fileSearch.showInLauncher";
+
+/// The name of the file index in the app's own folder.
+///
+/// "Off means gone: turning File Search off deletes the index."
+pub const INDEX_FILE: &str = "file-index.sqlite3";
 
 /// The tray menu's items, in the order they appear.
 const TRAY_ITEMS: [&str; 6] = [
@@ -145,7 +159,24 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             let store = CustomCommandStore::open(paths.data_dir.join(COMMANDS_FILE))
                 .unwrap_or_else(|_| CustomCommandStore::in_memory());
             launcher.set_custom_commands(store.commands().to_vec());
+            // The file search, when it is on. While it is off there is no
+            // index on the disk at all, the way upstream ships it.
+            if settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true") {
+                let index = paths.data_dir.join(INDEX_FILE);
+                if let Ok(store) = tc_files::store::IndexStore::open(&index) {
+                    launcher.set_file_search(FileSearch::new(
+                        store,
+                        paths.home_dir.clone(),
+                        Vec::new(),
+                    ));
+                }
+            }
+            if settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true") {
+                launcher.set_show_files(true);
+            }
             app.manage(launcher);
+            // The palette: the screens, the keys and the settings it follows.
+            app.manage(PaletteState::new());
             // The window commands, with the memory of the windows they have
             // moved. The memory lives in this process and is never written
             // down.
@@ -189,7 +220,16 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             suggestions,
             open_result,
             run_custom_command,
-            hide_palette
+            hide_palette,
+            palette_key,
+            palette_view,
+            palette_menu_query,
+            palette_open_screen,
+            palette_back,
+            palette_back_to_root,
+            file_rows,
+            open_file,
+            reveal_file
         ])
         .run(tauri::generate_context!())
         .map_err(|error| format!("the application could not start: {error}"))
@@ -247,6 +287,14 @@ fn open_result(
     // A calculator row is not opened; its answer is copied.
     if let Some(text) = id.strip_prefix(CALCULATOR_PREFIX) {
         tc_platform_win::clipboard().write_text(text)?;
+        if let Some(window) = app.get_webview_window(PALETTE) {
+            let _ = window.hide();
+        }
+        return Ok(());
+    }
+    // A file row is opened, not run: the target is the path itself.
+    if let Some(path) = id.strip_prefix(FILE_PREFIX) {
+        tc_platform_win::open(path)?;
         if let Some(window) = app.get_webview_window(PALETTE) {
             let _ = window.hide();
         }
@@ -369,6 +417,80 @@ fn hide_palette(app: tauri::AppHandle) {
     if let Some(window) = app.get_webview_window(PALETTE) {
         let _ = window.hide();
     }
+}
+
+/// Press a key.
+///
+/// The palette decides what the key means; the window is told what to do.
+#[tauri::command]
+fn palette_key(palette: State<'_, PaletteState>, stroke: KeyStroke, query: String) -> KeyOutcome {
+    palette.key(&stroke, &query)
+}
+
+/// What the palette looks like right now.
+#[tauri::command]
+fn palette_view(palette: State<'_, PaletteState>) -> PaletteView {
+    palette.view()
+}
+
+/// Type in the actions menu's search field.
+#[tauri::command]
+fn palette_menu_query(palette: State<'_, PaletteState>, query: String) {
+    palette.menu_query(&query);
+}
+
+/// Open a screen by name.
+#[tauri::command]
+fn palette_open_screen(palette: State<'_, PaletteState>, screen: String) {
+    palette.open_screen(&screen);
+}
+
+/// Go back one screen. `false` when there is nothing behind it.
+#[tauri::command]
+fn palette_back(palette: State<'_, PaletteState>) -> bool {
+    palette.back()
+}
+
+/// Go back to the root search from any screen.
+#[tauri::command]
+fn palette_back_to_root(palette: State<'_, PaletteState>) {
+    palette.back_to_root();
+}
+
+/// The rows of the file-search screen.
+///
+/// With nothing typed the list is the recent files; with something typed it
+/// is the results, narrowed by the filter the palette holds.
+#[tauri::command]
+fn file_rows(
+    launcher: State<'_, LauncherState>,
+    palette: State<'_, PaletteState>,
+    query: String,
+) -> Vec<ResultRow> {
+    let filter = palette.lock().file_filter();
+    launcher.file_screen_rows(&query, filter)
+}
+
+/// Open a file or a folder.
+#[tauri::command]
+fn open_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    tc_platform_win::open(&path)?;
+    if let Some(window) = app.get_webview_window(PALETTE) {
+        let _ = window.hide();
+    }
+    Ok(())
+}
+
+/// Show a file in the file manager, with it selected.
+///
+/// This is the second action of a file row: "Show in File Explorer".
+#[tauri::command]
+fn reveal_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    tc_platform_win::reveal(&path)?;
+    if let Some(window) = app.get_webview_window(PALETTE) {
+        let _ = window.hide();
+    }
+    Ok(())
 }
 
 /// Show the palette when it is hidden, hide it when it is shown.

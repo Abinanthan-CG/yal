@@ -10,6 +10,18 @@
   --edge-soft: color-mix(in srgb, CanvasText 10%, transparent);
   --muted: color-mix(in srgb, CanvasText 62%, transparent);
   --selected: color-mix(in srgb, AccentColor 16%, transparent);
+  /* The interface size, set by the palette's own setting. */
+  --yal-scale: 1;
+}
+
+/* The light and the dark designs, and the system one, which follows
+   Windows. */
+.palette--light {
+  color-scheme: light;
+}
+
+.palette--dark {
+  color-scheme: dark;
 }
 
 * {
@@ -178,4 +190,69 @@ body {
 .palette__note {
   margin: 12px 16px;
   color: var(--muted);
+}
+
+/* The actions menu. */
+.palette__menu {
+  border-top: 1px solid var(--edge-soft);
+  border-bottom: 1px solid var(--edge-soft);
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.palette__menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.palette__menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 6px 14px;
+}
+
+.palette__menu-item--selected {
+  background: var(--selected);
+}
+
+.palette__menu-shortcut {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* The kind of file the file search is narrowed to. */
+.palette__filter {
+  display: flex;
+  gap: 8px;
+  padding: 4px 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.palette__filter-value {
+  color: CanvasText;
+}
+
+/* A row that is a folder says so. */
+.palette__tag {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* A link in the footer. */
+.palette__link {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.palette__link:hover {
+  color: CanvasText;
 }
