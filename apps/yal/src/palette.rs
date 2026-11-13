@@ -136,6 +136,77 @@ pub struct KeyOutcome {
     pub collapsed: bool,
 }
 
+/// One row of the Settings pane.
+#[derive(Debug, Clone, Serialize)]
+pub struct SettingRow {
+    /// The key the setting is stored under.
+    pub key: String,
+    /// The name the setting is shown under.
+    pub label: String,
+    /// The value the setting has now.
+    pub value: String,
+    /// The values it can take.
+    pub options: Vec<String>,
+}
+
+/// The Settings pane's rows, in the order they are shown.
+///
+/// These are the settings of *Settings → General*, and each one is the
+/// switch upstream puts there.
+fn general_settings(settings: &tc_palette::PaletteSettings) -> Vec<SettingRow> {
+    let rows: Vec<(&str, &str)> = vec![
+        (tc_palette::KEY_APPEARANCE, "Appearance"),
+        (tc_palette::KEY_ANIMATIONS, "Show Animations"),
+        (tc_palette::KEY_INTERFACE_SIZE, "Interface Size"),
+        (tc_palette::KEY_WINDOW_MODE, "Window Mode"),
+        (tc_palette::KEY_ESCAPE_BEHAVIOUR, "Escape Key Behavior"),
+        (tc_palette::KEY_POP_TO_ROOT, "Pop to Root Search"),
+    ];
+    rows.into_iter()
+        .map(|(key, label)| {
+            let options = options_of(settings, key);
+            let value = settings.value_of(key).unwrap_or_default();
+            SettingRow {
+                key: key.to_string(),
+                label: label.to_string(),
+                value,
+                options,
+            }
+        })
+        .collect()
+}
+
+/// The values a setting can take.
+fn options_of(settings: &tc_palette::PaletteSettings, key: &str) -> Vec<String> {
+    match key {
+        tc_palette::KEY_APPEARANCE => tc_palette::Appearance::OPTIONS
+            .iter()
+            .map(|option| option.label().to_string())
+            .collect(),
+        tc_palette::KEY_ANIMATIONS => vec!["On".to_string(), "Off".to_string()],
+        tc_palette::KEY_INTERFACE_SIZE => tc_palette::InterfaceSize::OPTIONS
+            .iter()
+            .map(|option| option.label().to_string())
+            .collect(),
+        tc_palette::KEY_WINDOW_MODE => tc_palette::WindowMode::OPTIONS
+            .iter()
+            .map(|option| option.label().to_string())
+            .collect(),
+        tc_palette::KEY_ESCAPE_BEHAVIOUR => tc_palette::EscapeBehaviour::OPTIONS
+            .iter()
+            .map(|option| option.label().to_string())
+            .collect(),
+        tc_palette::KEY_POP_TO_ROOT => tc_palette::PopToRoot::OPTIONS
+            .iter()
+            .map(|option| option.label())
+            .collect(),
+        _ => {
+            let _ = settings;
+            Vec::new()
+        }
+    }
+}
+
 /// The palette the window drives.
 pub struct PaletteState {
     /// The palette itself.
@@ -242,6 +313,50 @@ impl PaletteState {
     /// Go back to the root search.
     pub fn back_to_root(&self) {
         self.lock().back_to_root();
+    }
+
+    /// The Settings pane's rows.
+    pub fn settings_rows(&self) -> Vec<SettingRow> {
+        let palette = self.lock();
+        general_settings(palette.settings())
+    }
+
+    /// Move a setting to its next value.
+    ///
+    /// The new value is returned, so the caller can write it down.
+    pub fn advance_setting(&self, key: &str) -> Option<String> {
+        let mut palette = self.lock();
+        let next = palette.settings().next_value(key)?;
+        let mut settings = palette.settings().clone();
+        if !apply_setting(&mut settings, key, &next) {
+            return None;
+        }
+        palette.set_settings(settings);
+        Some(next)
+    }
+
+    /// Set a setting to a value.
+    pub fn set_setting(&self, key: &str, value: &str) -> bool {
+        let mut palette = self.lock();
+        let mut settings = palette.settings().clone();
+        if !apply_setting(&mut settings, key, value) {
+            return false;
+        }
+        palette.set_settings(settings);
+        true
+    }
+}
+
+/// Apply one stored value to the palette's settings.
+fn apply_setting(settings: &mut tc_palette::PaletteSettings, key: &str, value: &str) -> bool {
+    match key {
+        tc_palette::KEY_APPEARANCE => settings.set_appearance(value),
+        tc_palette::KEY_ANIMATIONS => settings.set_animations(value),
+        tc_palette::KEY_INTERFACE_SIZE => settings.set_interface_size(value),
+        tc_palette::KEY_WINDOW_MODE => settings.set_window_mode(value),
+        tc_palette::KEY_ESCAPE_BEHAVIOUR => settings.set_escape_behaviour(value),
+        tc_palette::KEY_POP_TO_ROOT => settings.set_pop_to_root(value),
+        _ => false,
     }
 }
 
@@ -431,5 +546,64 @@ mod tests {
         assert_eq!(view.appearance, "System");
         assert!(view.animations);
         assert_eq!(view.scale, 1.0);
+    }
+
+    #[test]
+    fn the_settings_pane_lists_the_general_settings() {
+        let state = PaletteState::new();
+        let rows = state.settings_rows();
+        let labels: Vec<&str> = rows.iter().map(|row| row.label.as_str()).collect();
+        assert!(labels.contains(&"Appearance"));
+        assert!(labels.contains(&"Window Mode"));
+        assert!(labels.contains(&"Escape Key Behavior"));
+        let appearance = rows
+            .iter()
+            .find(|row| row.key == tc_palette::KEY_APPEARANCE)
+            .expect("the appearance row");
+        assert_eq!(appearance.value, "System");
+        assert_eq!(appearance.options.len(), 3);
+    }
+
+    #[test]
+    fn a_setting_moves_to_its_next_value() {
+        let state = PaletteState::new();
+        let next = state
+            .advance_setting(tc_palette::KEY_APPEARANCE)
+            .expect("the appearance has a next value");
+        assert_eq!(next, "Light");
+        assert_eq!(state.view().appearance, "Light");
+    }
+
+    #[test]
+    fn the_animations_switch_turns_on_and_off() {
+        let state = PaletteState::new();
+        state
+            .advance_setting(tc_palette::KEY_ANIMATIONS)
+            .expect("a next value");
+        assert!(!state.view().animations);
+        state
+            .advance_setting(tc_palette::KEY_ANIMATIONS)
+            .expect("a next value");
+        assert!(state.view().animations);
+    }
+
+    #[test]
+    fn a_setting_that_is_not_the_palettes_own_is_refused() {
+        let state = PaletteState::new();
+        assert!(state.advance_setting("commands.enabled").is_none());
+        assert!(!state.set_setting("commands.enabled", "true"));
+    }
+
+    #[test]
+    fn the_interface_size_changes_the_scale() {
+        let state = PaletteState::new();
+        state
+            .advance_setting(tc_palette::KEY_INTERFACE_SIZE)
+            .expect("a next value");
+        assert_eq!(state.view().scale, 1.1);
+        state
+            .advance_setting(tc_palette::KEY_INTERFACE_SIZE)
+            .expect("a next value");
+        assert_eq!(state.view().scale, 1.2);
     }
 }

@@ -38,5 +38,7 @@ pub use palette::{CompactBar, EscapeOutcome, Fields, Palette};
 pub use screen::{Screen, ScreenStack};
 pub use settings::{
     Appearance, CompactShortcut, CompactShortcuts, EscapeBehaviour, Feature, Features,
-    InterfaceSize, PaletteSettings, PopToRoot, ShortcutState, WindowMode, MAX_COMPACT_SHORTCUTS,
+    InterfaceSize, PaletteSettings, PopToRoot, ShortcutState, WindowMode, KEY_ANIMATIONS,
+    KEY_APPEARANCE, KEY_ESCAPE_BEHAVIOUR, KEY_INTERFACE_SIZE, KEY_POP_TO_ROOT, KEY_WINDOW_MODE,
+    MAX_COMPACT_SHORTCUTS,
 };

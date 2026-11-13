@@ -256,3 +256,12 @@ body {
 .palette__link:hover {
   color: CanvasText;
 }
+/* The Settings pane. */
+.palette__settings-title {
+  margin: 0;
+  padding: 6px 14px 2px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

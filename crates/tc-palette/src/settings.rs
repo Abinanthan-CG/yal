@@ -451,6 +451,19 @@ impl CompactShortcuts {
     }
 }
 
+/// The keys the palette's own settings are stored under.
+pub const KEY_APPEARANCE: &str = "palette.appearance";
+/// The key the animations switch is stored under.
+pub const KEY_ANIMATIONS: &str = "palette.animations";
+/// The key the interface size is stored under.
+pub const KEY_INTERFACE_SIZE: &str = "palette.interfaceSize";
+/// The key the window mode is stored under.
+pub const KEY_WINDOW_MODE: &str = "palette.windowMode";
+/// The key the escape behaviour is stored under.
+pub const KEY_ESCAPE_BEHAVIOUR: &str = "palette.escapeBehaviour";
+/// The key the pop-to-root delay is stored under.
+pub const KEY_POP_TO_ROOT: &str = "palette.popToRoot";
+
 /// The palette's settings, with upstream's defaults.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PaletteSettings {
@@ -489,6 +502,172 @@ impl Default for PaletteSettings {
             follow_cursor: true,
             drag_to_move: false,
             show_in_tray: true,
+        }
+    }
+}
+
+impl PaletteSettings {
+    /// Set the appearance from its stored value.
+    ///
+    /// `false` when the value is not one of the three.
+    pub fn set_appearance(&mut self, value: &str) -> bool {
+        match value.to_lowercase().as_str() {
+            "system" => self.appearance = Appearance::System,
+            "light" => self.appearance = Appearance::Light,
+            "dark" => self.appearance = Appearance::Dark,
+            _ => return false,
+        }
+        true
+    }
+
+    /// Set the animations switch from its stored value.
+    pub fn set_animations(&mut self, value: &str) -> bool {
+        match value.to_lowercase().as_str() {
+            "true" | "on" => self.animations = true,
+            "false" | "off" => self.animations = false,
+            _ => return false,
+        }
+        true
+    }
+
+    /// Set the interface size from its stored value.
+    pub fn set_interface_size(&mut self, value: &str) -> bool {
+        match value.to_lowercase().as_str() {
+            "default" => self.interface_size = InterfaceSize::Default,
+            "large" => self.interface_size = InterfaceSize::Large,
+            "larger" => self.interface_size = InterfaceSize::Larger,
+            _ => return false,
+        }
+        true
+    }
+
+    /// Set the window mode from its stored value.
+    pub fn set_window_mode(&mut self, value: &str) -> bool {
+        match value.to_lowercase().as_str() {
+            "compact" => self.window_mode = WindowMode::Compact,
+            "expanded" => self.window_mode = WindowMode::Expanded,
+            _ => return false,
+        }
+        true
+    }
+
+    /// Set the escape behaviour from its stored value.
+    ///
+    /// The value may be the name or the label, with or without the spaces.
+    pub fn set_escape_behaviour(&mut self, value: &str) -> bool {
+        let normalised: String = value
+            .to_lowercase()
+            .chars()
+            .filter(|character| !character.is_whitespace())
+            .collect();
+        match normalised.as_str() {
+            "navigatebackorclosewindow" => {
+                self.escape_behaviour = EscapeBehaviour::NavigateBackOrCloseWindow
+            }
+            "closewindowandpoptoroot" => {
+                self.escape_behaviour = EscapeBehaviour::CloseWindowAndPopToRoot
+            }
+            _ => return false,
+        }
+        true
+    }
+
+    /// Set the pop-to-root delay from its stored value.
+    ///
+    /// The value is a number of seconds, and zero means straight back. The
+    /// label, "30 seconds", is understood as well as the bare number.
+    pub fn set_pop_to_root(&mut self, value: &str) -> bool {
+        let trimmed = value.trim();
+        let number = trimmed
+            .strip_suffix(" seconds")
+            .or_else(|| trimmed.strip_suffix(" second"))
+            .unwrap_or(trimmed);
+        let seconds: u32 = match number.to_lowercase().as_str() {
+            "immediately" => 0,
+            other => match other.parse() {
+                Ok(seconds) => seconds,
+                Err(_) => return false,
+            },
+        };
+        self.pop_to_root = if seconds == 0 {
+            PopToRoot::Immediately
+        } else {
+            PopToRoot::After(seconds)
+        };
+        true
+    }
+
+    /// The stored value of one setting.
+    pub fn value_of(&self, key: &str) -> Option<String> {
+        match key {
+            KEY_APPEARANCE => Some(self.appearance.label().to_string()),
+            KEY_ANIMATIONS => Some(self.animations.to_string()),
+            KEY_INTERFACE_SIZE => Some(self.interface_size.label().to_string()),
+            KEY_WINDOW_MODE => Some(self.window_mode.label().to_string()),
+            KEY_ESCAPE_BEHAVIOUR => Some(self.escape_behaviour.label().to_string()),
+            KEY_POP_TO_ROOT => Some(self.pop_to_root.label()),
+            _ => None,
+        }
+    }
+
+    /// The value a setting takes next.
+    ///
+    /// The switches turn on and off; the others go round their options.
+    pub fn next_value(&self, key: &str) -> Option<String> {
+        match key {
+            KEY_ANIMATIONS => Some((!self.animations).to_string()),
+            KEY_APPEARANCE => {
+                let index = Appearance::OPTIONS
+                    .iter()
+                    .position(|option| *option == self.appearance)
+                    .unwrap_or(0);
+                Some(
+                    Appearance::OPTIONS[(index + 1) % Appearance::OPTIONS.len()]
+                        .label()
+                        .to_string(),
+                )
+            }
+            KEY_INTERFACE_SIZE => {
+                let index = InterfaceSize::OPTIONS
+                    .iter()
+                    .position(|option| *option == self.interface_size)
+                    .unwrap_or(0);
+                Some(
+                    InterfaceSize::OPTIONS[(index + 1) % InterfaceSize::OPTIONS.len()]
+                        .label()
+                        .to_string(),
+                )
+            }
+            KEY_WINDOW_MODE => {
+                let index = WindowMode::OPTIONS
+                    .iter()
+                    .position(|option| *option == self.window_mode)
+                    .unwrap_or(0);
+                Some(
+                    WindowMode::OPTIONS[(index + 1) % WindowMode::OPTIONS.len()]
+                        .label()
+                        .to_string(),
+                )
+            }
+            KEY_ESCAPE_BEHAVIOUR => {
+                let index = EscapeBehaviour::OPTIONS
+                    .iter()
+                    .position(|option| *option == self.escape_behaviour)
+                    .unwrap_or(0);
+                Some(
+                    EscapeBehaviour::OPTIONS[(index + 1) % EscapeBehaviour::OPTIONS.len()]
+                        .label()
+                        .to_string(),
+                )
+            }
+            KEY_POP_TO_ROOT => {
+                let index = PopToRoot::OPTIONS
+                    .iter()
+                    .position(|option| *option == self.pop_to_root)
+                    .unwrap_or(0);
+                Some(PopToRoot::OPTIONS[(index + 1) % PopToRoot::OPTIONS.len()].label())
+            }
+            _ => None,
         }
     }
 }
@@ -618,5 +797,105 @@ mod tests {
             shortcuts.state(CompactShortcut::ClipboardHistory, &features),
             ShortcutState::On
         );
+    }
+
+    #[test]
+    fn a_setting_is_read_back_from_its_stored_value() {
+        let mut settings = PaletteSettings::default();
+        assert!(settings.set_appearance("Dark"));
+        assert_eq!(settings.appearance, Appearance::Dark);
+        assert!(settings.set_window_mode("expanded"));
+        assert_eq!(settings.window_mode, WindowMode::Expanded);
+        assert!(settings.set_interface_size("larger"));
+        assert_eq!(settings.interface_size, InterfaceSize::Larger);
+        assert!(settings.set_animations("off"));
+        assert!(!settings.animations);
+    }
+
+    #[test]
+    fn a_value_that_is_not_one_of_the_options_is_refused() {
+        let mut settings = PaletteSettings::default();
+        assert!(!settings.set_appearance("Rainbow"));
+        assert_eq!(settings.appearance, Appearance::System);
+        assert!(!settings.set_window_mode("enormous"));
+        assert_eq!(settings.window_mode, WindowMode::Compact);
+        assert!(!settings.set_pop_to_root("whenever"));
+        assert_eq!(settings.pop_to_root, PopToRoot::Immediately);
+    }
+
+    #[test]
+    fn the_escape_behaviour_is_read_from_its_name_or_its_label() {
+        let mut settings = PaletteSettings::default();
+        assert!(settings.set_escape_behaviour("closewindowandpoptoroot"));
+        assert_eq!(
+            settings.escape_behaviour,
+            EscapeBehaviour::CloseWindowAndPopToRoot
+        );
+        assert!(settings.set_escape_behaviour("Close window and pop to root"));
+        assert_eq!(
+            settings.escape_behaviour,
+            EscapeBehaviour::CloseWindowAndPopToRoot
+        );
+        assert!(settings.set_escape_behaviour("Navigate back or close window"));
+        assert_eq!(
+            settings.escape_behaviour,
+            EscapeBehaviour::NavigateBackOrCloseWindow
+        );
+    }
+
+    #[test]
+    fn the_pop_to_root_delay_is_read_from_its_number_or_its_label() {
+        let mut settings = PaletteSettings::default();
+        assert!(settings.set_pop_to_root("30"));
+        assert_eq!(settings.pop_to_root, PopToRoot::After(30));
+        assert!(settings.set_pop_to_root("30 seconds"));
+        assert_eq!(settings.pop_to_root, PopToRoot::After(30));
+        assert!(settings.set_pop_to_root("Immediately"));
+        assert_eq!(settings.pop_to_root, PopToRoot::Immediately);
+    }
+
+    #[test]
+    fn a_setting_moves_to_its_next_value_and_round_about() {
+        let mut settings = PaletteSettings::default();
+        let start = settings.appearance.label().to_string();
+        for _ in 0..Appearance::OPTIONS.len() {
+            let next = settings
+                .next_value(KEY_APPEARANCE)
+                .expect("the appearance has a next value");
+            settings.set_appearance(&next);
+        }
+        assert_eq!(settings.appearance.label(), start);
+    }
+
+    #[test]
+    fn the_animations_switch_turns_on_and_off() {
+        let settings = PaletteSettings::default();
+        let next = settings.next_value(KEY_ANIMATIONS).expect("a next value");
+        assert_eq!(next, "false");
+        let mut changed = settings.clone();
+        assert!(changed.set_animations(&next));
+        assert!(!changed.animations);
+        let back = changed.next_value(KEY_ANIMATIONS).expect("a next value");
+        assert_eq!(back, "true");
+    }
+
+    #[test]
+    fn the_value_of_a_setting_is_its_label() {
+        let settings = PaletteSettings::default();
+        assert_eq!(
+            settings.value_of(KEY_WINDOW_MODE).as_deref(),
+            Some("Compact")
+        );
+        assert_eq!(
+            settings.value_of(KEY_ESCAPE_BEHAVIOUR).as_deref(),
+            Some("Navigate back or close window")
+        );
+        assert!(settings.value_of("palette.nothing").is_none());
+    }
+
+    #[test]
+    fn a_setting_that_is_not_the_palettes_own_has_no_next_value() {
+        let settings = PaletteSettings::default();
+        assert!(settings.next_value("commands.enabled").is_none());
     }
 }
