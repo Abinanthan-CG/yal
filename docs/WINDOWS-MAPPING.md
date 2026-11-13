@@ -137,6 +137,26 @@ Windows 10 22H2 and Windows 11 both support per-monitor DPI awareness
 version 2. YAL's manifest declares it, so a window moved to a display with a
 different scale factor is rescaled by Windows rather than by the application.
 
+### The manifest
+
+The claims above are only true while they are in the binary, so the launcher
+ships its own manifest at `apps/yal/windows/yal.manifest`, and
+`apps/yal/build.rs` embeds it with TauriBuild's `app_manifest`. It declares:
+
+| Setting | Value | What it buys |
+|---|---|---|
+| `requestedExecutionLevel` | `asInvoker` | The launcher never asks for more than the user who started it |
+| `dpiAwareness` | `PerMonitorV2,PerMonitor` | The palette is drawn at the scale of the monitor it is on |
+| `longPathAware` | `true` | A file index can hold paths Windows would not take without it |
+| `activeCodePage` | `UTF-8` | The app reads its own files in the encoding it wrote them in |
+| `supportedOS` | Windows 10, 8.1 | The version lie Windows tells us about is answered correctly |
+
+TauriBuild's own default manifest carries none of these beyond the common
+controls dependency, so the launcher would otherwise run at system DPI with
+Windows' ANSI code page and no long paths. Verify the built binary with
+`borer info target/release/yal.exe`, which reads the embedded manifest and the
+mitigation flags out of the file itself.
+
 ### Custom window sizes
 
 Upstream's `CustomWindowSize` uses nine anchors — `top-left`, `top`,
@@ -220,7 +240,8 @@ diagnostics rather than failing silently.
 | A path separator in a deeplink | `/` in the link, resolved with `PathBuf` |
 
 YAL keeps every text file UTF-8, and Windows long paths are enabled through
-the manifest and the `longPathAware` setting.
+the `longPathAware` setting in the launcher manifest
+(`apps/yal/windows/yal.manifest`).
 
 ---
 
