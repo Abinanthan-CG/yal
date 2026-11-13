@@ -11757,7 +11757,7 @@ behavior = "Find files and folders instantly from a private index on your Mac. N
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The index, the scope rules and the search over them are built, but the scopes are not chosen in the Settings yet, so the app does not index anything of its own."
 
 [[row]]
 id = "features-file-search.file-search.search-file-and-folder-names-in-the-folders"
@@ -11767,7 +11767,7 @@ behavior = "Search file and folder names in the folders you choose. Tinycast bui
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The index, the scope rules and the search over them are built and tested, but the app does not build an index of its own yet."
 
 [[row]]
 id = "features-file-search.file-search.turn-it-on-in-settings-file-search-it-s-off"
@@ -11777,7 +11777,7 @@ behavior = "Turn it on in Settings → File Search. It's off by default. While i
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The switch is off by default and the app opens no index while it is off, but the switch is not in the Settings yet and the Search Files command is not in the launcher."
 
 [[row]]
 id = "features-file-search.file-search.open-it-with-the-search-files-command-its-ow"
@@ -11787,7 +11787,7 @@ behavior = "Open it with the Search Files command, its own global shortcut, or t
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The Search Files screen is reached from a link in the palette's footer, but the command, its global shortcut and the Search Files row under 'Use … with' are not in the launcher."
 
 [[row]]
 id = "features-file-search.full-disk-access.file-search-needs-full-disk-access-and-index"
@@ -11797,7 +11797,7 @@ behavior = "File Search needs Full Disk Access, and indexes nothing without it. 
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "macOS protects the folders it wants to; Windows has no Full Disk Access, and YAL reads the folders the user chose."
 
 [[row]]
 id = "features-file-search.full-disk-access.tinycast-checks-for-access-but-never-asks-fo"
@@ -11807,7 +11807,7 @@ behavior = "Tinycast checks for access but never asks for it. Settings → File 
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "There is no permission to check on Windows."
 
 [[row]]
 id = "features-file-search.full-disk-access.what-the-index-holds-and-where-it-goes"
@@ -11817,7 +11817,7 @@ behavior = "What the index holds, and where it goes:"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The index holds names, folders, dates and sizes, but the Settings pane that shows where it goes is not built."
 
 [[row]]
 id = "features-file-search.full-disk-access.names-folders-and-dates-only-it-stores-each"
@@ -11825,9 +11825,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.full-disk-access"
 behavior = "**Names, folders and dates only.** It stores each file's name, where it is and when it last"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::store::tests::a_walk_over_a_real_folder_fills_the_store", "tc-files::index::tests::a_file_carries_its_size_and_the_time_it_changed"]
+reason = ""
 
 [[row]]
 id = "features-file-search.full-disk-access.changed-it-never-stores-what-s-inside-a-file"
@@ -11835,9 +11835,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.full-disk-access"
 behavior = "Changed. It never stores what's inside a file."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::index::tests::a_file_carries_its_size_and_the_time_it_changed"]
+reason = ""
 
 [[row]]
 id = "features-file-search.full-disk-access.it-stays-on-your-mac-file-search-makes-no-ne"
@@ -11845,9 +11845,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.full-disk-access"
 behavior = "**It stays on your Mac.** File Search makes no network requests."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::store::tests::the_recorded_directories_come_back_with_their_times"]
+reason = ""
 
 [[row]]
 id = "features-file-search.full-disk-access.off-means-gone-turning-file-search-off-delet"
@@ -11857,7 +11857,7 @@ behavior = "**Off means gone.** Turning File Search off deletes the index."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The index can be cleared, but the app does not delete it when the switch is turned off."
 
 [[row]]
 id = "features-file-search.full-disk-access.it-never-downloads-icloud-drive-and-other-cl"
@@ -11867,7 +11867,7 @@ behavior = "**It never downloads.** iCloud Drive and other cloud files that aren
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Windows has no cloud placeholder to download; OneDrive's files are ordinary files, and YAL's index never fetches anything."
 
 [[row]]
 id = "features-file-search.full-disk-access.they-are-without-downloading-them"
@@ -11877,7 +11877,7 @@ behavior = "They are, without downloading them."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Windows has no cloud placeholder to download; OneDrive's files are ordinary files, and YAL's index never fetches anything."
 
 [[row]]
 id = "features-file-search.full-disk-access.see-permissions-for-what-else-full-disk-acce"
@@ -11887,7 +11887,7 @@ behavior = "See Permissions for what else Full Disk Access is used for."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "There is no Full Disk Access on Windows."
 
 [[row]]
 id = "features-file-search.the-screen.with-nothing-typed-the-list-shows-recent-the"
@@ -11895,9 +11895,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.the-screen"
 behavior = "With nothing typed, the list shows Recent: the 20 files in your home folder that changed most recently. Hidden files, ~/Library and app bundles are left out."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::search::tests::the_recent_list_is_the_home_folders_newest_files", "tc-files::search::tests::the_recent_list_leaves_out_hidden_and_program_files", "tc-palette::files::tests::an_empty_search_shows_the_recent_files"]
+reason = ""
 count_check = "file-search.limits"
 
 [[row]]
@@ -11906,9 +11906,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.the-screen"
 behavior = "When you type, the list changes to Results. Each row shows the file's icon and name. Folders also show their parent folder's name, dimmed, which helps when many folders share a name like src."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::files::tests::a_search_shows_the_results", "yal::launcher::tests::a_file_row_says_where_the_file_is"]
+reason = ""
 count_check = "file-search.limits"
 
 [[row]]
@@ -11919,7 +11919,7 @@ behavior = "The right side previews the selected file: the file itself, followed
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "There is no preview pane beside the list."
 count_check = "file-search.limits"
 
 [[row]]
@@ -11928,9 +11928,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.filtering-by-type"
 behavior = "⌘P, or the All Types button, narrows the search:"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::files::tests::the_filter_offers_the_seven_documented_choices", "tc-palette::palette::tests::the_control_and_p_narrows_the_file_search"]
+reason = ""
 count_check = "file-search.type-filters"
 
 [[row]]
@@ -11939,9 +11939,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.filtering-by-type"
 behavior = "The filter is applied during the search, so it never hides matches that were already cut off by the result limit. It resets each time you open the palette."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::files::tests::the_filter_is_applied_during_the_search", "tc-palette::files::tests::the_filter_does_not_hide_matches_the_limit_cut_off"]
+reason = ""
 count_check = "file-search.type-filters"
 
 [[row]]
@@ -11950,9 +11950,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Open File / Open Folder — return."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::action::tests::the_file_actions_match_the_documented_table", "tc-platform-win::launch::tests::opening_something_that_is_not_there_fails_rather_than_panicking"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -11961,9 +11961,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Show in Finder — ⌘return."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::action::tests::the_file_actions_match_the_documented_table", "tc-platform-win::launch::tests::a_file_goes_to_the_recycle_bin_and_leaves_its_place"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -11974,7 +11974,7 @@ behavior = "Share…"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Windows has no share sheet; the file manager's own sharing is used instead."
 count_check = "file-search.actions"
 
 [[row]]
@@ -11985,7 +11985,7 @@ behavior = "Copy File — ⇧⌘C."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Copying the file itself to the clipboard is not built, and the action is not offered, because an action that does nothing is a dead end."
 count_check = "file-search.actions"
 
 [[row]]
@@ -11996,7 +11996,7 @@ behavior = "Paste File to … — ⇧⌘V."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Pasting a file into another application is not built, and the action is not offered, because an action that does nothing is a dead end."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12005,9 +12005,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Copy Name — ⌥⌘C."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_file_actions_have_their_own_chords_on_the_file_screen", "tc-palette::action::tests::the_copy_name_and_copy_path_chords_are_different"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12016,9 +12016,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Copy Path — ⌃⌘C."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_file_actions_have_their_own_chords_on_the_file_screen", "tc-palette::action::tests::the_copy_name_and_copy_path_chords_are_different"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12029,7 +12029,7 @@ behavior = "Add to Favorites / Remove from Favorites — ⇧⌘F."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The favorites are not built, and the action is not offered, because an action that does nothing is a dead end."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12038,9 +12038,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Move to Trash — ⌃X."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_file_actions_have_their_own_chords_on_the_file_screen", "tc-platform-win::launch::tests::a_file_goes_to_the_recycle_bin_and_leaves_its_place"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12051,7 +12051,7 @@ behavior = "**Share…** opens the macOS share menu for AirDrop, Mail, Messages 
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Windows has no share sheet; the file manager's own sharing is used instead."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12062,7 +12062,7 @@ behavior = "Open beside it."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "There is no share sheet to open beside the palette."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12073,7 +12073,7 @@ behavior = "**Copy File** copies the file itself to the clipboard, so you can pa
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Copying the file itself to the clipboard is not built."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12084,7 +12084,7 @@ behavior = "**Paste File to …** pastes the file into the app you opened the pa
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Pasting a file into another application is not built."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12093,9 +12093,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "**Copy Name** and **Copy Path** keep the palette open, so you can copy several in a row."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_file_actions_have_their_own_chords_on_the_file_screen"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12106,7 +12106,7 @@ behavior = "**Add to Favorites** puts the file or folder in the launcher's"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The favorites are not built."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12117,7 +12117,7 @@ behavior = "Favorites, next to your apps."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The favorites are not built."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12126,9 +12126,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "**Move to Trash** doesn't ask for confirmation, because you can always restore files from the"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-platform-win::launch::tests::a_file_goes_to_the_recycle_bin_and_leaves_its_place"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12137,9 +12137,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Trash."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-platform-win::launch::tests::a_file_goes_to_the_recycle_bin_and_leaves_its_place"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12148,9 +12148,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.actions"
 behavior = "Copies made here appear in your clipboard history like any other copy."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_file_actions_have_their_own_chords_on_the_file_screen", "tc-clipboard::tests::the_history_is_ordered_newest_first", "tc-platform-win::clipboard::tests::the_clipboard_round_trips_text"]
+reason = ""
 count_check = "file-search.actions"
 
 [[row]]
@@ -12161,7 +12161,7 @@ behavior = "You can also drag any row into another app, like a Finder window or 
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "A row cannot be dragged out of the palette yet."
 count_check = "file-search.actions"
 
 [[row]]
@@ -12170,9 +12170,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.in-the-launcher"
 behavior = "Turn on Show in launcher, under the File Search switch, to see files in launcher searches too. It's off by default."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["yal::launcher::tests::the_files_can_be_kept_out_of_the_launcher", "yal::launcher::tests::the_files_are_listed_under_their_own_section"]
+reason = ""
 
 [[row]]
 id = "features-file-search.in-the-launcher.when-your-search-has-three-or-more-character"
@@ -12180,9 +12180,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.in-the-launcher"
 behavior = "When your search has three or more characters, a Files section lists up to five matches. It sits below the apps and commands, so return still opens the top result. Each row shows the name, the folder it's in, and whether it's a file or a folder. Matching favorite files come first."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::files::tests::the_launcher_offers_at_most_five_files", "tc-palette::files::tests::the_launcher_offers_no_files_below_three_characters", "yal::launcher::tests::the_files_sit_below_the_programs"]
+reason = ""
 
 [[row]]
 id = "features-file-search.in-the-launcher.the-rows-have-the-same-actions-as-this-scree"
@@ -12190,9 +12190,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.in-the-launcher"
 behavior = "The rows have the same actions as this screen. To see every match, choose the Search Files row under \"Use … with\"."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::action::tests::every_file_action_is_one_this_build_can_run", "yal::launcher::tests::the_files_are_listed_under_their_own_section"]
+reason = ""
 
 [[row]]
 id = "features-file-search.search-scopes.set-these-in-settings-file-search-search-sco"
@@ -12202,7 +12202,7 @@ behavior = "Set these in Settings → File Search → Search Scopes. Only the fo
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The scope rules are built and tested, but the scopes are not chosen in the Settings yet."
 
 [[row]]
 id = "features-file-search.search-scopes.everything-inside-a-scope-is-indexed-includi"
@@ -12210,9 +12210,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.search-scopes"
 behavior = "Everything inside a scope is indexed, including hidden files and the contents of app bundles. Those rank below your own files, and ignore patterns leave out what you never want."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::index::tests::a_fresh_tree_is_listed_whole", "tc-files::scope::tests::the_built_in_rules_do_not_skip_the_users_own_files"]
+reason = ""
 
 [[row]]
 id = "features-file-search.search-scopes.an-empty-scope-list-indexes-nothing-tinycast"
@@ -12220,9 +12220,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.search-scopes"
 behavior = "An empty scope list indexes nothing. Tinycast doesn't fall back to your home folder. A folder inside another scope is already covered, so you don't need to add it. Other disks are never entered unless you add them as a scope."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::an_empty_scope_list_indexes_nothing", "tc-files::index::tests::no_roots_means_nothing_is_listed"]
+reason = ""
 
 [[row]]
 id = "features-file-search.search-scopes.scopes-are-saved-with-your-home-folder-writt"
@@ -12230,9 +12230,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.search-scopes"
 behavior = "Scopes are saved with your home folder written as ~, so a backup still works on another Mac."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::the_home_folder_is_stored_with_a_tilde"]
+reason = ""
 
 [[row]]
 id = "features-file-search.ignore-patterns.set-these-in-settings-file-search-ignore-pat"
@@ -12242,7 +12242,7 @@ behavior = "Set these in Settings → File Search → Ignore Patterns. A matchin
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The ignore rules are built and tested, but they are not shown in the Settings yet."
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12251,9 +12251,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "Plain word — Any folder or name — nodemodules."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::a_plain_word_matches_any_name_that_contains_it"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12262,9 +12262,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "With ? ` — Any folder or name — .tmp."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::a_star_matches_any_run_of_characters"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12273,9 +12273,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "Containing /, or ~/ first — The whole path — ~/Movies."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::a_rule_with_a_slash_matches_the_whole_path"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12284,9 +12284,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "Matching isn't case-sensitive, and also matches /, so a /…/ pattern works as written. Add Folder… adds a folder you pick as a path pattern."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::a_rule_matches_whatever_the_case", "tc-files::scope::tests::a_star_matches_a_slash_as_well"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12295,9 +12295,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "The list starts with built-in rules that skip what a search for your own files rarely wants:"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::the_built_in_rules_keep_the_build_trees_out"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12306,9 +12306,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "Build and dependency folders, like `node_modules`, `.git`, `build` and `DerivedData`."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::the_built_in_rules_keep_the_build_trees_out"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12317,9 +12317,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "The Photos library, the Trash, and the `~/.cache` and `~/.npm` caches."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::the_built_in_rules_keep_the_build_trees_out"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12328,9 +12328,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "The busiest parts of `~/Library`: `Application Support`, `Caches`, `Containers`, `Developer`,"
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::the_built_in_rules_keep_the_build_trees_out"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12339,9 +12339,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "Group Containers and Mail."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::the_built_in_rules_keep_the_build_trees_out"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12350,9 +12350,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "You can remove any of them. Restore Defaults brings them all back."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::scope::tests::a_built_in_rule_can_be_removed", "tc-files::scope::tests::restoring_the_defaults_keeps_the_users_own_rules"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12361,9 +12361,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.ignore-patterns"
 behavior = "Changing a scope or a pattern rebuilds the index. Search keeps using the old index until the new one is ready."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::store::tests::a_rebuild_swaps_the_new_index_in"]
+reason = ""
 count_check = "file-search.ignore-pattern-kinds"
 
 [[row]]
@@ -12374,7 +12374,7 @@ behavior = "Settings → File Search → Indexed Items shows how many items are 
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The index can be counted and dated, but the Settings pane that shows it is not built."
 
 [[row]]
 id = "features-file-search.the-index.the-first-build-reads-every-folder-in-your-s"
@@ -12382,9 +12382,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.the-index"
 behavior = "The first build reads every folder in your scopes once. After that, Tinycast watches those folders and updates only what changed. The build runs in a separate helper process, so it uses extra memory only while it runs."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::index::tests::a_fresh_tree_is_listed_whole", "tc-files::index::tests::an_unchanged_tree_is_not_listed_twice"]
+reason = ""
 
 [[row]]
 id = "features-file-search.how-search-works.every-word-you-type-must-appear-in-the-file"
@@ -12392,9 +12392,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.how-search-works"
 behavior = "Every word you type must appear in the file name, in any order. annual report finds \"Report – annual 2025.pdf\". Matching ignores case and accents."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::search::tests::every_word_must_appear_in_the_name", "tc-files::search::tests::the_matching_ignores_the_accents"]
+reason = ""
 
 [[row]]
 id = "features-file-search.how-search-works.the-best-matches-come-first-an-exact-name-th"
@@ -12402,9 +12402,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.how-search-works"
 behavior = "The best matches come first: an exact name, then names that start with what you typed. Files in your home folder rank above hidden files, ~/Library and the contents of app bundles. At most 200 results are shown."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::search::tests::the_best_matches_come_first", "tc-files::search::tests::the_users_own_files_come_before_the_rest", "tc-files::search::tests::a_hidden_file_ranks_below_the_users_own"]
+reason = ""
 
 [[row]]
 id = "features-file-search.messages-you-might-see.full-disk-access-required-tinycast-can-t-ind"
@@ -12414,7 +12414,7 @@ behavior = "Full Disk Access required — Tinycast can't index yet. Press return
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "Windows has no Full Disk Access, so there is nothing to ask for."
 count_check = "file-search.user-messages"
 
 [[row]]
@@ -12425,7 +12425,7 @@ behavior = "Indexing your disk… — The first build is running. Results appear
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The app does not build an index of its own yet, so there is no build to report."
 count_check = "file-search.user-messages"
 
 [[row]]
@@ -12436,7 +12436,7 @@ behavior = "Couldn't build the file index — The build failed. Try Rebuild Inde
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
 status = "NOT PORTED"
 evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+reason = "The app does not build an index of its own yet, so there is no build that can fail."
 count_check = "file-search.user-messages"
 
 [[row]]
@@ -12445,9 +12445,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.messages-you-might-see"
 behavior = "Type to search files and folders — Nothing recent in your search scopes."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::files::tests::an_empty_search_shows_the_recent_files"]
+reason = ""
 count_check = "file-search.user-messages"
 
 [[row]]
@@ -12456,9 +12456,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.messages-you-might-see"
 behavior = "No files found — The search finished without a match."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-files::search::tests::nothing_matches_the_empty_query"]
+reason = ""
 count_check = "file-search.user-messages"
 
 [[row]]
@@ -12467,9 +12467,9 @@ page = "docs/features/file-search/"
 heading = "features-file-search.messages-you-might-see"
 behavior = "No images found — The same, with the Images filter on."
 windows = "\"The app''s own index, not Windows Search: names, folders and dates only, built by a helper process and kept current with directory change notifications (plus the NTFS change journal when readable). Default scope is the user profile. Never hydrate cloud placeholders (OneDrive Files On-Demand): list them, do not download them, do not preview their contents. Full Disk Access becomes an access-status row: Ready, or the scoped folders that deny access. Default ignore patterns are translated (node_modules, .git, build output, AppData, caches, $Recycle.Bin ...). Share... opens the Windows share sheet; Copy File puts a real file drop on the clipboard; Move to Trash sends to the Recycle Bin without asking; the preview pane uses shell thumbnails and plays audio or video only on request. Turning the feature off deletes the index."
-status = "NOT PORTED"
-evidence = []
-reason = "The file indexer helper exists, but the palette does not search the index yet."
+status = "PORTED"
+evidence = ["tc-palette::files::tests::the_images_filter_keeps_the_images"]
+reason = ""
 count_check = "file-search.user-messages"
 
 [[row]]
@@ -20711,9 +20711,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "Return — The main action for the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::enter_is_the_main_action", "tc-palette::action::tests::every_action_of_the_palette_is_listed"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20722,9 +20722,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "⌘return — The second action, usually Show in Finder or Copy."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::control_and_enter_is_the_second_action", "tc-palette::action::tests::the_actions_carry_the_chords_from_the_documentation"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20733,9 +20733,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "⌘K — Open the Actions menu for the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::control_and_k_opens_the_actions_menu", "tc-palette::action::tests::the_menu_highlight_wraps_around"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20744,9 +20744,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "↑ ↓ — Move the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_arrows_move_the_selection", "tc-palette::action::tests::the_up_and_down_arrows_move_the_selection_in_both_directions"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20755,9 +20755,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "Tab — Move between the launcher, Quick AI and the clipboard."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_tab_cycles_the_launcher_and_the_clipboard", "tc-palette::screen::tests::only_three_screens_are_in_the_tab_cycle"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20766,9 +20766,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "Esc — Clear the search, then go back a screen, then close."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_escape_clears_the_text_first", "tc-palette::palette::tests::the_escape_goes_back_a_screen_and_closes_at_the_root"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20777,9 +20777,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "⌘esc — Go back to the root search from any screen."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_control_and_escape_goes_to_the_root_search", "tc-palette::palette::tests::the_alt_and_home_goes_to_the_root_search_too"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20788,9 +20788,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "Delete — In an empty search field, go back one screen."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_delete_in_an_empty_field_goes_back_one_screen", "tc-palette::palette::tests::the_delete_with_text_in_the_field_is_left_to_the_field"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20799,9 +20799,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "⌘, — Open Settings."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_comma_opens_the_settings_and_the_w_closes_the_palette", "yal::palette::tests::the_settings_pane_lists_the_general_settings"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20810,9 +20810,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "⌘W — Close the window."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_comma_opens_the_settings_and_the_w_closes_the_palette"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20821,9 +20821,9 @@ page = "docs/palette/"
 heading = "palette.moving-around"
 behavior = "⌘K is the best way to learn the app. Every screen lists all of its actions there, with shortcuts beside actions that have them. Type in the menu to filter its actions; esc clears the menu search first, then closes the menu. The full list is in Keyboard shortcuts."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::action::tests::typing_in_the_menu_filters_the_actions", "tc-palette::palette::tests::the_escape_clears_the_menu_search_before_it_closes_the_menu", "tc-palette::action::tests::the_file_actions_match_the_documented_table"]
+reason = ""
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20834,7 +20834,7 @@ behavior = "Every screen except the launcher has a back arrow in the top-left co
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The palette goes back with the keyboard, but there is no back arrow in the corner of the screen."
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20845,7 +20845,7 @@ behavior = "⌘esc needs the Accessibility permission, because macOS uses that s
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "macOS uses ⌘esc itself; on Windows Ctrl+Esc opens the Start menu, and YAL only takes it while the palette has the focus."
 count_check = "palette.navigation-keys"
 
 [[row]]
@@ -20854,9 +20854,9 @@ page = "docs/palette/"
 heading = "palette.emacs-chords"
 behavior = "These work anywhere in the palette:"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_emacs_chords_are_the_arrows", "tc-palette::palette::tests::the_emacs_chords_move_the_text_cursor_everywhere_but_the_grid"]
+reason = ""
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20865,9 +20865,9 @@ page = "docs/palette/"
 heading = "palette.emacs-chords"
 behavior = "⌃N — ↓."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_emacs_chords_are_the_arrows", "tc-palette::keys::tests::a_control_chord_becomes_an_alt_chord"]
+reason = ""
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20876,9 +20876,9 @@ page = "docs/palette/"
 heading = "palette.emacs-chords"
 behavior = "⌃P — ↑."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_emacs_chords_are_the_arrows", "tc-palette::keys::tests::a_control_chord_becomes_an_alt_chord"]
+reason = ""
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20887,9 +20887,9 @@ page = "docs/palette/"
 heading = "palette.emacs-chords"
 behavior = "⌃F — →."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_emacs_chords_move_the_text_cursor_everywhere_but_the_grid"]
+reason = ""
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20898,9 +20898,9 @@ page = "docs/palette/"
 heading = "palette.emacs-chords"
 behavior = "⌃B — ←."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_emacs_chords_move_the_text_cursor_everywhere_but_the_grid"]
+reason = ""
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20909,9 +20909,9 @@ page = "docs/palette/"
 heading = "palette.emacs-chords"
 behavior = "On the emoji grid, all four move the selection. Everywhere else, ⌃F and ⌃B move the text cursor, which is what you usually want in a search field. In the collapsed compact bar, they select Search or a shortcut. Chords with an extra modifier, like ⌃⇧Q, are ignored."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::on_the_emoji_grid_all_four_chords_move_the_selection"]
+reason = ""
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20922,7 +20922,7 @@ behavior = "Letter shortcuts use your ASCII keyboard layout, so a Japanese, Russ
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "YAL reads the letter from the layout Windows gives it, but it does not watch for a composing input method and does not switch layouts."
 count_check = "palette.emacs-chords"
 
 [[row]]
@@ -20931,9 +20931,9 @@ page = "docs/palette/"
 heading = "palette.tab-moves-between-three-screens"
 behavior = "Tab cycles through three screens: launcher → Quick AI → clipboard → launcher."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_tab_cycles_the_launcher_and_the_clipboard", "tc-palette::palette::tests::the_ai_is_in_the_cycle_while_it_is_on"]
+reason = ""
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.from-the-launcher-kbd-tab-kbd-sends-whatever"
@@ -20943,7 +20943,7 @@ behavior = "From the launcher, <kbd>tab</kbd> sends whatever you typed to [Quick
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "YAL talks to no model provider, so there is no Quick AI to send the question to."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.when-this-will-happen-the-header-shows-a-qui"
@@ -20953,7 +20953,7 @@ behavior = "When this will happen, the header shows a Quick AI hint next to a ta
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The header has no Quick AI hint, because YAL has no Quick AI."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.from-the-clipboard-your-search-text-carries"
@@ -20963,7 +20963,7 @@ behavior = "From the clipboard, your search text carries over to the launcher."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The tab cycle reaches the clipboard screen, but the clipboard history screen itself is not built yet."
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.kbd-esc-kbd-goes-back-through-the-screens-in"
@@ -20971,9 +20971,9 @@ page = "docs/palette/"
 heading = "palette.tab-moves-between-three-screens"
 behavior = "<kbd>esc</kbd> goes back through the screens in reverse."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_escape_goes_back_a_screen_and_closes_at_the_root"]
+reason = ""
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.quick-ai-is-skipped-while-ai-is-off-and-the"
@@ -20981,9 +20981,9 @@ page = "docs/palette/"
 heading = "palette.tab-moves-between-three-screens"
 behavior = "Quick AI is skipped while AI is off, and the clipboard is skipped while clipboard history is off."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_ai_is_skipped_while_it_is_off", "tc-palette::palette::tests::the_clipboard_is_skipped_while_it_is_off"]
+reason = ""
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.other-screens-like-calculator-history-or-sea"
@@ -20991,9 +20991,9 @@ page = "docs/palette/"
 heading = "palette.tab-moves-between-three-screens"
 behavior = "Other screens, like Calculator History or Search Quicklinks, aren't part of the cycle. On screens that don't use tab themselves, it returns to the launcher with your search text. Rooms uses it to try layouts, and forms use it to move between fields."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::a_screen_outside_the_cycle_returns_to_the_launcher_with_the_tab"]
+reason = ""
 
 [[row]]
 id = "palette.tab-moves-between-three-screens.there-s-one-exception-when-the-selected-row"
@@ -21001,9 +21001,9 @@ page = "docs/palette/"
 heading = "palette.tab-moves-between-three-screens"
 behavior = "There's one exception: when the selected row takes arguments, like a quicklink, a custom command or an extension command, tab moves through its fields first."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::a_row_that_takes_arguments_gets_the_tab_first", "tc-palette::palette::tests::a_row_without_arguments_leaves_the_tab_to_the_screens"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.if-you-open-a-screen-by-typing-its-name-in-t"
@@ -21011,9 +21011,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "If you open a screen by typing its name in the launcher, it opens on top of the launcher, and esc takes you back to your search."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::screen::tests::a_screen_opened_by_name_stacks_on_the_launcher", "tc-palette::screen::tests::going_back_one_screen_returns_to_the_launcher"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.if-you-open-a-screen-with-its-own-global-sho"
@@ -21021,9 +21021,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "If you open a screen with its own global shortcut while the palette is hidden, it opens by itself with nothing behind it. If the palette is already visible, the new screen opens over the current one. Press its shortcut again to close it; Switch Windows uses repeated presses to move the selection."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::screen::tests::a_screen_opened_by_its_own_shortcut_starts_on_its_own", "tc-palette::screen::tests::a_screen_opened_by_its_own_shortcut_lands_on_the_current_one"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.settings-general-escape-key-behavior-sets-wh"
@@ -21031,9 +21031,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "Settings → General → Escape Key Behavior sets what esc does when the search is empty:"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_escape_goes_back_a_screen_and_closes_at_the_root", "tc-palette::palette::tests::the_escape_can_close_right_away_and_pop_to_the_root", "tc-palette::settings::tests::the_escape_behaviour_is_read_from_its_name_or_its_label"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.navigate-back-or-close-window-default-go-bac"
@@ -21041,9 +21041,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "**Navigate back or close window** (default): go back a screen, and close only at the root."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_escape_goes_back_a_screen_and_closes_at_the_root"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.close-window-and-pop-to-root-close-right-awa"
@@ -21051,9 +21051,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "**Close window and pop to root**: close right away, and start at the launcher next time."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_escape_can_close_right_away_and_pop_to_the_root"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.in-both-cases-the-first-press-clears-any-tex"
@@ -21061,9 +21061,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "In both cases, the first press clears any text you typed."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_escape_clears_the_text_first", "tc-palette::palette::tests::the_compact_mode_collapses_with_either_escape_setting"]
+reason = ""
 
 [[row]]
 id = "palette.how-screens-stack.in-compact-mode-esc-in-the-expanded-launcher"
@@ -21071,9 +21071,9 @@ page = "docs/palette/"
 heading = "palette.how-screens-stack"
 behavior = "In compact mode, esc in the expanded launcher clears your text, then collapses the palette, then closes it. This happens with either setting."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_compact_mode_collapses_before_it_closes"]
+reason = ""
 
 [[row]]
 id = "palette.where-it-opens.both-placement-settings-are-in-settings-gene"
@@ -21083,7 +21083,7 @@ behavior = "Both placement settings are in Settings → General → Appearance."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The General pane has no placement settings, because the palette cannot be moved yet."
 
 [[row]]
 id = "palette.where-it-opens.follow-the-cursor-across-displays-on-by-defa"
@@ -21093,7 +21093,7 @@ behavior = "Follow the cursor across displays (on by default) opens the palette 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The palette opens on the display it was on, not on the display the pointer is on."
 
 [[row]]
 id = "palette.where-it-opens.drag-to-move-the-launcher-off-by-default-let"
@@ -21103,7 +21103,7 @@ behavior = "Drag to move the launcher (off by default) lets you move the panel. 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The palette cannot be dragged yet."
 
 [[row]]
 id = "palette.where-it-opens.while-you-drag-dotted-guides-show-the-defaul"
@@ -21113,7 +21113,7 @@ behavior = "While you drag, dotted guides show the default position and light up
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "There is no drag, so there are no snap guides."
 
 [[row]]
 id = "palette.where-it-opens.tinycast-forgets-a-saved-position-only-when"
@@ -21123,7 +21123,7 @@ behavior = "Tinycast forgets a saved position only when no display can show it a
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "No position is saved, because the palette cannot be moved."
 
 [[row]]
 id = "palette.appearance.settings-general-appearance-has-these-settin"
@@ -21131,9 +21131,9 @@ page = "docs/palette/"
 heading = "palette.appearance"
 behavior = "Settings → General → Appearance has these settings:"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_defaults_are_upstreams_defaults", "yal::palette::tests::the_settings_pane_lists_the_general_settings"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21143,9 +21143,9 @@ heading = "palette.appearance"
 behavior = "Appearance — System."
 group = "Appearance"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_defaults_are_upstreams_defaults", "yal::palette::tests::the_settings_pane_lists_the_general_settings"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21155,9 +21155,9 @@ heading = "palette.appearance"
 behavior = "Appearance — Light."
 group = "Appearance"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::a_setting_is_read_back_from_its_stored_value", "yal::palette::tests::a_setting_moves_to_its_next_value"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21167,9 +21167,9 @@ heading = "palette.appearance"
 behavior = "Appearance — Dark — System."
 group = "Appearance"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::a_setting_is_read_back_from_its_stored_value", "yal::palette::tests::a_setting_moves_to_its_next_value"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21179,9 +21179,9 @@ heading = "palette.appearance"
 behavior = "Show animations — On."
 group = "Show animations"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_defaults_are_upstreams_defaults", "tc-palette::settings::tests::the_animations_switch_turns_on_and_off"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21191,9 +21191,9 @@ heading = "palette.appearance"
 behavior = "Show animations — Off — On."
 group = "Show animations"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_animations_switch_turns_on_and_off", "yal::palette::tests::the_animations_switch_turns_on_and_off"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21203,9 +21203,9 @@ heading = "palette.appearance"
 behavior = "Interface size — Default."
 group = "Interface size"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_defaults_are_upstreams_defaults", "tc-palette::settings::tests::the_interface_size_is_ten_and_twenty_percent_larger"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21215,9 +21215,9 @@ heading = "palette.appearance"
 behavior = "Interface size — Large."
 group = "Interface size"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_interface_size_is_ten_and_twenty_percent_larger", "yal::palette::tests::the_interface_size_changes_the_scale"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21227,9 +21227,9 @@ heading = "palette.appearance"
 behavior = "Interface size — Larger — Default."
 group = "Interface size"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_interface_size_is_ten_and_twenty_percent_larger", "yal::palette::tests::the_interface_size_changes_the_scale"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21239,9 +21239,9 @@ heading = "palette.appearance"
 behavior = "Window mode — Compact."
 group = "Window mode"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::settings::tests::the_defaults_are_upstreams_defaults", "tc-palette::palette::tests::the_slim_bar_selects_the_search_field_and_the_shortcuts"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21251,9 +21251,9 @@ heading = "palette.appearance"
 behavior = "Window mode — Expanded — Compact."
 group = "Window mode"
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_expanded_mode_always_shows_the_list", "tc-palette::palette::tests::the_expanded_mode_never_collapses"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21264,7 +21264,7 @@ behavior = "Appearance. System follows macOS whenever it changes. Light uses the
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The system appearance follows Windows, not macOS, and the palette's own colours are not covered by a test."
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21275,7 +21275,7 @@ behavior = "Show animations. Turn it off and every Tinycast window opens, closes
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The switch exists and is stored, but nothing in the palette animates yet, so turning it off changes nothing."
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21286,7 +21286,7 @@ behavior = "Interface size makes the palette and its floating windows 10% or 20%
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The interface size scales the palette's text, but the Settings pane is not kept the same size."
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21295,9 +21295,9 @@ page = "docs/palette/"
 heading = "palette.appearance"
 behavior = "Window mode. Compact opens the launcher as a slim search bar that expands into the full list as you type. In the slim bar, ← and → select Search or a shortcut, stopping at either end. ↓ on Search expands the list and selects its first row; on a shortcut it opens that item. return opens a selected shortcut. Typing from any shortcut starts a search. Expanded always shows the full list."
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
-status = "NOT PORTED"
-evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+status = "PORTED"
+evidence = ["tc-palette::palette::tests::the_slim_bar_selects_the_search_field_and_the_shortcuts", "tc-palette::palette::tests::the_slim_bar_stops_at_both_ends", "tc-palette::palette::tests::the_down_key_expands_the_list_from_the_search_field", "tc-palette::palette::tests::the_down_key_opens_a_shortcut_of_the_slim_bar", "tc-palette::palette::tests::typing_from_a_shortcut_starts_a_search"]
+reason = ""
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21308,7 +21308,7 @@ behavior = "Settings → General → Compact Shortcuts appears when Compact is s
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The compact shortcuts are modelled and tested, but the General pane does not show them yet and they cannot be changed there."
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21319,7 +21319,7 @@ behavior = "The Toggle System Appearance action changes the appearance of macOS 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The action changes macOS's own appearance; YAL follows the Windows theme but does not change it."
 count_check = "palette.appearance-settings"
 
 [[row]]
@@ -21330,7 +21330,7 @@ behavior = "Settings → General → Auto-switch input source picks a keyboard l
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "YAL does not switch the keyboard layout while the palette is open."
 
 [[row]]
 id = "palette.input-source.this-helps-if-you-type-japanese-or-chinese-m"
@@ -21340,7 +21340,7 @@ behavior = "This helps if you type Japanese or Chinese most of the day but your 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "YAL does not switch the keyboard layout while the palette is open."
 
 [[row]]
 id = "palette.pop-to-root.settings-general-pop-to-root-search-sets-how"
@@ -21350,7 +21350,7 @@ behavior = "Settings → General → Pop to Root Search sets how long after the 
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The setting and its six delays are in the General pane and are stored, but the palette does not wait before it comes back."
 count_check = "palette.pop-to-root"
 
 [[row]]
@@ -21361,7 +21361,7 @@ behavior = "Use a longer delay if you often close the palette and then come back
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The delay is stored, but the palette does not wait before it comes back."
 count_check = "palette.pop-to-root"
 
 [[row]]
@@ -21372,7 +21372,7 @@ behavior = "AI Chat has its own setting for reopening a conversation. See AI Cha
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "YAL has no AI Chat."
 count_check = "palette.pop-to-root"
 
 [[row]]
@@ -21383,7 +21383,7 @@ behavior = "The Tinycast menu bar icon has Open Tinycast, Clipboard History (whi
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The tray menu has Open, Settings, Check for Updates, About, Support and Quit; it has no Clipboard History entry, because the clipboard screen is not built."
 count_check = "palette.tray-menu"
 
 [[row]]
@@ -21394,7 +21394,7 @@ behavior = "Settings → General → Show in menu bar hides the icon. Your short
 windows = "\"One floating palette shared by the launcher, search tools and Quick AI. Esc / Ctrl+Esc / Backspace navigation, the Tab cycle launcher -> Quick AI -> clipboard, screen stacking, Escape Key Behavior, Pop to Root delays, Compact and Expanded modes with up to four Compact Shortcuts, follow-the-cursor display choice, drag-to-move with snap guides, appearance, animations, interface size, auto-switching the input language while open, and the tray menu. This page is promoted to Tier 1 wherever the launcher depends on it."
 status = "NOT PORTED"
 evidence = []
-reason = "The palette shows the search field and the results; the sections, the calculator card, the colour card and the file rows are not built yet."
+reason = "The switch is modelled but it is not in the General pane and it does not hide the tray icon."
 count_check = "palette.tray-menu"
 
 [[row]]

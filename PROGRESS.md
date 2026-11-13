@@ -306,6 +306,46 @@ the ones that were kept - including the accents, which are folded.
 The screen, the Settings pane and the actions on a row are not built, so the
 file-search rows stay `NOT PORTED`.
 
+### The palette's screen system and the file-search screen (crates/tc-palette)
+
+The decisions that make the palette work moved out of the window and into
+Rust, because a decision that cannot be tested is not a decision and the
+frontend has no test framework. `crates/tc-palette` holds the keys and the
+translation from upstream's Mac chords to Windows, the screens and how they
+stack, the palette's own settings with upstream's defaults, what a key does,
+the menu that lists it, the state machine that turns a key into an action, and
+the file-search screen. **117 tests.**
+
+- **The shortcut table** in `docs/SHORTCUTS.md` is implemented, and a test
+  holds the line the document states: no built-in shortcut shadows
+  <kbd>Ctrl</kbd>+<kbd>C</kbd>, <kbd>Ctrl</kbd>+<kbd>V</kbd>,
+  <kbd>Ctrl</kbd>+<kbd>X</kbd> or <kbd>Ctrl</kbd>+<kbd>Z</kbd>. The Windows
+  key is never reserved.
+- **The escape chain**: the first press clears the text, the second goes back
+  a screen, the third closes the window; the setting can close right away
+  instead; and the compact mode collapses in between.
+- **The tab cycle**: the launcher, the AI and the clipboard, skipping the ones
+  whose feature is off, with the exception that a row which takes arguments
+  gets the tab first.
+- **The emacs chords**: <kbd>⌃</kbd><kbd>N</kbd> and <kbd>⌃</kbd><kbd>P</kbd>
+  are the arrows, and <kbd>⌃</kbd><kbd>F</kbd> and <kbd>⌃</kbd><kbd>B</kbd>
+  move the text cursor - except on the emoji grid.
+- **The file-search screen**: Recent with nothing typed, Results with
+  something typed, the filter applied during the search so it never hides a
+  match the limit cut off, and the files below the launcher's own rows.
+- **The file row's actions**: Open, Show in File Explorer, Filter by Type,
+  Copy Name, Copy Path and Move to the Recycle Bin - and nothing else, because
+  an action that does nothing is a dead end.
+- **The General pane**: the six settings the palette follows, each one
+  changeable and written down.
+
+**Eighty rows moved**: the palette's keys, its screens, its escape behaviour,
+its tab cycle, its compact bar and its appearance settings; and the file
+search's screen, its filter, its actions, its scope rules, its ignore
+patterns and its search rules. 333 → 413.
+
+See [port note 022](docs/port-notes/022-palette-screen-system-and-file-search.md).
+
 ### The window mover (crates/tc-platform-win/src/window_control.rs)
 
 The part of window management that touches the machine: the displays and
@@ -374,6 +414,15 @@ calculator answers for the units it knows.
 calculator's percentages, its money and its shared amounts added thirty-seven, and its phrases
 about growth, loans and returns seventeen more.
 
+**333 rows are PORTED** after the command catalogue: the built-in commands, the custom
+commands, the shell they run under and the Raycast import.
+
+**413 rows are PORTED** now: the palette's screen system and the file-search screen added
+eighty more - the key table, the emacs chords, the tab cycle, the screen stacking, the escape
+behaviour, the compact bar, the appearance settings and the General pane, and with them the
+file search's screen, its filter, its actions, its scope rules, its ignore patterns and its
+search rules.
+
 The rows that are still open take their reason from `parity/reasons.toml`, one line per page, so
 each open row names the piece that is missing rather than repeating `not yet implemented`.
 
@@ -406,7 +455,11 @@ The order to work in, with what is done so far:
     is not.
 14. Snippets — **the record, the Markdown file format, the template engine and the library on
     disk are done** (`crates/tc-snippets`); the editor, the browser and the palette rows are not
-15. File search
+15. File search — **the index, the scope rules, the search and the screen are done**
+    (`crates/tc-files` and `crates/tc-palette`): the Recent list, the Results, the seven
+    kinds of the filter, the file row's actions and the files below the launcher's own rows.
+    The scopes are not chosen in the Settings yet, so the app does not build an index of its
+    own.
 16. Window management
 17. Window layouts
 18. Rooms
@@ -417,7 +470,9 @@ The order to work in, with what is done so far:
 23. Dictionary
 24. Dictation
 25. Automations
-26. The settings screens
+26. The settings screens — **the General pane is done**: the appearance, the animations, the
+    interface size, the window mode, the escape behaviour and the pop-to-root delay. The
+    editor screen, the output window and the command rows are not.
 27. The shortcuts audit — every row of `docs/SHORTCUTS.md`
 28. Deeplinks
 29. Backup
