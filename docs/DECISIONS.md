@@ -717,3 +717,79 @@ not listed.
 **What this does not change.** The catalogue rows, which are about the pane a command belongs to
 and not about the launcher; and the rule that a feature that is off hides its commands and their
 shortcuts.
+## 2026-11-13 - The palette's decisions live in Rust, not in the window
+
+**Question.** A key's meaning - what <kbd>esc</kbd> does, what <kbd>tab</kbd>
+does, which screen is on top - was decided in the window, in TypeScript. The
+frontend has no test framework, so none of those decisions could be tested,
+and the parity ledger could only ever say `NOT PORTED` about the palette.
+Where do the decisions live?
+
+**Options.** (a) Keep them in the window and add a test framework for the
+frontend. (b) Move them into Rust and let the window ask what a key means.
+
+**Decision.** (b). `crates/tc-palette` holds the screens, the keys, the
+settings and the state machine; the window sends the key and is told what to
+do about it.
+
+**Why.** A decision that cannot be tested is not a decision, and the ledger's
+rule is that a row is `PORTED` only when the evidence is a test that actually
+ran. The decisions are also worth testing on their own: the escape chain, the
+tab cycle and the emacs chords are three small state machines, and they are
+much easier to pin down in Rust than through a browser. The window is now a
+renderer of what the Rust side says, which is also the shape the rest of the
+port already has.
+
+**What this does not change.** The frontend still owns the text in the search
+field and the row that is selected; the Rust side is told the text with every
+key and holds the screens, the stack, the filter and the settings.
+
+## 2026-11-13 - A screen offers only the actions the build can run
+
+**Question.** Upstream's file-search screen has nine actions. Three of them -
+copying the file itself, pasting it into another application, and adding it
+to the favorites - are not built in this port. Does the screen still list
+them?
+
+**Options.** (a) List all nine, and say so when one is opened. (b) List only
+the six that work.
+
+**Decision.** (b). The file screen's actions menu lists Open File / Open
+Folder, Show in File Explorer, Filter by Type, Copy Name, Copy Path and Move
+to the Recycle Bin - and nothing else.
+
+**Why.** The same rule the launcher already follows: a result that cannot be
+opened is a dead end, and a dead end is worse than a missing row. The rule
+that a command whose feature is off is not listed is upstream's own rule. A
+test holds it: every action the file screen lists is one this build can run.
+
+**What this does not change.** The three actions themselves, which stay in
+the ledger as `NOT PORTED` with the reason that they are not built; and the
+recording of the shortcuts, which are still in `docs/SHORTCUTS.md` with a note
+that the screen does not offer them yet.
+
+## 2026-11-13 - The General pane shows six settings, and the rest of the settings are not there yet
+
+**Question.** <kbd>Ctrl</kbd>+<kbd>,</kbd> opens the settings screen. What is
+in it?
+
+**Options.** (a) The whole of upstream's settings. (b) The General pane's
+appearance settings only, and the other panes later.
+
+**Decision.** (b). The General pane shows the appearance, the animations, the
+interface size, the window mode, the escape behaviour and the pop-to-root
+delay. Each one moves to its next value on return, and each one is written
+down and read back when the app starts.
+
+**Why.** A settings screen with nothing in it is a dead end, and one that
+shows a setting it cannot change is half a feature. The six settings above
+are the ones the palette itself follows, so each one has a visible effect:
+the theme, the size and the window mode change the palette, and the escape
+behaviour and the pop-to-root delay change what a key does. The panes that
+need an editor - the custom commands, the snippets, the quicklinks - are the
+next slice, and they are not faked with an empty pane.
+
+**What this does not change.** The other settings - the compact shortcuts,
+the placement, the input source, the file-search scopes - which stay in the
+model, are tested there, and stay `NOT PORTED` in the ledger because they are
+not in a pane the user can reach.

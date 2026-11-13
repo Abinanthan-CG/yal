@@ -435,6 +435,19 @@ mod tests {
     }
 
     #[test]
+    fn a_rule_matches_whatever_the_case() {
+        // "Matching isn't case-sensitive", upstream says, so a rule written
+        // in capitals matches a name written in small letters, and the other
+        // way round.
+        let pattern = IgnorePattern::parse("Node_Modules");
+        assert!(pattern.matches("node_modules", Path::new("C:\\a\\node_modules"), &home()));
+        let pattern = IgnorePattern::parse("*.TMP");
+        assert!(pattern.matches("a.tmp", Path::new("C:\\a\\a.tmp"), &home()));
+        let pattern = IgnorePattern::parse("~/Movies");
+        assert!(pattern.matches("Movies", Path::new("C:\\Users\\dabin\\Movies"), &home()));
+    }
+
+    #[test]
     fn a_star_matches_any_run_of_characters() {
         let pattern = IgnorePattern::parse("*.tmp");
         assert_eq!(pattern.kind, IgnorePatternKind::Glob);

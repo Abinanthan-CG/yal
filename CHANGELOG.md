@@ -15,6 +15,23 @@ has got.
 ## [Unreleased]
 
 ### Added
+- **The palette's screen system** in `tc-palette`: the screens and how they stack, the keys and
+  the translation from upstream's Mac chords to Windows, the escape chain, the tab cycle, the
+  emacs chords, the slim bar of the compact mode, and the actions menu. The window no longer
+  decides what a key means - it asks, and is told.
+- **The file-search screen**: Recent with nothing typed, Results with something typed, the
+  seven kinds of the filter applied during the search so it never hides a match the result limit
+  had already cut off, and the files below the launcher's own rows.
+- **The file row's actions**: Open File / Open Folder, Show in File Explorer, Filter by Type,
+  Copy Name, Copy Path and Move to the Recycle Bin - the last one through `SHFileOperationW`
+  with `FOF_ALLOWUNDO`, so the file can be put back.
+- **The General pane** of the settings screen: the appearance, the animations, the interface
+  size, the window mode, the escape behaviour and the pop-to-root delay, each one changeable
+  and written down.
+- **The launcher's own manifest**, in `apps/yal/windows/yal.manifest`: `asInvoker`,
+  `PerMonitorV2,PerMonitor`, `longPathAware` and UTF-8 as the active code page, embedded
+  through `tauri-build`.
+
 - **The command catalogue** in `tc-commands`: every built-in command, the Settings pane it belongs
   to, the switches that decide which of them exist, and what a second press of the shortcut does -
   most commands that open a screen toggle, Switch Windows cycles.
@@ -133,6 +150,11 @@ has got.
   lists. CI runs it too.
 
 ### Fixed
+
+- The launcher did not carry the manifest `docs/WINDOWS-MAPPING.md` claimed it
+  did: no `requestedExecutionLevel`, no `dpiAwareness` and no `longPathAware`.
+  It carries all three now, and the whole document was read back out of the
+  rebuilt binary.
 
 - The repository had no frontend source: the palette was a hand-written page
   in a directory that is not committed, so a fresh clone could not build the

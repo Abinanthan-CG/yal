@@ -581,3 +581,47 @@ launcher offers only the built-in commands the build can run.
 - `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 333 PORTED, 1976 NOT PORTED.
+## Session 11 - 2026-11-13
+
+Raycast for Windows, the manifest, and the palette's screen system.
+
+**What was done.**
+
+- **Raycast for Windows 2.12.0, read as behaviour.** The .NET assembly with ILSpy, the native
+  Rust calculator with borer: 617 units in 53 families, the parser's vocabulary, the fetcher
+  names, the money and the time. Written up as behavioural notes only - no Raycast code, tables
+  or naming copied into YAL. See
+  [port note 021](port-notes/021-raycast-for-windows-study.md).
+- **The launcher's own manifest.** borer found that the binary did not carry the
+  `requestedExecutionLevel`, the `dpiAwareness` or the `longPathAware` that
+  `docs/WINDOWS-MAPPING.md` claimed it did. `apps/yal/windows/yal.manifest` now carries all of
+  them, embedded through `tauri-build`, and the whole document was read back out of the rebuilt
+  binary.
+- **`crates/tc-palette`** - a new crate. The keys and the translation from upstream's Mac chords
+  to Windows, the screens and how they stack, the palette's settings with upstream's defaults,
+  what a key does, the actions menu, the state machine, and the file-search screen. 117 tests.
+- **The window asks the palette.** The frontend no longer decides what a key means; it sends
+  the key and does what it is told.
+- **The file-search screen.** Recent with nothing typed, Results with something typed, the
+  filter applied during the search, and the files below the launcher's own rows.
+- **The file row's actions.** Open, Show in File Explorer, Filter by Type, Copy Name, Copy
+  Path, and Move to the Recycle Bin - the last one a new `SHFileOperationW` call with
+  `FOF_ALLOWUNDO`, so the file can be put back.
+- **The General pane.** The six settings the palette follows, each one changeable and written
+  down, so the settings screen is not a dead end.
+
+**What was not done.** The palette cannot be dragged and does not follow the pointer across
+displays; nothing animates yet; the compact shortcuts are not in the pane; the scopes are not
+chosen yet, so the app does not build an index of its own; the Settings panes other than
+General; the preview pane beside the file list; and the file row's remaining three actions.
+
+**Decisions.** Three: the palette's decisions live in Rust rather than in the window; a screen
+offers only the actions the build can run; and the General pane shows six settings rather than
+an empty screen.
+
+**Verified.**
+- `cargo test --workspace` passes: 1081 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 413 PORTED, 1896 NOT PORTED.
+- `npm.cmd run check` and `npm.cmd run build` in `frontend/` pass.
