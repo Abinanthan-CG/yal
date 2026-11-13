@@ -11,7 +11,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 use tc_apps::Program;
 use tc_calc::{evaluate, CalcOutcome, FullCatalog};
-use tc_core::SystemActionId;
+use tc_commands::catalog::{pane_of, CommandSettings};
+use tc_commands::model::CustomCommand;
+use tc_core::{CommandId, SystemActionId};
 use tc_search::entry_naming::SearchProfile;
 use tc_search::matcher::SearchSensitivity;
 use tc_search::order::{LauncherOrder, Query, Rankable, Signals};
@@ -46,6 +48,26 @@ pub const WINDOW_COMMAND_SECTION: &str = "Window Commands";
 
 /// The section the calculator's answer is listed under.
 const CALCULATOR_SECTION: &str = "Calculator";
+/// The section the built-in commands are listed under.
+pub const COMMAND_SECTION: &str = "Commands";
+/// The section the user's own commands are listed under.
+pub const CUSTOM_COMMAND_SECTION: &str = "Custom Commands";
+
+/// The built-in commands this build can run.
+///
+/// The catalogue holds every built-in command; the launcher offers only the
+/// ones whose feature is in the build, so a row is never a dead end. The rest
+/// arrive with their features.
+const AVAILABLE_COMMANDS: [CommandId; 2] = [CommandId::Quit, CommandId::Support];
+
+/// One value a command asks for before it runs.
+#[derive(Debug, Clone, Serialize)]
+pub struct CommandArgument {
+    /// The name shown beside the field.
+    pub name: String,
+    /// Whether the field may be left empty.
+    pub is_optional: bool,
+}
 
 /// One row in the results list.
 #[derive(Debug, Clone, Serialize)]
@@ -62,6 +84,9 @@ pub struct ResultRow {
     pub target: String,
     /// Whether the launcher has to ask before it does it.
     pub needs_confirm: bool,
+    /// The values the command asks for first.
+    #[serde(default)]
+    pub arguments: Vec<CommandArgument>,
 }
 
 /// A program, with the names the search matches against.
@@ -91,6 +116,10 @@ pub struct LauncherState {
     /// "Show in launcher" switch, and window management is off until it is
     /// turned on - upstream's own default.
     show_window_commands: bool,
+    /// The built-in commands, and the switches that decide which of them exist.
+    commands: CommandSettings,
+    /// The user's own shell commands.
+    custom_commands: Vec<CustomCommand>,
 }
 
 impl LauncherState {
@@ -125,12 +154,103 @@ impl LauncherState {
             ranking: Mutex::new(LauncherRankingStore::open(ranking_file, now_seconds())),
             sensitivity: SearchSensitivity::Medium,
             show_window_commands: false,
+            commands: CommandSettings::new(),
+            custom_commands: Vec::new(),
         }
     }
 
     /// Show or hide the window commands in the results.
     pub fn set_show_window_commands(&mut self, show: bool) {
         self.show_window_commands = show;
+    }
+
+    /// The built-in commands, and the switches that decide which of them exist.
+    pub fn set_command_settings(&mut self, settings: CommandSettings) {
+        self.commands = settings;
+    }
+
+    /// The user's own shell commands.
+    pub fn set_custom_commands(&mut self, commands: Vec<CustomCommand>) {
+        self.custom_commands = commands;
+    }
+
+    /// The built-in commands whose name the query finds.
+    ///
+    /// "Commands are actions you can run by name from the launcher." A command
+    /// whose feature is off, or whose row checkbox is cleared, is not offered.
+    pub fn command_rows(&self, query: &str) -> Vec<ResultRow> {
+        let wanted = query.trim().to_lowercase();
+        if wanted.is_empty() {
+            return Vec::new();
+        }
+        CommandId::ALL
+            .into_iter()
+            .filter(|command| AVAILABLE_COMMANDS.contains(command))
+            .filter(|command| self.commands.switches.is_listed(*command))
+            .filter(|command| {
+                self.commands
+                    .name(*command)
+                    .to_lowercase()
+                    .contains(&wanted)
+            })
+            .map(|command| ResultRow {
+                id: command.entry_id().to_string(),
+                name: self.commands.name(command),
+                detail: pane_of(command)
+                    .map(|pane| pane.label().to_string())
+                    .unwrap_or_else(|| COMMAND_SECTION.to_string()),
+                kind: COMMAND_SECTION.to_string(),
+                target: command.entry_id().to_string(),
+                needs_confirm: false,
+                arguments: Vec::new(),
+            })
+            .collect()
+    }
+
+    /// The user's own commands whose name the query finds.
+    ///
+    /// "Only the command's name is searchable, not the command itself." A
+    /// command that is switched off, or taken out of the main search, is not
+    /// offered.
+    pub fn custom_command_rows(&self, query: &str) -> Vec<ResultRow> {
+        let wanted = query.trim().to_lowercase();
+        if wanted.is_empty() {
+            return Vec::new();
+        }
+        self.custom_commands
+            .iter()
+            .filter(|command| command.is_enabled && command.shows_in_root_search)
+            .filter(|command| command.name.to_lowercase().contains(&wanted))
+            .map(|command| ResultRow {
+                id: command.entry_id(),
+                name: command.name.clone(),
+                detail: command.command.clone(),
+                kind: CUSTOM_COMMAND_SECTION.to_string(),
+                target: command.entry_id(),
+                needs_confirm: command.requires_confirmation,
+                arguments: command
+                    .arguments
+                    .iter()
+                    .map(|argument| CommandArgument {
+                        name: argument.name.clone(),
+                        is_optional: argument.is_optional,
+                    })
+                    .collect(),
+            })
+            .collect()
+    }
+
+    /// The custom command a row id names.
+    pub fn custom_command_of(&self, id: &str) -> Option<&CustomCommand> {
+        let uuid = CustomCommand::id_from_entry_id(id)?;
+        self.custom_commands
+            .iter()
+            .find(|command| command.id == uuid)
+    }
+
+    /// The built-in command a row id names.
+    pub fn command_of(id: &str) -> Option<CommandId> {
+        CommandId::from_entry_id(id)
     }
 
     /// The programs the launcher knows about.
@@ -170,6 +290,7 @@ impl LauncherState {
                     kind: "Applications".to_string(),
                     target: entry.program.target.clone(),
                     needs_confirm: false,
+                    arguments: Vec::new(),
                 })
                 .collect();
         // The calculator's answer comes first: a query that is a calculation is
@@ -186,6 +307,10 @@ impl LauncherState {
         rows.extend(self.system_actions_matching(query));
         // The window commands come last of all.
         rows.extend(self.window_commands_matching(query));
+        // The commands come after the applications, and the user's own commands
+        // after the built-in ones.
+        rows.extend(self.command_rows(query));
+        rows.extend(self.custom_command_rows(query));
         rows
     }
 
@@ -212,6 +337,7 @@ impl LauncherState {
                 kind: WINDOW_COMMAND_SECTION.to_string(),
                 target: command.id.as_str().to_string(),
                 needs_confirm: false,
+                arguments: Vec::new(),
             })
             .collect()
     }
@@ -242,6 +368,7 @@ impl LauncherState {
                 kind: SYSTEM_ACTION_SECTION.to_string(),
                 target: action.as_str().to_string(),
                 needs_confirm: action.confirmation() != tc_core::SystemActionConfirmation::None,
+                arguments: Vec::new(),
             })
             .collect()
     }
@@ -296,6 +423,7 @@ impl LauncherState {
                 kind: "Applications".to_string(),
                 target: entry.program.target.clone(),
                 needs_confirm: false,
+                arguments: Vec::new(),
             })
             .collect()
     }
@@ -335,6 +463,7 @@ fn calculator_row(query: &str) -> Option<ResultRow> {
         kind: CALCULATOR_SECTION.to_string(),
         target: copy_text.clone(),
         needs_confirm: false,
+        arguments: Vec::new(),
     })
 }
 
@@ -544,5 +673,104 @@ mod tests {
         let row = calculator_row("20% discount off $100").expect("the query is a money discount");
         assert_eq!(row.name, "80.00 USD");
         assert_eq!(row.kind, CALCULATOR_SECTION);
+    }
+
+    // MARK: - The commands
+
+    #[test]
+    fn a_built_in_command_is_found_by_its_name() {
+        let launcher = launcher(vec![]);
+        let rows = launcher.search("quit yal");
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].name, "Quit YAL");
+        assert_eq!(rows[0].kind, COMMAND_SECTION);
+        assert_eq!(rows[0].id, "command:quit");
+    }
+
+    #[test]
+    fn a_built_in_command_names_the_pane_it_belongs_to() {
+        let launcher = launcher(vec![]);
+        let rows = launcher.search("support yal");
+        assert_eq!(rows[0].detail, "Commands");
+    }
+
+    #[test]
+    fn a_built_in_command_that_is_switched_off_is_not_offered() {
+        let mut launcher = launcher(vec![]);
+        let mut settings = CommandSettings::new();
+        settings.switches.hidden.insert(CommandId::Quit);
+        launcher.set_command_settings(settings);
+        assert!(launcher.search("quit yal").is_empty());
+    }
+
+    #[test]
+    fn a_built_in_command_can_be_given_an_alias() {
+        let mut launcher = launcher(vec![]);
+        let mut settings = CommandSettings::new();
+        settings.set_alias(CommandId::Quit, Some("Leave".to_string()));
+        launcher.set_command_settings(settings);
+        let rows = launcher.search("leave");
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].name, "Leave");
+    }
+
+    #[test]
+    fn a_custom_command_is_found_by_its_name() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_custom_commands(vec![CustomCommand::new("Nap", "Start-Sleep 5")]);
+        let rows = launcher.search("nap");
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].name, "Nap");
+        assert_eq!(rows[0].kind, CUSTOM_COMMAND_SECTION);
+        assert_eq!(rows[0].detail, "Start-Sleep 5");
+        assert!(rows[0].id.starts_with("custom-command:"));
+    }
+
+    #[test]
+    fn a_custom_command_that_is_switched_off_is_not_offered() {
+        let mut launcher = launcher(vec![]);
+        let mut command = CustomCommand::new("Nap", "Start-Sleep 5");
+        command.is_enabled = false;
+        launcher.set_custom_commands(vec![command]);
+        assert!(launcher.search("nap").is_empty());
+    }
+
+    #[test]
+    fn a_custom_command_taken_out_of_the_main_search_is_not_offered() {
+        let mut launcher = launcher(vec![]);
+        let mut command = CustomCommand::new("Nap", "Start-Sleep 5");
+        command.shows_in_root_search = false;
+        launcher.set_custom_commands(vec![command]);
+        assert!(launcher.search("nap").is_empty());
+    }
+
+    #[test]
+    fn a_custom_command_carries_the_values_it_asks_for_and_asks_first() {
+        let mut launcher = launcher(vec![]);
+        let mut command = CustomCommand::new("Move", "Move-Item $1 $2");
+        command.arguments = vec![
+            tc_commands::model::CustomCommandArgument::new("From", false),
+            tc_commands::model::CustomCommandArgument::new("To", true),
+        ];
+        let id = command.entry_id();
+        launcher.set_custom_commands(vec![command]);
+        let rows = launcher.search("move");
+        assert_eq!(rows[0].arguments.len(), 2);
+        assert_eq!(rows[0].arguments[0].name, "From");
+        assert!(rows[0].needs_confirm, "a command asks before it runs");
+        assert!(launcher.custom_command_of(&id).is_some());
+    }
+
+    #[test]
+    fn the_custom_command_names_the_values_it_asks_for() {
+        let mut launcher = launcher(vec![]);
+        let mut command = CustomCommand::new("Move", "Move-Item $1");
+        command.arguments = vec![tc_commands::model::CustomCommandArgument::new(
+            "From", false,
+        )];
+        launcher.set_custom_commands(vec![command]);
+        let rows = launcher.search("move");
+        assert_eq!(rows[0].arguments.len(), 1);
+        assert!(!rows[0].arguments[0].is_optional);
     }
 }

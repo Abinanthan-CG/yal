@@ -12,6 +12,7 @@ description = "YAL - a Windows keyboard launcher, an unofficial port of Tinycast
 tc-apps = { path = "../../crates/tc-apps" }
 tc-calc = { path = "../../crates/tc-calc" }
 tc-core = { path = "../../crates/tc-core" }
+tc-commands = { path = "../../crates/tc-commands" }
 tc-platform = { path = "../../crates/tc-platform" }
 tc-platform-win = { path = "../../crates/tc-platform-win" }
 tc-windows = { path = "../../crates/tc-windows" }

@@ -7,6 +7,12 @@
 use tauri::Emitter;
 use tauri::Manager;
 use tauri::State;
+use tc_commands::catalog::{display_name, settings_key, CommandSettings};
+use tc_commands::model::CustomCommand;
+use tc_commands::runner::{is_command_not_found, ShellRunner};
+use tc_commands::store::CustomCommandStore;
+use tc_commands::COMMANDS_FILE;
+use tc_core::CommandId;
 use tc_platform::{Clipboard, FileSystem, Settings};
 
 use crate::launcher::{LauncherState, ResultRow, CALCULATOR_PREFIX, RANKING_FILE};
@@ -22,6 +28,13 @@ const WINDOW_MANAGEMENT_SHOW: &str = "windowManagement.showInLauncher";
 const WINDOW_MANAGEMENT_GAP: &str = "windowManagement.gap";
 /// The setting that holds the cycling mode.
 const WINDOW_MANAGEMENT_CYCLE: &str = "windowManagement.cycle";
+
+/// The setting that turns the commands pane on.
+const COMMANDS_ENABLED: &str = "commands.enabled";
+/// The setting that turns the custom commands on. Off by default.
+const CUSTOM_COMMANDS_ENABLED: &str = "commands.custom.enabled";
+/// The setting that lists the custom commands in the launcher.
+const CUSTOM_COMMANDS_SHOW: &str = "commands.custom.showInLauncher";
 
 /// The tray menu's items, in the order they appear.
 const TRAY_ITEMS: [&str; 6] = [
@@ -101,6 +114,37 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
                 let show = settings.get(WINDOW_MANAGEMENT_SHOW).as_deref() != Some("false");
                 launcher.set_show_window_commands(show);
             }
+            // The built-in commands, and the switches that decide which of them
+            // exist. "Enable Commands" turns off every command in the Commands
+            // pane, and the custom commands follow their own switch.
+            let mut commands = CommandSettings::new();
+            if settings.get(COMMANDS_ENABLED).as_deref() == Some("false") {
+                commands.switches.commands_enabled = false;
+            }
+            if settings.get(CUSTOM_COMMANDS_ENABLED).as_deref() == Some("true") {
+                commands.switches.custom_commands_enabled = true;
+            }
+            if settings.get(CUSTOM_COMMANDS_SHOW).as_deref() == Some("false") {
+                commands.switches.custom_commands_in_launcher = false;
+            }
+            for command in CommandId::ALL {
+                let key = settings_key(command);
+                if let Some(alias) = settings.get(&format!("commands.{key}.alias")) {
+                    commands.set_alias(command, Some(alias));
+                }
+                if let Some(shortcut) = settings.get(&format!("commands.{key}.shortcut")) {
+                    commands.set_shortcut(command, Some(shortcut));
+                }
+                if settings.get(&format!("commands.{key}.listed")).as_deref() == Some("false") {
+                    commands.set_listed(command, false);
+                }
+            }
+            launcher.set_command_settings(commands);
+            // The user's own commands live in a file beside the app's other
+            // data, so a backup can carry them.
+            let store = CustomCommandStore::open(paths.data_dir.join(COMMANDS_FILE))
+                .unwrap_or_else(|_| CustomCommandStore::in_memory());
+            launcher.set_custom_commands(store.commands().to_vec());
             app.manage(launcher);
             // The window commands, with the memory of the windows they have
             // moved. The memory lives in this process and is never written
@@ -144,6 +188,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             search,
             suggestions,
             open_result,
+            run_custom_command,
             hide_palette
         ])
         .run(tauri::generate_context!())
@@ -207,6 +252,21 @@ fn open_result(
         }
         return Ok(());
     }
+    // A built-in command is run, not opened.
+    if let Some(command) = LauncherState::command_of(&id) {
+        return run_built_in_command(app, command);
+    }
+    // One of the user's own commands is run as well, but the palette asks for
+    // its values first, so the values come with the request.
+    if let Some(command) = launcher.custom_command_of(&id) {
+        let command = command.clone();
+        let values = Vec::new();
+        run_custom(&command, &values)?;
+        if let Some(window) = app.get_webview_window(PALETTE) {
+            let _ = window.hide();
+        }
+        return Ok(());
+    }
     let Some((target, _)) = launcher.target_of(&id) else {
         return Err(format!("`{id}` is not a result the launcher knows"));
     };
@@ -217,6 +277,90 @@ fn open_result(
         let _ = window.hide();
     }
     Ok(())
+}
+
+/// Run one of the user's own commands, with the values it asked for.
+///
+/// The command runs off the interface thread, so a long command does not
+/// freeze the palette.
+#[tauri::command]
+async fn run_custom_command(
+    launcher: State<'_, LauncherState>,
+    id: String,
+    values: Vec<String>,
+) -> Result<String, String> {
+    let command = launcher
+        .custom_command_of(&id)
+        .cloned()
+        .ok_or_else(|| format!("`{id}` is not one of your commands"))?;
+    tauri::async_runtime::spawn_blocking(move || run_custom(&command, &values))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+/// Runs a command and says what happened.
+fn run_custom(command: &CustomCommand, values: &[String]) -> Result<String, String> {
+    let Some(values) = command.positional_values(values) else {
+        return Err("this command needs a value for every required field".to_string());
+    };
+    let plan = command
+        .shell
+        .plan(
+            &command.command,
+            &values,
+            command.loads_shell_environment,
+            command.working_directory.as_deref(),
+        )
+        .map_err(|error| error.to_string())?;
+    let mut running = ShellRunner::spawn(&plan).map_err(|error| error.to_string())?;
+    let outcome = running.wait();
+    if outcome.succeeded() {
+        return Ok(outcome.success_message(&command.name));
+    }
+    // "When a command exits with 127 while this setting is off, the error
+    // message says so and offers Open Settings." Windows PowerShell has no
+    // exit code for that, so the message is what the port looks for.
+    if is_command_not_found(&outcome.stderr) && !command.loads_shell_environment {
+        return Err(format!(
+            "`{}` was not found. The shell's own configuration was not read. \
+             Turn on Load shell environment in the command's editor, or use the \
+             full path to the program.",
+            command.name
+        ));
+    }
+    let message = outcome.failure_message();
+    if message.is_empty() {
+        Err(format!(
+            "`{}` failed with code {}",
+            command.name, outcome.status
+        ))
+    } else {
+        Err(message)
+    }
+}
+
+/// Runs one of the built-in commands.
+///
+/// The commands whose features are not in this build yet say so, and do
+/// nothing else.
+fn run_built_in_command(app: tauri::AppHandle, command: CommandId) -> Result<(), String> {
+    match command {
+        CommandId::Quit => {
+            app.exit(0);
+            Ok(())
+        }
+        CommandId::Support => {
+            tc_platform_win::open("https://tinycast.dev/support")?;
+            if let Some(window) = app.get_webview_window(PALETTE) {
+                let _ = window.hide();
+            }
+            Ok(())
+        }
+        other => Err(format!(
+            "`{}` is not in this build yet",
+            display_name(other)
+        )),
+    }
 }
 
 /// Hide the palette.
