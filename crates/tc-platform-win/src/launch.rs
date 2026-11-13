@@ -5,7 +5,10 @@
 //! shortcut work without resolving it to an executable first.
 
 use windows::core::PCWSTR;
-use windows::Win32::UI::Shell::ShellExecuteW;
+use windows::Win32::UI::Shell::{
+    SHFileOperationW, ShellExecuteW, FOF_ALLOWUNDO, FOF_NOCONFIRMATION, FOF_NOERRORUI, FOF_SILENT,
+    FO_DELETE, SHFILEOPSTRUCTW,
+};
 use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
 /// Open a program, a file or a folder, the way the shell does.
@@ -58,6 +61,38 @@ fn wide_explorer() -> Vec<u16> {
     to_wide("explorer")
 }
 
+/// Move a file or a folder to the Recycle Bin.
+///
+/// Upstream's Trash is the Finder's; Windows' is the Recycle Bin, and a file
+/// in it can be put back. The `FOF_ALLOWUNDO` flag is what asks for that:
+/// without it the shell would delete the thing outright.
+pub fn recycle(target: &str) -> Result<(), String> {
+    // The list of paths the shell works on ends with two nulls, so the list
+    // itself is closed.
+    let mut paths = to_wide(target);
+    paths.push(0);
+    let mut operation = SHFILEOPSTRUCTW {
+        wFunc: FO_DELETE,
+        pFrom: PCWSTR(paths.as_ptr()),
+        fFlags: (FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT).0 as u16,
+        ..Default::default()
+    };
+    // SAFETY: the struct is filled in, and the path list is null-terminated
+    // twice, which is what the shell expects.
+    let code = unsafe { SHFileOperationW(&mut operation) };
+    if code != 0 {
+        return Err(format!(
+            "Windows would not move `{target}` to the Recycle Bin: {code}"
+        ));
+    }
+    if operation.fAnyOperationsAborted.as_bool() {
+        return Err(format!(
+            "Windows did not move `{target}` to the Recycle Bin"
+        ));
+    }
+    Ok(())
+}
+
 /// A string, wide and null-terminated.
 fn to_wide(text: &str) -> Vec<u16> {
     text.encode_utf16().chain(std::iter::once(0)).collect()
@@ -77,5 +112,25 @@ mod tests {
     #[test]
     fn a_wide_string_is_null_terminated() {
         assert_eq!(to_wide("ab"), vec![0x61, 0x62, 0]);
+    }
+
+    #[test]
+    fn a_file_goes_to_the_recycle_bin_and_leaves_its_place() {
+        // The bin is the bin: whether the machine keeps the file or throws it
+        // away, the file must not be where it was.
+        let folder = std::env::temp_dir().join(format!("yal-recycle-{}", std::process::id()));
+        std::fs::create_dir_all(&folder).expect("a folder to work in");
+        let file = folder.join("a-file-to-bin.txt");
+        std::fs::write(&file, b"something to throw away").expect("a file to throw away");
+        let result = recycle(file.to_string_lossy().as_ref());
+        assert!(result.is_ok(), "the file went to the bin: {result:?}");
+        assert!(!file.exists(), "the file left its place");
+        let _ = std::fs::remove_dir_all(&folder);
+    }
+
+    #[test]
+    fn a_file_that_is_not_there_cannot_go_anywhere() {
+        let result = recycle(r"C:\yal-does-not-exist\nothing-here.txt");
+        assert!(result.is_err());
     }
 }

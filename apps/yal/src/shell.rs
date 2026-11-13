@@ -259,7 +259,8 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             reveal_file,
             palette_settings,
             palette_advance_setting,
-            palette_set_setting
+            palette_set_setting,
+            file_action
         ])
         .run(tauri::generate_context!())
         .map_err(|error| format!("the application could not start: {error}"))
@@ -556,6 +557,36 @@ fn palette_set_setting(
     }
     settings.set(&key, &value)?;
     Ok(())
+}
+
+/// Run one of a file row's actions.
+///
+/// The action is the one the palette decided on, and the path is the row's
+/// own file.
+#[tauri::command]
+fn file_action(app: tauri::AppHandle, action: String, path: String) -> Result<String, String> {
+    let name = std::path::Path::new(&path)
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_else(|| path.clone());
+    match action.as_str() {
+        "CopyName" => {
+            tc_platform_win::clipboard().write_text(&name)?;
+            Ok("The name is on the clipboard.".to_string())
+        }
+        "CopyPath" => {
+            tc_platform_win::clipboard().write_text(&path)?;
+            Ok("The path is on the clipboard.".to_string())
+        }
+        "MoveToRecycleBin" => {
+            tc_platform_win::recycle(&path)?;
+            if let Some(window) = app.get_webview_window(PALETTE) {
+                let _ = window.hide();
+            }
+            Ok("It is in the Recycle Bin.".to_string())
+        }
+        other => Err(format!("`{other}` is not an action of a file row")),
+    }
 }
 
 /// Show the palette when it is hidden, hide it when it is shown.

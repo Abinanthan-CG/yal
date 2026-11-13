@@ -168,12 +168,14 @@ When **Default action** is set to Copy to Clipboard, <kbd>Enter</kbd> and
 | <kbd>Enter</kbd> | Open File / Open Folder |
 | <kbd>Ctrl</kbd>+<kbd>Enter</kbd> | Show in File Explorer |
 | <kbd>Ctrl</kbd>+<kbd>P</kbd> | Filter by type |
-| <kbd>Shift</kbd>+<kbd>Ctrl</kbd>+<kbd>C</kbd> | Copy File |
-| <kbd>Shift</kbd>+<kbd>Ctrl</kbd>+<kbd>V</kbd> | Paste File to … |
 | <kbd>Alt</kbd>+<kbd>Ctrl</kbd>+<kbd>C</kbd> | Copy Name |
 | <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | Copy Path |
-| <kbd>Shift</kbd>+<kbd>Ctrl</kbd>+<kbd>F</kbd> | Add to Favorites / Remove from Favorites |
 | <kbd>Alt</kbd>+<kbd>X</kbd> | Move to the Recycle Bin |
+
+The actions menu (<kbd>Ctrl</kbd>+<kbd>K</kbd>) lists exactly these. Copying
+the file itself, pasting it into another application and adding it to the
+favorites are not offered, because they are not built yet: a screen that
+offers an action that does nothing is a dead end.
 
 ---
 

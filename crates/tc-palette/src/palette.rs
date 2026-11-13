@@ -556,10 +556,20 @@ impl Palette {
                 return Some(PaletteAction::MoveGrid(Direction::Right));
             }
         }
-        if self.stack.current() == Screen::FileSearch && stroke == Stroke::ctrl(Key::Character('p'))
-        {
-            self.cycle_file_filter();
-            return Some(PaletteAction::CycleFileFilter);
+        if self.stack.current() == Screen::FileSearch {
+            if stroke == Stroke::ctrl(Key::Character('p')) {
+                self.cycle_file_filter();
+                return Some(PaletteAction::CycleFileFilter);
+            }
+            if stroke == Stroke::ctrl_alt(Key::Character('c')) {
+                return Some(PaletteAction::CopyName);
+            }
+            if stroke == Stroke::ctrl_alt_shift(Key::Character('c')) {
+                return Some(PaletteAction::CopyPath);
+            }
+            if stroke == Stroke::alt(Key::Character('x')) {
+                return Some(PaletteAction::MoveToRecycleBin);
+            }
         }
         None
     }
@@ -1047,6 +1057,31 @@ mod tests {
     fn the_control_and_p_does_nothing_on_another_screen() {
         let mut palette = palette();
         assert_eq!(palette.key(Stroke::ctrl(Key::Character('p'))), None);
+    }
+
+    #[test]
+    fn the_file_actions_have_their_own_chords_on_the_file_screen() {
+        let mut palette = palette();
+        palette.open_screen(Screen::FileSearch);
+        assert_eq!(
+            palette.key(Stroke::ctrl_alt(Key::Character('c'))),
+            Some(PaletteAction::CopyName)
+        );
+        assert_eq!(
+            palette.key(Stroke::ctrl_alt_shift(Key::Character('c'))),
+            Some(PaletteAction::CopyPath)
+        );
+        assert_eq!(
+            palette.key(Stroke::alt(Key::Character('x'))),
+            Some(PaletteAction::MoveToRecycleBin)
+        );
+    }
+
+    #[test]
+    fn the_file_actions_do_nothing_on_another_screen() {
+        let mut palette = palette();
+        assert_eq!(palette.key(Stroke::alt(Key::Character('x'))), None);
+        assert_eq!(palette.key(Stroke::ctrl_alt(Key::Character('c'))), None);
     }
 
     #[test]

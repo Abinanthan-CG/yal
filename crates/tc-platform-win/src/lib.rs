@@ -21,7 +21,7 @@ pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()
 }
 pub use hotkey::WindowsHotkey;
-pub use launch::{open, reveal};
+pub use launch::{open, recycle, reveal};
 pub use paths::is_portable;
 pub use paths::windows_paths;
 pub use programs::programs;

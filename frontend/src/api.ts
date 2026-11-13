@@ -205,3 +205,8 @@ export function paletteSettings(): Promise<SettingRow[]> {
 export function paletteAdvanceSetting(key: string): Promise<string> {
   return invoke<string>("palette_advance_setting", { key });
 }
+
+/** Run one of a file row's actions. */
+export function fileAction(action: string, path: string): Promise<string> {
+  return invoke<string>("file_action", { action, path });
+}
