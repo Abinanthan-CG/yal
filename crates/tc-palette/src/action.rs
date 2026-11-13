@@ -7,7 +7,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::keys::{Key, Modifiers, Stroke};
+use crate::keys::{Key, Stroke};
 
 /// A direction a selection can move in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -64,16 +64,10 @@ pub enum PaletteAction {
     MoveCompactSelection(i8),
     /// Narrow the file search to another kind of file.
     CycleFileFilter,
-    /// Copy the file itself to the clipboard.
-    CopyFile,
-    /// Paste the file into the app the palette was opened over.
-    PasteFile,
     /// Copy the name of the file.
     CopyName,
     /// Copy the path of the file.
     CopyPath,
-    /// Add the file to the favorites, or take it out again.
-    ToggleFavorite,
     /// Move the file to the Recycle Bin.
     MoveToRecycleBin,
 }
@@ -196,6 +190,10 @@ pub fn palette_actions() -> Vec<ActionItem> {
 /// The file-search screen's own actions.
 ///
 /// The table is the one in `docs/SHORTCUTS.md`, under *File search*.
+///
+/// Only the actions this build really runs are listed. A screen that offers
+/// an action that does nothing is a dead end, and a dead end is worse than a
+/// missing row.
 pub fn file_actions() -> Vec<ActionItem> {
     vec![
         ActionItem::bound(
@@ -214,44 +212,14 @@ pub fn file_actions() -> Vec<ActionItem> {
             Stroke::ctrl(Key::Character('p')),
         ),
         ActionItem::bound(
-            PaletteAction::CopyFile,
-            "Copy File",
-            Stroke::ctrl_shift(Key::Character('c')),
-        ),
-        ActionItem::bound(
-            PaletteAction::PasteFile,
-            "Paste File to ..",
-            Stroke::ctrl_shift(Key::Character('v')),
-        ),
-        ActionItem::bound(
             PaletteAction::CopyName,
             "Copy Name",
-            Stroke {
-                key: Key::Character('c'),
-                modifiers: Modifiers {
-                    ctrl: true,
-                    alt: true,
-                    ..Modifiers::NONE
-                },
-            },
+            Stroke::ctrl_alt(Key::Character('c')),
         ),
         ActionItem::bound(
             PaletteAction::CopyPath,
             "Copy Path",
-            Stroke {
-                key: Key::Character('c'),
-                modifiers: Modifiers {
-                    ctrl: true,
-                    alt: true,
-                    shift: true,
-                    ..Modifiers::NONE
-                },
-            },
-        ),
-        ActionItem::bound(
-            PaletteAction::ToggleFavorite,
-            "Add to Favorites / Remove from Favorites",
-            Stroke::ctrl_shift(Key::Character('f')),
+            Stroke::ctrl_alt_shift(Key::Character('c')),
         ),
         ActionItem::bound(
             PaletteAction::MoveToRecycleBin,
@@ -486,6 +454,24 @@ mod tests {
             shortcut_of(PaletteAction::CycleFileFilter).as_deref(),
             Some("Ctrl+p")
         );
+    }
+
+    #[test]
+    fn every_file_action_is_one_this_build_can_run() {
+        // A screen that offers an action that does nothing is a dead end.
+        let menu = ActionMenu::files();
+        for item in &menu.items {
+            let runnable = matches!(
+                item.action,
+                PaletteAction::MainAction
+                    | PaletteAction::SecondAction
+                    | PaletteAction::CycleFileFilter
+                    | PaletteAction::CopyName
+                    | PaletteAction::CopyPath
+                    | PaletteAction::MoveToRecycleBin
+            );
+            assert!(runnable, "`{}` is listed but does nothing", item.label);
+        }
     }
 
     #[test]

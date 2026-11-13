@@ -15,6 +15,7 @@
 
 import { createEffect, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import {
+  fileAction,
   fileRows,
   hidePalette,
   openResult,
@@ -263,6 +264,22 @@ export function App() {
       case "SecondAction":
         await revealSelected();
         break;
+      case "CopyName":
+      case "CopyPath":
+      case "MoveToRecycleBin": {
+        // The action belongs to the selected file.
+        const row = rows()[selected()];
+        if (!row) {
+          return;
+        }
+        try {
+          setNote(await fileAction(action, row.target));
+          await ask(query());
+        } catch (error) {
+          setFailed(String(error));
+        }
+        break;
+      }
       case "CloseWindow":
         await hidePalette();
         break;
