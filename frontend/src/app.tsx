@@ -4,16 +4,30 @@
 // rather than opened and closed, so the field is focused every time the
 // palette appears.
 //
+// The window does not decide what a key means. It sends the key to the Rust
+// side, which owns the palette's state - the screens, the stack, the tab
+// cycle, the escape behaviour - and is told what to do about it. A decision
+// that cannot be tested is not a decision, and the decisions are all in
+// `tc-palette`.
+//
 // A row of the user's own command may ask for values first, and may have to
 // be confirmed before it runs; both happen inside the palette.
 
 import { createEffect, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import {
+  fileRows,
   hidePalette,
   openResult,
+  paletteKey,
+  paletteMenuQuery,
+  paletteOpenScreen,
+  paletteView,
+  revealFile,
   runCustomCommand,
   search,
   suggestions,
+  type KeyStroke,
+  type PaletteView,
   type ResultRow,
 } from "./api";
 
@@ -28,6 +42,22 @@ function isCustomCommand(row: ResultRow): boolean {
   return row.id.startsWith("custom-command:");
 }
 
+/** Whether a row is a file or a folder. */
+function isFile(row: ResultRow): boolean {
+  return row.id.startsWith("file:");
+}
+
+/** The key press, as the Rust side wants it. */
+function strokeOf(event: KeyboardEvent): KeyStroke {
+  return {
+    key: event.key,
+    ctrl: event.ctrlKey,
+    alt: event.altKey,
+    shift: event.shiftKey,
+    win: event.metaKey,
+  };
+}
+
 export function App() {
   const [query, setQuery] = createSignal("");
   const [rows, setRows] = createSignal<ResultRow[]>([]);
@@ -39,12 +69,25 @@ export function App() {
   const [values, setValues] = createSignal<string[]>([]);
   const [field, setField] = createSignal(0);
   const [note, setNote] = createSignal<string | null>(null);
+  const [view, setView] = createSignal<PaletteView | null>(null);
   let input: HTMLInputElement | undefined;
   let timer: number | undefined;
 
+  // The screen on top, as the Rust side says it is.
+  const screen = (): string => view()?.screen ?? "Launcher";
+
+  // The rows of the screen on top. The file search has its own rows; every
+  // other screen has the launcher's.
   const ask = async (text: string): Promise<void> => {
     try {
-      const found = text.trim() === "" ? await suggestions() : await search(text);
+      const state = await paletteView();
+      setView(state);
+      let found: ResultRow[];
+      if (state.screen === "Search Files") {
+        found = await fileRows(text);
+      } else {
+        found = text.trim() === "" ? await suggestions() : await search(text);
+      }
       setRows(found);
       setSelected(0);
       setFailed(null);
@@ -143,6 +186,19 @@ export function App() {
     await activate(row);
   };
 
+  // The second action of a row: show it in the file manager.
+  const revealSelected = async (): Promise<void> => {
+    const row = rows()[selected()];
+    if (!row) {
+      return;
+    }
+    try {
+      await revealFile(row.target);
+    } catch (error) {
+      setFailed(String(error));
+    }
+  };
+
   // The first required value that is still empty.
   const firstMissing = (): number => {
     const row = pending();
@@ -166,6 +222,26 @@ export function App() {
       return;
     }
     await run(row, values());
+  };
+
+  // What the Rust side says the key means.
+  const act = async (action: string): Promise<void> => {
+    switch (action) {
+      case "MainAction":
+        await openSelected();
+        break;
+      case "SecondAction":
+        await revealSelected();
+        break;
+      case "CloseWindow":
+        await hidePalette();
+        break;
+      default:
+        // Everything else changes the palette's own state, so the rows and
+        // the view are asked for again.
+        await ask(query());
+        break;
+    }
   };
 
   const onKeyDown = async (event: KeyboardEvent): Promise<void> => {
@@ -221,30 +297,60 @@ export function App() {
       }
       return;
     }
-    switch (event.key) {
-      case "ArrowDown":
+
+    // The menu takes the keys while it is open.
+    if (view()?.menuOpen) {
+      if (event.key === "Escape") {
         event.preventDefault();
-        move(1);
-        break;
-      case "ArrowUp":
-        event.preventDefault();
-        move(-1);
-        break;
-      case "Enter":
-        event.preventDefault();
-        void openSelected();
-        break;
-      case "Escape":
-        event.preventDefault();
-        void hidePalette();
-        break;
-      default:
-        break;
+        const outcome = await paletteKey(strokeOf(event), query());
+        await paletteMenuQuery("");
+        await act(outcome.action ?? "");
+        return;
+      }
+    }
+
+    const outcome = await paletteKey(strokeOf(event), query());
+    const action = outcome.action;
+    if (!action) {
+      // The key belongs to the text field.
+      return;
+    }
+    event.preventDefault();
+    if (action === "MoveSelection") {
+      // The direction is carried by the selection itself; the Rust side has
+      // already moved the compact bar, and the list follows the arrow keys.
+      move(event.key === "ArrowUp" || (event.altKey && event.key === "p") ? -1 : 1);
+      return;
+    }
+    if (action === "Escape" && outcome.closed) {
+      await hidePalette();
+      return;
+    }
+    await act(action);
+  };
+
+  // The menu's own search field takes the typing while the menu is open.
+  const onInput = (event: InputEvent & { currentTarget: HTMLInputElement }): void => {
+    setQuery(event.currentTarget.value);
+    if (view()?.menuOpen) {
+      void paletteMenuQuery(event.currentTarget.value);
     }
   };
 
+  const openFileSearch = async (): Promise<void> => {
+    await paletteOpenScreen("Search Files");
+    await ask(query());
+  };
+
   return (
-    <main class="palette">
+    <main
+      class="palette"
+      classList={{
+        "palette--dark": view()?.appearance === "Dark",
+        "palette--light": view()?.appearance === "Light",
+      }}
+      style={{ "--yal-scale": String(view()?.scale ?? 1) }}
+    >
       <header class="palette__field">
         <input
           ref={input}
@@ -255,7 +361,7 @@ export function App() {
           placeholder="Search YAL"
           aria-label="Search"
           value={query()}
-          onInput={(event) => setQuery(event.currentTarget.value)}
+          onInput={onInput}
           onKeyDown={onKeyDown}
         />
       </header>
@@ -296,6 +402,31 @@ export function App() {
           <pre class="palette__confirm-text">{pending()?.detail}</pre>
         </section>
       </Show>
+      <Show when={view()?.menuOpen}>
+        <section class="palette__menu" aria-label="Actions">
+          <ul class="palette__menu-list">
+            <For each={view()?.menu ?? []}>
+              {(item) => (
+                <li
+                  class="palette__menu-item"
+                  classList={{ "palette__menu-item--selected": item.selected }}
+                >
+                  <span class="palette__menu-label">{item.label}</span>
+                  <Show when={item.shortcut}>
+                    <span class="palette__menu-shortcut">{item.shortcut}</span>
+                  </Show>
+                </li>
+              )}
+            </For>
+          </ul>
+        </section>
+      </Show>
+      <Show when={screen() === "Search Files"}>
+        <div class="palette__filter">
+          <span class="palette__filter-label">Type</span>
+          <span class="palette__filter-value">{view()?.fileFilter ?? "All Types"}</span>
+        </div>
+      </Show>
       <section class="palette__results" aria-live="polite">
         <Show when={failed()}>
           {(message) => <p class="palette__failed">{message()}</p>}
@@ -319,6 +450,9 @@ export function App() {
               >
                 <span class="palette__name">{row.name}</span>
                 <span class="palette__detail">{row.detail}</span>
+                <Show when={isFile(row) && row.isDir}>
+                  <span class="palette__tag">Folder</span>
+                </Show>
               </li>
             )}
           </For>
@@ -332,6 +466,9 @@ export function App() {
               <span>↑↓ to choose</span>
               <span>↵ to open</span>
               <span>esc to hide</span>
+              <button class="palette__link" type="button" onClick={() => void openFileSearch()}>
+                Search Files
+              </button>
             </>
           }
         >

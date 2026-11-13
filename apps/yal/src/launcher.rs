@@ -14,6 +14,9 @@ use tc_calc::{evaluate, CalcOutcome, FullCatalog};
 use tc_commands::catalog::{pane_of, CommandSettings};
 use tc_commands::model::CustomCommand;
 use tc_core::{CommandId, SystemActionId};
+use tc_files::index::Entry as FileEntry;
+use tc_files::store::IndexStore;
+use tc_palette::FileType;
 use tc_search::entry_naming::SearchProfile;
 use tc_search::matcher::SearchSensitivity;
 use tc_search::order::{LauncherOrder, Query, Rankable, Signals};
@@ -53,6 +56,15 @@ pub const COMMAND_SECTION: &str = "Commands";
 /// The section the user's own commands are listed under.
 pub const CUSTOM_COMMAND_SECTION: &str = "Custom Commands";
 
+/// The section the files are listed under.
+///
+/// "It sits below the apps and commands, so return still opens the top
+/// result."
+pub const FILE_SECTION: &str = "Files";
+
+/// The prefix a file row's id carries.
+pub const FILE_PREFIX: &str = "file:";
+
 /// The built-in commands this build can run.
 ///
 /// The catalogue holds every built-in command; the launcher offers only the
@@ -87,6 +99,9 @@ pub struct ResultRow {
     /// The values the command asks for first.
     #[serde(default)]
     pub arguments: Vec<CommandArgument>,
+    /// Whether the row is a folder. Only the file rows say.
+    #[serde(default)]
+    pub is_dir: Option<bool>,
 }
 
 /// A program, with the names the search matches against.
@@ -95,6 +110,40 @@ struct Entry {
     program: Program,
     profile: SearchProfile,
     signals: Signals,
+}
+
+/// The file search: the index, the home folder it ranks against, and the
+/// files the user has made a favorite of.
+///
+/// "Turn it on in Settings → File Search. It's off by default. While it's
+/// off, there's no command and no index on disk."
+pub struct FileSearch {
+    /// The index the rows come from.
+    ///
+    /// The lock is there because a SQLite connection cannot be shared between
+    /// threads on its own, and the launcher is read from more than one.
+    store: Mutex<IndexStore>,
+    /// The user's home folder, which the ranking prefers.
+    home: PathBuf,
+    /// The files the user has made a favorite of.
+    favorites: Vec<String>,
+}
+
+impl FileSearch {
+    /// A file search over an index.
+    pub fn new(store: IndexStore, home: PathBuf, favorites: Vec<String>) -> FileSearch {
+        FileSearch {
+            store: Mutex::new(store),
+            home,
+            favorites,
+        }
+    }
+
+    /// The whole index, read into memory.
+    fn entries(&self) -> Vec<FileEntry> {
+        let store = self.store.lock().expect("the file index lock");
+        store.entries().unwrap_or_default()
+    }
 }
 
 impl Rankable for Entry {
@@ -120,6 +169,11 @@ pub struct LauncherState {
     commands: CommandSettings,
     /// The user's own shell commands.
     custom_commands: Vec<CustomCommand>,
+    /// The file search, when it is on.
+    files: Option<FileSearch>,
+    /// Whether the files are listed in the launcher. This is the
+    /// "Show in launcher" switch under the File Search one.
+    show_files: bool,
 }
 
 impl LauncherState {
@@ -156,7 +210,14 @@ impl LauncherState {
             show_window_commands: false,
             commands: CommandSettings::new(),
             custom_commands: Vec::new(),
+            files: None,
+            show_files: false,
         }
+    }
+
+    /// Show or hide the files in the launcher.
+    pub fn set_show_files(&mut self, show: bool) {
+        self.show_files = show;
     }
 
     /// Show or hide the window commands in the results.
@@ -172,6 +233,45 @@ impl LauncherState {
     /// The user's own shell commands.
     pub fn set_custom_commands(&mut self, commands: Vec<CustomCommand>) {
         self.custom_commands = commands;
+    }
+
+    /// Turn the file search on, with its index.
+    pub fn set_file_search(&mut self, files: FileSearch) {
+        self.files = Some(files);
+    }
+
+    /// The rows of the file-search screen.
+    ///
+    /// With nothing typed the list is the recent files; with something typed
+    /// it is the results. The filter narrows the search as it runs.
+    pub fn file_screen_rows(&self, query: &str, filter: FileType) -> Vec<ResultRow> {
+        let Some(files) = &self.files else {
+            return Vec::new();
+        };
+        tc_palette::screen_rows(
+            &files.entries(),
+            query,
+            &files.home,
+            filter,
+            tc_files::search::RESULT_LIMIT,
+        )
+        .into_iter()
+        .map(file_row)
+        .collect()
+    }
+
+    /// The files the launcher lists under its own rows.
+    ///
+    /// "When your search has three or more characters, a Files section lists
+    /// up to five matches."
+    pub fn launcher_file_rows(&self, query: &str) -> Vec<ResultRow> {
+        let Some(files) = &self.files else {
+            return Vec::new();
+        };
+        tc_palette::launcher_rows(&files.entries(), query, &files.home, &files.favorites)
+            .into_iter()
+            .map(file_row)
+            .collect()
     }
 
     /// The built-in commands whose name the query finds.
@@ -202,6 +302,7 @@ impl LauncherState {
                 kind: COMMAND_SECTION.to_string(),
                 target: command.entry_id().to_string(),
                 needs_confirm: false,
+                is_dir: None,
                 arguments: Vec::new(),
             })
             .collect()
@@ -228,6 +329,7 @@ impl LauncherState {
                 kind: CUSTOM_COMMAND_SECTION.to_string(),
                 target: command.entry_id(),
                 needs_confirm: command.requires_confirmation,
+                is_dir: None,
                 arguments: command
                     .arguments
                     .iter()
@@ -290,6 +392,7 @@ impl LauncherState {
                     kind: "Applications".to_string(),
                     target: entry.program.target.clone(),
                     needs_confirm: false,
+                    is_dir: None,
                     arguments: Vec::new(),
                 })
                 .collect();
@@ -311,6 +414,11 @@ impl LauncherState {
         // after the built-in ones.
         rows.extend(self.command_rows(query));
         rows.extend(self.custom_command_rows(query));
+        // The files come last of all: "It sits below the apps and commands,
+        // so return still opens the top result."
+        if self.show_files {
+            rows.extend(self.launcher_file_rows(query));
+        }
         rows
     }
 
@@ -337,6 +445,7 @@ impl LauncherState {
                 kind: WINDOW_COMMAND_SECTION.to_string(),
                 target: command.id.as_str().to_string(),
                 needs_confirm: false,
+                is_dir: None,
                 arguments: Vec::new(),
             })
             .collect()
@@ -368,6 +477,7 @@ impl LauncherState {
                 kind: SYSTEM_ACTION_SECTION.to_string(),
                 target: action.as_str().to_string(),
                 needs_confirm: action.confirmation() != tc_core::SystemActionConfirmation::None,
+                is_dir: None,
                 arguments: Vec::new(),
             })
             .collect()
@@ -423,9 +533,27 @@ impl LauncherState {
                 kind: "Applications".to_string(),
                 target: entry.program.target.clone(),
                 needs_confirm: false,
+                is_dir: None,
                 arguments: Vec::new(),
             })
             .collect()
+    }
+}
+
+/// A file, as a row.
+///
+/// "Each row shows the name, the folder it's in, and whether it's a file or
+/// a folder."
+fn file_row(entry: FileEntry) -> ResultRow {
+    ResultRow {
+        id: format!("{FILE_PREFIX}{}", entry.path),
+        name: entry.name,
+        detail: entry.parent,
+        kind: FILE_SECTION.to_string(),
+        target: entry.path,
+        needs_confirm: false,
+        is_dir: Some(entry.is_dir),
+        arguments: Vec::new(),
     }
 }
 
@@ -463,6 +591,7 @@ fn calculator_row(query: &str) -> Option<ResultRow> {
         kind: CALCULATOR_SECTION.to_string(),
         target: copy_text.clone(),
         needs_confirm: false,
+        is_dir: None,
         arguments: Vec::new(),
     })
 }
@@ -478,6 +607,125 @@ mod tests {
 
     fn launcher(programs: Vec<Program>) -> LauncherState {
         LauncherState::from_programs(programs, PathBuf::from("unused-ranking.json"))
+    }
+
+    /// An index over a handful of files, in memory.
+    fn file_search(entries: Vec<FileEntry>) -> FileSearch {
+        let mut store = tc_files::store::IndexStore::open_in_memory().expect("an in-memory index");
+        tc_files::index::Backing::rewrite_entries(&mut store, "C:\\Users\\dabin", &entries);
+        FileSearch::new(store, PathBuf::from("C:\\Users\\dabin"), Vec::new())
+    }
+
+    fn file(path: &str, name: &str, modified_ns: i64, is_dir: bool) -> FileEntry {
+        FileEntry {
+            path: path.to_string(),
+            name: name.to_string(),
+            parent: path
+                .rsplit_once('\\')
+                .map(|(parent, _)| parent)
+                .unwrap_or("")
+                .to_string(),
+            size: 10,
+            modified_ns,
+            is_dir,
+        }
+    }
+
+    fn sample_files() -> Vec<FileEntry> {
+        vec![
+            file(
+                "C:\\Users\\dabin\\Documents\\annual report.pdf",
+                "annual report.pdf",
+                300,
+                false,
+            ),
+            file(
+                "C:\\Users\\dabin\\Documents\\notes.txt",
+                "notes.txt",
+                400,
+                false,
+            ),
+            file(
+                "C:\\Users\\dabin\\Documents\\annual report",
+                "annual report",
+                800,
+                true,
+            ),
+        ]
+    }
+
+    #[test]
+    fn there_are_no_files_while_the_file_search_is_off() {
+        let launcher = launcher(vec![]);
+        assert!(launcher.launcher_file_rows("annual").is_empty());
+        assert!(launcher
+            .file_screen_rows("annual", FileType::All)
+            .is_empty());
+    }
+
+    #[test]
+    fn the_files_are_listed_under_their_own_section() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_file_search(file_search(sample_files()));
+        launcher.set_show_files(true);
+        let rows = launcher.search("annual");
+        let files: Vec<&ResultRow> = rows.iter().filter(|row| row.kind == FILE_SECTION).collect();
+        assert_eq!(files.len(), 2);
+        assert!(files[0].id.starts_with(FILE_PREFIX));
+    }
+
+    #[test]
+    fn the_files_sit_below_the_programs() {
+        let mut launcher = launcher(vec![program("Annual")]);
+        launcher.set_file_search(file_search(sample_files()));
+        launcher.set_show_files(true);
+        let rows = launcher.search("annual");
+        assert_eq!(rows[0].kind, "Applications");
+        assert_eq!(rows[rows.len() - 1].kind, FILE_SECTION);
+    }
+
+    #[test]
+    fn the_files_can_be_kept_out_of_the_launcher() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_file_search(file_search(sample_files()));
+        launcher.set_show_files(false);
+        let rows = launcher.search("annual");
+        assert!(rows.iter().all(|row| row.kind != FILE_SECTION));
+    }
+
+    #[test]
+    fn the_file_screen_shows_the_recent_files_with_nothing_typed() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_file_search(file_search(sample_files()));
+        let rows = launcher.file_screen_rows("", FileType::All);
+        assert_eq!(rows[0].name, "notes.txt", "the newest own file");
+    }
+
+    #[test]
+    fn the_file_screen_shows_the_results_with_something_typed() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_file_search(file_search(sample_files()));
+        let rows = launcher.file_screen_rows("annual", FileType::All);
+        assert_eq!(rows.len(), 2);
+    }
+
+    #[test]
+    fn the_file_screen_narrows_to_the_folders() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_file_search(file_search(sample_files()));
+        let rows = launcher.file_screen_rows("annual", FileType::Folders);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].name, "annual report");
+        assert_eq!(rows[0].is_dir, Some(true));
+    }
+
+    #[test]
+    fn a_file_row_says_where_the_file_is() {
+        let mut launcher = launcher(vec![]);
+        launcher.set_file_search(file_search(sample_files()));
+        let rows = launcher.file_screen_rows("notes", FileType::All);
+        assert_eq!(rows[0].detail, "C:\\Users\\dabin\\Documents");
+        assert_eq!(rows[0].is_dir, Some(false));
     }
 
     #[test]
