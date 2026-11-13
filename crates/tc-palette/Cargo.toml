@@ -1,0 +1,16 @@
+[package]
+name = "tc-palette"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "YAL port: the palette's screen system, its keys, and the file-search screen"
+
+[dependencies]
+tc-files = { path = "../tc-files" }
+serde = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

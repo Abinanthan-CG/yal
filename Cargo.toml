@@ -16,6 +16,7 @@ members = [
     "crates/tc-platform",
     "crates/tc-platform-win",
     "crates/tc-commands",
+    "crates/tc-palette",
     "crates/tc-ai",
     "crates/tc-mcp",
     "crates/tc-extensions",

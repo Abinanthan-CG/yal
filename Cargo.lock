@@ -4077,6 +4077,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc-palette"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "tc-files",
+ "tempfile",
+]
+
+[[package]]
 name = "tc-platform"
 version = "0.1.0"
 
@@ -5336,6 +5345,8 @@ dependencies = [
  "tc-calc",
  "tc-commands",
  "tc-core",
+ "tc-files",
+ "tc-palette",
  "tc-platform",
  "tc-platform-win",
  "tc-search",
