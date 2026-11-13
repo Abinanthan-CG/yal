@@ -15,6 +15,24 @@ has got.
 ## [Unreleased]
 
 ### Added
+- **The command catalogue** in `tc-commands`: every built-in command, the Settings pane it belongs
+  to, the switches that decide which of them exist, and what a second press of the shortcut does -
+  most commands that open a screen toggle, Switch Windows cycles.
+- **The custom commands**: upstream's fields, defaults and validation, kept in
+  `%APPDATA%\yal\commands.json`. Only the name is searchable, a cleared Enabled checkbox keeps
+  the command and its shortcut but stops it running, and a command can be taken out of the main
+  search without losing its shortcut.
+- **The shell runner**: a real Windows runner for a command that names its shell - PowerShell,
+  cmd, Git Bash or WSL. The command runs with no console window, its input is closed, the
+  environment is inherited plus `TINYCAST=1`, it starts in its Run In folder, there is no
+  timeout, and the command and everything it started sit in a job object, so `Stop` ends the whole
+  tree while quitting the app leaves the command running. The values are passed positionally and
+  never spliced into the command text.
+- **The Raycast script-command import**: a folder of Raycast scripts becomes custom commands, with
+  the same `@raycast.*` fields and the shebang's interpreter resolved against Windows.
+- **The palette's values and confirmation**: a command that asks for values shows the fields
+  beside the search field, and a command that needs confirmation asks first, in plain words, with
+  the command's name and full text.
 
 - **The calculator's percentage phrasings** in `tc-calc`: upstream's table of shapes, in upstream's
   order — a word between the percentage and of/on/off only names it (`20% discount off 100` is
@@ -128,6 +146,24 @@ layer, the domain model, the build and the ledger. Most features are not
 ported yet, and `PARITY.md` says so for each one.
 
 ### Added
+- **The command catalogue** in 	c-commands: every built-in command, the Settings pane it belongs
+  to, the switches that decide which of them exist, and what a second press of the shortcut does â€"
+  most commands that open a screen toggle, Switch Windows cycles.
+- **The custom commands**: upstream's fields, defaults and validation, kept in
+  `%APPDATA%\yal\commands.json`. Only the name is searchable, a cleared Enabled checkbox keeps
+  the command and its shortcut but stops it running, and a command can be taken out of the main
+  search without losing its shortcut.
+- **The shell runner**: a real Windows runner for a command that names its shell â€" PowerShell,
+  cmd, Git Bash or WSL. The command runs with no console window, its input is closed, the
+  environment is inherited plus `TINYCAST=1`, it starts in its Run In folder, there is no
+  timeout, and the command and everything it started sit in a job object, so `Stop` ends the whole
+  tree while quitting the app leaves the command running. The values are passed positionally and
+  never spliced into the command text.
+- **The Raycast script-command import**: a folder of Raycast scripts becomes custom commands, with
+  the same `@raycast.*` fields and the shebang's interpreter resolved against Windows.
+- **The palette's values and confirmation**: a command that asks for values shows the fields
+  beside the search field, and a command that needs confirmation asks first, in plain words, with
+  the command's name and full text.
 
 - **The palette shell.** A borderless, always-on-top WebView2 window that
   appears on the global hotkey and hides again when it loses focus.
