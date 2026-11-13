@@ -4015,6 +4015,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc-commands"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tc-core",
+ "tempfile",
+ "thiserror 2.0.21",
+ "uuid",
+ "windows",
+]
+
+[[package]]
 name = "tc-core"
 version = "0.1.0"
 dependencies = [
@@ -5321,6 +5334,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tc-apps",
  "tc-calc",
+ "tc-commands",
  "tc-core",
  "tc-platform",
  "tc-platform-win",
