@@ -654,3 +654,66 @@ says the units are not supported, because no layer answers it.
 
 **What this does not change.** The arithmetic that carries a unit is still not built. The change
 makes the port answer the phrases it can answer, not make it answer the unit arithmetic.
+
+## 2026-11-13 - The command's text is written to a temporary file for PowerShell
+
+**Question.** Windows PowerShell's `-Command` cannot carry both the command text and the values
+that go with it: everything after the command string is read as part of the command. The port has
+to pass the values positionally and never splice them into the text. Where does the command text
+live?
+
+**Options.** (a) Put the values in environment variables and read them in the command text. (b)
+Write the command to a temporary `.ps1` and run it with `-File`, so the values arrive in
+`$args` and the first lines bind them to `$1`, `$2` .... (c) Put the values in the command
+line and quote them there.
+
+**Decision.** (b). The command text goes to a temporary `.ps1` file, which is removed when the
+run ends. The values arrive after the file name, so they are never part of the text: a value like
+`; rm -rf ~` is a string the command reads.
+
+**Why.** (a) would make `$args` empty, and the documentation promises `$args` as well as
+`$1`. (c) is the thing the port promises not to do. Upstream puts the command in zsh's argument
+list, which is visible in the process list; the temporary file is no more visible than that, and it
+is deleted rather than left behind.
+
+**What this does not change.** The promise that the command text is never written to a log. The
+file is not a log, it is the program being run, and it does not survive the run.
+
+## 2026-11-13 - Needs confirmation is on by default, as the documentation says
+
+**Question.** Upstream's documentation says a new command asks before it runs - "Needs
+confirmation - On by default" - but upstream's code creates a new command with the flag **off**.
+Which is the port's default?
+
+**Options.** (a) Follow the code: off. (b) Follow the documentation: on.
+
+**Decision.** (b). A new command asks before it runs.
+
+**Why.** The documentation is what the parity ledger measures, and it is the behaviour a user
+reading the editor table expects. The port's rule is that a cut or a contradiction is recorded
+rather than quietly resolved, so this is recorded here: upstream's own documentation and upstream's
+own code disagree about this one default, and the port follows the documentation.
+
+**What this does not change.** The row about the editor's field, which stays `NOT PORTED` until
+the editor screen exists; the default itself is in the model and is tested.
+
+## 2026-11-13 - The launcher offers only the built-in commands the build can run
+
+**Question.** Upstream lists all forty-six built-in commands in the launcher's results. Most of
+this port's features are not built, so a row for `Search Notes` would open a screen that does
+not exist. What does the launcher offer?
+
+**Options.** (a) List every built-in command, and say "not in this build yet" when one is opened.
+(b) List only the commands the build can run, and keep the whole catalogue in the settings.
+
+**Decision.** (b). The catalogue holds all forty-six commands, in their panes, with their rules;
+the launcher offers the ones the build can run - at the moment Quit YAL and Support YAL - and the
+rest arrive with their features.
+
+**Why.** A result that cannot be opened is a dead end, and a launcher full of dead ends is worse
+than a launcher that is quiet. Upstream's own rule is the same: a command whose feature is off is
+not listed.
+
+**What this does not change.** The catalogue rows, which are about the pane a command belongs to
+and not about the launcher; and the rule that a feature that is off hides its commands and their
+shortcuts.

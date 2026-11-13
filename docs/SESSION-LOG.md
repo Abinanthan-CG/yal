@@ -545,3 +545,39 @@ words (`what is 20% of 50`), and the exchange rates.
 - `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 246 PORTED, 2063 NOT PORTED.
+## Session 10 - 2026-11-13
+
+The command catalogue, the custom commands, and the shell they run under.
+
+**What was done.**
+
+- **`crates/tc-commands`** - a new crate, in two halves.
+  - `catalog.rs` - every built-in command, the Settings pane it belongs to, the switches that
+    decide which of them exist, and what a second press of the shortcut does.
+  - `model.rs` and `store.rs` - the custom command: upstream's fields, upstream's defaults,
+    upstream's validation, and a JSON file beside the app's other data.
+  - `shell.rs` and `runner.rs` - the shell a command names (PowerShell, cmd, Git Bash, WSL) and
+    the real Windows runner: no console window, the input closed, `TINYCAST=1` in the
+    environment, the Run In folder, no timeout, and a job object so `Stop` ends the whole tree
+    while quitting the app leaves the command running.
+  - `raycast.rs` - the import of a folder of Raycast script commands, with the shebang's
+    interpreter resolved against Windows.
+  - `arguments.rs` - the row of fields a command asks for, and the rules for the tab, the return
+    and the first missing field.
+- **The app** - the launcher lists the built-in commands the build can run and the user's own
+  commands; the palette asks for a command's values, confirms before it runs, and shows what it
+  printed.
+
+**What was not done.** The Settings panes, the output window (and with it the colours and the
+in-place progress bars), the backup carrying the custom commands, and the test for the palette's
+own key handling.
+
+**Decisions.** Three: the command's text is written to a temporary file for PowerShell; needs
+confirmation is on by default, as the documentation says and upstream's code does not; and the
+launcher offers only the built-in commands the build can run.
+
+**Verified.**
+- `cargo test --workspace` passes: 931 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 333 PORTED, 1976 NOT PORTED.

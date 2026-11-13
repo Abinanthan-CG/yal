@@ -1,0 +1,8 @@
+# The command catalogue's verdicts.
+#
+# These entries were appended to `parity/status.toml` when the built-in
+# command catalogue, the custom command model and the shell runner were
+# ported. The file is the same block, kept so that edit can be read on its
+# own; the ledger reads `parity/status.toml`, and nothing reads this file.
+#
+# It may be deleted.

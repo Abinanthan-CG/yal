@@ -213,6 +213,29 @@ Upstream's `CalcStatistics` and `CalcSpokenMath`.
 
 See [port note 019](docs/port-notes/019-calculator-lists-and-spoken-math.md).
 
+### The command catalogue and the shell runner (crates/tc-commands)
+
+Upstream's `CommandCatalog` and `CommandID`, and its whole `CustomCommands` feature.
+
+- **The catalogue** holds all forty-six built-in commands, the pane each one belongs to, the switches
+  that decide which of them exist, and what a second press of the shortcut does: most commands that
+  open a screen toggle, Switch Windows cycles.
+- **The custom command** keeps upstream's fields and rules: only the name is searchable, a cleared
+  Enabled checkbox keeps the command and its shortcut but stops it running, and a command can be
+  taken out of the main search without losing its shortcut.
+- **The shell runner** is real Windows code: the command runs with no console window, its input is
+  closed, the environment is inherited plus `TINYCAST=1`, it starts in its Run In folder, there is
+  no timeout, and the command and everything it started sit in a job object - so `Stop` ends the
+  whole tree and quitting the app leaves the command running. The values are passed positionally
+  and never spliced into the command text.
+- **The Raycast import** reads a folder of script commands and maps the same `@raycast.*` fields,
+  resolving the shebang's interpreter against Windows.
+
+**Eighty-seven command rows are now `PORTED`**: the built-in catalogue, the custom commands, the
+shell they run under, the values they take and the Raycast import. 246 → 333.
+
+See [port note 020](docs/port-notes/020-commands-catalogue-and-shell-runner.md).
+
 ### The system actions (crates/tc-platform-win, apps/yal)
 
 Twenty of the thirty-two system actions are ported and really run on Windows: the session

@@ -2012,3 +2012,811 @@ status = "PORTED"
 evidence = [
   "tc-calc::statistics_tests::a_multiplier_is_written_with_an_x",
 ]
+# ---------------------------------------------------------------------------
+# The commands: the built-in catalogue, the user's own commands, and the
+# shell they run under
+# ---------------------------------------------------------------------------
+
+[[status]]
+id = "launcher-commands.commands.every-built-in-command-and-the-shell-command"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+  "yal::launcher::tests::a_custom_command_is_found_by_its_name",
+]
+
+[[status]]
+id = "launcher-commands.commands.commands-are-actions-you-can-run-by-name-fro"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+  "yal::launcher::tests::a_built_in_command_is_found_by_its_name",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.each-built-in-command-belongs-to-one-setting"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.ai-quick-ai"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.ai-ai-chat"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quick-actions-fix-grammar"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quick-actions-rewrite"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quick-actions-translate"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quick-actions-summarize"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.clipboard-clipboard-history"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.clipboard-paste-sequentially"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.emoji-symbols-search-emoji-symbols"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.file-search-search-files"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.navigation-switch-windows"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::switch_windows_cycles_the_selection_on_repeated_presses",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.navigation-switch-windows-backwards"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::switch_windows_cycles_the_selection_on_repeated_presses",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.navigation-search-menu-bar-items"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.calendar-join-next-meeting"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.calendar-my-schedule"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.calendar-create-event"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.calendar-copy-meeting-link"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.calendar-open-in-calendar"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.notes-show-notes"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.notes-create-note"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.notes-search-notes"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.window-management-create-window-layout"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.window-management-create-layout-from-current"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.window-management-switch-room"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.window-management-create-room"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quicklinks-create-quicklink"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quicklinks-search-quicklinks"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quicklinks-import-quicklinks"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.quicklinks-export-quicklinks"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.snippets-search-snippets"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.snippets-create-snippet"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::each_built_in_command_belongs_to_one_settings_pane",
+  "tc-commands::catalog_tests::a_pane_lists_the_commands_it_owns",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-calculator-history"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-define-word"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-open-camera"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-export-backup"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-import-backup"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-import-from-raycast"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-check-for-updates"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::every_command_is_in_exactly_one_place",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-tinycast-settings"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::the_commands_carry_this_port_s_own_name",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-about-tinycast"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::the_commands_carry_this_port_s_own_name",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-support-tinycast"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::the_commands_carry_this_port_s_own_name",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.commands-quit-tinycast"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_commands_pane_holds_the_commands_no_feature_pane_owns",
+  "tc-commands::catalog_tests::the_commands_carry_this_port_s_own_name",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.create-custom-command-and-search-custom-comm"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_custom_commands_follow_their_own_switch",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.two-more-commands-only-appear-for-what-you-t"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::two_more_commands_only_appear_for_what_you_type",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.each-listed-command-has-a-launcher-checkbox"
+status = "NOT PORTED"
+reason = "The row's checkbox, its alias and its shortcut are in `tc-commands::catalog` and tested, but the Settings pane that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.built-in-commands.you-can-give-any-built-in-command-a-global-s"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::a_command_can_have_a_global_shortcut_except_the_three",
+  "tc-commands::catalog_tests::a_command_that_cannot_have_a_shortcut_is_refused_one",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.most-commands-that-open-a-screen-work-as-tog"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::most_commands_that_open_a_screen_work_as_toggles",
+  "tc-commands::catalog_tests::switch_windows_cycles_the_selection_on_repeated_presses",
+]
+
+[[status]]
+id = "launcher-commands.built-in-commands.enable-commands-at-the-top-of-settings-comma"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::enable_commands_turns_off_the_commands_in_that_pane_and_their_shortcuts",
+  "tc-commands::catalog_tests::clearing_a_row_checkbox_hides_the_command_from_search_but_keeps_its_shortcut",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.give-a-shell-command-a-name-then-run-it-from"
+status = "PORTED"
+evidence = [
+  "yal::launcher::tests::a_custom_command_is_found_by_its_name",
+  "tc-commands::runner::tests::a_command_prints_what_it_prints",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.turn-custom-commands-on-in-settings-commands"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_custom_commands_follow_their_own_switch",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.enable-custom-commands-off"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::the_custom_commands_follow_their_own_switch",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.show-in-launcher-on"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::turning_off_show_in_launcher_hides_the_section_but_keeps_the_shortcuts",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.turning-off-show-in-launcher-hides-the-secti"
+status = "PORTED"
+evidence = [
+  "tc-commands::catalog_tests::turning_off_show_in_launcher_hides_the_section_but_keeps_the_shortcuts",
+  "yal::launcher::tests::a_custom_command_taken_out_of_the_main_search_is_not_offered",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.only-the-command-s-name-is-searchable-not-th"
+status = "PORTED"
+evidence = [
+  "tc-commands::store_tests::only_the_name_is_searchable_not_the_command",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.each-command-has-an-enabled-checkbox-on-its"
+status = "PORTED"
+evidence = [
+  "tc-commands::store_tests::a_command_that_is_not_enabled_is_never_offered",
+]
+
+[[status]]
+id = "launcher-commands.custom-commands.to-take-a-command-out-of-the-main-search-but"
+status = "PORTED"
+evidence = [
+  "tc-commands::store_tests::a_command_can_be_taken_out_of_the_main_search_but_keep_its_shortcut",
+  "yal::launcher::tests::a_custom_command_taken_out_of_the_main_search_is_not_offered",
+]
+
+[[status]]
+id = "launcher-commands.the-editor.name-what-you-search-for"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.command-the-shell-command-like-usr-bin-pmset"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.icon-a-symbol-for-its-row-dialogs-and-output"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.show-in-root-search-lists-it-in-the-main-sea"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.arguments-values-to-ask-for-first-passed-as"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.run-in-the-folder-it-starts-in-empty-means-y"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.load-shell-environment-loads-your-zshrc-so-a"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.needs-confirmation-asks-before-running-on-by"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.show-output-opens-a-window-with-everything-t"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.the-editor.show-confirmation-shows-a-short-message-when"
+status = "NOT PORTED"
+reason = "The field and its rule are in `tc-commands::model` and tested, but the editor screen that shows them is not built yet."
+
+[[status]]
+id = "launcher-commands.how-a-command-runs.shell-bin-zsh-lc"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::the_shell_is_powershell_by_default",
+  "tc-commands::shell_tests::wsl_runs_the_command_in_its_linux_shell",
+]
+
+[[status]]
+id = "launcher-commands.how-a-command-runs.folder-its-run-in-folder-or-your-home-folder"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::a_command_runs_in_its_run_in_folder_or_the_home_folder",
+  "tc-commands::runner::tests::the_command_runs_in_its_run_in_folder",
+]
+
+[[status]]
+id = "launcher-commands.how-a-command-runs.input-none-anything-that-reads-input-gets-an"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::the_input_is_closed",
+]
+
+[[status]]
+id = "launcher-commands.how-a-command-runs.environment-inherited-plus-tinycast-1"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::the_environment_carries_the_marker",
+]
+
+[[status]]
+id = "launcher-commands.how-a-command-runs.commands-run-without-a-terminal-window-and-w"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::the_command_runs_with_no_console_window",
+  "tc-commands::runner::tests::the_command_keeps_running_after_the_launcher_lets_go",
+  "tc-commands::runner::tests::stop_ends_the_command_and_everything_it_started",
+]
+
+[[status]]
+id = "launcher-commands.how-a-command-runs.if-the-run-in-folder-no-longer-exists-the-co"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::a_run_in_folder_that_is_gone_stops_the_command_and_says_which_one",
+]
+
+[[status]]
+id = "launcher-commands.arguments.select-a-command-with-arguments-and-small-fi"
+status = "PORTED"
+evidence = [
+  "yal::launcher::tests::a_custom_command_carries_the_values_it_asks_for_and_asks_first",
+  "tc-commands::arguments_tests::the_command_stays_selected_while_the_values_are_filled_in",
+]
+
+[[status]]
+id = "launcher-commands.arguments.kbd-tab-kbd-moves-through-the-fields-kbd-kbd"
+status = "PORTED"
+evidence = [
+  "tc-commands::arguments_tests::tab_moves_through_the_fields_and_shift_tab_moves_back",
+]
+
+[[status]]
+id = "launcher-commands.arguments.kbd-return-kbd-runs-the-command-once-every-r"
+status = "PORTED"
+evidence = [
+  "tc-commands::arguments_tests::return_runs_the_command_once_every_required_value_is_present",
+]
+
+[[status]]
+id = "launcher-commands.arguments.first-missing-field"
+status = "PORTED"
+evidence = [
+  "tc-commands::arguments_tests::return_focuses_the_first_missing_field",
+]
+
+[[status]]
+id = "launcher-commands.arguments.kbd-esc-kbd-leaves-an-argument-field-and-ret"
+status = "NOT PORTED"
+reason = "The palette's own key handling is in the window, which has no test yet; the field model it follows is tested."
+
+[[status]]
+id = "launcher-commands.arguments.a-required-argument-can-t-be-left-empty"
+status = "PORTED"
+evidence = [
+  "tc-commands::arguments_tests::a_required_argument_cannot_be_left_empty",
+  "tc-commands::model_tests::a_required_argument_cannot_be_left_empty",
+]
+
+[[status]]
+id = "launcher-commands.arguments.this-works-from-the-launcher-search-custom-c"
+status = "NOT PORTED"
+reason = "It works from the launcher and the row is offered; the Search Custom Commands screen, the favourite number and the command's own shortcut are not built yet."
+
+[[status]]
+id = "launcher-commands.arguments.values-are-passed-to-the-shell-as-1-2-and-ar"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::a_value_is_a_string_the_command_reads_and_not_a_second_command",
+  "tc-commands::shell_tests::the_values_are_never_written_into_the_command_text",
+]
+
+[[status]]
+id = "launcher-commands.load-shell-environment.this-setting-is-off-by-default-and-it-s-the"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::load_shell_environment_loads_the_powershell_profile",
+]
+
+[[status]]
+id = "launcher-commands.load-shell-environment.zsh-only-reads-zshrc-for-interactive-shells"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::load_shell_environment_loads_the_powershell_profile",
+  "tc-commands::shell_tests::load_shell_environment_makes_bash_interactive",
+]
+
+[[status]]
+id = "launcher-commands.load-shell-environment.turning-the-setting-on-uses-ilc-which-reads"
+status = "PORTED"
+evidence = [
+  "tc-commands::shell_tests::load_shell_environment_makes_bash_interactive",
+  "tc-commands::shell_tests::load_shell_environment_loads_the_powershell_profile",
+]
+
+[[status]]
+id = "launcher-commands.load-shell-environment.tinycast-sets-tinycast-1-so-your-zshrc-can-s"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::the_environment_carries_the_marker",
+]
+
+[[status]]
+id = "launcher-commands.load-shell-environment.the-documentation-shows-this-example-n-tinyc"
+status = "NOT PORTED"
+reason = "It is a zsh snippet in the upstream documentation; the port's equivalent is the marker in the environment, which the row above covers."
+
+[[status]]
+id = "launcher-commands.load-shell-environment.with-a-typical-zshrc-a-command-starts-in-abo"
+status = "NOT PORTED"
+reason = "It measures zsh startup with a typical .zshrc; the port runs PowerShell and the numbers are not the same."
+
+[[status]]
+id = "launcher-commands.load-shell-environment.when-a-command-exits-with-127-while-this-set"
+status = "NOT PORTED"
+reason = "The port recognises PowerShell's command-not-found error and says the shell configuration was not read, but it cannot offer Open Settings until the Settings window exists."
+
+[[status]]
+id = "launcher-commands.load-shell-environment.you-can-also-avoid-relying-on-the-shell-conf"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::a_full_path_runs_without_the_shell_configuration",
+]
+
+[[status]]
+id = "launcher-commands.load-shell-environment.the-documentation-shows-this-example-opt-hom"
+status = "NOT PORTED"
+reason = "The example is a macOS path; the port's documentation has no equivalent example yet."
+
+[[status]]
+id = "launcher-commands.show-output.with-show-output-on-a-window-opens-as-soon-a"
+status = "NOT PORTED"
+reason = "There is no output window yet; the output is captured, but nothing shows it, and the colours need a pseudo-console."
+
+[[status]]
+id = "launcher-commands.show-output.the-window-shows-the-command-s-name-and-text"
+status = "NOT PORTED"
+reason = "The result, the duration and the output are in `tc-commands::runner` and tested, but no output window shows them, and the progress bars need a pseudo-console."
+
+[[status]]
+id = "launcher-commands.show-output.the-window-keeps-the-last-256-kb-of-output-i"
+status = "NOT PORTED"
+reason = "The last 256 KB is kept and tested, but there is no output window to follow the tail in, and nothing scrolls."
+
+[[status]]
+id = "launcher-commands.show-output.with-load-shell-environment-on-anything-your"
+status = "NOT PORTED"
+reason = "There is no output window yet, so the profile's own output has nowhere to appear."
+
+[[status]]
+id = "launcher-commands.needs-confirmation.this-is-on-by-default-for-every-command-the"
+status = "NOT PORTED"
+reason = "The switch is on by default and the row carries it, but the confirmation dialog lives in the palette, which has no test yet."
+
+[[status]]
+id = "launcher-commands.needs-confirmation.the-dialog-is-a-plain-confirmation-rather-th"
+status = "NOT PORTED"
+reason = "The palette asks in plain words rather than as a warning, but the dialog lives in the window, which has no test yet."
+
+[[status]]
+id = "launcher-commands.when-it-finishes.success-with-show-confirmation-on-a-short-me"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::a_success_shows_the_last_line_of_output",
+]
+
+[[status]]
+id = "launcher-commands.when-it-finishes.ran-if-the-command-printed-nothing"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::a_success_with_nothing_printed_says_it_ran",
+]
+
+[[status]]
+id = "launcher-commands.when-it-finishes.failure-a-dialog-shows-the-error-output-up-t"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::a_failure_shows_at_most_the_last_8_kb",
+  "tc-commands::runner::tests::a_failure_shows_the_error_output",
+]
+
+[[status]]
+id = "launcher-commands.when-it-finishes.with-show-output-on-the-output-window-shows"
+status = "NOT PORTED"
+reason = "There is no output window yet, so the result is not shown there."
+
+[[status]]
+id = "launcher-commands.when-it-finishes.tinycast-never-writes-the-command-text-to-it"
+status = "PORTED"
+evidence = [
+  "tc-commands::runner::tests::the_command_text_does_not_stay_on_disk",
+]
+
+[[status]]
+id = "launcher-commands.editing-and-backups.editing-a-command-keeps-its-favorite-visibil"
+status = "NOT PORTED"
+reason = "Editing keeps the command and its settings, but there is no favourites store, no shortcut store and no editor screen yet."
+
+[[status]]
+id = "launcher-commands.editing-and-backups.custom-commands-and-their-shortcuts-are-incl"
+status = "NOT PORTED"
+reason = "The commands live in a file of their own, but the backup does not carry them yet and nothing warns before an import."
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.settings-commands-import-raycast-scripts-rea"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::a_folder_is_read_and_the_helper_scripts_are_left_alone",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.a-file-counts-as-a-script-command-when-it-ha"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::a_file_counts_as_a_script_command_when_it_has_a_shebang_and_a_title",
+  "tc-commands::raycast_tests::a_file_without_a_shebang_is_skipped",
+  "tc-commands::raycast_tests::a_file_without_a_title_is_skipped",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.raycast-title-the-name"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::the_title_is_the_name",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.raycast-mode-compact-and-fulloutput-turn-sho"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::compact_and_full_output_turn_show_output_on",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.raycast-needsconfirmation-needs-confirmation"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::needs_confirmation_is_read",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.raycast-argument1-to-3-arguments-named-after"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::the_arguments_are_named_after_their_placeholders",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.raycast-currentdirectorypath-run-in-otherwis"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::the_run_in_folder_is_the_declared_one_or_the_scripts_own_folder",
+]
+
+[[status]]
+id = "launcher-commands.importing-raycast-script-commands.raycast-icons-aren-t-imported-imported-comma"
+status = "PORTED"
+evidence = [
+  "tc-commands::raycast_tests::the_imported_command_uses_the_shared_symbol",
+  "tc-commands::store_tests::importing_the_same_folder_again_only_adds_new_scripts",
+]
+
