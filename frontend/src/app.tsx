@@ -18,9 +18,11 @@ import {
   fileRows,
   hidePalette,
   openResult,
+  paletteAdvanceSetting,
   paletteKey,
   paletteMenuQuery,
   paletteOpenScreen,
+  paletteSettings,
   paletteView,
   revealFile,
   runCustomCommand,
@@ -29,6 +31,7 @@ import {
   type KeyStroke,
   type PaletteView,
   type ResultRow,
+  type SettingRow,
 } from "./api";
 
 /** How long the typing rests before the launcher is asked. */
@@ -70,14 +73,16 @@ export function App() {
   const [field, setField] = createSignal(0);
   const [note, setNote] = createSignal<string | null>(null);
   const [view, setView] = createSignal<PaletteView | null>(null);
+  const [settings, setSettings] = createSignal<SettingRow[]>([]);
   let input: HTMLInputElement | undefined;
   let timer: number | undefined;
 
   // The screen on top, as the Rust side says it is.
   const screen = (): string => view()?.screen ?? "Launcher";
 
-  // The rows of the screen on top. The file search has its own rows; every
-  // other screen has the launcher's.
+  // The rows of the screen on top. The file search has its own rows, the
+  // settings screen has its own pane, and every other screen has the
+  // launcher's.
   const ask = async (text: string): Promise<void> => {
     try {
       const state = await paletteView();
@@ -85,6 +90,9 @@ export function App() {
       let found: ResultRow[];
       if (state.screen === "Search Files") {
         found = await fileRows(text);
+      } else if (state.screen === "Settings") {
+        setSettings(await paletteSettings());
+        found = [];
       } else {
         found = text.trim() === "" ? await suggestions() : await search(text);
       }
@@ -116,12 +124,15 @@ export function App() {
     window.clearTimeout(timer);
   });
 
+  // How many rows the screen on top has.
+  const count = (): number => (screen() === "Settings" ? settings().length : rows().length);
+
   const move = (delta: number): void => {
-    const count = rows().length;
-    if (count === 0) {
+    const total = count();
+    if (total === 0) {
       return;
     }
-    setSelected((current) => (current + delta + count) % count);
+    setSelected((current) => (current + delta + total) % total);
   };
 
   // Runs one of the user's own commands.
@@ -224,11 +235,30 @@ export function App() {
     await run(row, values());
   };
 
+  // The main action of the screen on top: open the selected row, or move
+  // the selected setting to its next value.
+  const mainAction = async (): Promise<void> => {
+    if (screen() === "Settings") {
+      const row = settings()[selected()];
+      if (!row) {
+        return;
+      }
+      try {
+        await paletteAdvanceSetting(row.key);
+        await ask(query());
+      } catch (error) {
+        setFailed(String(error));
+      }
+      return;
+    }
+    await openSelected();
+  };
+
   // What the Rust side says the key means.
   const act = async (action: string): Promise<void> => {
     switch (action) {
       case "MainAction":
-        await openSelected();
+        await mainAction();
         break;
       case "SecondAction":
         await revealSelected();
@@ -426,6 +456,29 @@ export function App() {
           <span class="palette__filter-label">Type</span>
           <span class="palette__filter-value">{view()?.fileFilter ?? "All Types"}</span>
         </div>
+      </Show>
+      <Show when={screen() === "Settings"}>
+        <section class="palette__settings" aria-label="Settings">
+          <p class="palette__settings-title">General</p>
+          <ul class="palette__list">
+            <For each={settings()}>
+              {(row, index) => (
+                <li
+                  class="palette__row"
+                  classList={{ "palette__row--selected": index() === selected() }}
+                  onMouseEnter={() => setSelected(index())}
+                  onClick={() => {
+                    setSelected(index());
+                    void mainAction();
+                  }}
+                >
+                  <span class="palette__name">{row.label}</span>
+                  <span class="palette__detail">{row.value}</span>
+                </li>
+              )}
+            </For>
+          </ul>
+        </section>
       </Show>
       <section class="palette__results" aria-live="polite">
         <Show when={failed()}>

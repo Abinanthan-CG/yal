@@ -18,7 +18,7 @@ use tc_platform::{Clipboard, FileSystem, Settings};
 use crate::launcher::{
     FileSearch, LauncherState, ResultRow, CALCULATOR_PREFIX, FILE_PREFIX, RANKING_FILE,
 };
-use crate::palette::{KeyOutcome, KeyStroke, PaletteState, PaletteView};
+use crate::palette::{KeyOutcome, KeyStroke, PaletteState, PaletteView, SettingRow};
 
 /// The palette's label, so the window can be found again.
 const PALETTE: &str = "palette";
@@ -176,7 +176,31 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             }
             app.manage(launcher);
             // The palette: the screens, the keys and the settings it follows.
-            app.manage(PaletteState::new());
+            let palette = PaletteState::new();
+            {
+                let mut palette_settings = palette.lock();
+                let mut own = tc_palette::PaletteSettings::default();
+                if let Some(value) = settings.get(tc_palette::KEY_APPEARANCE) {
+                    own.set_appearance(&value);
+                }
+                if let Some(value) = settings.get(tc_palette::KEY_ANIMATIONS) {
+                    own.set_animations(&value);
+                }
+                if let Some(value) = settings.get(tc_palette::KEY_INTERFACE_SIZE) {
+                    own.set_interface_size(&value);
+                }
+                if let Some(value) = settings.get(tc_palette::KEY_WINDOW_MODE) {
+                    own.set_window_mode(&value);
+                }
+                if let Some(value) = settings.get(tc_palette::KEY_ESCAPE_BEHAVIOUR) {
+                    own.set_escape_behaviour(&value);
+                }
+                if let Some(value) = settings.get(tc_palette::KEY_POP_TO_ROOT) {
+                    own.set_pop_to_root(&value);
+                }
+                palette_settings.set_settings(own);
+            }
+            app.manage(palette);
             // The window commands, with the memory of the windows they have
             // moved. The memory lives in this process and is never written
             // down.
@@ -191,6 +215,9 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             app.manage(tc_platform_win::window_control::WindowCommands::new(
                 gap, cycle,
             ));
+            // The settings store itself, so a setting that is changed in the
+            // palette is written down and kept.
+            app.manage(settings);
             // The installer asks a running instance to quit before it replaces
             // the program files, so the app has to be listening for that. The
             // watcher holds the quit event open, so it is kept in the app's
@@ -229,7 +256,10 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             palette_back_to_root,
             file_rows,
             open_file,
-            reveal_file
+            reveal_file,
+            palette_settings,
+            palette_advance_setting,
+            palette_set_setting
         ])
         .run(tauri::generate_context!())
         .map_err(|error| format!("the application could not start: {error}"))
@@ -490,6 +520,41 @@ fn reveal_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(PALETTE) {
         let _ = window.hide();
     }
+    Ok(())
+}
+
+/// The Settings pane's rows.
+#[tauri::command]
+fn palette_settings(palette: State<'_, PaletteState>) -> Vec<SettingRow> {
+    palette.settings_rows()
+}
+
+/// Move a setting to its next value, and write it down.
+#[tauri::command]
+fn palette_advance_setting(
+    palette: State<'_, PaletteState>,
+    settings: State<'_, tc_platform_win::WindowsSettings>,
+    key: String,
+) -> Result<String, String> {
+    let value = palette
+        .advance_setting(&key)
+        .ok_or_else(|| format!("`{key}` is not a setting of the palette"))?;
+    settings.set(&key, &value)?;
+    Ok(value)
+}
+
+/// Set a setting to a value, and write it down.
+#[tauri::command]
+fn palette_set_setting(
+    palette: State<'_, PaletteState>,
+    settings: State<'_, tc_platform_win::WindowsSettings>,
+    key: String,
+    value: String,
+) -> Result<(), String> {
+    if !palette.set_setting(&key, &value) {
+        return Err(format!("`{key}` is not a setting of the palette"));
+    }
+    settings.set(&key, &value)?;
     Ok(())
 }
 

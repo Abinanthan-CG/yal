@@ -183,3 +183,25 @@ export function openFile(path: string): Promise<void> {
 export function revealFile(path: string): Promise<void> {
   return invoke<void>("reveal_file", { path });
 }
+
+/** One row of the Settings pane. */
+export interface SettingRow {
+  /** The key the setting is stored under. */
+  key: string;
+  /** The name the setting is shown under. */
+  label: string;
+  /** The value the setting has now. */
+  value: string;
+  /** The values it can take. */
+  options: string[];
+}
+
+/** The Settings pane's rows. */
+export function paletteSettings(): Promise<SettingRow[]> {
+  return invoke<SettingRow[]>("palette_settings");
+}
+
+/** Move a setting to its next value, and write it down. */
+export function paletteAdvanceSetting(key: string): Promise<string> {
+  return invoke<string>("palette_advance_setting", { key });
+}
