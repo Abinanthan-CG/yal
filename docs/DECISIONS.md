@@ -874,33 +874,42 @@ cited evidence is a test that ran; the cited test holds both readings.
 ## 2026-11-14 - The budget the app has to live in
 
 **Question.** The port exists because Raycast is comfortable and Raycast is
-heavy. Measured on this machine, the current Tauri build is *heavier* than
-Raycast: 396 MB of working set against Raycast's 331 MB, and 6.1% of a core
-idle against 1.4%. The Rust core is 6.6 MB of private bytes; the rest is
-Chromium. What do we do about it?
+heavy. What does YAL cost, and what do we do about it?
 
-**Options.** (a) Keep Tauri and WebView2, and accept the footprint as the price
-of the UI. (b) Make the web view lazy - create it when the palette opens,
-destroy it when it closes - so the resident cost is the Rust core alone.
-(c) Render the palette natively and drop the browser engine.
+**The measurement.** Counting whole process trees on this machine: Raycast
+**914 MB** of working set (its own application, six WebView2 processes and two
+screen-dimming helpers), YAL **367 MB** with the palette open. The Rust core
+that holds everything this port wrote - calculator, clipboard, snippets, file
+index - is **6 MB**.
 
-**Decision.** (b) now, (c) as the destination, and the budget is a release
-requirement either way: under 40 MB resident and under 0.5% of one core idle.
-The lazy web view is chosen first because it is a change to the shell, not a
-rewrite of the interface, and it removes the complaint that started this port:
-a launcher sitting in the tray should not cost 400 MB. The native palette is
-recorded as the destination because it is the only option that also removes the
-spin-up latency of every invocation and the transient spike.
+**Options.** (a) Keep Tauri and WebView2 as they are. (b) Make the web view
+lazy - create it when the palette opens, destroy it when it closes. (c) Render
+the palette natively and drop the browser engine.
 
-**Why.** The measurement says the weight is in the UI runtime, not in the
-engine. Everything this port wrote - the calculator, the clipboard, the
-snippets, the file index - fits in 6.6 MB. Rewriting the engine would not
-make the app lighter; only changing the UI layer can. And a number that is not
-checked is a number that does not exist: `scripts/measure-resources.ps1`
-measures the whole process tree, for this app and for Raycast, so the budget
-can be tested rather than believed.
+**Decision.** (c) is the destination; (b) is not the first move; (a) is
+rejected. The budget is a release requirement either way: under 40 MB resident
+and under 0.5% of one core idle, palette open or closed.
 
-**What this does not change.** The stack. Tauri and the TypeScript frontend
-stay until the palette is replaced by a native renderer, and no crate is
-rewritten for this. It also does not change the parity ledger: resource use is
-not a feature row, and no row moves because of this decision.
+**Why.** The weight is in the UI runtime, not in the engine, so only the UI
+layer can fix it. But the lazy web view pays for the saving on the one
+interaction that matters: the palette would take a few hundred milliseconds to
+open instead of tens, because a fresh WebView2 has to be built on the hotkey
+path; the transient 400 MB spike would still appear every time the palette
+opened; the first keystrokes could be dropped while the input method attaches;
+and create-destroy on every toggle is where tray apps acquire the bugs that
+make a hotkey stop answering. A launcher is opened dozens of times a day, so
+that latency tax is permanent while the memory saving is only visible while
+the app is idle. The native palette is ten times lighter than the current
+build, more than twenty times lighter than Raycast, and it opens instantly.
+
+**What this does not change.** The stack, yet. Tauri, Solid and the TypeScript
+frontend stay until the palette is replaced by a native renderer, and no engine
+crate is rewritten for this. It also does not change the parity ledger:
+resource use is not a feature row, and no row moves because of this decision.
+
+**Correction, 2026-11-15.** The first version of this entry compared YAL's
+whole tree against only the processes named `Raycast*`, which reported 331 MB
+for Raycast and made YAL look heavier. Raycast also owns a WebView2 and two
+`Dimmer` helpers, so its real figure is 914 MB and YAL is the lighter of the
+two. The measurement script now counts whole trees and stops at apps Raycast
+happened to launch.
