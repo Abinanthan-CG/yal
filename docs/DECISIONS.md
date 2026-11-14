@@ -870,3 +870,37 @@ missing, which is not true.
 
 **What this does not change.** The rule that a row is `PORTED` only when the
 cited evidence is a test that ran; the cited test holds both readings.
+
+## 2026-11-14 - The budget the app has to live in
+
+**Question.** The port exists because Raycast is comfortable and Raycast is
+heavy. Measured on this machine, the current Tauri build is *heavier* than
+Raycast: 396 MB of working set against Raycast's 331 MB, and 6.1% of a core
+idle against 1.4%. The Rust core is 6.6 MB of private bytes; the rest is
+Chromium. What do we do about it?
+
+**Options.** (a) Keep Tauri and WebView2, and accept the footprint as the price
+of the UI. (b) Make the web view lazy - create it when the palette opens,
+destroy it when it closes - so the resident cost is the Rust core alone.
+(c) Render the palette natively and drop the browser engine.
+
+**Decision.** (b) now, (c) as the destination, and the budget is a release
+requirement either way: under 40 MB resident and under 0.5% of one core idle.
+The lazy web view is chosen first because it is a change to the shell, not a
+rewrite of the interface, and it removes the complaint that started this port:
+a launcher sitting in the tray should not cost 400 MB. The native palette is
+recorded as the destination because it is the only option that also removes the
+spin-up latency of every invocation and the transient spike.
+
+**Why.** The measurement says the weight is in the UI runtime, not in the
+engine. Everything this port wrote - the calculator, the clipboard, the
+snippets, the file index - fits in 6.6 MB. Rewriting the engine would not
+make the app lighter; only changing the UI layer can. And a number that is not
+checked is a number that does not exist: `scripts/measure-resources.ps1`
+measures the whole process tree, for this app and for Raycast, so the budget
+can be tested rather than believed.
+
+**What this does not change.** The stack. Tauri and the TypeScript frontend
+stay until the palette is replaced by a native renderer, and no crate is
+rewritten for this. It also does not change the parity ledger: resource use is
+not a feature row, and no row moves because of this decision.
