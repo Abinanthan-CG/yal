@@ -80,8 +80,32 @@ function Measure-Cpu([string]$tag, $procs, [int]$seconds) {
 }
 
 # Raycast, when it is running, is the number we are trying to beat.
-$ray = Get-Process | Where-Object { $_.ProcessName -match '^Raycast' }
-if ($ray) {
+# Its whole tree counts, not just the processes named Raycast: on this machine it
+# also owns a WebView2 and two Dimmer helpers. Apps that Raycast happened to
+# launch - an editor, a taskbar, a terminal - are not part of it, so the walk
+# only descends through Raycast's own process names and stops at anything else.
+$rayOwn = @('Raycast', 'Raycast.UIAccess', 'Dimmer', 'msedgewebview2')
+$rayRoots = Get-Process | Where-Object { $_.ProcessName -eq 'Raycast' }
+if ($rayRoots) {
+  $all = Get-CimInstance Win32_Process
+  $childrenOf = @{}
+  foreach ($p in $all) {
+    $parent = [int]$p.ParentProcessId
+    if (-not $childrenOf.ContainsKey($parent)) { $childrenOf[$parent] = @() }
+    $childrenOf[$parent] += [int]$p.ProcessId
+  }
+  $queue = New-Object System.Collections.Generic.Queue[int]
+  foreach ($r in $rayRoots) { $queue.Enqueue($r.Id) }
+  $ray = @()
+  while ($queue.Count -gt 0) {
+    $id = $queue.Dequeue()
+    $p = Get-Process -Id $id -ErrorAction SilentlyContinue
+    if (-not $p) { continue }
+    if ($rayOwn -contains $p.ProcessName) {
+      $ray += $p
+      foreach ($child in @($childrenOf[$id])) { $queue.Enqueue($child) }
+    }
+  }
   "===== Raycast (running on this machine) ====="
   Show-Tree 'raycast' $ray
   Measure-Cpu 'raycast' $ray $SampleSeconds
