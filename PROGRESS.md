@@ -512,6 +512,14 @@ Status: **not started**
 
 Status: **not started**
 
+The release carries a resource requirement, measured rather than assumed: under 40 MB
+resident and under 0.5% of one core idle. `scripts/measure-resources.ps1` measures the whole
+process tree - this app and Raycast, side by side - and
+[port note 024](docs/port-notes/024-the-weight-of-the-app.md) holds what it found: the Rust
+core is 6.6 MB of private bytes, and the WebView2 runtime is the other 390 MB. Today that
+makes YAL heavier than Raycast, which is the one thing this port must not be. The lazy web
+view comes first; the native palette is the destination.
+
 ## Open problems
 
 - `xtask i18n` needs the upstream clone present. The generated string table is committed, so a
