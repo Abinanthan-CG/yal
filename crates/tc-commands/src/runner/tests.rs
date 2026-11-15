@@ -82,7 +82,8 @@ fn the_command_runs_in_its_run_in_folder() {
     let expected_path =
         std::fs::canonicalize(directory.path()).unwrap_or_else(|_| directory.path().to_path_buf());
     assert_eq!(
-        printed_path, expected_path,
+        printed_path,
+        expected_path,
         "the command ran in {printed} rather than in {}",
         directory.path().display()
     );

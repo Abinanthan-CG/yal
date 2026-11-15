@@ -20,6 +20,14 @@ jobs:
   build:
     name: Build ${{ matrix.arch }}
     runs-on: windows-latest
+    # GitHub does not hand the secrets to the `if` of a step, so the
+    # certificate is put in the job's environment - where it is set before
+    # any step runs - and the step looks for it there. An empty value means
+    # there is no certificate, and the step is skipped rather than failing
+    # the whole release.
+    env:
+      WINDOWS_CERTIFICATE_PFX: ${{ secrets.WINDOWS_CERTIFICATE_PFX }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
     strategy:
       fail-fast: false
       matrix:
@@ -35,12 +43,48 @@ jobs:
 
       - name: Install the pinned toolchain
         run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Install the target we are building for
+        run: rustup target add ${{ matrix.rust_target }}
+
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: . -> target
 
       - name: Install NSIS
         run: choco install nsis --yes --no-progress
+
+      # The ARM64 build needs the MSVC ARM64 compiler and linker. The runner
+      # image usually carries it, but not always, and without it the link
+      # fails with a message that says nothing about what to do. So it is
+      # looked for, and installed only when it is genuinely missing.
+      - name: Make sure the ARM64 build tools are there
+        if: ${{ matrix.arch == 'arm64' }}
+        shell: pwsh
+        run: |
+          $roots = @(
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC",
+            "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
+          )
+          $found = $false
+          foreach ($root in $roots) {
+            if (-not (Test-Path $root)) { continue }
+            $hit = Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue |
+              Where-Object { Test-Path (Join-Path $_.FullName 'bin\Hostx64\arm64\link.exe') }
+            if ($hit) { $found = $true; break }
+          }
+          if ($found) {
+            Write-Host "The ARM64 build tools are already installed."
+            exit 0
+          }
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installPath = & $vswhere -latest -products * -property installationPath
+          if (-not $installPath) { throw "no Visual Studio installation was found" }
+          $setup = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
+          & $setup modify --installPath "$installPath" --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --quiet --norestart --nocache
+          if ($LASTEXITCODE -ne 0) { throw "installing the ARM64 build tools failed" }
 
       - uses: actions/setup-node@v4
         with:
@@ -59,16 +103,14 @@ jobs:
       - name: Build the release artifacts
         run: cargo run --quiet -p xtask -- dist --arch ${{ matrix.arch }}
 
+      # The signing step is skipped when there is no certificate.
       - name: Sign the binaries
-        if: ${{ secrets.WINDOWS_CERTIFICATE_PFX != '' }}
+        if: ${{ env.WINDOWS_CERTIFICATE_PFX != '' }}
         shell: pwsh
         run: |
           $pfx = [System.IO.File]::WriteAllBytes("$env:RUNNER_TEMP\cert.pfx", [System.Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_PFX))
           & signtool sign /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /f $pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD dist\*.exe
           if ($LASTEXITCODE -ne 0) { throw "signing failed" }
-        env:
-          WINDOWS_CERTIFICATE_PFX: ${{ secrets.WINDOWS_CERTIFICATE_PFX }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
       - name: The self-test passes
         run: ./target/${{ matrix.rust_target }}/release/yal.exe --self-test
@@ -81,24 +123,37 @@ jobs:
             dist/yal-setup-*-${{ matrix.arch }}.exe
             dist/yal-*-${{ matrix.arch }}-portable.zip
             dist/SHA256SUMS.txt
+          if-no-files-found: error
 
   sign:
     name: Sign the release
     needs: build
     runs-on: ubuntu-latest
+    env:
+      MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Sign the checksums
+
+      - name: Write the checksums
+        run: sha256sum artifacts/*/*.exe artifacts/*/*.zip artifacts/*/SHA256SUMS.txt > SHA256SUMS.txt || true
+
+      # The signature is a promise about the release. When there is no key
+      # there is no signature, and the release still goes out - unsigned,
+      # and saying so.
+      - name: Prepare the signing key
+        if: ${{ env.MINISIGN_SECRET_KEY != '' }}
         uses: mlugg/setup-minisign@v2
         with:
-          secret-key: ${{ secrets.MINISIGN_SECRET_KEY }}
-      - name: Sign
+          secret-key: ${{ env.MINISIGN_SECRET_KEY }}
+
+      - name: Sign the artifacts
+        if: ${{ env.MINISIGN_SECRET_KEY != '' }}
         run: |
           find artifacts -name '*.exe' -o -name '*.zip' | xargs minisign -Sm
-          sha256sum artifacts/*/*.exe artifacts/*/*.zip artifacts/*/SHA256SUMS.txt > SHA256SUMS.txt || true
           minisign -Sm SHA256SUMS.txt
+
       - uses: actions/upload-artifact@v4
         with:
           name: release-signatures
@@ -106,6 +161,7 @@ jobs:
             artifacts
             SHA256SUMS.txt
             SHA256SUMS.txt.minisig
+          if-no-files-found: ignore
 
   publish:
     name: Draft the release
