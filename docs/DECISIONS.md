@@ -986,6 +986,61 @@ feature genuinely needs one, that is a decision to take when the feature
 exists and its cost can be measured, not a prohibition written down in
 advance.
 
+## 2026-11-15 - What 1.0 is
+
+**Question.** The ledger holds 2309 rows, 447 of them ported, and 1409 of
+the Tier 1 rows open. That number does not say how far the port is from
+shipping, because the rows are documentation headings and most of them are
+small. What does 1.0 ship?
+
+**The measure.** Of the 1409 open Tier 1 rows:
+
+| | Rows | Ported | Open | What it is |
+| --- | ---: | ---: | ---: | --- |
+| Cut by the scope decision | 322 | 0 | 322 | calendar, dictation, camera, dictionary, Apple Shortcuts, window layouts, rooms, navigation, uninstall, updates - already marked `NOT PORTED` with a reason, and no work to do |
+| Must-have | 861 | 223 | 638 | calculator, clipboard, snippets, file search, notes, emoji, favorites, settings, hotkeys, backup |
+| Nice-to-have | 206 | 9 | 197 | quicklinks, deeplinks, import from Raycast, aliases, fallbacks, system settings |
+| Core launcher | 427 | 176 | 251 | the shortcuts map, commands, system actions, window management, the launcher itself |
+
+**Decision.** 1.0 is the **must-have** set, and nothing else: the
+calculator, the clipboard, snippets, file search, applications and commands,
+aliases, favorites, settings, hotkeys, notes, emoji and backup.
+
+**Why.** The number of rows is not the number of features, and chasing the
+full Tier 1 surface would spend the remaining effort on the tail - the 187
+calculator rows are unit conversions, the 70 clipboard rows are formats and
+filters. Those come last, and they come cheaply. What 1.0 has to be is the
+launcher somebody would keep on their taskbar: it opens instantly, it
+answers the keyboard, it remembers, and it does not eat 400 MB.
+
+**What this does not change.** The nice-to-haves stay in the ledger as
+`NOT PORTED` with their reasons, ready for 1.1. The scope decision of
+2026-11-11 stands for the cut items. And the parity ledger does not move
+because of a plan - a row is `PORTED` only when its evidence has run.
+
+## 2026-11-15 - The work is built on a branch, and `main` is left alone
+
+**Question.** The repository is public and still holds the earlier project.
+The port's sixty-odd commits are local only, so the CI workflow - which has
+a `windows-latest` job - has never run against this code. What to do with
+that before the port is finished?
+
+**Decision.** The port is pushed to the branch `feat/yal-port`, and `main`
+is left untouched until the port replaces the earlier project outright.
+The CI workflow now runs on every branch, not only on `main`, so a branch
+under development is checked.
+
+**Why.** The release path is the one part of this port that has never been
+exercised: the two runs in the repository's history are from an older
+workflow, and both failed. A branch is the cheapest way to find out whether
+the workflow is right while the earlier project is still what a visitor to
+the repository sees. Moving `main` is the irreversible half of the publish,
+and it should happen once, at the end, when the thing being published is
+finished.
+
+**What this does not change.** The publish decision of 2026-11-13, which is
+still: flush and publish when the first build is finished.
+
 ## 2026-11-15 - The ranking remembers the queries, not only the items
 
 **Question.** Our `launcher-ranking.json` holds a list of items and their

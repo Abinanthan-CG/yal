@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # Every branch, not just main: a branch that is being worked on should
+    # be checked, and a branch is where work is developed before it lands.
+    branches: ["**"]
   pull_request:
   workflow_dispatch:
 
