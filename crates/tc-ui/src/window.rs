@@ -12,13 +12,14 @@ use windows::Win32::Graphics::Dwm::{
     DwmSetWindowAttribute, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND,
 };
 use windows::Win32::Graphics::Gdi::{
-    BeginPaint, CreateFontW, CreateSolidBrush, DeleteObject, EndPaint, GetMonitorInfoW, HBRUSH,
-    HDC, HFONT, InvalidateRect, MONITORINFO, MonitorFromPoint, PAINTSTRUCT, SetBkColor, SetTextColor,
+    BeginPaint, CreateFontW, CreateSolidBrush, DeleteObject, EndPaint, GetMonitorInfoW,
+    InvalidateRect, MonitorFromPoint, SetBkColor, SetTextColor, HBRUSH, HDC, HFONT, MONITORINFO,
+    PAINTSTRUCT,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::System::WindowsProgramming::MulDiv;
 use windows::Win32::UI::Controls::{
-    InitCommonControlsEx, INITCOMMONCONTROLSEX, ICC_STANDARD_CLASSES,
+    InitCommonControlsEx, ICC_STANDARD_CLASSES, INITCOMMONCONTROLSEX,
 };
 use windows::Win32::UI::HiDpi::{
     GetDpiForSystem, GetDpiForWindow, SetProcessDpiAwarenessContext,
@@ -29,11 +30,11 @@ use windows::Win32::UI::WindowsAndMessaging::{
     GetWindowLongPtrW, LoadCursorW, PostQuitMessage, RegisterClassExW, SendMessageW,
     SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow, TranslateMessage,
     CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA,
-    GWLP_WNDPROC, HTCLIENT, IDC_ARROW, MINMAXINFO, SW_HIDE, SW_SHOW, WM_COMMAND, WM_CREATE,
-    WM_CHAR, WM_CTLCOLOREDIT, WM_DESTROY, WM_ERASEBKGND, WM_GETMINMAXINFO, WM_KEYDOWN,
-    WM_MOUSEMOVE, WM_NCCALCSIZE, WM_NCHITTEST, WM_NEXTDLGCTL, WM_PAINT, WM_SETFONT, WM_SIZE,
-    WNDCLASSEXW, WINDOW_EX_STYLE, WINDOW_STYLE, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS,
-    WS_POPUP, WS_TABSTOP, WS_THICKFRAME, WS_VISIBLE,
+    GWLP_WNDPROC, HTCLIENT, IDC_ARROW, MINMAXINFO, SW_HIDE, SW_SHOW, WINDOW_EX_STYLE, WINDOW_STYLE,
+    WM_CHAR, WM_COMMAND, WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_ERASEBKGND, WM_GETMINMAXINFO,
+    WM_KEYDOWN, WM_MOUSEMOVE, WM_NCCALCSIZE, WM_NCHITTEST, WM_NEXTDLGCTL, WM_PAINT, WM_SETFONT,
+    WM_SIZE, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_POPUP, WS_TABSTOP,
+    WS_THICKFRAME, WS_VISIBLE,
 };
 
 use crate::model::Model;
@@ -160,7 +161,10 @@ impl Palette {
         place_window(&state);
         let state_ptr = Box::into_raw(state);
 
-        Ok(Self { hwnd, state: state_ptr })
+        Ok(Self {
+            hwnd,
+            state: state_ptr,
+        })
     }
 
     /// The window's handle.
@@ -369,11 +373,8 @@ unsafe extern "system" fn window_procedure(
             );
 
             // The field keeps the arrow keys for the palette's list.
-            let previous = SetWindowLongPtrW(
-                edit,
-                GWLP_WNDPROC,
-                edit_procedure as *const () as isize,
-            );
+            let previous =
+                SetWindowLongPtrW(edit, GWLP_WNDPROC, edit_procedure as *const () as isize);
             state.edit_proc = previous;
 
             if let Ok(renderer) = Renderer::new(hwnd) {
@@ -445,9 +446,7 @@ unsafe extern "system" fn window_procedure(
                     if scale > 0.0 {
                         let metrics = state.theme.metrics;
                         let list_top = metrics.padding + metrics.field_height + metrics.list_gap;
-                        state
-                            .model
-                            .row_at(y / scale, list_top, metrics.row_height)
+                        state.model.row_at(y / scale, list_top, metrics.row_height)
                     } else {
                         None
                     }
@@ -571,18 +570,19 @@ fn place_window(state: &State) {
     let metrics = state.theme.metrics;
     // While the window is being created its own DPI is not known yet, so the
     // system's is the fallback.
-    let dpi = unsafe {
-        GetDpiForWindow(state.hwnd)
-            .max(GetDpiForSystem())
-            .max(96)
-    } as f32;
+    let dpi = unsafe { GetDpiForWindow(state.hwnd).max(GetDpiForSystem()).max(96) } as f32;
     let scale = dpi / 96.0;
     let width = (metrics.width * scale) as i32;
     let height = (content_height(metrics, state.model.rows.len()) * scale) as i32;
 
     let mut cursor = POINT::default();
     let _ = unsafe { windows::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut cursor) };
-    let monitor = unsafe { MonitorFromPoint(cursor, windows::Win32::Graphics::Gdi::MONITOR_DEFAULTTONEAREST) };
+    let monitor = unsafe {
+        MonitorFromPoint(
+            cursor,
+            windows::Win32::Graphics::Gdi::MONITOR_DEFAULTTONEAREST,
+        )
+    };
     let mut info = MONITORINFO {
         cbSize: std::mem::size_of::<MONITORINFO>() as u32,
         ..Default::default()

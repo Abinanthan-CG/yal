@@ -1,4 +1,4 @@
-﻿//! The palette's paint: Direct2D shapes and DirectWrite text.
+//! The palette's paint: Direct2D shapes and DirectWrite text.
 //!
 //! The renderer owns no window state. It draws a [`Model`] with a [`Theme`]
 //! onto a target bound to one window handle.
@@ -9,19 +9,19 @@ use windows::Win32::Graphics::Direct2D::{
     Common::{
         D2D1_ALPHA_MODE_PREMULTIPLIED, D2D1_COLOR_F, D2D1_PIXEL_FORMAT, D2D_RECT_F, D2D_SIZE_U,
     },
+    D2D1CreateFactory, ID2D1Factory, ID2D1HwndRenderTarget, ID2D1SolidColorBrush, ID2D1StrokeStyle,
     D2D1_DRAW_TEXT_OPTIONS_CLIP, D2D1_ELLIPSE, D2D1_FACTORY_TYPE_SINGLE_THREADED,
     D2D1_FEATURE_LEVEL_DEFAULT, D2D1_HWND_RENDER_TARGET_PROPERTIES, D2D1_PRESENT_OPTIONS_NONE,
     D2D1_RENDER_TARGET_PROPERTIES, D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1_RENDER_TARGET_USAGE_NONE,
-    D2D1_ROUNDED_RECT, D2D1CreateFactory, ID2D1Factory, ID2D1HwndRenderTarget,
-    ID2D1SolidColorBrush, ID2D1StrokeStyle,
+    D2D1_ROUNDED_RECT,
 };
 use windows::Win32::Graphics::DirectWrite::{
+    DWriteCreateFactory, IDWriteFactory, IDWriteTextFormat, IDWriteTextLayout,
     DWRITE_FACTORY_TYPE_SHARED, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL,
     DWRITE_FONT_WEIGHT, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_WEIGHT_SEMI_BOLD,
     DWRITE_TEXT_ALIGNMENT, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_TEXT_ALIGNMENT_LEADING,
     DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_TRIMMING, DWRITE_TRIMMING_GRANULARITY_CHARACTER,
-    DWRITE_WORD_WRAPPING_NO_WRAP, DWriteCreateFactory, IDWriteFactory, IDWriteTextFormat,
-    IDWriteTextLayout,
+    DWRITE_WORD_WRAPPING_NO_WRAP,
 };
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
 use windows_numerics::Vector2;
@@ -180,7 +180,11 @@ impl Renderer {
         if let Some((_, brush)) = self.brushes.iter().find(|(held, _)| *held == color) {
             return Some(brush.clone());
         }
-        let brush = unsafe { self.target.CreateSolidColorBrush(&to_d2d(color), None).ok()? };
+        let brush = unsafe {
+            self.target
+                .CreateSolidColorBrush(&to_d2d(color), None)
+                .ok()?
+        };
         self.brushes.push((color, brush.clone()));
         Some(brush)
     }
@@ -320,7 +324,8 @@ impl Renderer {
                                 self.target.DrawTextLayout(
                                     Vector2 {
                                         X: icon_left,
-                                        Y: icon_top + (metrics.icon_size - metrics.icon_text_size) / 2.0
+                                        Y: icon_top
+                                            + (metrics.icon_size - metrics.icon_text_size) / 2.0
                                             - 1.0,
                                     },
                                     &layout,
@@ -373,9 +378,12 @@ impl Renderer {
             }
 
             if !row.detail.is_empty() {
-                if let Some(layout) =
-                    self.layout(&row.detail, &self.detail_format, text_width, metrics.detail_size)
-                {
+                if let Some(layout) = self.layout(
+                    &row.detail,
+                    &self.detail_format,
+                    text_width,
+                    metrics.detail_size,
+                ) {
                     if let Some(brush) = self.brush(theme.text_dim) {
                         unsafe {
                             self.target.DrawTextLayout(
@@ -458,12 +466,8 @@ impl Renderer {
         let width = 1.4 * scale;
         if let Some(brush) = self.brush(theme.text_dim) {
             unsafe {
-                self.target.DrawEllipse(
-                    &ellipse,
-                    &brush,
-                    width,
-                    None::<&ID2D1StrokeStyle>,
-                );
+                self.target
+                    .DrawEllipse(&ellipse, &brush, width, None::<&ID2D1StrokeStyle>);
                 self.target
                     .DrawLine(center, handle, &brush, width, None::<&ID2D1StrokeStyle>);
             }
@@ -482,7 +486,11 @@ impl Renderer {
             return None;
         }
         let wide: Vec<u16> = text.encode_utf16().collect();
-        unsafe { self.dwrite.CreateTextLayout(&wide, format, width, size * 2.0).ok() }
+        unsafe {
+            self.dwrite
+                .CreateTextLayout(&wide, format, width, size * 2.0)
+                .ok()
+        }
     }
 }
 

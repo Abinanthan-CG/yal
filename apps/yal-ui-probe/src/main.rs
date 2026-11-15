@@ -34,11 +34,7 @@ fn main() {
         },
         None => {
             let light = arguments.iter().any(|argument| argument == "--light");
-            let theme = if light {
-                Theme::light()
-            } else {
-                Theme::dark()
-            };
+            let theme = if light { Theme::light() } else { Theme::dark() };
             let name = if light { "light" } else { "dark" }.to_string();
             (theme, name)
         }
