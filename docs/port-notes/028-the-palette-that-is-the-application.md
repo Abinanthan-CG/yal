@@ -86,20 +86,38 @@ Measured on the release build, on this machine:
 | | working set | private | processes |
 |---|---|---|---|
 | the native palette alone | 57.7 MB | 36.8 MB | 1 |
-| the application, native palette and all | 64.7 MB | 40.9 MB | 1 |
-| the whole tree, with the browser window | 391.7 MB | 212.9 MB | 6 |
+| the application, before the browser window was made on demand | 391.7 MB | 212.9 MB | 6 |
+| **the application, now** | **58.8 MB** | **37.9 MB** | **1** |
 
-The first two rows are the budget: under 40 MB resident is met on private
-bytes, one process, no second runtime. The third row is the problem, and it
-is not the palette's problem.
+The last row is the budget: under 40 MB of private bytes, one process, no
+second runtime, 0.19 s of CPU to start and open the palette. The middle row
+is what it was an hour earlier.
 
-**The browser window is still created at startup, and it costs 327 MB.**
-Even though it is hidden, Tauri creates the webview, and WebView2 starts
-six processes: the browser host, the GPU process, the network service, the
-storage service, the crash handler and the renderer. The palette does not
-need any of them. The settings screens still do, so the window has to
-exist - but it does not have to exist at startup, and that is the next
-step.
+**The browser window was the whole of the difference.** Even hidden, Tauri
+created the webview, and WebView2 started five more processes - the browser
+host, the GPU process, the network service, the storage service and the
+renderer - for a window nobody was looking at. That was 330 MB.
 
-Until then, the honest statement is: the palette is light, and the
-application that carries it is not, because it still carries a browser.
+So the window is not in the configuration any more. It is made when the
+settings screen is asked for, and it is made *before* the screen is
+opened, so the browser shows the right screen the moment it appears. The
+tray's Settings item opens it; `yal.exe --settings` opens it too, which is
+how the path is checked.
+
+The settings screens are still drawn by the browser. That is the next
+step, not this one: the destination is a native settings pane, and until it
+exists the browser is a cost the user pays only when they ask for it.
+
+## Where the app stands against the app it replaces
+
+The whole tree, measured the same way as
+[port note 024](024-the-weight-of-the-app.md):
+
+| | working set | processes |
+|---|---|---|
+| YAL, launching things | 58.8 MB | 1 |
+| YAL, with the settings open | 391.7 MB | 6 |
+| Raycast for Windows | 914 MB | several |
+
+The common case is the one that matters, and it is now fifteen times
+lighter than the app this port replaces.

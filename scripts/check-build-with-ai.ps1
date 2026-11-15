@@ -77,7 +77,7 @@ if (-not $SkipFrontend) {
 
 # The application.
 Invoke-Check 'yal.exe --self-test' {
-    $binary = Join-Path $root 'target\x86_64-pc-windows-msvc\release\yal.exe'
+    $binary = Join-Path $root 'target\release\yal.exe'
     if (-not (Test-Path $binary)) {
         throw "$binary has not been built yet"
     }

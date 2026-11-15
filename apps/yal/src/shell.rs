@@ -71,6 +71,7 @@ pub fn usage() -> String {
      \x20 --version         Print the version\n\
      \x20 --help            Print this text\n\
      \x20 --autostart       Start hidden, the way the login item starts it\n\
+     \x20 --settings       Open the settings screen and stay there\n\
      \x20 --quit-running    Ask a running instance to quit\n\
      \x20 <link>            Open a tinycast:// link\n"
         .to_string()
@@ -83,6 +84,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     }
 
     let autostart = arguments.iter().any(|a| a == "--autostart");
+    let open_settings = arguments.iter().any(|a| a == "--settings");
     let link = arguments
         .iter()
         .find(|a| a.starts_with("tinycast://"))
@@ -92,10 +94,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             // A second launch hands its arguments to the running instance
             // rather than starting another one.
-            if let Some(window) = app.get_webview_window(PALETTE) {
-                let _ = window.show();
-                let _ = window.set_focus();
-            }
+            toggle_palette(app);
         }))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -249,11 +248,12 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
                 app.manage(watcher);
             }
             // The browser palette is the settings' home for now; the launcher
-            // itself is the native window above.
-            if let Some(window) = app.get_webview_window(PALETTE) {
-                let _ = window.hide();
-            }
-            if !autostart {
+            // itself is the native window above. The browser window is not
+            // made here: a web view that is loaded whether it is wanted or
+            // not costs more memory than the whole rest of the application.
+            if open_settings {
+                open_browser(&handle, "Settings")?;
+            } else if !autostart {
                 toggle_palette(&handle);
             }
             build_tray(&handle)?;
@@ -343,6 +343,10 @@ fn hide_palette(app: tauri::AppHandle) {
     if let Some(window) = app.get_webview_window(PALETTE) {
         let _ = window.hide();
     }
+    // The screen goes back to the root, so the browser window opens on the
+    // launcher next time rather than where it was left.
+    let palette = app.state::<PaletteState>();
+    palette.back_to_root();
 }
 
 /// Press a key.
@@ -484,6 +488,40 @@ fn file_action(app: tauri::AppHandle, action: String, path: String) -> Result<St
     }
 }
 
+/// Opens the browser window on a screen, making it if it is not there yet.
+///
+/// The launcher is native now, so the browser is only needed for the
+/// screens that have not been drawn natively yet - the settings. A browser
+/// engine that is loaded whether it is wanted or not costs more memory than
+/// the whole rest of the application, so it is loaded when it is asked for.
+///
+/// The screen is set before the window is made, because the window asks
+/// the application what to show as soon as it is there.
+fn open_browser(app: &tauri::AppHandle, screen: &str) -> Result<(), String> {
+    {
+        let palette = app.state::<PaletteState>();
+        palette.open_screen(screen);
+    }
+    if app.get_webview_window(PALETTE).is_none() {
+        let url = tauri::WebviewUrl::App("index.html".into());
+        tauri::WebviewWindowBuilder::new(app, PALETTE, url)
+            .title("YAL")
+            .decorations(false)
+            .always_on_top(true)
+            .skip_taskbar(true)
+            .resizable(false)
+            .inner_size(720.0, 460.0)
+            .center()
+            .build()
+            .map_err(|error| format!("the window could not be opened: {error}"))?;
+    }
+    if let Some(window) = app.get_webview_window(PALETTE) {
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+    Ok(())
+}
+
 /// Show the palette when it is hidden, hide it when it is shown.
 fn toggle_palette(app: &tauri::AppHandle) {
     // The palette is a window too, so the window that was in front before it
@@ -551,6 +589,16 @@ fn build_tray(app: &tauri::AppHandle) -> Result<(), String> {
             let id = event.id().as_ref();
             match id {
                 "Open YAL" => toggle_palette(app),
+                "Settings" => {
+                    if let Err(error) = open_browser(app, "Settings") {
+                        eprintln!("yal: {error}");
+                    }
+                }
+                "Support Tinycast" => {
+                    if let Err(error) = tc_platform_win::open("https://tinycast.dev/support") {
+                        eprintln!("yal: {error}");
+                    }
+                }
                 "Quit YAL" => app.exit(0),
                 _ => {}
             }

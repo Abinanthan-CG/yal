@@ -1115,3 +1115,31 @@ checked by `xtask parity --check` rather than by a reviewer reading
 **What this does not change.** Nothing about the shipped application. The
 rule is about the repository's own machinery, and it is enforced where the
 machinery lives.
+## 2026-11-15 - The browser window is made when it is wanted, not when the app starts
+
+**Question.** The launcher is now native. The browser window that remains
+carries the settings screens, and Tauri was creating it at startup with
+`visible: false`. A hidden window is not a cheap window: creating the
+webview starts WebView2, which is five more processes, and they cost about
+330 MB. The resource budget says the application must stay under 40 MB
+resident.
+
+**Options.** (a) Keep the window at startup and accept the cost. (b) Make
+the window on demand and let the settings screens be the one thing that
+loads a browser. (c) Drop the browser entirely and draw the settings
+natively.
+
+**Decision.** (b), for now. The window is no longer in the configuration at
+all; it is made when the settings screen is asked for, and it is made
+before the screen is opened so the browser shows the right screen the
+moment it appears. (c) is the destination and is still ahead.
+
+**Why.** The budget is a release requirement, and "the user never opens the
+settings" is the common case. A browser engine that is loaded whether it is
+wanted or not is a cost paid for a feature that is not being used. The
+tray's Settings item and a `--settings` switch both open it on demand, so
+the path is reachable and is checked.
+
+**What this does not change.** The browser palette still exists and still
+works; it is simply not there until it is wanted. The ledger rows for the
+settings screens stay as they are.

@@ -553,14 +553,16 @@ user chooses is run
 ([port note 028](docs/port-notes/028-the-palette-that-is-the-application.md)).
 `tc-ui` can now be driven by an application - it asks what happened and
 takes the answer back - and the rows run through one `Runner`, so the two
-palettes cannot drift apart. Measured on the release build: the native
-palette alone is 57.7 MB working set and 36.8 MB private in one process,
-and the application with it is 64.7 MB and 40.9 MB.
+palettes cannot drift apart.
 
-The browser window is still created at startup, and it is the rest of the
-cost: the whole tree is 391.7 MB working set across six processes, because
-WebView2 starts five of them for a window nothing is looking at. Removing
-that window from the startup path is the next step towards the budget.
+The browser window is no longer created at startup. It was the whole of the
+difference: even hidden, it started five WebView2 processes and cost about
+330 MB. It is made now when the settings screen is asked for - from the
+tray, or with `yal.exe --settings` - and not before. Measured on the
+release build, the application is now **58.8 MB working set, 37.9 MB
+private, one process, 0.19 s of CPU** - under the 40 MB budget, against
+Raycast's 914 MB. The settings screens are still the browser's; that is
+the next step, not this one.
 
 The release path itself had never run, and the reason was in one line of
 the release workflow ([port note 027](docs/port-notes/027-the-workflow-github-cannot-read.md)):
