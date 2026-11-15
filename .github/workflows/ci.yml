@@ -118,9 +118,6 @@ jobs:
       - name: The parity ledger is current
         run: cargo run --quiet -p xtask -- parity --check
 
-      - name: Check that every command in BUILD_WITH_AI.md works
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-build-with-ai.ps1 -SkipDist
-
       - name: No placeholders in shipped code
         shell: pwsh
         run: |
@@ -145,6 +142,12 @@ jobs:
 
       - name: Build the release binaries
         run: cargo build --release --workspace
+
+      # The document's commands are checked after the binaries are built,
+      # because two of them - the self-test and the release build - need
+      # the binaries to exist.
+      - name: Check that every command in BUILD_WITH_AI.md works
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-build-with-ai.ps1 -SkipDist
 
       - name: The self-test passes
         run: ./target/release/yal.exe --self-test
