@@ -959,3 +959,29 @@ renderers are one product rather than two.
 asset is taken from any other launcher. Raycast was studied for behaviour
 only; every behaviour this port adopts is written again in Rust with its own
 tests.
+
+## 2026-11-15 - One runtime, and it stays one
+
+**Question.** A study of Raycast for Windows (port note 025) found it runs a
+.NET host, a Node.js backend and a native core at the same time, with
+1149 IPC methods across one message channel. Should this port grow
+something similar?
+
+**Decision.** No. YAL is one Rust binary. The calculator, the clipboard, the
+snippets, the file index, the settings and the palette's decisions are all
+Rust in one process, and the only process YAL ever spawns is the one the
+user asked to open.
+
+**Why.** Raycast's Node backend is where its extensions, its AI and its
+indexer live; a runtime that can load a third party's code is a reasonable
+place for that. This port has no extensions and no AI in scope, so the
+backend would be carrying nothing but our own code - while adding a runtime
+to install, keep alive, secure and pay for on every launch. The same study
+shows what a second runtime costs: 914-929 MB of working set, of which the
+web engine alone is 488 MB.
+
+**What this does not change.** The parity ledger. A runtime is not a feature
+row. It also does not forbid the *idea* of a second runtime - if a future
+feature genuinely needs one, that is a decision to take when the feature
+exists and its cost can be measured, not a prohibition written down in
+advance.
