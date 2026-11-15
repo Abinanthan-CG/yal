@@ -38,3 +38,9 @@
 .DS_Store
 Thumbs.db
 *.swp
+
+# The native palette probe's own output (the screenshots that are worth
+# keeping are copied into docs/port-notes/images by hand)
+probe.log
+probe.err
+palette-*.png

@@ -14,12 +14,15 @@
 param(
   [int]$SettleSeconds = 12,
   [int]$SampleSeconds = 10,
-  [switch]$HideWindow
+  [switch]$HideWindow,
+  [string]$Exe = "",
+  [string]$Label = "YAL"
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
-$exe  = Join-Path $root 'target\release\yal.exe'
+if ($Exe -eq "") { $Exe = Join-Path $root 'target\release\yal.exe' } else { $Exe = $Exe }
+$exe = $Exe
 
 if (-not (Test-Path $exe)) {
   "release build not found at $exe - run: cargo build -p yal --release"
@@ -112,8 +115,8 @@ if ($rayRoots) {
   ""
 }
 
-"===== YAL (this build) ====="
-"build: " + (Get-Item $exe).LastWriteTime
+"===== " + $Label + " (this build) ====="
+"build: " + (Get-Item $exe).LastWriteTime + "  (" + $exe + ")"
 $proc = Start-Process -FilePath $exe -PassThru
 "launched yal.exe pid=$($proc.Id)"
 Start-Sleep -Seconds $SettleSeconds

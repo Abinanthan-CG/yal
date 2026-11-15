@@ -913,3 +913,49 @@ for Raycast and made YAL look heavier. Raycast also owns a WebView2 and two
 `Dimmer` helpers, so its real figure is 914 MB and YAL is the lighter of the
 two. The measurement script now counts whole trees and stops at apps Raycast
 happened to launch.
+
+## 2026-11-15 - The palette is drawn by the system, and wears tokens
+
+**Question.** The budget says the browser engine has to go. What replaces it,
+and what happens to the design?
+
+**Options.** (a) A Rust UI toolkit - Slint, egui, iced. (b) Raw Win32 with
+Direct2D and DirectWrite. (c) Keep the web view for the palette and put the
+native surface only where a browser cannot go.
+
+**Decision.** (b). `crates/tc-ui` is the native surface: a borderless window
+painted with Direct2D and typed into with a real Windows edit control.
+Measured, not projected: **50.8 MB working set, 36 MB private, 0.0% idle
+CPU, two processes**, open in 98-175 ms. That is about seven times lighter
+than the current webview build and about eighteen times lighter than
+Raycast, and it meets all three lines of the budget in port note 024.
+
+**Why.** A palette is a text field, a list and a keyboard; none of that
+needs Chromium. A toolkit like Slint or egui would have been a reasonable
+way to get there, but it would have brought its own rendering, its own font
+handling and its own idea of a widget, and it would have cost memory the
+budget cannot spare. Raw Win32 costs nothing beyond what Windows already
+has, and the edit control means the keyboard, the input method, the
+clipboard and the selection are the system's own - which is what a launcher
+that is opened dozens of times a day needs.
+
+**What this does not change.** The engine crates. The calculator, the
+clipboard, the snippets, the file index and the palette's decisions are
+untouched. Tauri and Solid stay until the native palette has replaced the
+palette surface, and the parity ledger does not move: a renderer is not a
+feature row.
+
+**The design system travels as tokens.** A native renderer cannot run CSS,
+so the question "can I have my own design style" is answered with a *style
+pack*: a small JSON file of colours, measurements and a font, holding the
+values a design system already has. Colours are `#rgb`, `#rrggbb` or
+`#rrggbbaa`, so a design library's own hex values are pasted in unchanged,
+and every field except the colours is optional - a pack names what it wants
+to change and inherits the rest of the appearance. Two packs ship with the
+crate. The same tokens are meant to drive the Solid frontend too, so the two
+renderers are one product rather than two.
+
+**What this does not change either.** No third-party code, table, naming or
+asset is taken from any other launcher. Raycast was studied for behaviour
+only; every behaviour this port adopts is written again in Rust with its own
+tests.

@@ -521,6 +521,16 @@ whole process trees, YAL is 367 MB against Raycast's 914 MB - the port is alread
 lighter of the two, and the native palette is the destination that makes it ten times
 lighter again.
 
+That destination is now measured rather than projected. `crates/tc-ui` is a native
+palette - a borderless Win32 window painted with Direct2D and typed into with a real
+Windows edit control - and `apps/yal-ui-probe` opens it: **50.8 MB working set, 36 MB
+private, 0.0% idle CPU, two processes, on screen in 98-175 ms**. All three lines of the
+budget are met. The native palette cannot run CSS, so the design system travels as
+*style packs* instead: a small JSON file of colours, measurements and a font, read by
+`crates/tc-ui/src/tokens.rs`, with two packs shipped and `--style-pack` on the probe.
+The decision is in `docs/DECISIONS.md` (2026-11-15); the picture is
+[docs/port-notes/images/native-palette-midnight.png](docs/port-notes/images/native-palette-midnight.png).
+
 ## Open problems
 
 - `xtask i18n` needs the upstream clone present. The generated string table is committed, so a
