@@ -1,6 +1,6 @@
 //! Running a command for real, and stopping it.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::runner::{is_command_not_found, last_line, tail_of_file, RunOutcome, ShellRunner};
@@ -74,9 +74,17 @@ fn the_command_runs_in_its_run_in_folder() {
     let mut running = ShellRunner::spawn(&plan).expect("the command starts");
     let outcome = running.wait();
     let printed = outcome.stdout.trim();
-    assert!(
-        printed.eq_ignore_ascii_case(&directory.path().to_string_lossy()),
-        "{printed}"
+    // The two are the same folder, but they need not be spelled the same way:
+    // Windows may hand the temporary folder over in its short form
+    // (`RUNNER~1`) while the command reports the long one. Resolving both
+    // sides is the only honest way to compare them.
+    let printed_path = std::fs::canonicalize(printed).unwrap_or_else(|_| PathBuf::from(printed));
+    let expected_path =
+        std::fs::canonicalize(directory.path()).unwrap_or_else(|_| directory.path().to_path_buf());
+    assert_eq!(
+        printed_path, expected_path,
+        "the command ran in {printed} rather than in {}",
+        directory.path().display()
     );
 }
 
