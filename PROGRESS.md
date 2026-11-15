@@ -531,6 +531,22 @@ budget are met. The native palette cannot run CSS, so the design system travels 
 The decision is in `docs/DECISIONS.md` (2026-11-15); the picture is
 [docs/port-notes/images/native-palette-midnight.png](docs/port-notes/images/native-palette-midnight.png).
 
+The study of the app this port replaces was taken further with a real reverse-engineering
+toolchain - Ghidra, Rizin and ILSpy, installed outside the repository - and by opening
+its encrypted databases with its own data layer. Three findings came out of it
+([port note 026](docs/port-notes/026-the-theme-the-ranking-and-the-export-file.md)):
+
+- a theme is **fourteen colour roles plus a name and an appearance**, stored in the
+  settings database - which is what our style packs have to be able to express
+- the ranking record is `{itemId, score, searchTerms, openedAt}` - it remembers the
+  *queries* that reached an item, not just the item, which is the one behaviour worth
+  taking from it
+- the export file is encrypted with a key derived by scrypt from a **password the user
+  chose**, so the import-from-Raycast feature is possible after all - fifty ledger rows
+  stop being a `NOT PORTED` decision, once a tested reader exists
+
+The scripts that made the study repeatable are in `scripts/re/`.
+
 ## Open problems
 
 - `xtask i18n` needs the upstream clone present. The generated string table is committed, so a

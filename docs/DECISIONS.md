@@ -985,3 +985,49 @@ row. It also does not forbid the *idea* of a second runtime - if a future
 feature genuinely needs one, that is a decision to take when the feature
 exists and its cost can be measured, not a prohibition written down in
 advance.
+
+## 2026-11-15 - The ranking remembers the queries, not only the items
+
+**Question.** Our `launcher-ranking.json` holds a list of items and their
+scores. A study of the app this port replaces (port note 026) found that its
+ranking record carries four things: an identifier, a score, the *list of
+search strings that led to the item*, and the time it was last opened. Is
+that worth taking?
+
+**Decision.** Yes. The ranking record becomes four fields - an identifier, a
+score, the search terms that reached it, and when it was last opened.
+
+**Why.** A score alone cannot express the most useful thing a launcher
+learns. If a user typed "wha" and opened an application, then "wha" should
+find that application for ever after - even when a plain substring match
+would rank something else first. Remembering the queries that reached an
+item captures that; a number cannot. It also makes the ranking explainable:
+the record says *why* an item is where it is, which a bare score does not.
+
+**What this does not change.** The parity ledger, until the reader and its
+tests exist. And the arithmetic that turns a visit into a score stays ours:
+the shape is taken, the formula is written from scratch and tested here.
+
+## 2026-11-15 - The import from Raycast is possible after all
+
+**Question.** Fifty ledger rows describe importing a user's settings out of
+Raycast. The export file is encrypted, and an earlier study could not work
+out how - so the rows were left as `NOT PORTED`. Port note 026 settled it.
+What now?
+
+**Decision.** The import is a feature, not a one-off script. The format is
+fully specified: a magic, a gzipped JSON header holding the salt and the
+initialisation vector, and a gzipped JSON payload encrypted with AES-256-GCM
+under a key derived by scrypt from a **password the user chose**. Nothing
+device-specific is mixed in, so a user can export with a password we know and
+we can read the file.
+
+**Why.** The user's own data, in the user's own hands, with the user's own
+password - that is the difference between reading a file the user gave us and
+breaking into an application. The alternative, leaving the rows as
+`NOT PORTED`, is a decision made for a reason that no longer holds.
+
+**What this does not change.** The rows stay `NOT PORTED` until a reader
+exists and has been tested against a real exported file. Nothing is claimed
+before it is run. The import covers quicklinks, snippets, notes and settings -
+the four categories in scope; the rest of the export is not.
