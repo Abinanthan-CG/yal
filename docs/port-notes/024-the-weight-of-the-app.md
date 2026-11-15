@@ -1,6 +1,6 @@
 # 024 - The weight of the app
 
-Date: 2026-11-14 (numbers corrected 2026-11-15)
+Date: 2026-11-14 (numbers corrected 2026-11-15; native palette measured 2026-11-15)
 Subject: what YAL costs at runtime, measured against the app it is meant to replace
 
 ## Why this note exists
@@ -136,14 +136,93 @@ WebView2's browser arguments (`--disable-gpu`, renderer process limits) can cut
 tens of megabytes, at the cost of relying on flags the runtime does not
 promise. A mitigation, not a fix.
 
+## The native palette, measured
+
+Option 2 above is a projection. This is the measurement.
+
+`crates/tc-ui` is a native palette: a borderless Win32 window painted with
+Direct2D, typed into with a real Windows edit control, so the keyboard, the
+input method, the clipboard and the selection are Windows' own rather than a
+browser's. `apps/yal-ui-probe` opens it with a fixed list and prints what it
+cost.
+
+Measured on the development machine, Windows 11, system DPI 144, release build
+of 2026-11-15:
+
+| | Working set | Private bytes | Idle CPU | Processes |
+| --- | --- | --- | --- | --- |
+| **Native palette (probe)** | **50.8 MB** | **36 MB** | **0.0%** | **2** |
+| YAL with the web view, palette open | 367 MB | 174 MB | 0.3-6.1% | 7 |
+| Raycast, whole tree | 914-929 MB | ~394 MB private | 0.2-0.6% | 10 |
+
+Time from launch to the window being on screen: **98-175 ms**, most of it
+Windows' own window creation.
+
+Read against the budget above:
+
+| Budget | Target | Native palette | Verdict |
+| --- | --- | --- | --- |
+| Resident, nothing open | < 40 MB private | 36 MB private | met |
+| Idle CPU | < 0.5% of one core | 0.0% | met |
+| Cold start to first paint | < 250 ms | 98-175 ms | met |
+
+The native palette is **about seven times lighter than the current webview
+build** and **about eighteen times lighter than Raycast**. It is the only
+option that meets all three lines of the budget outright.
+
+The picture is `docs/port-notes/images/native-palette-midnight.png`: the
+palette wearing the `midnight` style pack, with a search glyph, a hairline
+around the field, the selection marked by a slab and an accent bar, and a
+window the size of its content rather than a fixed height.
+
+## The design system travels as tokens, not as CSS
+
+The native palette cannot run CSS. That is a real loss - a design library
+that ships stylesheets has nothing to hand a Direct2D renderer - so the
+answer is to ask the design library for its *tokens* instead of its
+stylesheets.
+
+A **style pack** is a small JSON file of colours, measurements and a font:
+the same values a design system already holds, in a form the renderer can
+read. `crates/tc-ui/src/tokens.rs` reads one, and `Theme` is what comes out.
+
+```json
+{
+  "name": "midnight",
+  "appearance": "dark",
+  "colors": {
+    "background": "#121214",
+    "field": "#1e1e21",
+    "text": "#f4f4f8",
+    "textDim": "#8b8b93",
+    "onIcon": "#ffffff",
+    "selection": "#33333a",
+    "accent": "#5b8dff",
+    "border": "#ffffff24"
+  },
+  "metrics": { "width": 700, "rowHeight": 44, "radius": 12 },
+  "font": "Segoe UI"
+}
+```
+
+Every field is optional except the colours: a pack names what it wants to
+change and inherits the rest of the appearance. Colours are written as
+`#rgb`, `#rrggbb` or `#rrggbbaa`, so a design system's own hex values can be
+pasted in unchanged. Two packs ship with the crate - `midnight` and
+`daylight` - and the probe wears one with `--style-pack <file>`.
+
+This is the port's answer to "can I have my own design style": yes, and it
+does not need the web view to have it. The tokens are also what the Solid
+frontend will read, so the two renderers can be made to look like the same
+product.
+
 ## Where this leaves the port
 
-Option 2 is the destination, because it is the only one that reaches the
-budget outright, and the measurement says the weight is in the UI runtime
-rather than in the engine. Option 1 is no longer the first move: it trades the
-app's best quality - instant opening - for a resident number that only matters
-while the app is not being used. Option 3 is a mitigation that can be applied
-to whatever UI ends up shipping.
+Option 2 is the destination, and it is now measured rather than projected.
+Option 1 is no longer the first move: it trades the app's best quality -
+instant opening - for a resident number that only matters while the app is
+not being used. Option 3 is a mitigation that can be applied to whatever UI
+ends up shipping.
 
 ## What was measured, and what was not
 
@@ -153,8 +232,9 @@ difference between working set and private bytes.
 
 Not measured yet: memory under a real workload (a populated file index, a
 clipboard history with images, the search index at scale), disk footprint of the
-stores, the cost of the features that are not built yet, and what a native
-palette actually weighs - which is a number to take from a prototype, not to
-project. Those will be measured with the same script once those things exist,
-and the budget above will be checked against them rather than against an idle
-window.
+stores, the cost of the features that are not built yet, and the native
+palette with a real workload behind it - the probe opens a fixed list of ten
+rows, and the shipping palette will have the file index, the clipboard
+history and the calculator behind it. Those will be measured with the same
+script once those things exist, and the budget above will be checked against
+them rather than against an idle window.

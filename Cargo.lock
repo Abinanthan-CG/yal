@@ -4126,6 +4126,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc-ui"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "windows",
+ "windows-numerics",
+]
+
+[[package]]
 name = "tc-windows"
 version = "0.1.0"
 dependencies = [
@@ -5373,6 +5383,13 @@ version = "0.1.0"
 dependencies = [
  "tc-core",
  "windows",
+]
+
+[[package]]
+name = "yal-ui-probe"
+version = "0.1.0"
+dependencies = [
+ "tc-ui",
 ]
 
 [[package]]

@@ -1,0 +1,23 @@
+[package]
+name = "tc-ui"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "YAL port: the native palette window"
+
+[dependencies]
+windows = { workspace = true, features = [
+    "Win32_Graphics_Direct2D",
+    "Win32_Graphics_Direct2D_Common",
+    "Win32_Graphics_DirectWrite",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_System_Com",
+    "Win32_System_WindowsProgramming",
+    "Win32_UI_Controls","Win32_UI_HiDpi",
+] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+windows-numerics = "0.3"

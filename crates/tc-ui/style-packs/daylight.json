@@ -1,0 +1,28 @@
+{
+  "name": "daylight",
+  "appearance": "light",
+  "colors": {
+    "background": "#fbfbfd",
+    "field": "#f0f0f4",
+    "text": "#17171a",
+    "textDim": "#6f6f7a",
+    "onIcon": "#ffffff",
+    "selection": "#e3e3ea",
+    "accent": "#0a63d8",
+    "border": "#00000018"
+  },
+  "metrics": {
+    "width": 700,
+    "height": 460,
+    "padding": 12,
+    "fieldHeight": 48,
+    "rowHeight": 42,
+    "iconSize": 24,
+    "nameSize": 13.5,
+    "detailSize": 12,
+    "footerSize": 11.5,
+    "iconTextSize": 11.5,
+    "radius": 12
+  },
+  "font": "Segoe UI"
+}
