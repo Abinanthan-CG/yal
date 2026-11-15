@@ -679,10 +679,51 @@ fn load_reasons(root: &Path) -> Result<BTreeMap<String, String>> {
     Ok(reasons)
 }
 
+/// Whether the whole ledger loads.
+///
+/// The parity check reads `parity/parity.toml` and `PARITY.md`, but the ledger
+/// is also made of the pages, the reasons and the count checks - and those
+/// are read by other commands. A file that only one command reads is a file
+/// that can break without anybody noticing: a reason whose key was lost
+/// leaves a line that is not TOML at all, and the command that reads it
+/// fails long after the one that should have caught it.
+///
+/// So the check loads all of them, and says when a reason names a page that
+/// is not there - a typo there is silent, because the reason simply never
+/// reaches anybody.
+pub fn check_loadable() -> Result<()> {
+    let root = repo_root();
+    let pages = load_pages(&root)?;
+    let reasons = load_reasons(&root)?;
+
+    let known: std::collections::BTreeSet<&str> =
+        pages.iter().map(|page| page.page.as_str()).collect();
+    let unknown: Vec<&str> = reasons
+        .keys()
+        .map(|page| page.as_str())
+        .filter(|page| !known.contains(page))
+        .collect();
+    if !unknown.is_empty() {
+        bail!(
+            "parity/reasons.toml gives a reason for {} page(s) that are not there: {}",
+            unknown.len(),
+            unknown.join(", ")
+        );
+    }
+
+    let checks_path = root.join("parity").join("count_checks.toml");
+    let checks_text = std::fs::read_to_string(&checks_path)
+        .with_context(|| format!("reading {}", checks_path.display()))?;
+    let _: toml::Value = checks_text
+        .parse()
+        .context("parsing parity/count_checks.toml")?;
+
+    Ok(())
+}
+
 /// Path of the generated fragments.
 pub fn generated_dir() -> PathBuf {
-    repo_root().join("parity").join("parts").join("generated")
-}
+    repo_root().join("parity").join("parts").join("generated")}
 
 /// Print the rows on each count check's page, so the tagging rules can be
 /// written against what the generator actually produced.

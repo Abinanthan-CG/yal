@@ -183,6 +183,10 @@ pub struct Options {
 
 pub fn run(opts: &Options) -> Result<()> {
     let root = repo_root();
+    // The whole ledger has to load, not only the parts this command reads:
+    // a file that only one command reads is a file that can break without
+    // anybody noticing.
+    crate::ledger::check_loadable()?;
     let pages = load_pages(&root)?;
     let canonical_checks = load_count_checks(&root)?;
     let mut ledger = merge_parts(&root)?;
