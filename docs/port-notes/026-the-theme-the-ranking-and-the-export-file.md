@@ -78,9 +78,24 @@ spacing scale.
 
 The right answer for YAL is to keep our style packs *wider* than Raycast's -
 fonts, radius and spacing belong in a style pack, because that is what a
-design library wants to hand over - but to make sure the fourteen roles we
-have now can be *expressed*, and to add the ones Raycast has and we lack:
-a second background, a loader colour, and a named palette.
+design library wants to hand over - but to make sure the roles a design
+library uses can be *expressed*.
+
+That has been done. A style pack now carries:
+
+| Role | New? |
+| --- | --- |
+| `background`, `field`, `text`, `textDim`, `onIcon`, `selection`, `accent`, `border` | already there |
+| `backgroundSecondary` | **new** - a second surface for panels that sit on the first |
+| `loader` | **new** - the busy state |
+| `palette` | **new** - seven colours the rest of the interface draws from |
+| `hover` | already there, optional |
+
+A pack may name fewer palette colours than the palette holds - the rest are
+inherited - and never more: the extra ones are dropped rather than silently
+changing the shape of the palette. Three packs ship: `midnight`, `daylight`
+and `aurora`, the last one written in the shape a design library would hand
+over.
 
 ## 2. How the ranking works
 
