@@ -44,3 +44,7 @@ Thumbs.db
 probe.log
 probe.err
 palette-*.png
+
+# The reverse-engineering toolchain's own working files; the tools live
+# outside the repository in C:\Users\dabin\tools\rea
+/.re-tools/
