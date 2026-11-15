@@ -547,6 +547,35 @@ its encrypted databases with its own data layer. Three findings came out of it
 
 The scripts that made the study repeatable are in `scripts/re/`.
 
+The native palette is no longer a probe: it is the launcher. The hotkey
+opens it, the tray opens it, it searches the program index, and the row the
+user chooses is run
+([port note 028](docs/port-notes/028-the-palette-that-is-the-application.md)).
+`tc-ui` can now be driven by an application - it asks what happened and
+takes the answer back - and the rows run through one `Runner`, so the two
+palettes cannot drift apart. Measured on the release build: the native
+palette alone is 57.7 MB working set and 36.8 MB private in one process,
+and the application with it is 64.7 MB and 40.9 MB.
+
+The browser window is still created at startup, and it is the rest of the
+cost: the whole tree is 391.7 MB working set across six processes, because
+WebView2 starts five of them for a window nothing is looking at. Removing
+that window from the startup path is the next step towards the budget.
+
+The release path itself had never run, and the reason was in one line of
+the release workflow ([port note 027](docs/port-notes/027-the-workflow-github-cannot-read.md)):
+GitHub does not hand the `secrets` context to the `if` of a job or a step,
+so the workflow file was unreadable, and an unreadable workflow turns red
+in no time with no jobs and no reason in the repository. The certificate
+now travels through the job's environment instead. Three more things the
+release path needed and had never been given were added with it: the ARM64
+build tools, the target being built for, and an optional signing key.
+
+`scripts/check-workflows.py` now checks the workflow files the way GitHub
+checks them, so the next mistake of that kind is a failed build rather
+than a red cross on the repository. It runs in CI, and it has a self-test
+pointed at the exact file GitHub refused.
+
 ## Open problems
 
 - `xtask i18n` needs the upstream clone present. The generated string table is committed, so a

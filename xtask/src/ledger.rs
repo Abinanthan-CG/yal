@@ -723,7 +723,8 @@ pub fn check_loadable() -> Result<()> {
 
 /// Path of the generated fragments.
 pub fn generated_dir() -> PathBuf {
-    repo_root().join("parity").join("parts").join("generated")}
+    repo_root().join("parity").join("parts").join("generated")
+}
 
 /// Print the rows on each count check's page, so the tagging rules can be
 /// written against what the generator actually produced.

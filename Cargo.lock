@@ -5360,6 +5360,7 @@ dependencies = [
  "tc-platform",
  "tc-platform-win",
  "tc-search",
+ "tc-ui",
  "tc-windows",
 ]
 

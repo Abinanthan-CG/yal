@@ -307,6 +307,21 @@ unsafe extern "system" fn collect_window(handle: HWND, parameter: LPARAM) -> win
     windows::core::BOOL(1)
 }
 
+/// Whether Windows paints its apps dark.
+///
+/// Windows says so in the registry: the value under `AppsUseLightTheme` is
+/// zero when the apps are dark. A machine that does not say is assumed to
+/// be light, because that is what Windows has always been.
+pub fn apps_use_dark_theme() -> bool {
+    read_dword(
+        HKEY_CURRENT_USER,
+        r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+        "AppsUseLightTheme",
+    )
+    .map(|value| value == 0)
+    .unwrap_or(false)
+}
+
 /// A `DWORD` value in the registry.
 fn read_dword(root: HKEY, path: &str, name: &str) -> Option<u32> {
     let key = open_key(root, path, KEY_QUERY_VALUE)?;
