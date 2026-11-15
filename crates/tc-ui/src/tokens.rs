@@ -275,7 +275,9 @@ impl Tokens {
                 name_size: metrics.name_size.unwrap_or(base.metrics.name_size),
                 detail_size: metrics.detail_size.unwrap_or(base.metrics.detail_size),
                 footer_size: metrics.footer_size.unwrap_or(base.metrics.footer_size),
-                icon_text_size: metrics.icon_text_size.unwrap_or(base.metrics.icon_text_size),
+                icon_text_size: metrics
+                    .icon_text_size
+                    .unwrap_or(base.metrics.icon_text_size),
                 radius: metrics.radius.unwrap_or(base.metrics.radius),
                 list_gap: metrics.list_gap.unwrap_or(base.metrics.list_gap),
                 footer_height: metrics.footer_height.unwrap_or(base.metrics.footer_height),
