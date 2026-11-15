@@ -1086,3 +1086,32 @@ breaking into an application. The alternative, leaving the rows as
 exists and has been tested against a real exported file. Nothing is claimed
 before it is run. The import covers quicklinks, snippets, notes and settings -
 the four categories in scope; the rest of the export is not.
+
+## 2026-11-15 - The workflows are checked before GitHub checks them
+
+**Question.** The release workflow turned red on every push - in no time,
+with no jobs, and with a reason that was only in the run's annotations and
+nowhere in the repository. The file was valid YAML and valid against the
+published JSON Schema for GitHub workflows. What should stop this class of
+mistake from costing time again?
+
+**Decision.** The workflow files are checked by a script in the repository,
+`scripts/check-workflows.py`, before they are pushed and again in CI. The
+script enforces the rules GitHub enforces, including the one the schema
+does not: an `if` may not read a context GitHub does not give it, and
+`secrets` is not one of them. The script carries a self-test pointed at the
+exact file GitHub refused.
+
+**Why.** A schema check only catches what the schema knows. The rule that
+broke - context availability - is not in the schema, so it was found by
+GitHub, four pushes later, in a partial that the API returns empty and the
+HTML returns only after the page loads. The general rule this follows is
+the one the port already follows elsewhere: a thing that is checked by a
+machine we do not control, at a moment we do not choose, is checked by us
+first. The same reasoning is why the parity ledger is generated and
+checked by `xtask parity --check` rather than by a reviewer reading
+`PARITY.md`.
+
+**What this does not change.** Nothing about the shipped application. The
+rule is about the repository's own machinery, and it is enforced where the
+machinery lives.

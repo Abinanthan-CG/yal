@@ -17,6 +17,7 @@ tc-files = { path = "../../crates/tc-files" }
 tc-palette = { path = "../../crates/tc-palette" }
 tc-platform = { path = "../../crates/tc-platform" }
 tc-platform-win = { path = "../../crates/tc-platform-win" }
+tc-ui = { path = "../../crates/tc-ui" }
 tc-windows = { path = "../../crates/tc-windows" }
 tc-search = { path = "../../crates/tc-search" }
 serde = { workspace = true }

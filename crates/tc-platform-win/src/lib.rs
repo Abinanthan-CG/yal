@@ -27,7 +27,9 @@ pub use paths::windows_paths;
 pub use programs::programs;
 pub use quit::{signal_quit, QuitWatcher};
 pub use single_instance::{another_instance_is_running, WindowsSingleInstance};
-pub use system_actions::{is_available, mechanism, run, unavailable_reason, ExitMode, Mechanism};
+pub use system_actions::{
+    apps_use_dark_theme, is_available, mechanism, run, unavailable_reason, ExitMode, Mechanism,
+};
 pub use window_control::{
     apply_command, foreground_window, is_minimized, is_visible, list_windows, move_window, screens,
     set_window_rect, toggle_fullscreen, window_rect, ControlError, Outcome, WindowHandle,

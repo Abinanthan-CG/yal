@@ -4,20 +4,20 @@
 //! The palette window is created once and hidden, so the hotkey shows it
 //! instantly instead of building a window on every press.
 
+use std::sync::Arc;
 use tauri::Emitter;
 use tauri::Manager;
 use tauri::State;
-use tc_commands::catalog::{display_name, settings_key, CommandSettings};
-use tc_commands::model::CustomCommand;
-use tc_commands::runner::{is_command_not_found, ShellRunner};
+use tc_commands::catalog::{settings_key, CommandSettings};
 use tc_commands::store::CustomCommandStore;
 use tc_commands::COMMANDS_FILE;
 use tc_core::CommandId;
 use tc_platform::{Clipboard, FileSystem, Settings};
+use tc_ui::Theme;
 
-use crate::launcher::{
-    FileSearch, LauncherState, ResultRow, CALCULATOR_PREFIX, FILE_PREFIX, RANKING_FILE,
-};
+use crate::launcher::{FileSearch, LauncherState, ResultRow, RANKING_FILE};
+use crate::native::NativePalette;
+use crate::open::{run_custom, Runner};
 use crate::palette::{KeyOutcome, KeyStroke, PaletteState, PaletteView, SettingRow};
 
 /// The palette's label, so the window can be found again.
@@ -174,7 +174,10 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             if settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true") {
                 launcher.set_show_files(true);
             }
-            app.manage(launcher);
+            // The launcher is shared: the native palette searches it on its
+            // own thread, and the browser palette searches it here.
+            let launcher = Arc::new(launcher);
+            app.manage(Arc::clone(&launcher));
             // The palette: the screens, the keys and the settings it follows.
             let palette = PaletteState::new();
             {
@@ -212,12 +215,29 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
                 .get(WINDOW_MANAGEMENT_CYCLE)
                 .and_then(|value| tc_windows::geometry::WindowCycle::parse(&value))
                 .unwrap_or(tc_windows::geometry::WindowCycle::Off);
-            app.manage(tc_platform_win::window_control::WindowCommands::new(
+            let window_commands = Arc::new(tc_platform_win::window_control::WindowCommands::new(
                 gap, cycle,
             ));
+            app.manage(Arc::clone(&window_commands));
+            // The runner opens what the user chooses, whichever palette they
+            // chose it in. Quitting is the application's own business, so it
+            // is handed over rather than guessed at.
+            let quitter = handle.clone();
+            let runner = Arc::new(
+                Runner::new(Arc::clone(&launcher))
+                    .with_windows(Arc::clone(&window_commands))
+                    .with_quit(Arc::new(move || quitter.exit(0))),
+            );
+            app.manage(Arc::clone(&runner));
             // The settings store itself, so a setting that is changed in the
             // palette is written down and kept.
+            let theme = native_theme(&settings);
             app.manage(settings);
+            // The native palette: the window the user actually types into.
+            // It lives on a thread of its own, because a window with a
+            // message loop cannot live on a thread that is already busy.
+            let native = NativePalette::spawn(Arc::clone(&launcher), Arc::clone(&runner), theme)?;
+            app.manage(native);
             // The installer asks a running instance to quit before it replaces
             // the program files, so the app has to be listening for that. The
             // watcher holds the quit event open, so it is kept in the app's
@@ -228,13 +248,13 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             }) {
                 app.manage(watcher);
             }
+            // The browser palette is the settings' home for now; the launcher
+            // itself is the native window above.
             if let Some(window) = app.get_webview_window(PALETTE) {
-                if autostart {
-                    let _ = window.hide();
-                } else {
-                    let _ = window.show();
-                    let _ = window.set_focus();
-                }
+                let _ = window.hide();
+            }
+            if !autostart {
+                toggle_palette(&handle);
             }
             build_tray(&handle)?;
             if let Some(link) = &link {
@@ -268,13 +288,13 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 
 /// The rows that match the query, best first.
 #[tauri::command]
-fn search(launcher: State<'_, LauncherState>, query: String) -> Vec<ResultRow> {
+fn search(launcher: State<'_, Arc<LauncherState>>, query: String) -> Vec<ResultRow> {
     launcher.search(&query)
 }
 
 /// The rows with nothing typed.
 #[tauri::command]
-fn suggestions(launcher: State<'_, LauncherState>) -> Vec<ResultRow> {
+fn suggestions(launcher: State<'_, Arc<LauncherState>>) -> Vec<ResultRow> {
     launcher.suggestions()
 }
 
@@ -282,80 +302,20 @@ fn suggestions(launcher: State<'_, LauncherState>) -> Vec<ResultRow> {
 #[tauri::command]
 fn open_result(
     app: tauri::AppHandle,
-    launcher: State<'_, LauncherState>,
+    runner: State<'_, Arc<Runner>>,
     id: String,
     query: String,
     confirmed: bool,
 ) -> Result<(), String> {
-    // A system action is run, not opened, and the ones that end the session or
-    // empty the bin have to be asked for first.
-    if let Some(action) = LauncherState::system_action_of(&id) {
-        let needs_confirm = action.confirmation() != tc_core::SystemActionConfirmation::None;
-        if needs_confirm && !confirmed {
-            return Err(format!("`{}` has to be confirmed", action.english_name()));
-        }
-        tc_platform_win::run(action)?;
+    let outcome = runner.open(&id, &query, confirmed);
+    // A row that could not be run has nothing to show, so the palette stays
+    // open: it is where the confirmation is asked for.
+    if outcome.is_ok() {
         if let Some(window) = app.get_webview_window(PALETTE) {
             let _ = window.hide();
         }
-        return Ok(());
     }
-    // A window command is not opened either; it moves the window the user
-    // was last using.
-    if let Some(command) = LauncherState::window_command_of(&id) {
-        let commands: State<'_, tc_platform_win::window_control::WindowCommands> = app.state();
-        let Some(handle) = tc_platform_win::window_control::last_foreground() else {
-            return Err("there is no window to move".to_string());
-        };
-        commands
-            .run(handle, command)
-            .map_err(|error| error.to_string())?;
-        if let Some(window) = app.get_webview_window(PALETTE) {
-            let _ = window.hide();
-        }
-        return Ok(());
-    }
-    // A calculator row is not opened; its answer is copied.
-    if let Some(text) = id.strip_prefix(CALCULATOR_PREFIX) {
-        tc_platform_win::clipboard().write_text(text)?;
-        if let Some(window) = app.get_webview_window(PALETTE) {
-            let _ = window.hide();
-        }
-        return Ok(());
-    }
-    // A file row is opened, not run: the target is the path itself.
-    if let Some(path) = id.strip_prefix(FILE_PREFIX) {
-        tc_platform_win::open(path)?;
-        if let Some(window) = app.get_webview_window(PALETTE) {
-            let _ = window.hide();
-        }
-        return Ok(());
-    }
-    // A built-in command is run, not opened.
-    if let Some(command) = LauncherState::command_of(&id) {
-        return run_built_in_command(app, command);
-    }
-    // One of the user's own commands is run as well, but the palette asks for
-    // its values first, so the values come with the request.
-    if let Some(command) = launcher.custom_command_of(&id) {
-        let command = command.clone();
-        let values = Vec::new();
-        run_custom(&command, &values)?;
-        if let Some(window) = app.get_webview_window(PALETTE) {
-            let _ = window.hide();
-        }
-        return Ok(());
-    }
-    let Some((target, _)) = launcher.target_of(&id) else {
-        return Err(format!("`{id}` is not a result the launcher knows"));
-    };
-    tc_platform_win::open(&target)?;
-    // The ranking learns the query only when the thing really opened.
-    launcher.remember(&id, &query);
-    if let Some(window) = app.get_webview_window(PALETTE) {
-        let _ = window.hide();
-    }
-    Ok(())
+    outcome
 }
 
 /// Run one of the user's own commands, with the values it asked for.
@@ -364,7 +324,7 @@ fn open_result(
 /// freeze the palette.
 #[tauri::command]
 async fn run_custom_command(
-    launcher: State<'_, LauncherState>,
+    launcher: State<'_, Arc<LauncherState>>,
     id: String,
     values: Vec<String>,
 ) -> Result<String, String> {
@@ -375,71 +335,6 @@ async fn run_custom_command(
     tauri::async_runtime::spawn_blocking(move || run_custom(&command, &values))
         .await
         .map_err(|error| error.to_string())?
-}
-
-/// Runs a command and says what happened.
-fn run_custom(command: &CustomCommand, values: &[String]) -> Result<String, String> {
-    let Some(values) = command.positional_values(values) else {
-        return Err("this command needs a value for every required field".to_string());
-    };
-    let plan = command
-        .shell
-        .plan(
-            &command.command,
-            &values,
-            command.loads_shell_environment,
-            command.working_directory.as_deref(),
-        )
-        .map_err(|error| error.to_string())?;
-    let mut running = ShellRunner::spawn(&plan).map_err(|error| error.to_string())?;
-    let outcome = running.wait();
-    if outcome.succeeded() {
-        return Ok(outcome.success_message(&command.name));
-    }
-    // "When a command exits with 127 while this setting is off, the error
-    // message says so and offers Open Settings." Windows PowerShell has no
-    // exit code for that, so the message is what the port looks for.
-    if is_command_not_found(&outcome.stderr) && !command.loads_shell_environment {
-        return Err(format!(
-            "`{}` was not found. The shell's own configuration was not read. \
-             Turn on Load shell environment in the command's editor, or use the \
-             full path to the program.",
-            command.name
-        ));
-    }
-    let message = outcome.failure_message();
-    if message.is_empty() {
-        Err(format!(
-            "`{}` failed with code {}",
-            command.name, outcome.status
-        ))
-    } else {
-        Err(message)
-    }
-}
-
-/// Runs one of the built-in commands.
-///
-/// The commands whose features are not in this build yet say so, and do
-/// nothing else.
-fn run_built_in_command(app: tauri::AppHandle, command: CommandId) -> Result<(), String> {
-    match command {
-        CommandId::Quit => {
-            app.exit(0);
-            Ok(())
-        }
-        CommandId::Support => {
-            tc_platform_win::open("https://tinycast.dev/support")?;
-            if let Some(window) = app.get_webview_window(PALETTE) {
-                let _ = window.hide();
-            }
-            Ok(())
-        }
-        other => Err(format!(
-            "`{}` is not in this build yet",
-            display_name(other)
-        )),
-    }
 }
 
 /// Hide the palette.
@@ -494,7 +389,7 @@ fn palette_back_to_root(palette: State<'_, PaletteState>) {
 /// is the results, narrowed by the filter the palette holds.
 #[tauri::command]
 fn file_rows(
-    launcher: State<'_, LauncherState>,
+    launcher: State<'_, Arc<LauncherState>>,
     palette: State<'_, PaletteState>,
     query: String,
 ) -> Vec<ResultRow> {
@@ -595,14 +490,33 @@ fn toggle_palette(app: &tauri::AppHandle) {
     // opened is the one the commands move. It is remembered here, before the
     // palette takes the front.
     tc_platform_win::window_control::remember_foreground();
-    if let Some(window) = app.get_webview_window(PALETTE) {
-        match window.is_visible() {
-            Ok(true) => {
-                let _ = window.hide();
-            }
-            _ => {
-                let _ = window.show();
-                let _ = window.set_focus();
+    let Some(native) = app.try_state::<tc_ui::PaletteHandle>() else {
+        return;
+    };
+    if tc_ui::is_visible(*native) {
+        tc_ui::post_close(*native);
+    } else {
+        tc_ui::post_show(*native);
+    }
+}
+
+/// The theme the native palette wears.
+///
+/// "Light" and "Dark" say what they say. "System" - which is what the
+/// setting is called when it has not been changed - follows Windows, which
+/// says whether it is dark in its own registry.
+fn native_theme(settings: &tc_platform_win::WindowsSettings) -> Theme {
+    let appearance = settings
+        .get(tc_palette::KEY_APPEARANCE)
+        .unwrap_or_else(|| "System".to_string());
+    match appearance.trim().to_lowercase().as_str() {
+        "light" => Theme::light(),
+        "dark" => Theme::dark(),
+        _ => {
+            if tc_platform_win::apps_use_dark_theme() {
+                Theme::dark()
+            } else {
+                Theme::light()
             }
         }
     }

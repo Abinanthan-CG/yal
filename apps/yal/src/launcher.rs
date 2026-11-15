@@ -38,7 +38,7 @@ pub const RANKING_FILE: &str = "launcher-ranking.json";
 pub const SYSTEM_ACTION_PREFIX: &str = "system-action:";
 
 /// The section the system actions are listed under.
-const SYSTEM_ACTION_SECTION: &str = "System Actions";
+pub const SYSTEM_ACTION_SECTION: &str = "System Actions";
 
 /// The prefix a calculator row's id carries.
 ///
@@ -50,7 +50,7 @@ pub const WINDOW_COMMAND_PREFIX: &str = "window-command:";
 pub const WINDOW_COMMAND_SECTION: &str = "Window Commands";
 
 /// The section the calculator's answer is listed under.
-const CALCULATOR_SECTION: &str = "Calculator";
+pub const CALCULATOR_SECTION: &str = "Calculator";
 /// The section the built-in commands are listed under.
 pub const COMMAND_SECTION: &str = "Commands";
 /// The section the user's own commands are listed under.
