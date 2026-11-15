@@ -12,6 +12,6 @@ pub mod tokens;
 pub mod window;
 
 pub use model::{Icon, Model, Row};
-pub use theme::{Appearance, Color, Metrics, Theme};
+pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};
 pub use window::Palette;

@@ -27,7 +27,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::theme::{Appearance, Color, Metrics, Theme};
+use crate::theme::{Appearance, Color, Metrics, Theme, PALETTE};
 
 /// A colour in a style pack: `#rgb`, `#rrggbb` or `#rrggbbaa`.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -86,10 +86,17 @@ impl<'de> Deserialize<'de> for TokenColor {
 }
 
 /// The colours of a style pack.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
+///
+/// Every colour a design library would hand over has a name here: the
+/// surfaces the window is built from, the text, the accent, and the palette
+/// the rest of the interface draws from.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TokenColors {
     /// The window's background.
     pub background: TokenColor,
+    /// A second background, for the panels that sit on the first.
+    #[serde(rename = "backgroundSecondary", default)]
+    pub background_secondary: Option<TokenColor>,
     /// The search field's background.
     pub field: TokenColor,
     /// The colour of a row's name.
@@ -108,8 +115,14 @@ pub struct TokenColors {
     pub hover: Option<TokenColor>,
     /// The accent colour.
     pub accent: TokenColor,
+    /// The colour of the busy state.
+    #[serde(default)]
+    pub loader: Option<TokenColor>,
     /// The hairline around the window.
     pub border: TokenColor,
+    /// The palette: the colours the rest of the interface draws from.
+    #[serde(default)]
+    pub palette: Option<Vec<TokenColor>>,
 }
 
 /// The measurements of a style pack. Every field is optional; a style pack
@@ -228,6 +241,11 @@ impl Tokens {
         Theme {
             appearance: self.appearance.appearance(),
             background: self.colors.background.0,
+            background_secondary: self
+                .colors
+                .background_secondary
+                .map(|color| color.0)
+                .unwrap_or(base.background_secondary),
             field: self.colors.field.0,
             text: self.colors.text.0,
             text_dim: self.colors.text_dim.0,
@@ -239,7 +257,13 @@ impl Tokens {
                 .map(|color| color.0)
                 .unwrap_or_else(|| accent_at(self.colors.accent.0, 0.12)),
             accent: self.colors.accent.0,
+            loader: self
+                .colors
+                .loader
+                .map(|color| color.0)
+                .unwrap_or(base.loader),
             border: self.colors.border.0,
+            palette: self.palette(base.palette),
             metrics: Metrics {
                 width: metrics.width.unwrap_or(base.metrics.width),
                 height: metrics.height.unwrap_or(base.metrics.height),
@@ -258,6 +282,21 @@ impl Tokens {
                 max_rows: metrics.max_rows.unwrap_or(base.metrics.max_rows),
             },
         }
+    }
+
+    /// The palette this style pack describes, over the one it inherits.
+    ///
+    /// A pack may name fewer colours than the palette holds - the rest are
+    /// inherited - but never more: the extra ones are dropped rather than
+    /// silently changing the shape of the palette.
+    fn palette(&self, base: [Color; PALETTE]) -> [Color; PALETTE] {
+        let mut palette = base;
+        if let Some(named) = self.colors.palette.as_ref() {
+            for (slot, color) in palette.iter_mut().zip(named.iter()) {
+                *slot = color.0;
+            }
+        }
+        palette
     }
 }
 
@@ -278,6 +317,7 @@ mod tests {
     fn colors() -> TokenColors {
         TokenColors {
             background: TokenColor(Color::rgb(0, 0, 0)),
+            background_secondary: None,
             field: TokenColor(Color::rgb(1, 1, 1)),
             text: TokenColor(Color::rgb(2, 2, 2)),
             text_dim: TokenColor(Color::rgb(3, 3, 3)),
@@ -285,7 +325,9 @@ mod tests {
             selection: TokenColor(Color::rgb(5, 5, 5)),
             hover: None,
             accent: TokenColor(Color::rgb(6, 6, 6)),
+            loader: None,
             border: TokenColor(Color::rgb(7, 7, 7)),
+            palette: None,
         }
     }
 
@@ -406,6 +448,7 @@ mod tests {
         for (text, name) in [
             (include_str!("../style-packs/midnight.json"), "midnight"),
             (include_str!("../style-packs/daylight.json"), "daylight"),
+            (include_str!("../style-packs/aurora.json"), "aurora"),
         ] {
             let tokens: Tokens = serde_json::from_str(text).expect("a style pack");
             assert_eq!(tokens.name, name);
@@ -413,6 +456,7 @@ mod tests {
             assert!(theme.metrics.width > 0.0);
             assert!(theme.metrics.row_height > 0.0);
             assert!(theme.background.alpha > 0.0);
+            assert_eq!(theme.palette.len(), PALETTE);
         }
     }
 
@@ -442,5 +486,94 @@ mod tests {
             font: default_font(),
         };
         assert_eq!(tokens.theme().hover, Color::rgb(0x33, 0x33, 0x3a));
+    }
+
+    #[test]
+    fn a_style_pack_that_names_no_palette_inherits_one() {
+        let tokens = Tokens {
+            name: "plain".to_string(),
+            appearance: AppearanceName::Dark,
+            colors: colors(),
+            metrics: TokenMetrics::default(),
+            font: default_font(),
+        };
+        assert_eq!(tokens.theme().palette, Theme::dark().palette);
+    }
+
+    #[test]
+    fn a_style_pack_may_bring_its_own_palette() {
+        let mut own = colors();
+        own.palette = Some(vec![
+            TokenColor(Color::rgb(1, 1, 1)),
+            TokenColor(Color::rgb(2, 2, 2)),
+            TokenColor(Color::rgb(3, 3, 3)),
+        ]);
+        let tokens = Tokens {
+            name: "painted".to_string(),
+            appearance: AppearanceName::Dark,
+            colors: own,
+            metrics: TokenMetrics::default(),
+            font: default_font(),
+        };
+        let palette = tokens.theme().palette;
+        assert_eq!(palette[0], Color::rgb(1, 1, 1));
+        assert_eq!(palette[2], Color::rgb(3, 3, 3));
+        // The colours it did not name are inherited.
+        assert_eq!(palette[3], Theme::dark().palette[3]);
+        assert_eq!(palette.len(), PALETTE);
+    }
+
+    #[test]
+    fn a_style_pack_may_name_a_second_background_and_a_loader() {
+        let mut own = colors();
+        own.background_secondary = Some(TokenColor(Color::rgb(0x11, 0x22, 0x33)));
+        own.loader = Some(TokenColor(Color::rgb(0x44, 0x55, 0x66)));
+        let tokens = Tokens {
+            name: "surfaces".to_string(),
+            appearance: AppearanceName::Dark,
+            colors: own,
+            metrics: TokenMetrics::default(),
+            font: default_font(),
+        };
+        let theme = tokens.theme();
+        assert_eq!(theme.background_secondary, Color::rgb(0x11, 0x22, 0x33));
+        assert_eq!(theme.loader, Color::rgb(0x44, 0x55, 0x66));
+    }
+
+    #[test]
+    fn a_design_library_can_be_written_as_one_pack() {
+        // The shape a design library would hand over: surfaces, text, an
+        // accent, and a palette of seven.
+        let json = r##"{
+            "name": "submarine",
+            "appearance": "dark",
+            "colors": {
+                "background": "#001068",
+                "backgroundSecondary": "#00685E",
+                "field": "#00184C",
+                "text": "#EAFBFF",
+                "textDim": "#8FA9C0",
+                "onIcon": "#FFFFFF",
+                "selection": "#00FFEA",
+                "accent": "#4FA3F8",
+                "loader": "#D6AEFF",
+                "border": "#FFFFFF24",
+                "palette": [
+                    "#F87E7E", "#FFB765", "#FEFF7F", "#7EECAE",
+                    "#72BAFB", "#CE9DFA", "#FFA2D4"
+                ]
+            },
+            "metrics": { "width": 720, "rowHeight": 44 },
+            "font": "Segoe UI Variable"
+        }"##;
+        let tokens: Tokens = serde_json::from_str(json).expect("a style pack");
+        let theme = tokens.theme();
+        assert_eq!(theme.background, Color::rgb(0x00, 0x10, 0x68));
+        assert_eq!(theme.background_secondary, Color::rgb(0x00, 0x68, 0x5E));
+        assert_eq!(theme.selection, Color::rgb(0x00, 0xff, 0xea));
+        assert_eq!(theme.loader, Color::rgb(0xd6, 0xae, 0xff));
+        assert_eq!(theme.palette.len(), PALETTE);
+        assert_eq!(theme.palette[4], Color::rgb(0x72, 0xba, 0xfb));
+        assert_eq!(theme.palette[6], Color::rgb(0xff, 0xa2, 0xd4));
     }
 }

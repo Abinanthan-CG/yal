@@ -1,0 +1,33 @@
+{
+  "name": "aurora",
+  "appearance": "dark",
+  "colors": {
+    "background": "#0d1520",
+    "backgroundSecondary": "#132133",
+    "field": "#16263b",
+    "text": "#e8f1ff",
+    "textDim": "#8ba3c0",
+    "onIcon": "#0d1520",
+    "selection": "#1d3350",
+    "accent": "#58d5c8",
+    "loader": "#9d8df1",
+    "border": "#7fb3ff24",
+    "palette": [
+      "#ef6f6c",
+      "#f2a35e",
+      "#f2d06b",
+      "#7ddba0",
+      "#6cc4f5",
+      "#a893f0",
+      "#f191c4"
+    ]
+  },
+  "metrics": {
+    "width": 720,
+    "rowHeight": 44,
+    "iconSize": 24,
+    "radius": 14,
+    "fieldInset": 36
+  },
+  "font": "Segoe UI Variable"
+}
