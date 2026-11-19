@@ -7,3 +7,4 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 description = "YAL port: tc-i18n"
+publish = false

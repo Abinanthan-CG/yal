@@ -7,6 +7,7 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 description = "YAL port: snippet records, markdown storage, keyword policy and template expansion"
+publish = false
 
 [dependencies]
 tc-core = { path = "../tc-core" }

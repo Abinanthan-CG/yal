@@ -7,6 +7,7 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 description = "Build orchestration for the YAL port: parity validation, packaging, i18n generation"
+publish = false
 
 [dependencies]
 anyhow.workspace = true
