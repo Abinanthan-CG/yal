@@ -35,10 +35,16 @@ YAL is an unofficial community port. Upstream is at
 `github.com/abue-ammar/tinycast`; the support link `https://tinycast.dev/support`
 is the upstream's.
 
-**Storage mirrors upstream's design:** SQLite (rusqlite, bundled, FTS5) for
-`clipboard.sqlite3`, `quicklinks.sqlite3`, `ai-chats.sqlite3` and the file
-index; Markdown files for notes and snippets; JSON for settings and
-`launcher-ranking.json`; secrets only in **Windows Credential Manager**.
+**Storage mirrors upstream's design, where it has got that far.** SQLite
+(rusqlite, bundled) for the two databases the port has today -
+`clipboard.sqlite3` in `crates/tc-clipboard/src/store.rs` and
+`file-index.sqlite3` in `crates/tc-files/src/store.rs` - in plain tables and
+indexes, **not** in upstream's FTS5 full-text tables. Markdown files for
+snippets, in upstream's own format. JSON for the settings
+(`.config/tinycast/settings.json`) and for `launcher-ranking.json`. Secrets
+only in **Windows Credential Manager**. Upstream's `quicklinks.sqlite3` and
+`ai-chats.sqlite3` are not built yet, because the quicklinks store and the AI
+chats are not either.
 
 ---
 
@@ -205,7 +211,8 @@ Twenty-six crates. The number after each name is its test count, counted on
 | `crates/tc-platform-win` | 40 | the Win32 implementation: paths, clipboard, the foreground window, the window list, the program index, the shell runner, the window mover, the keyboard hook, the single-instance mutex |
 | `crates/tc-ui` | 30 | the **native palette**: a borderless Win32 window painted with Direct2D and typed into with a real edit control; the design tokens; the style packs; the event conversation |
 | `crates/tc-commands` | 88 | the command catalogue, the custom commands, the shell they run under, the Raycast script import |
-| `crates/tc-i18n`, `tc-ai`, `tc-mcp`, `tc-extensions`, `tc-calendar`, `tc-backup` | 0 | placeholders for features that are out of scope for 1.0 |
+| `crates/tc-i18n`, `tc-ai`, `tc-mcp`, `tc-extensions`, `tc-calendar` | 0 | empty crates for features that are out of scope for 1.0 |
+| `crates/tc-backup` | 0 | an empty crate - but backup **is** in the 1.0 must-have set, so this one is work to do, not a decision to skip |
 | `apps/yal` | 64 | the Tauri 2 shell: the tray, the single instance, the deep links, the native palette, the browser window, the `Runner` |
 | `apps/yal-ui-probe` | 0 | opens `tc-ui` on its own, with `--light` and `--style-pack` - the fastest way to see a palette change |
 | `apps/yal-indexer`, `apps/yal-ocr`, `apps/yal-dictation` | 3, 3, 4 | the three helper processes, each with a real command line |
@@ -438,9 +445,13 @@ any key. Nothing is listening.
 **These models exist but have no screen:** the clipboard's capture loop and
 the Windows clipboard watcher; the emoji picker; the snippet editor and
 browser; the file index's scope selection in Settings (so the app does not
-build an index of its own); the notes; the hotkey recorder, the modifier taps
-and the conflict check; the favorites slots beyond the first two; the
-aliases.
+build an index of its own); the hotkey recorder, the modifier taps and the
+conflict check; the favorites slots beyond the first two; the aliases.
+
+**These have neither a model nor a screen.** Notes and backup are both in the
+1.0 must-have set, and neither is started: there is no notes crate, and
+`crates/tc-backup` is an empty file with a doc comment. Notes are 60 open
+rows and backup is 49.
 
 **The calculator** has no exchange rates, no dates and no time zones. Two
 different currencies in one calculation earn no card rather than a made-up
@@ -476,10 +487,12 @@ This is the recommendation, in the order the work actually unblocks itself.
 6. **Hotkeys in Settings**, with the recorder and the conflict check - 63
    rows.
 7. **The calculator's remaining layers**: exchange rates, then dates and time
-   zones. The dates and the zones are the largest single block in the
-   must-have set (187 rows on that page).
-8. **Notes** (60 rows) and **backup** (49 rows) - the formats are settled,
-   the screens are not.
+   zones. The calculator page is the largest single block in the must-have
+   set - 187 open rows - and the dates and the zones are the largest part of
+   it.
+8. **Notes** (60 rows) and **backup** (49 rows) - neither has started. Notes
+   need their file format and their screen; backup needs its export and its
+   import. Both are must-have, so neither is a decision to skip.
 9. **Aliases** (18) and **favorites** (19) - small, and they are launcher
    rows.
 10. **The `.rayconfig` reader** - it unlocks 41 rows, and it needs a real
@@ -527,7 +540,9 @@ evidence, and regenerate with `cargo run -q -p xtask -- parity`.
 
 The procedure is in [docs/PUBLISHING.md](docs/PUBLISHING.md). In short:
 
-1. `cargo run -q -p xtask -- dist` for both architectures.
+1. `cargo run -q -p xtask -- dist` - it builds both architectures.
+   `--arch x64` or `--arch arm64` builds one, and the checksums are written
+   only when both are there.
 2. The installers, the portable zips and `SHA256SUMS.txt` land in `dist/`.
 3. `release.yml` builds, signs when the certificate secret is set, and
    publishes to a GitHub release.
