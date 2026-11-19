@@ -30,9 +30,20 @@ function Invoke-Check {
     $script:checks++
     Write-Host "==> $Name" -ForegroundColor Cyan
     try {
-        & $Body | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "the command exited with $LASTEXITCODE"
+        # The output is kept, not thrown away. A test harness writes its
+        # failure report to standard output, so a script that discards stdout
+        # throws away the very thing that says what went wrong - and a failing
+        # build then says only "the command exited with 101".
+        #
+        # Only standard output is captured. Standard error is left alone on
+        # purpose: redirecting it into the pipeline (`2>&1`) turns every line
+        # a build tool writes there into an error record, and this script
+        # stops on the first error - so cargo's ordinary progress output would
+        # look like a failure.
+        $output = & $Body | Out-String
+        $code = $LASTEXITCODE
+        if ($code -ne 0) {
+            throw "the command exited with $code`n$output"
         }
         Write-Host "    ok: $Name" -ForegroundColor Green
     }

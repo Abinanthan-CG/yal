@@ -113,7 +113,9 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Test
-        run: cargo test --workspace
+        # `--no-fail-fast` so that one crate's failure does not hide the
+        # results of every other crate.
+        run: cargo test --workspace --no-fail-fast
 
       - name: The parity ledger is current
         run: cargo run --quiet -p xtask -- parity --check
