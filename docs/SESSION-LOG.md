@@ -703,3 +703,137 @@ a European Windows is not read yet, so a list of values is separated by a comma 
 - `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
 - `cargo fmt --all -- --check` passes, exit 0.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 447 PORTED, 1862 NOT PORTED.
+## Session 14 - 2026-11-15
+
+**What was done.**
+
+- **The release workflow could be read by GitHub.** It had been turning red on
+  every push - in no time, with no jobs - and the reason was only in the
+  run's annotations: `Unrecognized named-value: 'secrets'`. GitHub does not
+  hand the `secrets` context to the `if` of a job or a step, so
+  `if: ${{ secrets.CERTIFICATE != '' }}` is an error, and a workflow with an
+  error in it does not run at all. The certificate now travels through the
+  job's environment, which is set before any step runs. Three other things
+  the release path had never been given came with it: the ARM64 build tools,
+  the target being built for, and an optional signing key
+  ([port note 027](port-notes/027-the-workflow-github-cannot-read.md)).
+- **The workflow files are checked before GitHub checks them.**
+  `scripts/check-workflows.py` knows the rule the schema does not, and it has
+  a self-test pointed at the exact file GitHub refused.
+- **Six reasons in the ledger had lost their keys.** `parity/reasons.toml`
+  held six lines that were a value with no key, which is not TOML, and the
+  command that reads it failed. The keys were lost in `74d7df6`. The ledger
+  check now loads the whole ledger - the pages, the reasons and the count
+  checks - so a file that only one command reads cannot break without
+  anybody noticing.
+- **The native palette is the launcher.** It was a probe with ten fixed rows.
+  It is now the window the hotkey opens, the tray opens, and the user types
+  in; it searches the program index, and the row the user chooses is run
+  ([port note 028](port-notes/028-the-palette-that-is-the-application.md)).
+- **`tc-ui` can be driven by an application.** The palette asks what
+  happened - shown, the query changed, a row chosen, dismissed - and the app
+  answers with the rows to show, or with nothing, or with "close".
+- **Two bugs that only running it could find.** The hint the search field
+  shows is written into the control, which raises `EN_CHANGE`, so the app
+  was told the query had become "Search YAL" - and an empty query matches
+  nothing, so the list was empty. The hint is not a query, and an empty
+  palette shows what the user opens most.
+- **One behaviour, two palettes.** The rows run through a `Runner` that both
+  palettes call, so they cannot drift apart.
+- **The browser window is made when it is wanted.** It was created at startup
+  with `visible: false`, and a hidden window is not a cheap window: it
+  started five WebView2 processes and cost about 330 MB. It is now made when
+  the settings screen is asked for - from the tray, or with
+  `yal.exe --settings`.
+
+**What was not done.** The settings screens are still the browser's; drawing
+them natively is the next step, and it is a large one. The tray's "Check for
+Updates" and "About YAL" still do nothing. The global hotkey engine is still
+a stub in `tc-platform-win`: the hook installs and removes, but nothing reads
+the keys. The native palette does not yet have the settings, clipboard,
+emoji or file-search screens - it has the launcher, and that is what the
+hotkey opens.
+
+**Decisions.**
+
+- The workflows are checked before GitHub checks them (2026-11-15).
+- The browser window is made when it is wanted, not when the app starts
+  (2026-11-15).
+- The ranking remembers the queries, not only the items (2026-11-15).
+- The import from Raycast is possible after all (2026-11-15).
+
+**Verified.**
+
+- `cargo test --workspace` passes: 1149 tests, 0 failed, 0 ignored.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo run -q -p xtask -- parity --check` reports the ledger and
+  `PARITY.md` are up to date.
+- The application, release build, measured: 58.8 MB working set, 37.9 MB
+  private, one process, no WebView2, 0.19 s of CPU. With the settings open:
+  391.7 MB and six processes. Raycast for Windows: 914 MB.
+- The native palette, taken from the running application:
+  [docs/port-notes/images/native-palette-in-app.png](port-notes/images/native-palette-in-app.png).
+
+## Session 15 - 2026-11-19
+
+**What was done.**
+
+- **`cargo deny check` passes.** It is a gate in the Windows job and it had
+  never run in CI, because it sat behind a step that was failing first. It
+  had three findings waiting.
+- **The workspace crates are private.** Every member now carries
+  `publish = false`, which is what they are: the private parts of one
+  application, none of them published to crates.io. It is also what lets
+  cargo-deny's `allow-wildcard-paths` apply to the path dependencies between
+  them - a crate cargo-deny believes is publishable is a crate it will not
+  accept a path wildcard for. `scripts/set-publish-false.py` applies the line
+  to every member and is safe to run again.
+- **The bundled SQLite was patched.** `rusqlite` 0.32 → 0.41, which bundles
+  SQLite 3.54.0 and closes RUSTSEC-2026-0459: a crafted database file with a
+  mismatched `-wal` sibling could make SQLite hand back uninitialized
+  page-cache memory. The two crates that use it needed no code change.
+- **The zip library was patched.** `zip` 2.6.1 → 9.7.3, which closes
+  RUSTSEC-2026-0548: a ZIP archive can name an entry twice, once in the local
+  file header and once in the central directory, and a reader that trusts the
+  local names can write files under names a check never saw. The one call
+  site - xtask's portable zip - needed no change.
+- **The four advisories with no safe upgrade are named, with their reasons.**
+  The three zbus 5 crates, reached only through
+  `tauri-plugin-single-instance 2.5.5`; `chrono`, which is unmaintained and
+  used in three call sites; and `proc-macro-error`, a build-time derive macro
+  that reaches us through glib-macros on Linux only.
+- **`chrono-tz` was declared but used by no crate**, so it is gone. The
+  declared toolchain floor moves from 1.82 to 1.89, which is what rusqlite
+  0.41 requires; the pinned toolchain stays at 1.99.1.
+- **The placeholder scan was clean.** It had never run before, and it found
+  one hit: a test fixture in `tc-core` used the literal word "todo" as the
+  short query to be quoted whole. The fixture says "note" now - the same
+  length, the same intent.
+- **A handover document** - `HANDOVER.md` - for the next person or model
+  taking the port over.
+
+**What was not done.** The chrono migration to `time` or `jiff` is written
+down as work for 1.1, not done here: the snippet template formats dates with
+strftime patterns that upstream's own tests pin, so it is a migration rather
+than a version bump, and it wants its own session. The settings screens are
+still the browser's, the hotkey engine is still a stub, and the tray's "Check
+for Updates" and "About YAL" still do nothing.
+
+**Decisions.**
+
+- The workspace crates are private, and they say so (2026-11-19).
+- An advisory with no safe upgrade is ignored with the reason it is safe to
+  ignore, not with a blanket "not affected" (2026-11-19).
+
+**Verified.**
+
+- `cargo test --workspace` passes: 1149 tests, 0 failed, 0 ignored, in 46
+  test binaries.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes, exit 0.
+- `cargo fmt --all -- --check` passes, exit 0.
+- `cargo deny check` passes: advisories ok, bans ok, licenses ok, sources ok.
+- The CI placeholder scan run by hand over `crates`, `apps` and `frontend`
+  finds nothing.
+- `cargo run -q -p xtask -- parity` reports 2309 rows, 447 PORTED, 1862
+  NOT PORTED.
