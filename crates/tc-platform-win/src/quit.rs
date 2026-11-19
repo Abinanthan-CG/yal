@@ -57,10 +57,17 @@ impl QuitWatcher {
     /// The callback runs on a background thread, so it must not block for long
     /// and must be safe to call from another thread.
     pub fn spawn(on_quit: impl Fn() + Send + 'static) -> Result<QuitWatcher, String> {
-        let name: Vec<u16> = QUIT_EVENT_NAME
-            .encode_utf16()
-            .chain(std::iter::once(0))
-            .collect();
+        Self::spawn_named(QUIT_EVENT_NAME, on_quit)
+    }
+
+    /// Create a watcher on an event of a given name.
+    ///
+    /// The name is a parameter so that a test can have an event of its own.
+    /// The application's event has a fixed name, and two tests that share it
+    /// are two tests that share one kernel object - which is a race, not a
+    /// test.
+    fn spawn_named(name: &str, on_quit: impl Fn() + Send + 'static) -> Result<QuitWatcher, String> {
+        let name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
         let handle = unsafe { CreateEventW(None, true, false, PCWSTR(name.as_ptr())) }
             .map_err(|error| format!("the quit signal could not be created: {error}"))?;
         if handle.is_invalid() {
@@ -128,10 +135,15 @@ impl Drop for QuitWatcher {
 /// The answer says whether anyone was listening. `false` means no instance was
 /// running, which is not a failure: the caller wanted it gone, and it is gone.
 pub fn signal_quit() -> bool {
-    let name: Vec<u16> = QUIT_EVENT_NAME
-        .encode_utf16()
-        .chain(std::iter::once(0))
-        .collect();
+    signal_named(QUIT_EVENT_NAME)
+}
+
+/// Ask the instance that is watching an event of a given name to quit.
+///
+/// The answer says whether anyone was listening. `false` means no instance was
+/// running, which is not a failure: the caller wanted it gone, and it is gone.
+fn signal_named(name: &str) -> bool {
+    let name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
     let event = match unsafe { OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr())) } {
         Ok(handle) => handle,
         Err(_) => return false,
@@ -149,19 +161,51 @@ pub fn signal_quit() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
     use std::time::Duration;
+
+    /// Counts the events a test has asked for.
+    static NEXT_EVENT: AtomicU64 = AtomicU64::new(0);
+
+    /// The name of an event that belongs to one test alone.
+    ///
+    /// The application's quit event has a fixed name, and a named kernel
+    /// object is shared by everything that opens it. Two tests that use the
+    /// same name are two tests that share one object: one of them keeps it
+    /// alive while the other checks that it is gone, and the result depends on
+    /// which thread wins. Each test therefore has an event of its own.
+    fn private_event_name() -> String {
+        let number = NEXT_EVENT.fetch_add(1, Ordering::SeqCst);
+        format!(r"Local\YAL-quit-test-{}-{number}", std::process::id())
+    }
+
+    /// Whether an event of a given name is still open.
+    fn event_exists(name: &str) -> bool {
+        let name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
+        unsafe {
+            OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr()))
+                .map(|handle| {
+                    let _ = CloseHandle(handle);
+                    true
+                })
+                .unwrap_or(false)
+        }
+    }
 
     #[test]
     fn a_signal_reaches_the_watcher_and_stops_when_nobody_listens() {
+        let name = private_event_name();
         let fired = std::sync::Arc::new(AtomicBool::new(false));
         let seen = fired.clone();
-        let watcher = QuitWatcher::spawn(move || {
+        let watcher = QuitWatcher::spawn_named(&name, move || {
             seen.store(true, Ordering::SeqCst);
         })
         .expect("the quit signal could not be created");
 
-        assert!(signal_quit(), "the running instance was not signalled");
+        assert!(
+            signal_named(&name),
+            "the running instance was not signalled"
+        );
 
         let deadline = std::time::Instant::now() + Duration::from_secs(5);
         while !fired.load(Ordering::SeqCst) && std::time::Instant::now() < deadline {
@@ -172,20 +216,19 @@ mod tests {
         // Once the watcher is gone the event is gone with it, so a signal has
         // nobody to reach and says so.
         drop(watcher);
-        let name: Vec<u16> = QUIT_EVENT_NAME
-            .encode_utf16()
-            .chain(std::iter::once(0))
-            .collect();
-        let exists = unsafe {
-            OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr()))
-                .map(|handle| {
-                    let _ = CloseHandle(handle);
-                    true
-                })
-                .unwrap_or(false)
-        };
-        assert!(!exists, "a quit event was left behind");
-        assert!(!signal_quit(), "a signal was reported with no listener");
+        // The watcher's thread holds a handle of its own and closes it after
+        // it has run the callback, so the event disappears a moment after the
+        // watcher is dropped. Waiting for that is the difference between a
+        // test that checks the rule and a test that checks the timing.
+        let deadline = std::time::Instant::now() + Duration::from_secs(5);
+        while event_exists(&name) && std::time::Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(25));
+        }
+        assert!(!event_exists(&name), "a quit event was left behind");
+        assert!(
+            !signal_named(&name),
+            "a signal was reported with no listener"
+        );
     }
 
     #[test]
@@ -193,11 +236,14 @@ mod tests {
         // The watcher holds the event open. A watcher that is dropped straight
         // away would take the event with it, and the running instance would
         // never hear the signal.
-        let watcher = QuitWatcher::spawn(|| {}).expect("the quit signal could not be created");
+        let name = private_event_name();
+        let watcher =
+            QuitWatcher::spawn_named(&name, || {}).expect("the quit signal could not be created");
         assert!(
-            signal_quit(),
+            signal_named(&name),
             "the event was not alive while the watcher existed"
         );
+        assert!(event_exists(&name), "the event was taken away too early");
         drop(watcher);
     }
 }

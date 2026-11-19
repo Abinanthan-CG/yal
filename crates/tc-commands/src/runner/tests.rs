@@ -104,12 +104,12 @@ fn the_command_keeps_running_after_the_launcher_lets_go() {
         .expect("the plan is made");
     {
         let running = ShellRunner::spawn(&plan).expect("the command starts");
-        wait_for(&first, Duration::from_secs(10));
+        wait_for(&first, Duration::from_secs(30));
         assert!(first.exists(), "the command has started");
         drop(running);
     }
     // The launcher has let go of the command; it keeps running.
-    wait_for(&second, Duration::from_secs(10));
+    wait_for(&second, Duration::from_secs(30));
     assert!(
         second.exists(),
         "the command kept running after the launcher let it go"
@@ -137,24 +137,43 @@ fn stop_ends_the_command_and_everything_it_started() {
         .plan(&command, &[], false, None)
         .expect("the plan is made");
     let mut running = ShellRunner::spawn(&plan).expect("the command starts");
-    wait_for(&marker, Duration::from_secs(15));
+    wait_for(&marker, Duration::from_secs(30));
     let before = std::fs::metadata(&marker)
         .map(|meta| meta.len())
         .unwrap_or(0);
     assert!(before > 0, "the child process is writing");
     running.stop();
-    std::thread::sleep(Duration::from_millis(800));
-    let after = std::fs::metadata(&marker)
-        .map(|meta| meta.len())
-        .unwrap_or(0);
+    // How long a job object takes to bring a tree down depends on the
+    // machine. Waiting for the writing to stop is the difference between a
+    // test that checks the rule and a test that checks how fast the machine
+    // is.
+    let deadline = std::time::Instant::now() + Duration::from_secs(30);
+    let mut after = size_of(&marker);
+    let mut unchanged_for = Duration::ZERO;
+    while unchanged_for < Duration::from_secs(1) {
+        std::thread::sleep(Duration::from_millis(250));
+        let now = size_of(&marker);
+        if now == after {
+            unchanged_for += Duration::from_millis(250);
+        } else {
+            after = now;
+            unchanged_for = Duration::ZERO;
+        }
+        if std::time::Instant::now() > deadline {
+            break;
+        }
+    }
     std::thread::sleep(Duration::from_millis(2000));
-    let later = std::fs::metadata(&marker)
-        .map(|meta| meta.len())
-        .unwrap_or(0);
+    let later = size_of(&marker);
     assert_eq!(
         after, later,
         "nothing is writing any more: the whole tree was stopped"
     );
+}
+
+/// The size of a file, or zero when it cannot be read.
+fn size_of(path: &Path) -> u64 {
+    std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0)
 }
 
 /// Waits for a file to show up, or gives up.
