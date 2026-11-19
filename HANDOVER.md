@@ -23,6 +23,7 @@ documentation and upstream's own test files.
 | | |
 | --- | --- |
 | Language | Rust, pinned to **1.99.1** by `rust-toolchain.toml` |
+| Floor | Rust **1.89**, declared in `Cargo.toml` and `clippy.toml` - the two must agree |
 | Shell | Tauri 2 + the system **WebView2** runtime |
 | Interface | TypeScript + Solid, in `frontend/` - built by Vite, **not committed** |
 | Windows API | the `windows` crate, version **0.62** |
@@ -185,7 +186,7 @@ and `--settings` (opens the settings screen).
 
 ## 5. The repository map
 
-Twenty-eight crates. The number after each name is its test count, counted on
+Twenty-six crates. The number after each name is its test count, counted on
 2026-11-19.
 
 | Crate | Tests | What it holds |
@@ -387,6 +388,20 @@ These are the ones that cost time. All of them are real and were hit.
   standard install location.
 - The placeholder scan covers test fixtures too. `crates/tc-core/src/fallback.rs`
   once used the literal word `todo` as a fixture and CI caught it.
+
+**In Windows itself.**
+
+- A **named kernel object is shared by everything that opens it**. The quit
+  watcher's event is `Local\YAL-quit`, and two tests that both used it were
+  two tests that shared one object - so one test's watcher could hold the
+  event open while the other asserted it was gone. The assertion failed at
+  random. Give each test an event of its own.
+- A **job object takes the whole tree down, but not instantly**. The test that
+  stops a process tree must wait for the writing to stop, not for a fixed
+  800 ms: a fixed wait is a statement about how fast the machine is.
+- A **handle is closed after the callback, not before**. The watcher's thread
+  closes its own handle after it has run the callback, so a test that checks
+  whether the event is gone has to wait for that.
 
 **In the `windows` crate 0.62** (these cost a full session to learn):
 

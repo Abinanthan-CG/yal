@@ -810,6 +810,23 @@ hotkey opens.
   one hit: a test fixture in `tc-core` used the literal word "todo" as the
   short query to be quoted whole. The fixture says "note" now - the same
   length, the same intent.
+- **A flaky test, and the reason it was invisible.** The quit watcher's event
+  has a fixed name, and both of its tests used it - so one test's watcher
+  could hold the event open while the other asserted it was gone, and the
+  assertion failed at random. The script that checks the documented commands
+  made it invisible: it ran each command as `& $Body | Out-Null`, and a test
+  harness writes its failure report to standard output, so the failing test's
+  name was thrown away and the build said only "the command exited with
+  101". The script now keeps the output and prints it with the failure, and
+  each test has an event of its own.
+- **Two timing assumptions are gone.** The test that stops a whole process
+  tree waited 800 ms and then checked that nothing more was written; it now
+  waits for the writing to stop. The test that a command keeps running after
+  the launcher lets go had a ten second window; it has thirty.
+- **`clippy.toml`'s MSRV now agrees with `Cargo.toml`'s**, at 1.89. The two
+  must agree, because CI runs clippy with `-D warnings` and a mismatch is a
+  warning. Raising the floor turned on a lint newer than the old one, and
+  the three places that used `% 2 == 0` say it the new way.
 - **A handover document** - `HANDOVER.md` - for the next person or model
   taking the port over.
 
@@ -835,5 +852,8 @@ for Updates" and "About YAL" still do nothing.
 - `cargo deny check` passes: advisories ok, bans ok, licenses ok, sources ok.
 - The CI placeholder scan run by hand over `crates`, `apps` and `frontend`
   finds nothing.
+- `scripts/check-build-with-ai.ps1 -SkipDist` passes all 11 checks.
+- `cargo test --workspace` passes three runs in a row, and the quit watcher's
+  own tests pass twelve runs in a row.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 447 PORTED, 1862
   NOT PORTED.
