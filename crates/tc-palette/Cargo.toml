@@ -7,6 +7,7 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 description = "YAL port: the palette's screen system, its keys, and the file-search screen"
+publish = false
 
 [dependencies]
 tc-files = { path = "../tc-files" }

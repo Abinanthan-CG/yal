@@ -9,6 +9,37 @@ confidence-threshold = 0.9
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"
+# The path dependencies are the workspace's own crates - `tc-core = { path = "../tc-core" }`.
+# A wildcard is banned so that a version range like `*` cannot creep into a published
+# dependency, but a local path is not a wildcard in that sense and must be allowed.
+allow-wildcard-paths = true
+
+[advisories]
+# RUSTSEC-2026-0372: `zvariant_derive 5.15.1` is unmaintained. It arrives through
+# `zbus 5.19.0`, which `tauri-plugin-single-instance 2.5.5` depends on. The macro crate
+# was folded into `zbus` 6, which the plugin has not adopted, so there is no upgrade
+# that removes the advisory today. The crate is a build-time derive macro only: it
+# generates code, it does not run in the shipped binary and it parses no untrusted input.
+ignore = [
+    { id = "RUSTSEC-2026-0372", reason = "zvariant_derive is a build-time derive macro reached through zbus 5 via tauri-plugin-single-instance; zbus 6 carries the macros but the plugin has not moved to it. No unmaintained runtime code, no untrusted input path." },
+    { id = "RUSTSEC-2026-0370", reason = "zvariant 5 was merged into zbus 6 as its `wire` module. The only path to it here is zbus 5.19, reached through tauri-plugin-single-instance 2.5.5, which has not moved to zbus 6. RustSec records no safe upgrade for this line." },
+    { id = "RUSTSEC-2026-0371", reason = "zbus_names 4 was merged into zbus 6 as its `names` module. Same chain as RUSTSEC-2026-0370: zbus 5.19 via tauri-plugin-single-instance 2.5.5, with no safe upgrade available." },
+    # RUSTSEC-2026-0543: `chrono` is unmaintained; every version is affected and RustSec
+    # records no safe upgrade. It is a maintenance risk, not a vulnerability.
+    # The whole use of it is three call sites:
+    #   crates/tc-snippets/src/template.rs - the `{date}` template token and its offsets
+    #   crates/tc-clipboard/src/raycast.rs  - parsing an RFC 3339 timestamp from an export
+    #   xtask/src/tools.rs                  - the release date
+    # The snippet token formats dates with strftime patterns ("EEEE"), which upstream's
+    # own template tests pin, so this is a migration and not a version bump.
+    # Moving to `time` or `jiff` is written down as work for 1.1 - see docs/DECISIONS.md.
+    { id = "RUSTSEC-2026-0543", reason = "chrono is unmaintained with no safe upgrade. Three call sites only (tc-snippets template tokens, tc-clipboard RFC 3339 parsing, xtask release date). The strftime patterns in the snippet template are pinned by upstream parity tests, so replacing it is a planned migration, not a version bump. Tracked in docs/DECISIONS.md." },
+    # RUSTSEC-2024-0370: `proc-macro-error` is unmaintained. It reaches us through
+    # `glib-macros` -> `gtk` -> `tray-icon` -> `tauri`, and only on Linux. It is a
+    # build-time derive macro: it generates code, it never runs in the shipped binary,
+    # and it is not in the Windows build at all.
+    { id = "RUSTSEC-2024-0370", reason = "proc-macro-error is a build-time derive macro reached through glib-macros -> gtk -> tray-icon -> tauri on Linux only. It is not compiled into the Windows binary and parses no input at runtime." },
+]
 
 [sources]
 unknown-registry = "deny"
