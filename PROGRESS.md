@@ -580,7 +580,8 @@ pointed at the exact file GitHub refused.
 
 ## Session 15 - 2026-11-19
 
-Status: **the pipeline is green, and the port has a handover document.**
+Status: **the pipeline is green for the first time, and the port has a
+handover document.**
 
 - **`cargo deny check` passes.** It is a gate in the Windows job and it had
   never run in CI, because it sat behind a step that was failing first. The

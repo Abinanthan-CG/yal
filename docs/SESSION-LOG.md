@@ -855,5 +855,9 @@ for Updates" and "About YAL" still do nothing.
 - `scripts/check-build-with-ai.ps1 -SkipDist` passes all 11 checks.
 - `cargo test --workspace` passes three runs in a row, and the quit watcher's
   own tests pass twelve runs in a row.
+- **CI is green.** Every job, every step, on the run of 2026-11-19 - the
+  first green run this project has had. The licence check, the placeholder
+  scan, the release build, the BUILD_WITH_AI check, the self-test, the
+  installer, the smoke test and the upload all pass on `windows-latest`.
 - `cargo run -q -p xtask -- parity` reports 2309 rows, 447 PORTED, 1862
   NOT PORTED.

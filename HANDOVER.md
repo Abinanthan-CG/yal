@@ -60,7 +60,7 @@ Measured on 2026-11-19, on the branch `feat/yal-port`.
 | Dependencies | `cargo deny check` - advisories ok, bans ok, licences ok, sources ok |
 | Self-test | `yal.exe --self-test` - 18 subsystem checks, 0 failed |
 | Ledger | **2309 rows, 447 `PORTED`, 1862 `NOT PORTED`** |
-| CI | green on `feat/yal-port` (see §3) |
+| CI | **green** on `feat/yal-port` - every job, every step, on 2026-11-19 |
 | The app | 58.8 MB working set, **37.9 MB private, one process, no WebView2** |
 
 The last row was measured on 2026-11-15 on the release build. The budget is a
@@ -123,6 +123,22 @@ deliberately untouched** - it still holds the user's earlier, separate YAL
 project. The port is built on the branch; the flush to `main` is the last
 step of the release and is written down in
 [docs/PUBLISHING.md](docs/PUBLISHING.md).
+
+**The CI.** `.github/workflows/ci.yml` runs on **every branch**, on
+`windows-latest` and on `ubuntu-latest`. Four jobs: "Workflow files" (the
+checker), "Pure logic (ubuntu)", "Frontend (ubuntu)" and "Windows". The
+Windows job is the long one and it does all of it: format, clippy, the test
+suite, the ledger check, the placeholder scan, the licence check, the release
+build, the BUILD_WITH_AI check, the self-test, the installer and the portable
+zip, the installer smoke test, and the upload.
+
+**The run is green** - all four jobs, every step, on 2026-11-19. It was not
+green before that, and it had never been green: the licence step had never
+run (it sat behind a failing one), the placeholder scan had never run (the
+same), and the BUILD_WITH_AI script was throwing away the test output that
+says what went wrong. `scripts/check-workflows.py` now checks the workflow
+files before GitHub does, and has a self-test pointed at the exact file
+GitHub refused.
 
 **Upstream, for reference.** Cloned at `upstream/` (gitignored, never
 committed) at SHA `58168bf7e0b721f7c5fbfc7f4e8a068a48cff446`. All 42
@@ -207,7 +223,7 @@ Twenty-six crates. The number after each name is its test count, counted on
 | `crates/tc-files` | 56 | the file index, the scope rules, the SQLite store, the search over it |
 | `crates/tc-clipboard` | 84 | the clipboard item, the classification, the colours, the filters, the capture policy, the paste sequence, the store with its pins |
 | `crates/tc-emoji` | 32 | the catalog of 2 136 emoji, the search with its ranking, the pins, the frequency, the skin tones, the grid |
-| `crates/tc-platform` | 5 | the traits (`Paths`, `WindowSystem`, `Clipboard`, `Hotkey`, `SingleInstance`, `Clock`, `FileSystem`, `Settings`) and their in-memory fakes |
+| `crates/tc-platform` | 5 | the traits (`Platform` - which is where the paths live, `WindowSystem`, `Clipboard`, `Hotkey`, `SingleInstance`, `Clock`, `FileSystem`, `Settings`) and their in-memory fakes |
 | `crates/tc-platform-win` | 40 | the Win32 implementation: paths, clipboard, the foreground window, the window list, the program index, the shell runner, the window mover, the keyboard hook, the single-instance mutex |
 | `crates/tc-ui` | 30 | the **native palette**: a borderless Win32 window painted with Direct2D and typed into with a real edit control; the design tokens; the style packs; the event conversation |
 | `crates/tc-commands` | 88 | the command catalogue, the custom commands, the shell they run under, the Raycast script import |
@@ -216,7 +232,7 @@ Twenty-six crates. The number after each name is its test count, counted on
 | `apps/yal` | 64 | the Tauri 2 shell: the tray, the single instance, the deep links, the native palette, the browser window, the `Runner` |
 | `apps/yal-ui-probe` | 0 | opens `tc-ui` on its own, with `--light` and `--style-pack` - the fastest way to see a palette change |
 | `apps/yal-indexer`, `apps/yal-ocr`, `apps/yal-dictation` | 3, 3, 4 | the three helper processes, each with a real command line |
-| `xtask` | 0 | the build orchestration: `parity`, `ledger`, `i18n`, `dist`, `selftest` |
+| `xtask` | 0 | the build orchestration: `parity`, `ledger`, `i18n`, `dist`, `selftest`, `tags` |
 
 ---
 
