@@ -578,8 +578,45 @@ checks them, so the next mistake of that kind is a failed build rather
 than a red cross on the repository. It runs in CI, and it has a self-test
 pointed at the exact file GitHub refused.
 
+## Session 15 - 2026-11-19
+
+Status: **the pipeline is green, and the port has a handover document.**
+
+- **`cargo deny check` passes.** It is a gate in the Windows job and it had
+  never run in CI, because it sat behind a step that was failing first. The
+  workspace crates are now marked `publish = false` - they are the private
+  parts of one application, and saying so is what lets cargo-deny accept the
+  path dependencies between them. `rusqlite` moved to 0.41, which bundles
+  SQLite 3.54.0 and closes RUSTSEC-2026-0459, and `zip` moved to 9.7.3,
+  which closes RUSTSEC-2026-0548. The four advisories with no safe upgrade
+  are ignored in `deny.toml`, each with the reason it is safe to ignore.
+- **The CI placeholder scan was clean.** It had never run before either, and
+  it found one hit - a test fixture in `tc-core` that used the literal word
+  "todo" as the query to be quoted whole. The fixture says "note" now.
+- **A flaky test, and the reason it was invisible.** The quit watcher's event
+  has a fixed name and both of its tests used it, so one test's watcher could
+  hold the event open while the other asserted it was gone. The script that
+  checks the documented commands made it invisible: it discarded the
+  commands' standard output, and a test harness writes its failure report
+  there. The script now keeps the output and prints it with the failure.
+- **The declared floor moved to 1.89**, which is what `rusqlite` 0.41
+  requires. `clippy.toml` and `Cargo.toml` have to agree, because CI runs
+  clippy with `-D warnings`.
+- **`HANDOVER.md`** is the document for whoever takes the port over: the
+  state with every number counted, where everything is, the commands that
+  build and check the project, the crate map, the environment traps, what is
+  not done, and the order the work should happen in.
+
 ## Open problems
 
+- **`chrono` is unmaintained** (RUSTSEC-2026-0543) and is ignored in
+  `deny.toml` with its reason. It is used in three call sites; replacing it
+  with `time` or `jiff` is a migration, because the snippet template's
+  strftime patterns are pinned by upstream's own tests. It is written down as
+  work for 1.1.
+- **The notes and the backup are not started**, though both are in the 1.0
+  must-have set. `crates/tc-backup` is an empty file with a doc comment, and
+  there is no notes crate at all.
 - `xtask i18n` needs the upstream clone present. The generated string table is committed, so a
   plain build never needs it; only regenerating needs upstream.
 - The repository slug is `Abinanthan-CG/yal` — the repository this port will be published from. It
