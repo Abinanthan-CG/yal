@@ -1143,3 +1143,69 @@ the path is reachable and is checked.
 **What this does not change.** The browser palette still exists and still
 works; it is simply not there until it is wanted. The ledger rows for the
 settings screens stay as they are.
+## 2026-11-19 - The workspace crates are private, and they say so
+
+**Question.** `cargo deny check` is a gate in the Windows job, and it had
+never run in CI - it sat behind a step that was failing first. When it ran,
+it failed on `bans`: every path dependency (`tc-core = { path = "../tc-core" }`)
+is a wildcard, because a path dependency with no version is a version
+requirement of `*` to Cargo. `allow-wildcard-paths = true` is the setting
+that is meant for this, but cargo-deny only applies it to crates it believes
+are **private**.
+
+**Options.** (a) Turn `wildcards` down to `warn` and let the path
+dependencies through. (b) Give every path dependency an explicit version, so
+it is not a wildcard. (c) Mark the crates private, which is what they are.
+
+**Decision.** (c). Every workspace member now carries `publish = false`.
+None of these crates was ever published to crates.io, and the application is
+distributed as an installer, not as a library. `scripts/set-publish-false.py`
+applies the line to every member and is safe to run again.
+
+**Why.** The setting now says what is true. Option (a) would weaken the check
+for real wildcard versions - the reason the ban exists - and option (b)
+would put a version number in twenty-eight places that Cargo cannot keep in
+step with the workspace version. Marking the crates private is one line each,
+it is a fact, and cargo-deny then enforces the ban where it matters.
+
+**What this does not change.** No dependency versions. The published
+artefacts are the installers and the portable zips, and they are unaffected.
+## 2026-11-19 - An advisory with no safe upgrade is ignored with its reason
+
+**Question.** `cargo deny check` found six advisories. Two had a fix and it
+was taken: the bundled SQLite (`rusqlite` 0.32 → 0.41, RUSTSEC-2026-0459)
+and the zip library (2.6.1 → 9.7.3, RUSTSEC-2026-0548). Four had **no safe
+upgrade**: the three zbus 5 crates, `chrono`, and `proc-macro-error`. The
+gate has to either pass or fail, and a blanket "not affected" is a claim
+that was not checked.
+
+**Options.** (a) Ignore them with a blanket reason. (b) Ignore each one with
+the reason it is safe to ignore, and write the migration down as work.
+(c) Replace the dependencies now, before anything else happens.
+
+**Decision.** (b). Each ignore entry names the crate, the chain that reaches
+it, and why the code is not exposed. The zbus 5 crates are reached only
+through `tauri-plugin-single-instance` 2.5.5, which has not moved to zbus 6.
+`proc-macro-error` is a build-time derive macro that comes in through
+`glib-macros` on Linux only and is not in the Windows build at all.
+`chrono` is the one that is not comfortable: it is unmaintained, every
+version is affected, and it is in the shipped binary.
+
+**Why.** An "unmaintained" advisory is a maintenance risk, not a
+vulnerability: nothing is known to be exploitable. But it is not nothing,
+and a blanket reason would hide that. Writing the reason per entry means
+each one can be re-checked when the chain above it changes.
+
+**The chrono migration is planned, not done.** `chrono` is used in exactly
+three places: the snippet template's `{date}` token and its offsets
+(`crates/tc-snippets/src/template.rs`), the RFC 3339 parse of an exported
+timestamp (`crates/tc-clipboard/src/raycast.rs`), and the release date
+(`xtask/src/tools.rs`). The snippet token formats dates with strftime
+patterns such as `EEEE`, which upstream's own template tests pin, so
+replacing the library means rewriting that formatting layer against the same
+oracle. That is a migration and not a version bump, and it wants a session
+of its own. It is written down as work for 1.1.
+
+**What this does not change.** The gate still fails on a new advisory, and
+still fails on a vulnerability with a fix. Only the four named ones are
+excepted, and each says why.
