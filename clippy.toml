@@ -1,2 +1,5 @@
-msrv = "1.82"
+# The floor the workspace declares in Cargo.toml. The two must agree: clippy
+# warns when they differ, and CI runs clippy with `-D warnings`, so a
+# mismatch is a build failure.
+msrv = "1.89"
 avoid-breaking-exported-api = true

@@ -776,7 +776,7 @@ fn half_placement(input: &PlacementInput, half: Half, host: Screen, step: usize)
         origin_index as i64 * 2 + lead_offset + step_offset,
         strip.len() as i64 * 2,
     ) as usize;
-    let edge = if slot % 2 == 0 {
+    let edge = if slot.is_multiple_of(2) {
         HalfEdge::Leading
     } else {
         HalfEdge::Trailing

@@ -153,13 +153,13 @@ fn is_prime(number: u64) -> bool {
         return false;
     }
     for base in BASES {
-        if number % base == 0 {
+        if number.is_multiple_of(base) {
             return number == base;
         }
     }
     let mut odd = number - 1;
     let mut twos = 0u32;
-    while odd % 2 == 0 {
+    while odd.is_multiple_of(2) {
         odd /= 2;
         twos += 1;
     }
