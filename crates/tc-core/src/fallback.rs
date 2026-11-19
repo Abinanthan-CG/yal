@@ -260,8 +260,8 @@ mod tests {
     #[test]
     fn a_short_query_is_quoted_whole() {
         assert_eq!(
-            Fallback::section_title("todo", 72),
-            "Use \u{201c}todo\u{201d} with\u{2026}"
+            Fallback::section_title("note", 72),
+            "Use \u{201c}note\u{201d} with\u{2026}"
         );
     }
 
