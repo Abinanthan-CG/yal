@@ -1,7 +1,8 @@
 //! The palette's colours and measurements.
 //!
-//! The measurements are in device-independent pixels, so the same numbers hold
-//! on every screen; the window scales them by the monitor's DPI.
+//! All measurements are in device-independent pixels (DIPs). Direct2D sets the
+//! render target DPI to match the window's monitor so coordinates stay 1:1 DIPs
+//! while rasterizing crisply at native hardware resolution.
 
 /// A colour, with alpha, in the 0..1 range.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -32,6 +33,16 @@ impl Color {
             alpha: alpha as f32 / 255.0,
         }
     }
+
+    /// Same RGB with a custom opacity (`0.0..=1.0`).
+    pub const fn with_alpha(self, alpha: f32) -> Self {
+        Self {
+            red: self.red,
+            green: self.green,
+            blue: self.blue,
+            alpha,
+        }
+    }
 }
 
 /// Which of the two appearances the palette is wearing.
@@ -46,56 +57,54 @@ pub enum Appearance {
 pub struct Metrics {
     /// The width of the palette window.
     pub width: f32,
-    /// The height of the palette window. This is the tallest the palette may
-    /// be; a shorter list gets a shorter window.
+    /// The reference height of the palette window.
     pub height: f32,
-    /// The distance from the window's edge to its content.
+    /// Horizontal outer inset for list rows and footer content.
     pub padding: f32,
-    /// The height of the search field.
+    /// The height of the top search header bar.
     pub field_height: f32,
-    /// The distance from the field's left edge to the text inside it. It
-    /// leaves room for the search glyph.
+    /// Left inset from window edge to the search text (leaves room for search icon).
     pub field_inset: f32,
-    /// The height of one result row.
+    /// The height of one standard result row.
     pub row_height: f32,
-    /// The height of the tile that leads a row.
+    /// The size of the icon / badge that leads a row.
     pub icon_size: f32,
-    /// The size of a row's name.
+    /// The font size of a row's primary title.
     pub name_size: f32,
-    /// The size of a row's detail text.
+    /// The font size of a row's secondary detail text.
     pub detail_size: f32,
-    /// The size of the footer line.
+    /// The font size of the footer line.
     pub footer_size: f32,
-    /// The size of the letter in a tile.
+    /// The font size of the glyph inside a fallback badge.
     pub icon_text_size: f32,
-    /// The corner radius of the window and of the selected row.
+    /// The corner radius of rounded pills and cards.
     pub radius: f32,
-    /// The space between the search field and the first row.
+    /// Breathing space between the header divider and list, and between list and footer.
     pub list_gap: f32,
-    /// The height of the footer, hairline and hint together.
+    /// The height of the bottom footer bar.
     pub footer_height: f32,
-    /// The most rows the palette will show at once.
+    /// Maximum visible rows before scrolling.
     pub max_rows: usize,
 }
 
 impl Default for Metrics {
     fn default() -> Self {
         Self {
-            width: 680.0,
-            height: 440.0,
-            padding: 12.0,
-            field_height: 44.0,
-            field_inset: 34.0,
-            row_height: 40.0,
-            icon_size: 22.0,
-            name_size: 13.5,
+            width: 720.0,
+            height: 460.0,
+            padding: 10.0,
+            field_height: 54.0,
+            field_inset: 44.0,
+            row_height: 44.0,
+            icon_size: 24.0,
+            name_size: 14.0,
             detail_size: 12.0,
             footer_size: 11.5,
-            icon_text_size: 11.0,
+            icon_text_size: 12.0,
             radius: 10.0,
-            list_gap: 8.0,
-            footer_height: 32.0,
-            max_rows: 9,
+            list_gap: 6.0,
+            footer_height: 38.0,
+            max_rows: 8,
         }
     }
 }
@@ -104,29 +113,29 @@ impl Default for Metrics {
 #[derive(Clone, Copy, Debug)]
 pub struct Theme {
     pub appearance: Appearance,
-    /// The window's background.
+    /// The window's main surface background.
     pub background: Color,
-    /// A second background, for the panels that sit on the first.
+    /// Secondary surface for the recessed footer bar and calculator hero card.
     pub background_secondary: Color,
-    /// The background of the search field.
+    /// The background of the search input control (matches header surface).
     pub field: Color,
-    /// The colour of a row's name.
+    /// Primary text colour.
     pub text: Color,
-    /// The colour of secondary text.
+    /// Muted secondary text colour.
     pub text_dim: Color,
-    /// The colour of the text on a tile.
+    /// Text/symbol colour drawn on opaque icon badges.
     pub on_icon: Color,
-    /// The fill of the selected row.
+    /// Fill of the currently selected row pill.
     pub selection: Color,
-    /// The fill of the row under the pointer.
+    /// Fill of the row under the mouse pointer.
     pub hover: Color,
-    /// The colour of the accent - the caret, the focus.
+    /// Accent colour for selection indicator, active badges, and highlights.
     pub accent: Color,
-    /// The colour of the busy state.
+    /// Busy/loader accent colour.
     pub loader: Color,
-    /// The hairline around the window.
+    /// Hairline divider and subtle border colour.
     pub border: Color,
-    /// The palette: the seven colours the rest of the interface draws from.
+    /// Seven-colour accent palette for categories and badges.
     pub palette: [Color; 7],
     pub metrics: Metrics,
 }
@@ -135,21 +144,21 @@ pub struct Theme {
 pub const PALETTE: usize = 7;
 
 impl Theme {
-    /// The dark appearance.
+    /// Refined Obsidian Dark appearance (inspired by Raycast & Tinycast).
     pub fn dark() -> Self {
         Self {
             appearance: Appearance::Dark,
-            background: Color::rgb(0x1d, 0x1d, 0x1f),
-            background_secondary: Color::rgb(0x25, 0x25, 0x28),
-            field: Color::rgb(0x2b, 0x2b, 0x2e),
-            text: Color::rgb(0xf2, 0xf2, 0xf7),
-            text_dim: Color::rgb(0x8e, 0x8e, 0x93),
+            background: Color::rgb(0x16, 0x16, 0x1a),
+            background_secondary: Color::rgb(0x11, 0x11, 0x15),
+            field: Color::rgb(0x16, 0x16, 0x1a),
+            text: Color::rgb(0xf4, 0xf4, 0xf7),
+            text_dim: Color::rgb(0x8a, 0x8b, 0x99),
             on_icon: Color::rgb(0xff, 0xff, 0xff),
-            selection: Color::rgb(0x3a, 0x3a, 0x3d),
-            hover: Color::rgba(0x4a, 0x8c, 0xff, 0x1f),
-            accent: Color::rgb(0x4a, 0x8c, 0xff),
+            selection: Color::rgb(0x28, 0x2a, 0x36),
+            hover: Color::rgba(0xff, 0xff, 0xff, 0x16),
+            accent: Color::rgb(0x5e, 0x8b, 0xff),
             loader: Color::rgb(0xd6, 0xae, 0xff),
-            border: Color::rgba(0xff, 0xff, 0xff, 0x1a),
+            border: Color::rgba(0xff, 0xff, 0xff, 0x17),
             palette: [
                 Color::rgb(0xf8, 0x7e, 0x7e),
                 Color::rgb(0xff, 0xb7, 0x65),
@@ -163,21 +172,21 @@ impl Theme {
         }
     }
 
-    /// The light appearance.
+    /// Refined Porcelain Light appearance.
     pub fn light() -> Self {
         Self {
             appearance: Appearance::Light,
-            background: Color::rgb(0xf7, 0xf7, 0xf9),
-            background_secondary: Color::rgb(0xee, 0xee, 0xf2),
-            field: Color::rgb(0xff, 0xff, 0xff),
-            text: Color::rgb(0x1c, 0x1c, 0x1e),
-            text_dim: Color::rgb(0x7c, 0x7c, 0x86),
+            background: Color::rgb(0xfb, 0xfb, 0xfd),
+            background_secondary: Color::rgb(0xf2, 0xf3, 0xf7),
+            field: Color::rgb(0xfb, 0xfb, 0xfd),
+            text: Color::rgb(0x18, 0x19, 0x1f),
+            text_dim: Color::rgb(0x6e, 0x70, 0x7d),
             on_icon: Color::rgb(0xff, 0xff, 0xff),
-            selection: Color::rgb(0xe6, 0xe6, 0xeb),
-            hover: Color::rgba(0x0a, 0x63, 0xd8, 0x14),
-            accent: Color::rgb(0x0a, 0x63, 0xd8),
+            selection: Color::rgb(0xe8, 0xeb, 0xf4),
+            hover: Color::rgba(0x0f, 0x17, 0x2a, 0x0c),
+            accent: Color::rgb(0x2f, 0x6b, 0xff),
             loader: Color::rgb(0x8a, 0x5c, 0xd6),
-            border: Color::rgba(0x00, 0x00, 0x00, 0x16),
+            border: Color::rgba(0x0f, 0x17, 0x2a, 0x17),
             palette: [
                 Color::rgb(0xd6, 0x3b, 0x3b),
                 Color::rgb(0xc0, 0x6a, 0x14),

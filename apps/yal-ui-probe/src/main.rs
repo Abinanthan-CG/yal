@@ -13,7 +13,7 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use tc_ui::{Color, Icon, Model, Palette, Row, Theme, Tokens};
+use tc_ui::{Color, Icon, Model, Palette, PaletteEvent, PaletteReply, Row, Theme, Tokens};
 
 fn main() {
     let started = Instant::now();
@@ -50,25 +50,63 @@ fn main() {
     let model = Model {
         query: String::new(),
         rows: vec![
-            Row::detailed("Calculator", "2 + 2 × 7 = 16").with_icon(Icon::new("C", blue)),
-            Row::detailed("Weather in Kochi", "31° · Light rain").with_icon(Icon::new("W", teal)),
+            Row {
+                name: "16".to_string(),
+                detail: "2 + 2 × 7".to_string(),
+                badge: "Result".to_string(),
+                section: "Calculator".to_string(),
+                is_calculator: true,
+                icon: Some(Icon::new("=", blue)),
+                ..Row::default()
+            },
+            Row::detailed("Weather in Kochi", "31° · Light rain")
+                .with_icon(Icon::new("W", teal))
+                .with_section("Suggestions"),
             Row::detailed("Flights to Tokyo", "NH 8 · 06:40 · 11h 20m")
-                .with_icon(Icon::new("F", orange)),
+                .with_icon(Icon::new("F", orange))
+                .with_section("Suggestions"),
             Row::detailed("Search the web for \"rust windows\"", "Google")
-                .with_icon(Icon::new("G", green)),
-            Row::detailed("Time in Berlin", "04:18").with_icon(Icon::new("T", purple)),
-            Row::detailed("Convert 10 kg to lb", "22.0462 lb").with_icon(Icon::new("C", blue)),
-            Row::detailed("Money: 100 USD to EUR", "92.41 €").with_icon(Icon::new("€", green)),
-            Row::detailed("Open the project folder", "Documents").with_icon(Icon::new("D", orange)),
-            Row::detailed("Snippets", "14 saved").with_icon(Icon::new("S", purple)),
-            Row::detailed("Clipboard history", "228 items").with_icon(Icon::new("H", red)),
+                .with_icon(Icon::new("G", green))
+                .with_section("Suggestions")
+                .with_shortcut("Alt+G"),
+            Row::detailed("Time in Berlin", "04:18")
+                .with_icon(Icon::new("T", purple))
+                .with_section("Suggestions"),
+            Row::detailed("Convert 10 kg to lb", "22.0462 lb")
+                .with_icon(Icon::new("C", blue))
+                .with_section("Suggestions"),
+            Row::detailed("Snippets", "14 saved")
+                .with_icon(Icon::new("S", purple))
+                .with_section("Commands")
+                .with_shortcut("Ctrl+Shift+S"),
+            Row::detailed("Clipboard history", "228 items")
+                .with_icon(Icon::new("H", red))
+                .with_section("Commands")
+                .with_shortcut("Ctrl+Shift+V"),
         ],
         selected: 0,
         hovered: None,
-        footer: "Enter to open  ·  Up and down to choose  ·  Esc to dismiss".to_string(),
+        footer: "8 results".to_string(),
+        placeholder: "Search apps, commands, or calculate…".to_string(),
+        result_count: Some("8 results".to_string()),
+        footer_hints: vec![
+            ("↵".to_string(), "Open".to_string()),
+            ("↑↓".to_string(), "Move".to_string()),
+            ("Esc".to_string(), "Close".to_string()),
+        ],
+        ..Model::default()
     };
 
-    let palette = match Palette::new(theme, model) {
+    let palette = match Palette::with_handler(
+        theme,
+        model,
+        Box::new(|event| match event {
+            PaletteEvent::Escape | PaletteEvent::Dismissed | PaletteEvent::Activated(_) => {
+                PaletteReply::Quit
+            }
+            _ => PaletteReply::Keep,
+        }),
+    ) {
         Ok(palette) => palette,
         Err(error) => {
             eprintln!("the palette could not be opened: {error}");

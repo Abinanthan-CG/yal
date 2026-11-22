@@ -162,7 +162,8 @@ fn collect_uninstall_key(
             close_key(subkey);
             continue;
         };
-        if display_name.trim().is_empty() {
+        let trimmed_name = display_name.trim();
+        if trimmed_name.is_empty() || trimmed_name.contains("${") || trimmed_name.starts_with('@') {
             close_key(subkey);
             continue;
         }

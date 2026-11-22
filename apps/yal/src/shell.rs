@@ -82,12 +82,21 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     // Shared slot filled once the native palette window is created on this thread.
     let handle_slot: Arc<Mutex<Option<PaletteHandle>>> = Arc::new(Mutex::new(None));
 
-    // Create the wake watcher immediately after acquiring the single-instance lock
-    // so a rapid second launch during startup never hits a missing named event.
+    // Create the wake and quit watchers immediately after acquiring the
+    // single-instance lock so neither a second launch nor `--quit-running`
+    // can ever race startup.
     let show_slot = Arc::clone(&handle_slot);
     let show_watcher = ShowWatcher::spawn(move || {
         if let Some(handle) = *show_slot.lock().expect("handle slot") {
             toggle_palette(handle);
+        }
+    })
+    .ok();
+
+    let quit_watcher_slot = Arc::clone(&handle_slot);
+    let quit_watcher = QuitWatcher::spawn(move || {
+        if let Some(handle) = *quit_watcher_slot.lock().expect("handle slot") {
+            tc_ui::post_quit(handle);
         }
     })
     .ok();
@@ -181,12 +190,6 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             None
         }
     };
-
-    // Listen for `--quit-running` (installer / CLI shutdown).
-    let quit_watcher = QuitWatcher::spawn(move || {
-        tc_ui::post_quit(handle);
-    })
-    .ok();
 
     // Initial visibility.
     if open_settings {

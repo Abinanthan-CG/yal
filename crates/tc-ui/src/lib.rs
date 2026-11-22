@@ -13,10 +13,10 @@ pub mod tokens;
 pub mod window;
 
 pub use event::{ignore, Handler, PaletteEvent, PaletteReply};
-pub use model::{Icon, Model, Row};
+pub use model::{Icon, IconBitmap, Model, PaletteLayout, Row};
 pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};
 pub use window::{
-    is_visible, post_close, post_command, post_quit, post_show, post_toggle_from_tray, Palette,
-    PaletteHandle,
+    is_visible, post_close, post_command, post_quit, post_refresh, post_show,
+    post_toggle_from_tray, Palette, PaletteHandle,
 };

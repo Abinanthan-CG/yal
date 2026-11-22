@@ -1,40 +1,27 @@
 //! What the palette says, and what the app says back.
-//!
-//! A palette that cannot be driven is a picture of a palette. The window
-//! itself knows about the keyboard and the mouse, but it does not know what
-//! to *search* for and what to *do* with the row the user chose - those are
-//! the app's business.
-//!
-//! So the palette reports what happened, and the app answers. The answer
-//! carries the new content, because the app is the one that knows what the
-//! content should be: the palette does not search, it shows.
 
 use crate::model::Model;
+use crate::theme::Theme;
 
 /// Something the palette tells the app.
 #[derive(Clone, Debug, PartialEq)]
 pub enum PaletteEvent {
     /// The palette is being shown.
-    ///
-    /// The palette starts afresh every time it is shown, so this is when the
-    /// app puts its suggestions back.
     Shown,
     /// The query in the search field changed.
-    ///
-    /// The palette sends the whole query, not just the character that was
-    /// typed, so the app never has to keep the field's text itself. The hint
-    /// the field shows while it is empty is not a query, and is not sent.
     QueryChanged(String),
     /// The user chose the row at this position in the list.
-    ///
-    /// The position, not the row: the app built the list, so the app knows
-    /// what is at each position, and a position cannot go stale between the
-    /// keystroke and the answer.
     Activated(usize),
-    /// The user dismissed the palette.
+    /// The user pressed Escape with an empty search box.
+    Escape,
+    /// The user pressed `Ctrl+,` to open Settings.
+    OpenSettings,
+    /// The user dismissed the palette (blur or Escape at root).
     Dismissed,
     /// An application-defined command posted from another thread (e.g. tray or hotkey).
     Command(u32),
+    /// Silent in-place refresh (e.g. background-loaded app icons became ready).
+    Refresh,
 }
 
 /// What the app says back.
@@ -42,13 +29,13 @@ pub enum PaletteEvent {
 pub enum PaletteReply {
     /// Nothing changes.
     Keep,
-    /// The palette's content is this now.
-    ///
-    /// The app searches, so the app builds the model; the palette shows it.
+    /// Replace the palette's content and repaint.
     Update(Model),
-    /// The palette should hide itself.
+    /// Replace both the live theme (dark/light/style pack) and content immediately.
+    UpdateTheme(Box<Theme>, Model),
+    /// Hide the palette window.
     Close,
-    /// The palette should destroy its window and exit its message loop.
+    /// Destroy the window and exit the message loop.
     Quit,
 }
 
@@ -57,7 +44,7 @@ impl PaletteReply {
     pub fn model(&self) -> Option<&Model> {
         match self {
             PaletteReply::Keep | PaletteReply::Close | PaletteReply::Quit => None,
-            PaletteReply::Update(model) => Some(model),
+            PaletteReply::Update(model) | PaletteReply::UpdateTheme(_, model) => Some(model),
         }
     }
 
@@ -71,10 +58,6 @@ impl PaletteReply {
 pub type Handler = Box<dyn Fn(PaletteEvent) -> PaletteReply>;
 
 /// A handler that does nothing.
-///
-/// The palette is useful on its own - the probe opens one with fixed rows -
-/// and a window with no handler still shows, still searches its own text and
-/// still takes the arrow keys.
 pub fn ignore(_event: PaletteEvent) -> PaletteReply {
     PaletteReply::Keep
 }
@@ -118,6 +101,8 @@ mod tests {
             PaletteEvent::Shown,
             PaletteEvent::QueryChanged("rust".to_string()),
             PaletteEvent::Activated(0),
+            PaletteEvent::Escape,
+            PaletteEvent::OpenSettings,
             PaletteEvent::Dismissed,
         ] {
             let reply = ignore(event);
