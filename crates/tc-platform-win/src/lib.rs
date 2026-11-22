@@ -5,13 +5,14 @@
 //! desktop.
 
 mod clipboard;
-mod hotkey;
+pub mod hotkey;
 mod launch;
 mod paths;
 mod programs;
 mod quit;
 mod single_instance;
 mod system_actions;
+pub mod tray;
 pub mod window_control;
 mod windows;
 
@@ -20,16 +21,21 @@ pub use clipboard::WindowsClipboard;
 pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()
 }
-pub use hotkey::WindowsHotkey;
+pub use hotkey::{
+    check_conflict, is_chord_available_in_os, ConflictKind, GlobalHotkeyService, HookDecision,
+    HotkeyBinding, HotkeyMatcher, HotkeyModifiers, HotkeyTrigger, KeyEvent, ModifierKey,
+    ModifierSide, WindowsHotkey, TAP_WINDOW_MS,
+};
 pub use launch::{open, recycle, reveal};
 pub use paths::is_portable;
 pub use paths::windows_paths;
 pub use programs::programs;
-pub use quit::{signal_quit, QuitWatcher};
+pub use quit::{signal_quit, signal_show, QuitWatcher, ShowWatcher};
 pub use single_instance::{another_instance_is_running, WindowsSingleInstance};
 pub use system_actions::{
     apps_use_dark_theme, is_available, mechanism, run, unavailable_reason, ExitMode, Mechanism,
 };
+pub use tray::{TrayAction, WindowsTray};
 pub use window_control::{
     apply_command, foreground_window, is_minimized, is_visible, list_windows, move_window, screens,
     set_window_rect, toggle_fullscreen, window_rect, ControlError, Outcome, WindowHandle,

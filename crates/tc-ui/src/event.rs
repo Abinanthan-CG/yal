@@ -33,6 +33,8 @@ pub enum PaletteEvent {
     Activated(usize),
     /// The user dismissed the palette.
     Dismissed,
+    /// An application-defined command posted from another thread (e.g. tray or hotkey).
+    Command(u32),
 }
 
 /// What the app says back.
@@ -44,22 +46,24 @@ pub enum PaletteReply {
     ///
     /// The app searches, so the app builds the model; the palette shows it.
     Update(Model),
-    /// The palette should close.
+    /// The palette should hide itself.
     Close,
+    /// The palette should destroy its window and exit its message loop.
+    Quit,
 }
 
 impl PaletteReply {
     /// The model the reply carries, if it carries one.
     pub fn model(&self) -> Option<&Model> {
         match self {
-            PaletteReply::Keep | PaletteReply::Close => None,
+            PaletteReply::Keep | PaletteReply::Close | PaletteReply::Quit => None,
             PaletteReply::Update(model) => Some(model),
         }
     }
 
-    /// Whether the reply closes the palette.
+    /// Whether the reply closes or quits the palette.
     pub fn closes(&self) -> bool {
-        matches!(self, PaletteReply::Close)
+        matches!(self, PaletteReply::Close | PaletteReply::Quit)
     }
 }
 

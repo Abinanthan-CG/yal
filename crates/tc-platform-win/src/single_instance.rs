@@ -70,6 +70,12 @@ impl SingleInstance for WindowsSingleInstance {
     }
 }
 
+impl Drop for WindowsSingleInstance {
+    fn drop(&mut self) {
+        self.release();
+    }
+}
+
 /// Whether another instance already holds the lock, without taking it.
 pub fn another_instance_is_running() -> bool {
     let name: Vec<u16> = MUTEX_NAME

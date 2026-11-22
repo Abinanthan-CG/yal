@@ -1,18 +1,12 @@
-//! The native palette: the window the user actually types into.
+//! The native palette: the Direct2D window the user types into.
 //!
-//! The palette that ships in the browser costs more memory than the whole
-//! rest of YAL put together, because a web view brings an engine with it.
-//! This one is a Win32 window painted by Direct2D, and it lives on its own
-//! thread with its own message loop, because a window with a message loop
-//! cannot live on a thread that is already busy with something else.
-//!
-//! The window knows about the keyboard and the mouse. It does not know what
-//! to search for, and it does not know what to do with the row the user
-//! chose: those are the app's business, and the palette asks.
+//! Pure Win32 + Direct2D + DirectWrite — no WebView2, no browser runtime.
+//! Supports both the main Launcher screen and the native Settings screen.
 
 use std::sync::{Arc, Mutex};
 
-use tc_platform::FileSystem;
+use tc_platform::{FileSystem, Settings};
+use tc_platform_win::{HotkeyTrigger, WindowsSettings};
 use tc_ui::{
     Color, Icon, Model, Palette, PaletteEvent, PaletteHandle, PaletteReply, Row, Theme, Tokens,
 };
@@ -22,63 +16,71 @@ use crate::launcher::{
     FILE_SECTION, RANKING_FILE, SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
 };
 use crate::open::Runner;
+use crate::palette::{PaletteState, SettingRow};
 
-/// The hint at the bottom of the palette.
-const FOOTER: &str = "Enter to open  ·  Up and down to choose  ·  Esc to dismiss";
+/// Cross-thread command code asking the native palette to open Settings.
+pub const COMMAND_OPEN_SETTINGS: u32 = 1;
+
+/// Setting key storing the launcher's global hotkey in `settings.json`.
+pub const KEY_LAUNCHER_HOTKEY: &str = "launcher.hotkey";
+
+/// Built-in hotkey presets cycled in the native Settings pane.
+const HOTKEY_PRESETS: [&str; 4] = ["Alt+Space", "Ctrl+Space", "Double Ctrl", "Double Alt"];
+
+/// The hint at the bottom of the launcher palette.
+const FOOTER: &str = "Enter to open  ·  Up/Down to choose  ·  Esc to dismiss";
+
+/// The hint at the bottom of the settings screen.
+const SETTINGS_FOOTER: &str = "Settings  ·  Enter to change  ·  Esc to close";
 
 /// The section an application belongs to.
 const APPLICATIONS: &str = "Applications";
 
-/// The native palette.
+/// Callback invoked when the user changes the launcher hotkey in Settings.
+pub type HotkeyChangedCallback = Arc<dyn Fn(HotkeyTrigger) + Send + Sync>;
+
+/// Optional context enabling native Settings inside the palette.
+pub struct NativeContext {
+    pub palette: Arc<PaletteState>,
+    pub settings: Arc<WindowsSettings>,
+    pub on_hotkey_changed: Option<HotkeyChangedCallback>,
+}
+
+/// The native palette window.
 ///
-/// The window belongs to the thread that made it, so this has to be built
-/// and used on one thread. Another thread asks for it by its handle.
+/// The Win32 window belongs to the thread that created it. Other threads
+/// (global hotkey, system tray, single-instance watcher) interact with it
+/// through [`PaletteHandle`].
 pub struct NativePalette {
-    /// The palette itself, which owns the window and its message loop.
     palette: Palette,
 }
 
 impl NativePalette {
-    /// Opens the palette on this thread.
+    /// Opens the palette on the current thread (standalone mode: exits on dismiss/activate).
     pub fn open(
         launcher: Arc<LauncherState>,
         runner: Arc<Runner>,
         theme: Theme,
     ) -> Result<NativePalette, String> {
-        let palette = build(launcher, runner, theme)?;
+        let palette = build(launcher, runner, None, true, theme)?;
         Ok(NativePalette { palette })
     }
 
-    /// Opens the palette on a thread of its own, and returns its handle.
-    ///
-    /// The handle is what another thread - the one that owns the hotkey -
-    /// uses to ask for the palette.
-    pub fn spawn(
+    /// Opens the palette on the current thread with full application context
+    /// (including native Settings persistence and live hotkey updates).
+    pub fn open_with_context(
         launcher: Arc<LauncherState>,
         runner: Arc<Runner>,
+        context: NativeContext,
         theme: Theme,
-    ) -> Result<PaletteHandle, String> {
-        let (sender, receiver) = std::sync::mpsc::channel::<PaletteHandle>();
+    ) -> Result<NativePalette, String> {
+        let palette = build(launcher, runner, Some(context), false, theme)?;
+        Ok(NativePalette { palette })
+    }
 
-        std::thread::Builder::new()
-            .name("yal-palette".to_string())
-            .spawn(move || {
-                let palette = match build(launcher, runner, theme) {
-                    Ok(palette) => palette,
-                    Err(error) => {
-                        eprintln!("yal: the palette could not be opened: {error}");
-                        return;
-                    }
-                };
-                let _ = sender.send(palette.handle());
-                palette.run();
-            })
-            .map_err(|error| format!("the palette's thread could not be started: {error}"))?;
-
-        // The window's handle comes from the thread that made it.
-        receiver
-            .recv_timeout(std::time::Duration::from_secs(10))
-            .map_err(|_| "the palette did not open".to_string())
+    /// The cross-thread handle to this palette window.
+    pub fn handle(&self) -> PaletteHandle {
+        self.palette.handle()
     }
 
     /// Shows the palette and gives it the keyboard.
@@ -86,68 +88,136 @@ impl NativePalette {
         self.palette.show();
     }
 
-    /// Runs the palette's message loop until the window is closed.
+    /// Runs the window's blocking Win32 message loop until closed/quit.
     pub fn run(&self) {
         self.palette.run();
     }
 }
 
-/// Builds the palette window.
-///
-/// What the palette shows and what it does with the row the user chose are
-/// the app's business, so the window is given a handler that asks.
+#[derive(Default)]
+enum Mode {
+    #[default]
+    Launcher,
+    Settings,
+}
+
+/// What the palette is showing right now.
+#[derive(Default)]
+struct Shown {
+    mode: Mode,
+    query: String,
+    rows: Vec<ResultRow>,
+    settings_rows: Vec<SettingRow>,
+}
+
 fn build(
     launcher: Arc<LauncherState>,
     runner: Arc<Runner>,
+    context: Option<NativeContext>,
+    quit_on_close: bool,
     theme: Theme,
 ) -> Result<Palette, String> {
-    // What the palette is showing, and what the user chose from it. The
-    // window asks about a position in the list, so the list has to be kept
-    // where the answer can find it.
     let shown: Arc<Mutex<Shown>> = Arc::new(Mutex::new(Shown::default()));
+    let context = context.map(Arc::new);
 
     let handler_shown = Arc::clone(&shown);
     let handler_launcher = Arc::clone(&launcher);
     let handler_runner = Arc::clone(&runner);
+    let handler_context = context.clone();
 
     let handler = move |event: PaletteEvent| -> PaletteReply {
         match event {
-            // The palette starts afresh every time it is shown, so the
-            // suggestions go back into it.
             PaletteEvent::Shown => {
+                if let Some(ctx) = handler_context.as_ref() {
+                    ctx.palette.back_to_root();
+                }
                 let rows = handler_launcher.suggestions();
                 let mut shown = handler_shown.lock().expect("the palette's state");
+                shown.mode = Mode::Launcher;
                 shown.query = String::new();
                 shown.rows = rows.clone();
+                shown.settings_rows.clear();
                 PaletteReply::Update(model_for("", &rows))
             }
-            PaletteEvent::QueryChanged(query) => {
-                // An empty palette shows what the user opens most; typing
-                // narrows it down.
-                let rows = if query.trim().is_empty() {
-                    handler_launcher.suggestions()
-                } else {
-                    handler_launcher.search(&query)
-                };
-                let mut shown = handler_shown.lock().expect("the palette's state");
-                shown.query = query.clone();
-                shown.rows = rows.clone();
-                PaletteReply::Update(model_for(&query, &rows))
-            }
-            PaletteEvent::Activated(index) => {
-                let shown = handler_shown.lock().expect("the palette's state");
-                let Some(row) = shown.rows.get(index) else {
+            PaletteEvent::Command(COMMAND_OPEN_SETTINGS) => {
+                let Some(ctx) = handler_context.as_ref() else {
                     return PaletteReply::Keep;
                 };
-                let id = row.id.clone();
-                let query = shown.query.clone();
-                drop(shown);
-                // The row runs whatever it is, and the palette gets out of
-                // the way.
-                let _ = handler_runner.open(&id, &query, false);
-                PaletteReply::Close
+                ctx.palette.open_screen("Settings");
+                let rows = collect_settings_rows(ctx, "");
+                let mut shown = handler_shown.lock().expect("the palette's state");
+                shown.mode = Mode::Settings;
+                shown.query = String::new();
+                shown.rows.clear();
+                shown.settings_rows = rows.clone();
+                PaletteReply::Update(settings_model_for("", &rows, 0))
             }
-            PaletteEvent::Dismissed => PaletteReply::Keep,
+            PaletteEvent::Command(_) => PaletteReply::Keep,
+            PaletteEvent::QueryChanged(query) => {
+                let mut shown = handler_shown.lock().expect("the palette's state");
+                match shown.mode {
+                    Mode::Launcher => {
+                        let rows = if query.trim().is_empty() {
+                            handler_launcher.suggestions()
+                        } else {
+                            handler_launcher.search(&query)
+                        };
+                        shown.query = query.clone();
+                        shown.rows = rows.clone();
+                        PaletteReply::Update(model_for(&query, &rows))
+                    }
+                    Mode::Settings => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let rows = collect_settings_rows(ctx, &query);
+                        shown.query = query.clone();
+                        shown.settings_rows = rows.clone();
+                        PaletteReply::Update(settings_model_for(&query, &rows, 0))
+                    }
+                }
+            }
+            PaletteEvent::Activated(index) => {
+                let mut shown = handler_shown.lock().expect("the palette's state");
+                match shown.mode {
+                    Mode::Launcher => {
+                        let Some(row) = shown.rows.get(index) else {
+                            return PaletteReply::Keep;
+                        };
+                        let id = row.id.clone();
+                        let query = shown.query.clone();
+                        drop(shown);
+                        let _ = handler_runner.open(&id, &query, false);
+                        if quit_on_close {
+                            PaletteReply::Quit
+                        } else {
+                            PaletteReply::Close
+                        }
+                    }
+                    Mode::Settings => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let Some(setting) = shown.settings_rows.get(index) else {
+                            return PaletteReply::Keep;
+                        };
+                        let key = setting.key.clone();
+                        let query = shown.query.clone();
+                        advance_native_setting(ctx, &key);
+                        let updated = collect_settings_rows(ctx, &query);
+                        let clamped = index.min(updated.len().saturating_sub(1));
+                        shown.settings_rows = updated.clone();
+                        PaletteReply::Update(settings_model_for(&query, &updated, clamped))
+                    }
+                }
+            }
+            PaletteEvent::Dismissed => {
+                if quit_on_close {
+                    PaletteReply::Quit
+                } else {
+                    PaletteReply::Keep
+                }
+            }
         }
     };
 
@@ -157,16 +227,61 @@ fn build(
     Palette::with_handler(theme, model, Box::new(handler))
 }
 
-/// What the palette is showing, and what the user chose from it.
-#[derive(Default)]
-struct Shown {
-    /// The query the results were found with.
-    query: String,
-    /// The results themselves, in the order they were shown.
-    rows: Vec<ResultRow>,
+/// Collect all native Settings rows (General + Launcher Hotkey), filtered by query.
+fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
+    let mut rows = ctx.palette.settings_rows();
+    let current_hotkey = ctx
+        .settings
+        .get(KEY_LAUNCHER_HOTKEY)
+        .unwrap_or_else(|| HotkeyTrigger::default_launcher().format());
+    rows.insert(
+        0,
+        SettingRow {
+            key: KEY_LAUNCHER_HOTKEY.to_string(),
+            label: "Launcher Hotkey".to_string(),
+            value: current_hotkey,
+            options: HOTKEY_PRESETS.iter().map(|s| (*s).to_string()).collect(),
+        },
+    );
+
+    let trimmed = query.trim().to_ascii_lowercase();
+    if trimmed.is_empty() {
+        return rows;
+    }
+    rows.into_iter()
+        .filter(|row| {
+            row.label.to_ascii_lowercase().contains(&trimmed)
+                || row.value.to_ascii_lowercase().contains(&trimmed)
+        })
+        .collect()
 }
 
-/// The palette's content for a set of results.
+/// Cycle one setting in native Settings and persist it to `settings.json`.
+fn advance_native_setting(ctx: &NativeContext, key: &str) {
+    if key == KEY_LAUNCHER_HOTKEY {
+        let current = ctx
+            .settings
+            .get(KEY_LAUNCHER_HOTKEY)
+            .unwrap_or_else(|| HOTKEY_PRESETS[0].to_string());
+        let pos = HOTKEY_PRESETS
+            .iter()
+            .position(|preset| preset.eq_ignore_ascii_case(&current))
+            .map(|i| (i + 1) % HOTKEY_PRESETS.len())
+            .unwrap_or(0);
+        let next = HOTKEY_PRESETS[pos];
+        let _ = ctx.settings.set(KEY_LAUNCHER_HOTKEY, next);
+        if let (Some(cb), Some(trigger)) = (&ctx.on_hotkey_changed, HotkeyTrigger::parse(next)) {
+            cb(trigger);
+        }
+        return;
+    }
+
+    if let Some(next) = ctx.palette.advance_setting(key) {
+        let _ = ctx.settings.set(key, &next);
+    }
+}
+
+/// The palette's content for a set of launcher results.
 fn model_for(query: &str, rows: &[ResultRow]) -> Model {
     Model {
         query: query.to_string(),
@@ -174,6 +289,26 @@ fn model_for(query: &str, rows: &[ResultRow]) -> Model {
         selected: 0,
         hovered: None,
         footer: FOOTER.to_string(),
+    }
+}
+
+/// The palette's content for the native Settings screen.
+fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Model {
+    let ui_rows = rows
+        .iter()
+        .map(|row| Row {
+            name: row.label.clone(),
+            detail: row.options.join("  /  "),
+            shortcut: row.value.clone(),
+            icon: Some(Icon::new("S", Color::rgb(0x4f, 0x46, 0xe5))),
+        })
+        .collect();
+    Model {
+        query: query.to_string(),
+        rows: ui_rows,
+        selected,
+        hovered: None,
+        footer: SETTINGS_FOOTER.to_string(),
     }
 }
 
@@ -188,17 +323,11 @@ fn row_of(result: &ResultRow) -> Row {
 }
 
 /// The tile that leads a row.
-///
-/// The colour says what kind of thing the row is, so the list can be read
-/// at a glance: an application, a file, a command, an action.
 fn icon_of(result: &ResultRow) -> Icon {
     Icon::new(letter_of(&result.name), color_of(&result.kind))
 }
 
 /// The letter in the tile.
-///
-/// The first letter of the name, when the name has one. A row with no name
-/// - which should not happen - gets a dot rather than nothing.
 fn letter_of(name: &str) -> String {
     match name.chars().next() {
         Some(letter) => letter.to_uppercase().to_string(),
@@ -220,11 +349,7 @@ fn color_of(kind: &str) -> Color {
     }
 }
 
-/// Runs the native palette on its own.
-///
-/// This is the whole application, minus the tray icon and the settings
-/// screens: the palette, the launcher behind it, and the runner that opens
-/// what the user chooses.
+/// Runs the native palette on its own (`--native-palette`), without tray or global hotkey.
 pub fn run(arguments: &[String]) -> Result<(), String> {
     let paths = tc_platform_win::windows_paths();
     let data = tc_platform_win::WindowsFileSystem::new();
@@ -241,10 +366,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-/// The theme the palette wears.
-///
-/// A style pack is a design system's tokens in a small file; without one the
-/// palette wears the built-in dark appearance.
+/// The theme the palette wears when invoked with `--style-pack`.
 fn theme(arguments: &[String]) -> Result<Theme, String> {
     let position = arguments
         .iter()
@@ -331,5 +453,20 @@ mod tests {
         let model = model_for("nothing", &[]);
         assert!(model.rows.is_empty());
         assert_eq!(model.query, "nothing");
+    }
+
+    #[test]
+    fn settings_model_displays_current_values_in_shortcut_column() {
+        let rows = vec![SettingRow {
+            key: KEY_LAUNCHER_HOTKEY.to_string(),
+            label: "Launcher Hotkey".to_string(),
+            value: "Alt+Space".to_string(),
+            options: vec!["Alt+Space".to_string(), "Ctrl+Space".to_string()],
+        }];
+        let model = settings_model_for("", &rows, 0);
+        assert_eq!(model.rows.len(), 1);
+        assert_eq!(model.rows[0].name, "Launcher Hotkey");
+        assert_eq!(model.rows[0].shortcut, "Alt+Space");
+        assert!(model.footer.contains("Settings"));
     }
 }

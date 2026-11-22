@@ -86,20 +86,6 @@ jobs:
           & $setup modify --installPath "$installPath" --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --quiet --norestart --nocache
           if ($LASTEXITCODE -ne 0) { throw "installing the ARM64 build tools failed" }
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install the palette's dependencies
-        run: npm ci
-        working-directory: frontend
-
-      - name: Build the palette
-        run: npm run build
-        working-directory: frontend
-
       - name: Build the release artifacts
         run: cargo run --quiet -p xtask -- dist --arch ${{ matrix.arch }}
 

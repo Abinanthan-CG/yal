@@ -5,6 +5,7 @@
 //! method, the clipboard and the selection all behave the way Windows expects.
 
 use std::ffi::c_void;
+use std::time::{Duration, Instant};
 
 use windows::core::{w, PCWSTR};
 use windows::Win32::Foundation::{COLORREF, HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
@@ -17,31 +18,33 @@ use windows::Win32::Graphics::Gdi::{
     PAINTSTRUCT,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
 use windows::Win32::System::WindowsProgramming::MulDiv;
 use windows::Win32::UI::Controls::{
     InitCommonControlsEx, ICC_STANDARD_CLASSES, INITCOMMONCONTROLSEX,
 };
 use windows::Win32::UI::HiDpi::{
-    GetDpiForSystem, GetDpiForWindow, SetProcessDpiAwarenessContext,
-    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+    GetDpiForMonitor, GetDpiForSystem, GetDpiForWindow, SetProcessDpiAwarenessContext,
+    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, MDT_EFFECTIVE_DPI,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetMessageW, GetParent,
-    GetWindowLongPtrW, IsWindowVisible, LoadCursorW, PeekMessageW, PostMessageW, PostQuitMessage,
-    RegisterClassExW, SendMessageW, SetForegroundWindow, SetWindowLongPtrW, SetWindowPos,
-    ShowWindow, TranslateMessage, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL,
-    ES_LEFT, GWLP_USERDATA, GWLP_WNDPROC, HTCLIENT, IDC_ARROW, MINMAXINFO, MSG, PM_REMOVE,
-    SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOZORDER, SW_HIDE, SW_SHOW, WINDOW_EX_STYLE, WINDOW_STYLE,
+    CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetForegroundWindow,
+    GetMessageW, GetParent, GetWindowLongPtrW, GetWindowThreadProcessId, IsWindow, IsWindowVisible,
+    LoadCursorW, PeekMessageW, PostMessageW, PostQuitMessage, RegisterClassExW, SendMessageW,
+    SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow, TranslateMessage,
+    CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA,
+    GWLP_WNDPROC, HTCLIENT, IDC_ARROW, MINMAXINFO, MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE,
+    SWP_NOZORDER, SW_HIDE, SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE,
     WM_CHAR, WM_COMMAND, WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_ERASEBKGND, WM_GETMINMAXINFO,
-    WM_KEYDOWN, WM_MOUSEMOVE, WM_NCCALCSIZE, WM_NCHITTEST, WM_NEXTDLGCTL, WM_PAINT, WM_SETFONT,
-    WM_SIZE, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_POPUP, WS_TABSTOP,
-    WS_THICKFRAME, WS_VISIBLE,
+    WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_NCCALCSIZE, WM_NCHITTEST, WM_NEXTDLGCTL, WM_PAINT,
+    WM_PASTE, WM_SETFONT, WM_SIZE, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS,
+    WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_THICKFRAME, WS_VISIBLE,
 };
 
 use crate::event::{Handler, PaletteEvent, PaletteReply};
 use crate::model::Model;
 use crate::paint::Renderer;
-use crate::theme::{Color, Theme};
+use crate::theme::{Color, Metrics, Theme};
 
 /// The message the search field sends when the user pressed the up arrow.
 const WM_APP_UP: u32 = 0x8001;
@@ -55,6 +58,16 @@ const WM_APP_RETURN: u32 = 0x8004;
 const WM_APP_SHOW: u32 = 0x8005;
 /// The message another thread sends to ask the palette to close.
 const WM_APP_CLOSE: u32 = 0x8006;
+/// The message another thread sends to ask the palette to quit its message loop.
+const WM_APP_QUIT: u32 = 0x8007;
+/// The message another thread sends to show the palette and run an app-defined command.
+const WM_APP_COMMAND: u32 = 0x8008;
+/// Toggle requested by a tray click (debounced against an immediately-preceding blur dismiss).
+const WM_APP_TOGGLE_TRAY: u32 = 0x8009;
+
+/// Debounce window so clicking the tray icon while the palette is open closes
+/// the palette rather than blur-dismissing and immediately re-opening it.
+const TRAY_BLUR_DEBOUNCE: Duration = Duration::from_millis(250);
 
 /// What the palette knows about the display it is on.
 #[derive(Clone, Copy, Debug)]
@@ -84,14 +97,13 @@ struct State {
     placeholder: String,
     /// Whether the field is showing that hint rather than a query.
     showing_placeholder: bool,
+    /// When the window was last hidden by losing focus (`WA_INACTIVE`).
+    last_blur_dismiss: Option<Instant>,
     /// What the app does when the palette says something.
     handler: Handler,
 }
 
 /// The palette's window, in a form that can cross a thread boundary.
-///
-/// A window handle is a plain pointer, and a pointer does not travel
-/// between threads on its own; this wraps it as the number it is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PaletteHandle(isize);
 
@@ -113,20 +125,49 @@ pub fn is_visible(handle: PaletteHandle) -> bool {
 }
 
 /// Asks the palette with this window to show itself, from any thread.
-///
-/// The window is the only thing that crosses the thread boundary, and it is
-/// posted rather than sent, so the caller's thread is never left waiting for
-/// the palette's thread.
 pub fn post_show(handle: PaletteHandle) {
     unsafe {
         let _ = PostMessageW(Some(handle.hwnd()), WM_APP_SHOW, WPARAM(0), LPARAM(0));
     }
 }
 
-/// Asks the palette with this window to close, from any thread.
+/// Asks the palette with this window to close (hide), from any thread.
 pub fn post_close(handle: PaletteHandle) {
     unsafe {
         let _ = PostMessageW(Some(handle.hwnd()), WM_APP_CLOSE, WPARAM(0), LPARAM(0));
+    }
+}
+
+/// Asks the palette to toggle in response to a tray click (debouncing an
+/// immediate `WA_INACTIVE` blur caused by clicking the taskbar tray icon).
+pub fn post_toggle_from_tray(handle: PaletteHandle) {
+    unsafe {
+        let _ = PostMessageW(
+            Some(handle.hwnd()),
+            WM_APP_TOGGLE_TRAY,
+            WPARAM(0),
+            LPARAM(0),
+        );
+    }
+}
+
+/// Asks the palette's window thread to exit its message loop cleanly.
+pub fn post_quit(handle: PaletteHandle) {
+    unsafe {
+        let _ = PostMessageW(Some(handle.hwnd()), WM_APP_QUIT, WPARAM(0), LPARAM(0));
+    }
+}
+
+/// Shows the palette and delivers an application-defined command code on the
+/// palette's own thread.
+pub fn post_command(handle: PaletteHandle, code: u32) {
+    unsafe {
+        let _ = PostMessageW(
+            Some(handle.hwnd()),
+            WM_APP_COMMAND,
+            WPARAM(code as usize),
+            LPARAM(0),
+        );
     }
 }
 
@@ -138,11 +179,6 @@ pub struct Palette {
 
 impl Palette {
     /// Builds a palette window that answers to nobody.
-    ///
-    /// The palette still shows, still takes the keyboard and still moves the
-    /// selection; it simply does not search, because there is nothing to
-    /// search with. This is the palette on its own, and it is what the probe
-    /// opens.
     pub fn new(theme: Theme, model: Model) -> Result<Self, String> {
         Self::with_handler(theme, model, Box::new(crate::event::ignore))
     }
@@ -150,9 +186,6 @@ impl Palette {
     /// Builds a palette window that tells the app what happens.
     pub fn with_handler(theme: Theme, model: Model, handler: Handler) -> Result<Self, String> {
         unsafe { set_dpi_aware() };
-        // The common controls of Windows 11 - the search field's own look, and
-        // its placeholder - need the version 6 library, which an application
-        // only gets when it asks for it.
         unsafe { init_common_controls() };
         let instance: HINSTANCE = unsafe {
             HINSTANCE(
@@ -177,10 +210,20 @@ impl Palette {
             hIconSm: Default::default(),
         };
         if unsafe { RegisterClassExW(&class) } == 0 {
-            return Err("the palette's window class could not be registered".to_string());
+            let err = unsafe { windows::Win32::Foundation::GetLastError() };
+            if err != windows::Win32::Foundation::ERROR_CLASS_ALREADY_EXISTS {
+                return Err("the palette's window class could not be registered".to_string());
+            }
         }
 
-        let mut state = Box::new(State {
+        let metrics = theme.metrics;
+        let initial_rows = model.rows.len();
+        let width = metrics.width as i32;
+        let height = content_height(metrics, initial_rows) as i32;
+
+        // Convert to raw pointer BEFORE CreateWindowExW so the pointer stored in
+        // GWLP_USERDATA keeps valid provenance across all Win32 callbacks.
+        let state_ptr = Box::into_raw(Box::new(State {
             hwnd: HWND(std::ptr::null_mut()),
             renderer: None,
             model,
@@ -191,16 +234,13 @@ impl Palette {
             field_brush: None,
             placeholder: "Search YAL".to_string(),
             showing_placeholder: true,
+            last_blur_dismiss: None,
             handler,
-        });
+        }));
 
-        let metrics = state.theme.metrics;
-        let width = metrics.width as i32;
-        let height = content_height(metrics, state.model.rows.len()) as i32;
-
-        let hwnd = unsafe {
+        let hwnd = match unsafe {
             CreateWindowExW(
-                WINDOW_EX_STYLE(0),
+                WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
                 w!("YalPaletteWindow"),
                 w!("YAL"),
                 WS_POPUP | WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
@@ -211,16 +251,23 @@ impl Palette {
                 None,
                 None,
                 Some(instance),
-                Some(state.as_mut() as *mut State as *mut c_void),
+                Some(state_ptr as *mut c_void),
             )
-            .map_err(|error| format!("the palette window could not be created: {error}"))?
+        } {
+            Ok(hwnd) => hwnd,
+            Err(error) => {
+                unsafe {
+                    drop(Box::from_raw(state_ptr));
+                }
+                return Err(format!("the palette window could not be created: {error}"));
+            }
         };
 
-        state.hwnd = hwnd;
-        // The window is placed once it exists: a window cannot be resized while
-        // it is still being created, and only now does it know its monitor.
-        place_window(&state);
-        let state_ptr = Box::into_raw(state);
+        unsafe {
+            (*state_ptr).hwnd = hwnd;
+        }
+        // Extract Copy fields before SetWindowPos (which synchronously sends WM_SIZE).
+        place_window_rect(hwnd, metrics, initial_rows);
 
         Ok(Self {
             hwnd,
@@ -257,14 +304,16 @@ impl Palette {
     }
 
     /// Replaces the palette's content and repaints.
-    ///
-    /// The window is the size of what it shows, so it grows and shrinks with
-    /// the list.
     pub fn set_model(&mut self, model: Model) {
-        unsafe {
+        let (hwnd, metrics, rows) = unsafe {
             (*self.state).model = model;
-            resize(&*self.state);
-        }
+            (
+                (*self.state).hwnd,
+                (*self.state).theme.metrics,
+                (*self.state).model.rows.len(),
+            )
+        };
+        resize_window_rect(hwnd, metrics, rows);
         self.repaint();
     }
 
@@ -278,7 +327,7 @@ impl Palette {
     /// Shows the palette and gives it the keyboard.
     pub fn show(&self) {
         unsafe {
-            show_window(&mut *self.state);
+            show_window(self.state);
         }
     }
 
@@ -289,22 +338,18 @@ impl Palette {
         }
     }
 
-    /// Runs the window's message loop until the window is closed.
+    /// Runs the window's blocking message loop until closed/quit.
     pub fn run(&self) {
         unsafe {
             let mut message = std::mem::zeroed::<MSG>();
-            while GetMessageW(&mut message, None, 0, 0).as_bool() {
+            while GetMessageW(&mut message, None, 0, 0).0 > 0 {
                 let _ = TranslateMessage(&message);
                 DispatchMessageW(&message);
             }
         }
     }
 
-    /// Handles the messages that are waiting, without waiting for any.
-    ///
-    /// An application with more than one job - a tray icon, a hotkey engine,
-    /// a window - cannot sit inside a blocking message loop, so it takes the
-    /// messages as they come.
+    /// Handles pending messages without blocking.
     pub fn pump(&self) {
         unsafe {
             let mut message = std::mem::zeroed::<MSG>();
@@ -316,14 +361,11 @@ impl Palette {
     }
 
     /// Asks the palette to show itself.
-    ///
-    /// The message is posted, not sent, so this is safe to call from another
-    /// thread: the palette's own thread does the work.
     pub fn post_show(&self) {
         post_show(self.handle());
     }
 
-    /// Asks the palette to close.
+    /// Asks the palette to close (hide).
     pub fn post_close(&self) {
         post_close(self.handle());
     }
@@ -338,17 +380,27 @@ impl Drop for Palette {
     fn drop(&mut self) {
         unsafe {
             if !self.state.is_null() {
-                let mut state = Box::from_raw(self.state);
-                if state.edit_proc != 0 {
-                    let _ = SetWindowLongPtrW(state.edit, GWLP_WNDPROC, state.edit_proc);
+                // Step 1: Unsubclass the edit control while it still exists.
+                let edit = (*self.state).edit;
+                let edit_proc = (*self.state).edit_proc;
+                if edit_proc != 0 && !edit.0.is_null() && IsWindow(Some(edit)).as_bool() {
+                    let _ = SetWindowLongPtrW(edit, GWLP_WNDPROC, edit_proc);
                 }
+                // Step 2: Detach GWLP_USERDATA BEFORE DestroyWindow so WM_ACTIVATE /
+                // WM_DESTROY cannot re-enter State or create aliasing references.
+                if !self.hwnd.0.is_null() && IsWindow(Some(self.hwnd)).as_bool() {
+                    let _ = SetWindowLongPtrW(self.hwnd, GWLP_USERDATA, 0);
+                    let _ = DestroyWindow(self.hwnd);
+                }
+                // Step 3: Now reclaim State and release GDI objects safely.
+                let mut state = Box::from_raw(self.state);
+                self.state = std::ptr::null_mut();
                 if let Some(font) = state.font.take() {
                     let _ = DeleteObject(font.into());
                 }
                 if let Some(brush) = state.field_brush.take() {
                     let _ = DeleteObject(brush.into());
                 }
-                let _ = DestroyWindow(self.hwnd);
                 drop(state);
             }
         }
@@ -369,18 +421,17 @@ unsafe extern "system" fn window_procedure(
         return DefWindowProcW(hwnd, message, wparam, lparam);
     }
 
-    let pointer = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut State;
-    if pointer.is_null() {
+    let state_ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut State;
+    if state_ptr.is_null() {
         return DefWindowProcW(hwnd, message, wparam, lparam);
     }
-    let state = &mut *pointer;
 
     match message {
         WM_CREATE => {
+            let state = &mut *state_ptr;
             let dpi = GetDpiForWindow(hwnd).max(96) as f32;
             let metrics = state.theme.metrics;
 
-            // Windows rounds the palette's corners for us.
             let corner = DWMWCP_ROUND;
             let _ = DwmSetWindowAttribute(
                 hwnd,
@@ -389,10 +440,6 @@ unsafe extern "system" fn window_procedure(
                 std::mem::size_of_val(&corner) as u32,
             );
 
-            // The search field is a real edit control, so the keyboard, the input
-            // method and the clipboard are Windows' own. The brush it paints
-            // with is made first: the control asks for its colour the moment it
-            // is created.
             let field = CreateSolidBrush(colorref(state.theme.field));
             state.field_brush = Some(field);
 
@@ -443,10 +490,6 @@ unsafe extern "system" fn window_procedure(
             state.edit = edit;
             state.font = Some(font);
 
-            // The field shows a hint while it is empty. Windows' own cue banner
-            // needs the version 6 common controls, which an application only
-            // gets through its manifest; showing the hint as ordinary text
-            // works everywhere and is cleared by the first keystroke.
             let cue: Vec<u16> = state
                 .placeholder
                 .encode_utf16()
@@ -459,7 +502,6 @@ unsafe extern "system" fn window_procedure(
                 Some(LPARAM(cue.as_ptr() as isize)),
             );
 
-            // The field keeps the arrow keys for the palette's list.
             let previous =
                 SetWindowLongPtrW(edit, GWLP_WNDPROC, edit_procedure as *const () as isize);
             state.edit_proc = previous;
@@ -472,15 +514,20 @@ unsafe extern "system" fn window_procedure(
         WM_SIZE => {
             let width = (lparam.0 & 0xffff) as u32;
             let height = ((lparam.0 >> 16) & 0xffff) as u32;
-            if let Some(renderer) = state.renderer.as_ref() {
-                renderer.resize(width, height);
-            }
-            place_field(state, (lparam.0 & 0xffff) as i32);
+            let (edit, metrics) = {
+                let state = &mut *state_ptr;
+                if let Some(renderer) = state.renderer.as_ref() {
+                    renderer.resize(width, height);
+                }
+                (state.edit, state.theme.metrics)
+            };
+            place_field_rect(hwnd, edit, metrics, width as i32);
             LRESULT(0)
         }
         WM_PAINT => {
             let mut paint = std::mem::zeroed::<PAINTSTRUCT>();
             let _ = BeginPaint(hwnd, &mut paint);
+            let state = &mut *state_ptr;
             if let Some(renderer) = state.renderer.as_mut() {
                 renderer.draw(&state.model, &state.theme);
             }
@@ -491,62 +538,73 @@ unsafe extern "system" fn window_procedure(
         WM_COMMAND => {
             let code = (wparam.0 >> 16) & 0xffff;
             if code as u32 == EN_CHANGE {
+                let edit = (*state_ptr).edit;
                 let mut buffer = [0u16; 512];
-                let length = unsafe {
-                    windows::Win32::UI::WindowsAndMessaging::GetWindowTextW(state.edit, &mut buffer)
-                };
+                let length =
+                    windows::Win32::UI::WindowsAndMessaging::GetWindowTextW(edit, &mut buffer);
                 let text = String::from_utf16_lossy(&buffer[..length as usize]);
-                if state.showing_placeholder {
-                    // The hint the field shows while it is empty is not a
-                    // query: the user has not typed anything, so the app is
-                    // not told about it.
-                    state.model.query = String::new();
-                } else {
-                    state.model.query = text;
-                    let query = state.model.query.clone();
-                    dispatch(state, PaletteEvent::QueryChanged(query));
+                let query_to_dispatch = {
+                    let state = &mut *state_ptr;
+                    if state.showing_placeholder {
+                        state.model.query = String::new();
+                        None
+                    } else {
+                        state.model.query = text.clone();
+                        Some(text)
+                    }
+                };
+                if let Some(query) = query_to_dispatch {
+                    dispatch(state_ptr, PaletteEvent::QueryChanged(query));
                 }
             }
             LRESULT(0)
         }
         WM_CTLCOLOREDIT => {
-            // The device context comes with the message; it is the field's own.
             let control = HDC(wparam.0 as *mut c_void);
+            let state = &*state_ptr;
             let showing = state.showing_placeholder;
-            unsafe {
-                let _ = SetTextColor(
-                    control,
-                    colorref(if showing {
-                        state.theme.text_dim
-                    } else {
-                        state.theme.text
-                    }),
-                );
-                let _ = SetBkColor(control, colorref(state.theme.field));
-            }
+            let _ = SetTextColor(
+                control,
+                colorref(if showing {
+                    state.theme.text_dim
+                } else {
+                    state.theme.text
+                }),
+            );
+            let _ = SetBkColor(control, colorref(state.theme.field));
             let brush = state.field_brush.map(|b| b.0).unwrap_or_default();
             LRESULT(brush as isize)
         }
         WM_NCHITTEST => LRESULT(HTCLIENT as isize),
         WM_MOUSEMOVE => {
-            // The row under the pointer is drawn a little differently.
-            let y = ((lparam.0 >> 16) & 0xffff) as f32;
-            let hovered = match state.renderer.as_ref() {
-                Some(renderer) => {
-                    let scale = renderer.scale(&state.theme);
-                    if scale > 0.0 {
-                        let metrics = state.theme.metrics;
-                        let list_top = metrics.padding + metrics.field_height + metrics.list_gap;
-                        state.model.row_at(y / scale, list_top, metrics.row_height)
-                    } else {
-                        None
-                    }
-                }
-                None => None,
-            };
+            let y = (lparam.0 >> 16) as i16 as f32;
+            let state = &mut *state_ptr;
+            let hovered = hit_test_row(state, y);
             if state.model.hovered != hovered {
                 state.model.hovered = hovered;
                 let _ = InvalidateRect(Some(hwnd), None, false);
+            }
+            LRESULT(0)
+        }
+        WM_LBUTTONUP => {
+            let y = (lparam.0 >> 16) as i16 as f32;
+            let clicked = {
+                let state = &mut *state_ptr;
+                let hit = hit_test_row(state, y);
+                if let Some(index) = hit {
+                    state.model.selected = index;
+                }
+                hit
+            };
+            if let Some(index) = clicked {
+                dispatch(state_ptr, PaletteEvent::Activated(index));
+            }
+            LRESULT(0)
+        }
+        WM_ACTIVATE => {
+            if (wparam.0 & 0xffff) == WA_INACTIVE as usize && IsWindowVisible(hwnd).as_bool() {
+                (*state_ptr).last_blur_dismiss = Some(Instant::now());
+                dismiss(state_ptr);
             }
             LRESULT(0)
         }
@@ -563,37 +621,60 @@ unsafe extern "system" fn window_procedure(
         }
         WM_KEYDOWN => {
             if wparam.0 as u16 == windows::Win32::UI::Input::KeyboardAndMouse::VK_ESCAPE.0 {
-                dismiss(state);
+                dismiss(state_ptr);
             }
             LRESULT(0)
         }
         WM_APP_UP => {
-            state.model.select_previous();
+            (*state_ptr).model.select_previous();
             let _ = InvalidateRect(Some(hwnd), None, false);
             LRESULT(0)
         }
         WM_APP_DOWN => {
-            state.model.select_next();
+            (*state_ptr).model.select_next();
             let _ = InvalidateRect(Some(hwnd), None, false);
             LRESULT(0)
         }
         WM_APP_ESCAPE => {
-            dismiss(state);
+            dismiss(state_ptr);
             LRESULT(0)
         }
         WM_APP_RETURN => {
-            let selected = state.model.selected;
-            dispatch(state, PaletteEvent::Activated(selected));
+            let selected = (*state_ptr).model.selected;
+            dispatch(state_ptr, PaletteEvent::Activated(selected));
             LRESULT(0)
         }
         WM_APP_SHOW => {
-            // The palette is being asked for by another thread, so it puts
-            // itself on screen and takes the keyboard.
-            show_window(state);
+            show_window(state_ptr);
             LRESULT(0)
         }
         WM_APP_CLOSE => {
             let _ = ShowWindow(hwnd, SW_HIDE);
+            LRESULT(0)
+        }
+        WM_APP_TOGGLE_TRAY => {
+            if IsWindowVisible(hwnd).as_bool() {
+                let _ = ShowWindow(hwnd, SW_HIDE);
+            } else {
+                let recently_blurred = (*state_ptr)
+                    .last_blur_dismiss
+                    .is_some_and(|at| at.elapsed() < TRAY_BLUR_DEBOUNCE);
+                if recently_blurred {
+                    (*state_ptr).last_blur_dismiss = None;
+                } else {
+                    show_window(state_ptr);
+                }
+            }
+            LRESULT(0)
+        }
+        WM_APP_QUIT => {
+            let _ = DestroyWindow(hwnd);
+            LRESULT(0)
+        }
+        WM_APP_COMMAND => {
+            let code = wparam.0 as u32;
+            show_window_without_shown_event(state_ptr);
+            dispatch(state_ptr, PaletteEvent::Command(code));
             LRESULT(0)
         }
         WM_DESTROY => {
@@ -604,41 +685,60 @@ unsafe extern "system" fn window_procedure(
     }
 }
 
-/// The search field's own window procedure, which keeps the arrow keys.
+fn hit_test_row(state: &State, y: f32) -> Option<usize> {
+    let renderer = state.renderer.as_ref()?;
+    let scale = renderer.scale(&state.theme);
+    if scale > 0.0 {
+        let metrics = state.theme.metrics;
+        let list_top = metrics.padding + metrics.field_height + metrics.list_gap;
+        state.model.row_at(y / scale, list_top, metrics.row_height)
+    } else {
+        None
+    }
+}
+
+/// The search field's own window procedure, which keeps the arrow keys and
+/// clears the placeholder cleanly without aliasing `State` across `SendMessageW`.
 unsafe extern "system" fn edit_procedure(
     hwnd: HWND,
     message: u32,
     wparam: WPARAM,
     lparam: LPARAM,
 ) -> LRESULT {
-    // The palette's state, reached through the parent window.
-    let parent = unsafe { GetParent(hwnd).unwrap_or_default() };
-    let pointer = GetWindowLongPtrW(parent, GWLP_USERDATA);
-    let state = if pointer != 0 {
-        Some(&*(pointer as *const State))
+    let parent = GetParent(hwnd).unwrap_or_default();
+    let pointer = GetWindowLongPtrW(parent, GWLP_USERDATA) as *mut State;
+
+    // Copy the original wndproc up front; never hold &State across SendMessageW.
+    let edit_proc = if !pointer.is_null() {
+        (*pointer).edit_proc
     } else {
-        None
+        0
     };
 
-    if message == WM_CHAR {
-        if let Some(state) = state {
-            if state.showing_placeholder {
-                let character = wparam.0 as u16 as u8;
-                if character == 0x08 {
-                    // Backspace on an empty field does nothing at all.
-                    return LRESULT(0);
-                }
-                // The first keystroke replaces the hint.
-                let _ = SendMessageW(
-                    hwnd,
-                    windows::Win32::UI::WindowsAndMessaging::WM_SETTEXT,
-                    Some(WPARAM(0)),
-                    Some(LPARAM(0)),
-                );
-                let state = &mut *(pointer as *mut State);
-                state.showing_placeholder = false;
-            }
+    if message == WM_PASTE && !pointer.is_null() && (*pointer).showing_placeholder {
+        (*pointer).showing_placeholder = false;
+        let _ = SendMessageW(
+            hwnd,
+            windows::Win32::UI::WindowsAndMessaging::WM_SETTEXT,
+            Some(WPARAM(0)),
+            Some(LPARAM(0)),
+        );
+    }
+
+    if message == WM_CHAR && !pointer.is_null() && (*pointer).showing_placeholder {
+        let ch = wparam.0 as u16;
+        // Ignore control characters (Backspace 0x08, Ctrl+C 0x03, Tab 0x09, etc.)
+        // as full UTF-16 code units so valid Unicode characters are never truncated.
+        if ch < 0x20 {
+            return LRESULT(0);
         }
+        (*pointer).showing_placeholder = false;
+        let _ = SendMessageW(
+            hwnd,
+            windows::Win32::UI::WindowsAndMessaging::WM_SETTEXT,
+            Some(WPARAM(0)),
+            Some(LPARAM(0)),
+        );
     }
 
     if message == WM_KEYDOWN {
@@ -657,100 +757,130 @@ unsafe extern "system" fn edit_procedure(
         }
     }
 
-    // The original procedure is kept in the palette's state.
-    if let Some(state) = state {
-        if state.edit_proc != 0 {
-            let original: unsafe extern "system" fn(HWND, u32, WPARAM, LPARAM) -> LRESULT =
-                std::mem::transmute(state.edit_proc);
-            return original(hwnd, message, wparam, lparam);
-        }
+    if edit_proc != 0 {
+        let original: unsafe extern "system" fn(HWND, u32, WPARAM, LPARAM) -> LRESULT =
+            std::mem::transmute(edit_proc);
+        return original(hwnd, message, wparam, lparam);
     }
     DefWindowProcW(hwnd, message, wparam, lparam)
 }
 
-/// Shows the palette and gives it the keyboard.
-///
-/// The palette starts afresh: the search field is emptied and the hint comes
-/// back, so the app is asked for its content again. The app puts its
-/// suggestions there.
-fn show_window(state: &mut State) {
-    state.showing_placeholder = true;
-    state.model.query = String::new();
-    unsafe {
-        // The hint is ordinary text in the field, so it is written back the
-        // same way it was written the first time.
+/// Shows the palette and gives it the keyboard, without firing `PaletteEvent::Shown`.
+unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
+    let (hwnd, edit, metrics, rows, cue) = {
+        let state = &mut *state_ptr;
+        state.showing_placeholder = true;
+        state.last_blur_dismiss = None;
+        state.model.query = String::new();
         let cue: Vec<u16> = state
             .placeholder
             .encode_utf16()
             .chain(std::iter::once(0))
             .collect();
-        let _ = SendMessageW(
+        (
+            state.hwnd,
             state.edit,
-            windows::Win32::UI::WindowsAndMessaging::WM_SETTEXT,
-            Some(WPARAM(0)),
-            Some(LPARAM(cue.as_ptr() as isize)),
+            state.theme.metrics,
+            state.model.rows.len(),
+            cue,
+        )
+    };
+
+    place_window_rect(hwnd, metrics, rows);
+    let _ = SendMessageW(
+        edit,
+        windows::Win32::UI::WindowsAndMessaging::WM_SETTEXT,
+        Some(WPARAM(0)),
+        Some(LPARAM(cue.as_ptr() as isize)),
+    );
+    let _ = ShowWindow(hwnd, SW_SHOW);
+    bring_to_foreground(hwnd);
+    if !edit.0.is_null() {
+        let _ = SendMessageW(
+            hwnd,
+            WM_NEXTDLGCTL,
+            Some(WPARAM(edit.0 as usize)),
+            Some(LPARAM(1)),
         );
-        let _ = SetForegroundWindow(state.hwnd);
-        let _ = ShowWindow(state.hwnd, SW_SHOW);
-        if !state.edit.0.is_null() {
-            // WM_NEXTDLGCTL hands the keyboard to the search field.
-            let _ = SendMessageW(
-                state.hwnd,
-                WM_NEXTDLGCTL,
-                Some(WPARAM(state.edit.0 as usize)),
-                Some(LPARAM(1)),
-            );
+    }
+}
+
+/// Brings the palette window to the foreground reliably even when summoned
+/// from a background hotkey or tray thread.
+unsafe fn bring_to_foreground(hwnd: HWND) {
+    if SetForegroundWindow(hwnd).as_bool() {
+        return;
+    }
+    let foreground = GetForegroundWindow();
+    if foreground.0.is_null() {
+        return;
+    }
+    let fg_thread = GetWindowThreadProcessId(foreground, None);
+    let our_thread = GetCurrentThreadId();
+    if fg_thread != 0 && fg_thread != our_thread {
+        let attached = AttachThreadInput(our_thread, fg_thread, true).as_bool();
+        let _ = SetForegroundWindow(hwnd);
+        if attached {
+            let _ = AttachThreadInput(our_thread, fg_thread, false);
         }
     }
-    dispatch(state, PaletteEvent::Shown);
+}
+
+/// Shows the palette and gives it the keyboard.
+unsafe fn show_window(state_ptr: *mut State) {
+    show_window_without_shown_event(state_ptr);
+    dispatch(state_ptr, PaletteEvent::Shown);
 }
 
 /// Tells the app what happened, and applies what it says.
 ///
-/// The handler is moved out of the state for the length of the call, so it
-/// cannot reach the palette's own state while it runs. The app gets the
-/// event and answers with a model, and the model is put in place afterwards.
-fn dispatch(state: &mut State, event: PaletteEvent) {
-    let placeholder: Handler = Box::new(crate::event::ignore);
-    let handler = std::mem::replace(&mut state.handler, placeholder);
+/// The handler is moved out of `State` while it runs, and no `&mut State` is
+/// held across `SetWindowPos` / `ShowWindow` / `DestroyWindow`.
+unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
+    let handler = {
+        let state = &mut *state_ptr;
+        let placeholder: Handler = Box::new(crate::event::ignore);
+        std::mem::replace(&mut state.handler, placeholder)
+    };
     let reply = handler(event);
-    state.handler = handler;
+    let hwnd = {
+        let state = &mut *state_ptr;
+        state.handler = handler;
+        state.hwnd
+    };
 
     match reply {
         PaletteReply::Keep => {}
         PaletteReply::Update(model) => {
-            state.model = model;
-            resize(state);
-            unsafe {
-                let _ = InvalidateRect(Some(state.hwnd), None, false);
-            }
+            let (metrics, rows) = {
+                let state = &mut *state_ptr;
+                state.model = model;
+                (state.theme.metrics, state.model.rows.len())
+            };
+            resize_window_rect(hwnd, metrics, rows);
+            let _ = InvalidateRect(Some(hwnd), None, false);
         }
-        PaletteReply::Close => unsafe {
-            let _ = ShowWindow(state.hwnd, SW_HIDE);
-        },
+        PaletteReply::Close => {
+            let _ = ShowWindow(hwnd, SW_HIDE);
+        }
+        PaletteReply::Quit => {
+            let _ = DestroyWindow(hwnd);
+        }
     }
 }
 
 /// The user dismissed the palette.
-fn dismiss(state: &mut State) {
-    dispatch(state, PaletteEvent::Dismissed);
-    unsafe {
-        let _ = ShowWindow(state.hwnd, SW_HIDE);
+unsafe fn dismiss(state_ptr: *mut State) {
+    let hwnd = (*state_ptr).hwnd;
+    dispatch(state_ptr, PaletteEvent::Dismissed);
+    if IsWindow(Some(hwnd)).as_bool() && IsWindowVisible(hwnd).as_bool() {
+        let _ = ShowWindow(hwnd, SW_HIDE);
     }
 }
 
-/// Sizes the palette for the display it is on and puts it where the user is
-/// looking: the middle of the monitor the pointer is on, a third of the way
-/// down.
-fn place_window(state: &State) {
-    let metrics = state.theme.metrics;
-    // While the window is being created its own DPI is not known yet, so the
-    // system's is the fallback.
-    let dpi = unsafe { GetDpiForWindow(state.hwnd).max(GetDpiForSystem()).max(96) } as f32;
-    let scale = dpi / 96.0;
-    let width = (metrics.width * scale) as i32;
-    let height = (content_height(metrics, state.model.rows.len()) * scale) as i32;
-
+/// Sizes the palette for the monitor the cursor is currently on and places it
+/// centered horizontally and a third of the way down.
+fn place_window_rect(hwnd: HWND, metrics: Metrics, rows: usize) {
     let mut cursor = POINT::default();
     let _ = unsafe { windows::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut cursor) };
     let monitor = unsafe {
@@ -759,6 +889,21 @@ fn place_window(state: &State) {
             windows::Win32::Graphics::Gdi::MONITOR_DEFAULTTONEAREST,
         )
     };
+    let mut dpi_x = 0u32;
+    let mut dpi_y = 0u32;
+    let monitor_dpi = unsafe {
+        if GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &mut dpi_x, &mut dpi_y).is_ok()
+            && dpi_x >= 96
+        {
+            dpi_x
+        } else {
+            GetDpiForSystem().max(96)
+        }
+    };
+    let scale = monitor_dpi as f32 / 96.0;
+    let width = (metrics.width * scale) as i32;
+    let height = (content_height(metrics, rows) * scale) as i32;
+
     let mut info = MONITORINFO {
         cbSize: std::mem::size_of::<MONITORINFO>() as u32,
         ..Default::default()
@@ -770,31 +915,26 @@ fn place_window(state: &State) {
 
     unsafe {
         let _ = SetWindowPos(
-            state.hwnd,
+            hwnd,
             Some(windows::Win32::UI::WindowsAndMessaging::HWND_TOPMOST),
             x,
             y,
             width,
             height,
-            windows::Win32::UI::WindowsAndMessaging::SWP_NOACTIVATE,
+            SWP_NOACTIVATE,
         );
     }
 }
 
-/// Makes the window the size of its content.
-///
-/// The palette is the size of what it shows: a short list gets a short
-/// window and a long one gets a long window. The window stays where it is;
-/// only its size changes.
-fn resize(state: &State) {
-    let metrics = state.theme.metrics;
-    let dpi = unsafe { GetDpiForWindow(state.hwnd).max(96) } as f32;
+/// Makes the window the size of its content without moving it.
+fn resize_window_rect(hwnd: HWND, metrics: Metrics, rows: usize) {
+    let dpi = unsafe { GetDpiForWindow(hwnd).max(96) } as f32;
     let scale = dpi / 96.0;
     let width = (metrics.width * scale) as i32;
-    let height = (content_height(metrics, state.model.rows.len()) * scale) as i32;
+    let height = (content_height(metrics, rows) * scale) as i32;
     unsafe {
         let _ = SetWindowPos(
-            state.hwnd,
+            hwnd,
             None,
             0,
             0,
@@ -806,13 +946,8 @@ fn resize(state: &State) {
 }
 
 /// Puts the search field where it belongs.
-///
-/// The field is inset from the left of the slab so the magnifying glass has
-/// room, and by a pixel all round so the hairline around the slab stays
-/// unbroken.
-fn place_field(state: &State, window_width: i32) {
-    let metrics = state.theme.metrics;
-    let dpi = unsafe { GetDpiForWindow(state.hwnd).max(96) } as f32;
+fn place_field_rect(hwnd: HWND, edit: HWND, metrics: Metrics, window_width: i32) {
+    let dpi = unsafe { GetDpiForWindow(hwnd).max(96) } as f32;
     let scale = dpi / 96.0;
     let padding = (metrics.padding * scale) as i32;
     let inset = (metrics.field_inset * scale) as i32;
@@ -820,22 +955,19 @@ fn place_field(state: &State, window_width: i32) {
     let width = window_width - padding * 2 - inset - 12;
     unsafe {
         let _ = SetWindowPos(
-            state.edit,
+            edit,
             None,
             padding + inset,
             padding + 1,
             width,
             height - 2,
-            windows::Win32::UI::WindowsAndMessaging::SWP_NOZORDER,
+            SWP_NOZORDER,
         );
     }
 }
 
 /// How tall the palette needs to be for a list of so many rows.
-///
-/// The window is the size of its content: a short list gets a short window,
-/// and a long one is cut off at the height the measurements allow.
-fn content_height(metrics: crate::theme::Metrics, rows: usize) -> f32 {
+fn content_height(metrics: Metrics, rows: usize) -> f32 {
     let visible = rows.min(metrics.max_rows) as f32;
     metrics.padding * 2.0
         + metrics.field_height
@@ -844,13 +976,12 @@ fn content_height(metrics: crate::theme::Metrics, rows: usize) -> f32 {
         + metrics.footer_height
 }
 
-/// A theme colour in the shape GDI wants.
+/// A theme colour in GDI `COLORREF` (`0x00BBGGRR`) layout.
 fn colorref(color: Color) -> COLORREF {
-    COLORREF(
-        (color.blue * 255.0) as u32
-            | ((color.green * 255.0) as u32) << 8
-            | ((color.red * 255.0) as u32) << 16,
-    )
+    let r = (color.red.clamp(0.0, 1.0) * 255.0).round() as u32;
+    let g = (color.green.clamp(0.0, 1.0) * 255.0).round() as u32;
+    let b = (color.blue.clamp(0.0, 1.0) * 255.0).round() as u32;
+    COLORREF(r | (g << 8) | (b << 16))
 }
 
 /// Tells the process that it is per-monitor aware.
@@ -865,4 +996,15 @@ unsafe fn init_common_controls() {
         dwICC: ICC_STANDARD_CLASSES,
     };
     let _ = InitCommonControlsEx(&controls);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn colorref_packs_rgb_into_windows_bbggrr_order() {
+        let color = Color::rgb(0x12, 0x34, 0x56);
+        assert_eq!(colorref(color).0, 0x0056_3412);
+    }
 }

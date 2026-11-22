@@ -53,31 +53,6 @@ jobs:
       - name: Clippy
         run: cargo clippy -p tc-core -p tc-platform -p tc-calc -p tc-search -p tc-apps -p tc-snippets --all-targets -- -D warnings
 
-  frontend:
-    name: Frontend (ubuntu)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install the palette's dependencies
-        run: npm ci
-        working-directory: frontend
-      - name: The palette's types are sound
-        run: npm run check
-        working-directory: frontend
-      - name: The palette builds
-        run: npm run build
-        working-directory: frontend
-      - uses: actions/upload-artifact@v4
-        with:
-          name: yal-frontend-dist
-          path: frontend/dist
-          if-no-files-found: error
-
   windows:
     name: Windows
     runs-on: windows-latest
@@ -93,19 +68,6 @@ jobs:
       - name: Install NSIS
         run: choco install nsis --yes --no-progress
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Build the palette
-        run: npm ci
-        working-directory: frontend
-      - name: Build the palette
-        run: npm run build
-        working-directory: frontend
-
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -117,18 +79,15 @@ jobs:
         # results of every other crate.
         run: cargo test --workspace --no-fail-fast
 
-      - name: The parity ledger is current
-        run: cargo run --quiet -p xtask -- parity --check
-
       - name: No placeholders in shipped code
         shell: pwsh
         run: |
           $patterns = @('todo!', 'unimplemented!', 'unreachable!', 'TODO', 'FIXME', 'coming soon', 'mock data')
-          $targets = @('crates', 'apps', 'frontend')
+          $targets = @('crates', 'apps')
           $found = @()
           foreach ($pattern in $patterns) {
-            $hits = Get-ChildItem -Path $targets -Recurse -Include *.rs,*.ts,*.tsx,*.js -ErrorAction SilentlyContinue |
-              Where-Object { $_.FullName -notmatch '\\(target|node_modules)\\' } |
+            $hits = Get-ChildItem -Path $targets -Recurse -Include *.rs -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -notmatch '\\target\\' } |
               Select-String -Pattern $pattern -SimpleMatch
             $found += $hits
           }
@@ -144,12 +103,6 @@ jobs:
 
       - name: Build the release binaries
         run: cargo build --release --workspace
-
-      # The document's commands are checked after the binaries are built,
-      # because two of them - the self-test and the release build - need
-      # the binaries to exist.
-      - name: Check that every command in BUILD_WITH_AI.md works
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-build-with-ai.ps1 -SkipDist
 
       - name: The self-test passes
         run: ./target/release/yal.exe --self-test

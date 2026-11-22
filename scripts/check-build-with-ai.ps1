@@ -53,10 +53,7 @@ function Invoke-Check {
     }
 }
 
-# The ledger.
-Invoke-Check 'cargo xtask parity --summary' { cargo run -q -p xtask -- parity --summary }
-Invoke-Check 'cargo xtask parity --check' { cargo run -q -p xtask -- parity --check }
-Invoke-Check 'cargo xtask tags' { cargo run -q -p xtask -- tags }
+# Build & self-test.
 Invoke-Check 'cargo xtask selftest' { cargo run -q -p xtask -- selftest }
 
 # The linters.
@@ -68,23 +65,6 @@ Invoke-Check 'cargo clippy --workspace --all-targets -- -D warnings' {
 # The tests.
 Invoke-Check 'cargo test --workspace' { cargo test --workspace }
 Invoke-Check 'cargo test -p tc-core' { cargo test -p tc-core }
-
-# The palette's interface.
-if (-not $SkipFrontend) {
-    if (Get-Command npm.cmd -ErrorAction SilentlyContinue) {
-        Push-Location (Join-Path $root 'frontend')
-        try {
-            Invoke-Check 'npm run check' { npm.cmd run check }
-            Invoke-Check 'npm run build' { npm.cmd run build }
-        }
-        finally {
-            Pop-Location
-        }
-    }
-    else {
-        Write-Host "    skipped: the palette's interface (npm is not installed)" -ForegroundColor Yellow
-    }
-}
 
 # The application.
 Invoke-Check 'yal.exe --self-test' {

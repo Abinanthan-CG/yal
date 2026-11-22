@@ -117,7 +117,7 @@ Section "Launch at login" SecAutostart
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "The YAL launcher and its helper processes."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "The YAL native launcher."
   !insertmacro MUI_DESCRIPTION_TEXT ${SecStartMenu} "Adds YAL to the Start menu."
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDesktop} "Adds a YAL shortcut to the desktop."
   !insertmacro MUI_DESCRIPTION_TEXT ${SecAutostart} "Starts YAL when you sign in."
@@ -138,9 +138,6 @@ Section "Uninstall"
   ; The program files go. The user's data stays unless they ask for it to go,
   ; because losing a configuration is worse than leaving a small folder behind.
   Delete "$INSTDIR\yal.exe"
-  Delete "$INSTDIR\yal-indexer.exe"
-  Delete "$INSTDIR\yal-ocr.exe"
-  Delete "$INSTDIR\yal-dictation.exe"
   Delete "$INSTDIR\uninstall.exe"
   Delete "$INSTDIR\portable"
   Delete "$INSTDIR\yal.ico"

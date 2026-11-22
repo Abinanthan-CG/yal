@@ -244,6 +244,7 @@ impl LauncherState {
     ///
     /// With nothing typed the list is the recent files; with something typed
     /// it is the results. The filter narrows the search as it runs.
+    #[allow(dead_code)]
     pub fn file_screen_rows(&self, query: &str, filter: FileType) -> Vec<ResultRow> {
         let Some(files) = &self.files else {
             return Vec::new();

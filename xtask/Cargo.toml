@@ -6,18 +6,13 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Build orchestration for the YAL port: parity validation, packaging, i18n generation"
+description = "Build orchestration for YAL: release packaging and self-test"
 publish = false
 
 [dependencies]
 anyhow.workspace = true
-serde.workspace = true
-toml.workspace = true
-toml_edit.workspace = true
-walkdir.workspace = true
 sha2.workspace = true
 hex.workspace = true
 zip.workspace = true
-serde_json.workspace = true
 chrono.workspace = true
 tc-core = { path = "../crates/tc-core" }

@@ -1,9 +1,8 @@
-//! YAL - a Windows keyboard launcher, an unofficial community port of Tinycast.
+//! YAL - a native Windows keyboard launcher, an unofficial community port of Tinycast.
 //!
-//! The executable is the composition root: it wires the platform traits to the
-//! real Windows implementation, owns the palette window, the tray icon, the
-//! global hotkey engine and the single-instance lock, and exposes the
-//! subsystems to the interface.
+//! Pure Rust + Win32 + Direct2D: wires the platform traits to real Windows
+//! APIs, owns the Direct2D palette window, native system tray icon, global
+//! hotkey engine, and single-instance lock.
 //!
 //! Run `yal.exe --self-test` for a headless check of every subsystem.
 

@@ -16,4 +16,7 @@ pub use event::{ignore, Handler, PaletteEvent, PaletteReply};
 pub use model::{Icon, Model, Row};
 pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};
-pub use window::{is_visible, post_close, post_show, Palette, PaletteHandle};
+pub use window::{
+    is_visible, post_close, post_command, post_quit, post_show, post_toggle_from_tray, Palette,
+    PaletteHandle,
+};

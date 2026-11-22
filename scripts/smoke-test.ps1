@@ -75,9 +75,6 @@ Assert-True ($install.ExitCode -eq 0) "the installer exited with $($install.Exit
 
 Write-Step 'Checking the installed files'
 Assert-True (Test-Path $exe) "yal.exe is installed at $exe"
-foreach ($helper in @('yal-indexer.exe', 'yal-ocr.exe', 'yal-dictation.exe')) {
-    Assert-True (Test-Path (Join-Path $installDir $helper)) "$helper is installed"
-}
 Assert-True (Test-Path $uninstaller) "the uninstaller is installed"
 
 Write-Step 'Checking the protocol registration'

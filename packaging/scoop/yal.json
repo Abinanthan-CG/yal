@@ -9,10 +9,7 @@
         "regex": "releases/download/v(?<version>\\d+\\.\\d+\\.\\d+)"
     },
     "bin": [
-        "yal",
-        "yal-indexer",
-        "yal-ocr",
-        "yal-dictation"
+        "yal"
     ],
     "url": "https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-{{VERSION}}-x64-portable.zip",
     "hash": "{{PORTABLE_SHA256_X64}}",

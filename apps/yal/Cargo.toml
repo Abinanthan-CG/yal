@@ -23,10 +23,6 @@ tc-windows = { path = "../../crates/tc-windows" }
 tc-search = { path = "../../crates/tc-search" }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { version = "2", features = ["tray-icon", "image-png"] }
-tauri-plugin-global-shortcut = "2"
-tauri-plugin-single-instance = "2"
-tauri-plugin-deep-link = "2"
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+embed-resource = "3"

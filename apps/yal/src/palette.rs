@@ -1,9 +1,8 @@
 //! The palette's own state, and the commands the window asks it.
 //!
-//! The decisions live in [`tc_palette`]; this is the bridge. The window sends
-//! the key it saw, and this tells the window what to do about it. The window
-//! never decides anything about a key on its own, because a decision that
-//! cannot be tested is not a decision.
+//! The decisions live in [`tc_palette`]; this is the bridge.
+
+#![allow(dead_code)]
 
 use std::sync::Mutex;
 

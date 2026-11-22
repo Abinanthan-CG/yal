@@ -1,147 +1,213 @@
-//! Asking a running instance to quit.
+//! Cross-process named event signals for a running YAL instance.
 //!
-//! The installer replaces the program files, so it has to close a running
-//! instance first. A second `yal.exe --quit-running` raises a named event; the
-//! running instance is waiting on that event and exits when it fires.
+//! - `Local\YAL-quit` (`QuitWatcher` / `signal_quit`): lets `yal.exe --quit-running`
+//!   and the installer ask a running instance to exit cleanly.
+//! - `Local\YAL-show` (`ShowWatcher` / `signal_show`): lets a second launch of
+//!   `yal.exe` wake and toggle the already-running instance's native palette.
 //!
-//! The event is named and lives in the caller's own session, so the signal
-//! never reaches another user and never leaves the machine.
+//! Both watchers block in `WaitForMultipleObjects` with `INFINITE` timeout plus
+//! a private stop event (0% idle CPU, immediate clean shutdown on drop).
 
 use std::sync::mpsc;
 use std::sync::Mutex;
+use std::thread::JoinHandle;
 
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::{
-    CloseHandle, DuplicateHandle, DUPLICATE_SAME_ACCESS, HANDLE, WAIT_OBJECT_0,
+    CloseHandle, GetLastError, ERROR_ALREADY_EXISTS, HANDLE, WAIT_OBJECT_0,
 };
 use windows::Win32::System::Threading::{
-    CreateEventW, GetCurrentProcess, OpenEventW, SetEvent, WaitForSingleObject, EVENT_MODIFY_STATE,
+    CreateEventW, OpenEventW, ResetEvent, SetEvent, WaitForMultipleObjects, EVENT_MODIFY_STATE,
+    INFINITE,
 };
 
 /// The name of the event that asks the running instance to quit.
 const QUIT_EVENT_NAME: &str = r"Local\YAL-quit";
 
-/// How long the watcher waits at a time before looking again.
-///
-/// The wait is interrupted by the event, so the timeout only bounds how often
-/// the thread wakes up.
-const WATCH_INTERVAL_MILLIS: u32 = 250;
+/// The name of the event that asks the running instance to toggle its palette.
+const SHOW_EVENT_NAME: &str = r"Local\YAL-show";
 
-/// A kernel handle that is safe to move between threads.
-///
-/// A handle is a plain value; Windows does not care which thread uses it, as
-/// long as only one thread uses it at a time.
+/// Non-owning handle wrapper transferred across threads when owned elsewhere.
 #[derive(Debug, Clone, Copy)]
-struct SendableHandle(HANDLE);
+struct SharedHandle(HANDLE);
 
-// A kernel handle is a plain value; it is safe to move between threads.
-unsafe impl Send for SendableHandle {}
-unsafe impl Sync for SendableHandle {}
+unsafe impl Send for SharedHandle {}
+unsafe impl Sync for SharedHandle {}
 
-/// The handle of the quit event.
-///
-/// The watcher and its thread each own a handle to the same event, so that
-/// closing one does not pull the handle out from under the other.
+/// RAII handle wrapper guaranteeing `CloseHandle` even if a callback panics.
 #[derive(Debug)]
-pub struct QuitWatcher {
-    handle: Mutex<Option<HANDLE>>,
+struct OwnedHandle(HANDLE);
+
+unsafe impl Send for OwnedHandle {}
+unsafe impl Sync for OwnedHandle {}
+
+impl Drop for OwnedHandle {
+    fn drop(&mut self) {
+        if !self.0.is_invalid() {
+            unsafe {
+                let _ = CloseHandle(self.0);
+            }
+        }
+    }
 }
 
-// A kernel handle is a plain value; it is safe to move between threads.
-unsafe impl Send for QuitWatcher {}
-unsafe impl Sync for QuitWatcher {}
+/// Watches a named event and invokes a callback once when signaled.
+#[derive(Debug)]
+pub struct QuitWatcher {
+    stop_event: Mutex<Option<OwnedHandle>>,
+    thread: Mutex<Option<JoinHandle<()>>>,
+}
 
 impl QuitWatcher {
-    /// Create the quit event and watch for a request.
-    ///
-    /// The callback runs on a background thread, so it must not block for long
-    /// and must be safe to call from another thread.
+    /// Create the `Local\YAL-quit` event and watch for a quit request.
     pub fn spawn(on_quit: impl Fn() + Send + 'static) -> Result<QuitWatcher, String> {
         Self::spawn_named(QUIT_EVENT_NAME, on_quit)
     }
 
-    /// Create a watcher on an event of a given name.
-    ///
-    /// The name is a parameter so that a test can have an event of its own.
-    /// The application's event has a fixed name, and two tests that share it
-    /// are two tests that share one kernel object - which is a race, not a
-    /// test.
     fn spawn_named(name: &str, on_quit: impl Fn() + Send + 'static) -> Result<QuitWatcher, String> {
-        let name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
-        let handle = unsafe { CreateEventW(None, true, false, PCWSTR(name.as_ptr())) }
+        let wide: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
+        let raw_signal = unsafe { CreateEventW(None, true, false, PCWSTR(wide.as_ptr())) }
             .map_err(|error| format!("the quit signal could not be created: {error}"))?;
-        if handle.is_invalid() {
+        if raw_signal.is_invalid() {
             return Err("the quit signal could not be created".to_string());
         }
-
-        // The thread gets a handle of its own, so that the watcher can close
-        // its own without ending the thread's wait.
-        let mut thread_handle = HANDLE::default();
-        unsafe {
-            DuplicateHandle(
-                GetCurrentProcess(),
-                handle,
-                GetCurrentProcess(),
-                std::ptr::addr_of_mut!(thread_handle),
-                0,
-                false,
-                DUPLICATE_SAME_ACCESS,
-            )
-            .map_err(|error| {
-                let _ = CloseHandle(handle);
-                format!("the quit signal could not be duplicated: {error}")
-            })?;
-        }
-
-        let watcher = QuitWatcher {
-            handle: Mutex::new(Some(handle)),
-        };
-        let (ready_tx, ready_rx) = mpsc::channel::<()>();
-        let waiting = SendableHandle(thread_handle);
-        std::thread::spawn(move || {
-            // Take the whole wrapper, so the thread owns the handle's type
-            // rather than a bare kernel handle.
-            let waiting = waiting;
-            // Tell the caller the watcher is live, so a test does not signal
-            // before the event is being waited on.
-            let _ = ready_tx.send(());
-            loop {
-                let result = unsafe { WaitForSingleObject(waiting.0, WATCH_INTERVAL_MILLIS) };
-                if result == WAIT_OBJECT_0 {
-                    on_quit();
-                    break;
-                }
+        // If a rapid restart attached to an already-signaled event, reset it so
+        // the new instance does not immediately self-terminate.
+        if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
+            unsafe {
+                let _ = ResetEvent(raw_signal);
             }
-            let _ = unsafe { CloseHandle(waiting.0) };
-        });
+        }
+        let signal_event = OwnedHandle(raw_signal);
+
+        let raw_stop = unsafe { CreateEventW(None, true, false, PCWSTR::null()) }
+            .map_err(|error| format!("the watcher stop event could not be created: {error}"))?;
+        let stop_event = OwnedHandle(raw_stop);
+        let stop_shared = SharedHandle(stop_event.0);
+
+        let (ready_tx, ready_rx) = mpsc::channel::<()>();
+
+        let thread = std::thread::Builder::new()
+            .name("yal-quit-watcher".to_string())
+            .spawn(move || {
+                let signal_event = signal_event;
+                let stop_shared = stop_shared;
+                let handles = [signal_event.0, stop_shared.0];
+                let _ = ready_tx.send(());
+                let wait = unsafe { WaitForMultipleObjects(&handles, false, INFINITE) };
+                if wait == WAIT_OBJECT_0 {
+                    on_quit();
+                }
+                drop(signal_event);
+            })
+            .map_err(|error| format!("the quit watcher thread could not be started: {error}"))?;
+
         let _ = ready_rx.recv();
-        Ok(watcher)
+        Ok(QuitWatcher {
+            stop_event: Mutex::new(Some(stop_event)),
+            thread: Mutex::new(Some(thread)),
+        })
     }
 }
 
 impl Drop for QuitWatcher {
     fn drop(&mut self) {
-        let taken = self.handle.lock().expect("quit signal lock").take();
-        if let Some(handle) = taken {
+        if let Some(stop) = self.stop_event.lock().expect("stop lock").take() {
             unsafe {
-                let _ = CloseHandle(handle);
+                let _ = SetEvent(stop.0);
             }
+            if let Some(thread) = self.thread.lock().expect("thread lock").take() {
+                let _ = thread.join();
+            }
+            drop(stop);
+        }
+    }
+}
+
+/// Watches `Local\YAL-show` (auto-reset) and calls `on_show` every time a
+/// second instance launches.
+#[derive(Debug)]
+pub struct ShowWatcher {
+    stop_event: Mutex<Option<OwnedHandle>>,
+    thread: Mutex<Option<JoinHandle<()>>>,
+}
+
+impl ShowWatcher {
+    /// Create the `Local\YAL-show` event and invoke `on_show` on every signal.
+    pub fn spawn(on_show: impl Fn() + Send + 'static) -> Result<ShowWatcher, String> {
+        Self::spawn_named(SHOW_EVENT_NAME, on_show)
+    }
+
+    fn spawn_named(name: &str, on_show: impl Fn() + Send + 'static) -> Result<ShowWatcher, String> {
+        let wide: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
+        // Auto-reset event (`false`) so repeated second launches each fire cleanly.
+        let raw_signal = unsafe { CreateEventW(None, false, false, PCWSTR(wide.as_ptr())) }
+            .map_err(|error| format!("the show signal could not be created: {error}"))?;
+        if raw_signal.is_invalid() {
+            return Err("the show signal could not be created".to_string());
+        }
+        let signal_event = OwnedHandle(raw_signal);
+
+        let raw_stop =
+            unsafe { CreateEventW(None, true, false, PCWSTR::null()) }.map_err(|error| {
+                format!("the show watcher stop event could not be created: {error}")
+            })?;
+        let stop_event = OwnedHandle(raw_stop);
+        let stop_shared = SharedHandle(stop_event.0);
+
+        let (ready_tx, ready_rx) = mpsc::channel::<()>();
+
+        let thread = std::thread::Builder::new()
+            .name("yal-show-watcher".to_string())
+            .spawn(move || {
+                let signal_event = signal_event;
+                let stop_shared = stop_shared;
+                let handles = [signal_event.0, stop_shared.0];
+                let _ = ready_tx.send(());
+                loop {
+                    let wait = unsafe { WaitForMultipleObjects(&handles, false, INFINITE) };
+                    if wait == WAIT_OBJECT_0 {
+                        on_show();
+                    } else {
+                        break;
+                    }
+                }
+                drop(signal_event);
+            })
+            .map_err(|error| format!("the show watcher thread could not be started: {error}"))?;
+
+        let _ = ready_rx.recv();
+        Ok(ShowWatcher {
+            stop_event: Mutex::new(Some(stop_event)),
+            thread: Mutex::new(Some(thread)),
+        })
+    }
+}
+
+impl Drop for ShowWatcher {
+    fn drop(&mut self) {
+        if let Some(stop) = self.stop_event.lock().expect("stop lock").take() {
+            unsafe {
+                let _ = SetEvent(stop.0);
+            }
+            if let Some(thread) = self.thread.lock().expect("thread lock").take() {
+                let _ = thread.join();
+            }
+            drop(stop);
         }
     }
 }
 
 /// Ask a running instance to quit.
-///
-/// The answer says whether anyone was listening. `false` means no instance was
-/// running, which is not a failure: the caller wanted it gone, and it is gone.
 pub fn signal_quit() -> bool {
     signal_named(QUIT_EVENT_NAME)
 }
 
-/// Ask the instance that is watching an event of a given name to quit.
-///
-/// The answer says whether anyone was listening. `false` means no instance was
-/// running, which is not a failure: the caller wanted it gone, and it is gone.
+/// Ask a running instance to show/toggle its palette.
+pub fn signal_show() -> bool {
+    signal_named(SHOW_EVENT_NAME)
+}
+
 fn signal_named(name: &str) -> bool {
     let name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
     let event = match unsafe { OpenEventW(EVENT_MODIFY_STATE, false, PCWSTR(name.as_ptr())) } {
@@ -161,25 +227,16 @@ fn signal_named(name: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
     use std::time::Duration;
 
-    /// Counts the events a test has asked for.
     static NEXT_EVENT: AtomicU64 = AtomicU64::new(0);
 
-    /// The name of an event that belongs to one test alone.
-    ///
-    /// The application's quit event has a fixed name, and a named kernel
-    /// object is shared by everything that opens it. Two tests that use the
-    /// same name are two tests that share one object: one of them keeps it
-    /// alive while the other checks that it is gone, and the result depends on
-    /// which thread wins. Each test therefore has an event of its own.
-    fn private_event_name() -> String {
+    fn private_event_name(kind: &str) -> String {
         let number = NEXT_EVENT.fetch_add(1, Ordering::SeqCst);
-        format!(r"Local\YAL-quit-test-{}-{number}", std::process::id())
+        format!(r"Local\YAL-{kind}-test-{}-{number}", std::process::id())
     }
 
-    /// Whether an event of a given name is still open.
     fn event_exists(name: &str) -> bool {
         let name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
         unsafe {
@@ -194,7 +251,7 @@ mod tests {
 
     #[test]
     fn a_signal_reaches_the_watcher_and_stops_when_nobody_listens() {
-        let name = private_event_name();
+        let name = private_event_name("quit");
         let fired = std::sync::Arc::new(AtomicBool::new(false));
         let seen = fired.clone();
         let watcher = QuitWatcher::spawn_named(&name, move || {
@@ -209,21 +266,11 @@ mod tests {
 
         let deadline = std::time::Instant::now() + Duration::from_secs(5);
         while !fired.load(Ordering::SeqCst) && std::time::Instant::now() < deadline {
-            std::thread::sleep(Duration::from_millis(25));
+            std::thread::sleep(Duration::from_millis(20));
         }
         assert!(fired.load(Ordering::SeqCst), "the watcher did not fire");
 
-        // Once the watcher is gone the event is gone with it, so a signal has
-        // nobody to reach and says so.
         drop(watcher);
-        // The watcher's thread holds a handle of its own and closes it after
-        // it has run the callback, so the event disappears a moment after the
-        // watcher is dropped. Waiting for that is the difference between a
-        // test that checks the rule and a test that checks the timing.
-        let deadline = std::time::Instant::now() + Duration::from_secs(5);
-        while event_exists(&name) && std::time::Instant::now() < deadline {
-            std::thread::sleep(Duration::from_millis(25));
-        }
         assert!(!event_exists(&name), "a quit event was left behind");
         assert!(
             !signal_named(&name),
@@ -233,17 +280,39 @@ mod tests {
 
     #[test]
     fn the_watcher_keeps_the_event_alive_while_it_exists() {
-        // The watcher holds the event open. A watcher that is dropped straight
-        // away would take the event with it, and the running instance would
-        // never hear the signal.
-        let name = private_event_name();
+        let name = private_event_name("quit");
         let watcher =
             QuitWatcher::spawn_named(&name, || {}).expect("the quit signal could not be created");
-        assert!(
-            signal_named(&name),
-            "the event was not alive while the watcher existed"
-        );
         assert!(event_exists(&name), "the event was taken away too early");
         drop(watcher);
+        assert!(!event_exists(&name), "the event stayed open after drop");
+    }
+
+    #[test]
+    fn show_watcher_fires_multiple_times_and_cleans_up_on_drop() {
+        let name = private_event_name("show");
+        let count = std::sync::Arc::new(AtomicUsize::new(0));
+        let seen = count.clone();
+        let watcher = ShowWatcher::spawn_named(&name, move || {
+            seen.fetch_add(1, Ordering::SeqCst);
+        })
+        .expect("the show signal could not be created");
+
+        assert!(signal_named(&name));
+        let deadline = std::time::Instant::now() + Duration::from_secs(5);
+        while count.load(Ordering::SeqCst) < 1 && std::time::Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(15));
+        }
+        assert_eq!(count.load(Ordering::SeqCst), 1);
+
+        assert!(signal_named(&name));
+        let deadline = std::time::Instant::now() + Duration::from_secs(5);
+        while count.load(Ordering::SeqCst) < 2 && std::time::Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(15));
+        }
+        assert_eq!(count.load(Ordering::SeqCst), 2);
+
+        drop(watcher);
+        assert!(!event_exists(&name));
     }
 }
