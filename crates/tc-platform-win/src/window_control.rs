@@ -21,13 +21,16 @@ use tc_windows::command::WindowCommandId;
 use tc_windows::geometry::{placement, PlacementInput, Rect, Screen, WindowCycle};
 use windows::core::BOOL;
 use windows::Win32::Foundation::{HWND, LPARAM, RECT};
+use windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED};
 use windows::Win32::Graphics::Gdi::{
     EnumDisplayMonitors, GetMonitorInfoW, MonitorFromWindow, HDC, HMONITOR, MONITORINFO,
     MONITOR_DEFAULTTONEAREST,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    EnumWindows, GetClassNameW, GetWindowRect, GetWindowTextW, GetWindowThreadProcessId, IsIconic,
-    IsWindowVisible, SetWindowPos, SWP_NOACTIVATE, SWP_NOZORDER,
+    BringWindowToTop, EnumWindows, GetClassNameW, GetWindowLongPtrW, GetWindowRect, GetWindowTextW,
+    GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, SetForegroundWindow,
+    SetWindowPos, ShowWindow, GWL_EXSTYLE, SWP_NOACTIVATE, SWP_NOZORDER, SW_RESTORE,
+    WS_EX_TOOLWINDOW,
 };
 
 /// A window, named by the handle Windows gave it.
@@ -221,6 +224,85 @@ unsafe extern "system" fn window_callback(hwnd: HWND, data: LPARAM) -> BOOL {
         });
     }
     BOOL(1)
+}
+
+/// Every switchable top-level user window (including minimized windows, skipping
+/// tool windows, UWP cloaked background frames, and YAL itself).
+pub fn list_switchable_windows() -> Vec<WindowInfo> {
+    let mut found: Vec<WindowInfo> = Vec::new();
+    let list = LPARAM(&mut found as *mut Vec<WindowInfo> as isize);
+    unsafe {
+        let _ = EnumWindows(Some(switchable_window_callback), list);
+    }
+    found
+}
+
+unsafe extern "system" fn switchable_window_callback(hwnd: HWND, data: LPARAM) -> BOOL {
+    let found = &mut *(data.0 as *mut Vec<WindowInfo>);
+    let visible = IsWindowVisible(hwnd).as_bool();
+    if !visible {
+        return BOOL(1);
+    }
+    let ex_style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE) as u32;
+    if (ex_style & WS_EX_TOOLWINDOW.0) != 0 {
+        return BOOL(1);
+    }
+    let mut cloaked: u32 = 0;
+    let _ = DwmGetWindowAttribute(
+        hwnd,
+        DWMWA_CLOAKED,
+        &mut cloaked as *mut u32 as *mut std::ffi::c_void,
+        std::mem::size_of::<u32>() as u32,
+    );
+    if cloaked != 0 {
+        return BOOL(1);
+    }
+    let title = window_title(hwnd);
+    if title.is_empty() || title == "YAL" || title == "Program Manager" {
+        return BOOL(1);
+    }
+    let class = window_class(hwnd);
+    if matches!(
+        class.as_str(),
+        "Progman" | "WorkerW" | "Shell_TrayWnd" | "YalPaletteWindow"
+    ) {
+        return BOOL(1);
+    }
+    let minimized = IsIconic(hwnd).as_bool();
+    let mut pid = 0u32;
+    GetWindowThreadProcessId(hwnd, Some(&mut pid));
+    let mut rect = RECT::default();
+    let rect = if GetWindowRect(hwnd, &mut rect).is_ok() {
+        rect_of(rect)
+    } else {
+        Rect::new(0.0, 0.0, 0.0, 0.0)
+    };
+    found.push(WindowInfo {
+        handle: handle_of(hwnd),
+        title,
+        class,
+        pid,
+        rect,
+        minimized,
+        visible,
+    });
+    BOOL(1)
+}
+
+/// Restore (if minimized) and focus a top-level desktop window cleanly.
+pub fn focus_window(handle: WindowHandle) -> Result<(), ControlError> {
+    let hwnd = hwnd_of(handle);
+    unsafe {
+        if hwnd.0.is_null() || !IsWindow(Some(hwnd)).as_bool() {
+            return Err(ControlError::Gone);
+        }
+        if IsIconic(hwnd).as_bool() {
+            let _ = ShowWindow(hwnd, SW_RESTORE);
+        }
+        let _ = BringWindowToTop(hwnd);
+        let _ = SetForegroundWindow(hwnd);
+    }
+    Ok(())
 }
 
 /// The title of a window.

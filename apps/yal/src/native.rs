@@ -1,32 +1,51 @@
 //! The native palette: the Direct2D window the user types into.
 //!
 //! Pure Win32 + Direct2D + DirectWrite — no WebView2, no browser runtime.
-//! Renders real Windows application icons, section headers, rich Calculator
-//! hero cards, keycap footer hints, and live-themed native Settings.
+//! Routes every native screen cleanly inside one always-ready window:
+//! Launcher, Clipboard History, 2D Color Emoji Grid, Snippets Browser & Wizard,
+//! File Search, Window Switcher, Calculator History, and live-themed Settings.
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::Duration;
 
-use tc_platform::{FileSystem, Settings};
+use tc_clipboard::{ClipboardFilter, ClipboardItem};
+use tc_core::CommandId;
+use tc_palette::FileType;
+use tc_platform::{Clipboard, FileSystem, Settings};
+use tc_platform_win::window_control::WindowInfo;
 use tc_platform_win::{HotkeyTrigger, WindowsSettings};
+use tc_snippets::StoredSnippet;
 use tc_ui::{
-    Color, Icon, IconBitmap, Model, Palette, PaletteEvent, PaletteHandle, PaletteReply, Row, Theme,
-    Tokens,
+    ActionKey, Color, GridCell, Icon, IconBitmap, Model, Palette, PaletteEvent, PaletteHandle,
+    PaletteReply, Row, Theme, Tokens,
 };
 
+use crate::features::{CalcHistoryEntry, FeatureStores};
 use crate::launcher::{
-    LauncherState, ResultRow, CALCULATOR_SECTION, COMMAND_SECTION, CUSTOM_COMMAND_SECTION,
-    FILE_SECTION, RANKING_FILE, SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
+    LauncherState, ResultRow, CALCULATOR_PREFIX, CALCULATOR_SECTION, COMMAND_SECTION,
+    CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION, RANKING_FILE, SYSTEM_ACTION_SECTION,
+    WINDOW_COMMAND_SECTION,
 };
 use crate::open::Runner;
 use crate::palette::{PaletteState, SettingRow};
+use crate::screens::{
+    calc_history_model, clipboard_model, create_snippet_model, emoji_model, files_model,
+    next_clipboard_filter, snippets_model, windows_model, SnippetDraft, SnippetDraftStep,
+};
+use crate::shell::{FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW};
 
 /// Cross-thread command code asking the native palette to open Settings.
 pub const COMMAND_OPEN_SETTINGS: u32 = 1;
 
 /// Setting key storing the launcher's global hotkey in `settings.json`.
 pub const KEY_LAUNCHER_HOTKEY: &str = "launcher.hotkey";
+/// Setting key toggling Window Management commands in the launcher.
+const KEY_WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
+
+/// Prefix for an inline snippet keyword match surfaced inside Launcher search.
+const INLINE_SNIPPET_PREFIX: &str = "snippet-inline:";
+const SNIPPET_SECTION: &str = "Snippets";
 
 /// Built-in hotkey presets cycled in the native Settings pane.
 const HOTKEY_PRESETS: [&str; 4] = ["Alt+Space", "Ctrl+Space", "Double Ctrl", "Double Alt"];
@@ -37,10 +56,11 @@ const APPLICATIONS: &str = "Applications";
 /// Callback invoked when the user changes the launcher hotkey in Settings.
 pub type HotkeyChangedCallback = Arc<dyn Fn(HotkeyTrigger) + Send + Sync>;
 
-/// Optional context enabling native Settings inside the palette.
+/// Application context shared with the native Direct2D palette.
 pub struct NativeContext {
     pub palette: Arc<PaletteState>,
     pub settings: Arc<WindowsSettings>,
+    pub features: Arc<FeatureStores>,
     pub on_hotkey_changed: Option<HotkeyChangedCallback>,
 }
 
@@ -60,8 +80,7 @@ impl NativePalette {
         Ok(NativePalette { palette })
     }
 
-    /// Opens the palette on the current thread with full application context
-    /// (including native Settings persistence and live hotkey/theme updates).
+    /// Opens the palette on the current thread with full application context.
     pub fn open_with_context(
         launcher: Arc<LauncherState>,
         runner: Arc<Runner>,
@@ -89,6 +108,13 @@ impl NativePalette {
 enum Mode {
     #[default]
     Launcher,
+    Clipboard,
+    Emoji,
+    Snippets,
+    CreateSnippet(SnippetDraft),
+    Files,
+    SwitchWindows,
+    CalcHistory,
     Settings,
 }
 
@@ -96,6 +122,14 @@ struct Shown {
     mode: Mode,
     query: String,
     rows: Vec<ResultRow>,
+    clipboard_items: Vec<ClipboardItem>,
+    clipboard_filter: ClipboardFilter,
+    emoji_cells: Vec<GridCell>,
+    snippets: Vec<StoredSnippet>,
+    file_rows: Vec<ResultRow>,
+    file_filter: FileType,
+    windows: Vec<WindowInfo>,
+    calc_entries: Vec<CalcHistoryEntry>,
     settings_rows: Vec<SettingRow>,
     icons: Arc<Mutex<HashMap<String, Option<Arc<IconBitmap>>>>>,
     queued: HashSet<String>,
@@ -111,6 +145,14 @@ impl Shown {
             mode: Mode::Launcher,
             query: String::new(),
             rows: Vec::new(),
+            clipboard_items: Vec::new(),
+            clipboard_filter: ClipboardFilter::All,
+            emoji_cells: Vec::new(),
+            snippets: Vec::new(),
+            file_rows: Vec::new(),
+            file_filter: FileType::All,
+            windows: Vec::new(),
+            calc_entries: Vec::new(),
             settings_rows: Vec::new(),
             icons,
             queued: HashSet::new(),
@@ -210,6 +252,15 @@ fn build(
     let handler_launcher = Arc::clone(&launcher);
     let handler_runner = Arc::clone(&runner);
     let handler_context = context.clone();
+    let handler_handle = Arc::clone(&handle_slot);
+
+    let close_reply = move || {
+        if quit_on_close {
+            PaletteReply::Quit
+        } else {
+            PaletteReply::Close
+        }
+    };
 
     let handler = move |event: PaletteEvent| -> PaletteReply {
         match event {
@@ -217,54 +268,70 @@ fn build(
                 if let Some(ctx) = handler_context.as_ref() {
                     ctx.palette.back_to_root();
                 }
-                let rows = handler_launcher.suggestions();
                 let mut shown = handler_shown.lock().expect("the palette's state");
-                shown.mode = Mode::Launcher;
-                shown.query = String::new();
-                shown.rows = rows.clone();
-                shown.settings_rows.clear();
-                PaletteReply::Update(model_for_with_icons("", &rows, true, &mut shown))
+                enter_launcher(&handler_launcher, &mut shown, false)
             }
             PaletteEvent::Refresh => {
                 let mut shown = handler_shown.lock().expect("the palette's state");
-                if shown.mode != Mode::Launcher {
-                    return PaletteReply::Keep;
+                match shown.mode {
+                    Mode::Launcher => {
+                        let query = shown.query.clone();
+                        let rows = shown.rows.clone();
+                        let is_suggestions = query.trim().is_empty();
+                        PaletteReply::Update(model_for_with_icons(
+                            &query,
+                            &rows,
+                            is_suggestions,
+                            &mut shown,
+                        ))
+                    }
+                    Mode::Files => {
+                        let query = shown.query.clone();
+                        let filter = shown.file_filter;
+                        let rows = handler_launcher.file_screen_rows(&query, filter);
+                        let indexing = handler_context
+                            .as_ref()
+                            .is_some_and(|c| c.features.is_file_indexing());
+                        shown.file_rows = rows.clone();
+                        PaletteReply::Update(files_model(
+                            &query,
+                            &rows,
+                            filter,
+                            indexing,
+                            |target| shown.lookup_or_queue_icon(target),
+                        ))
+                    }
+                    _ => PaletteReply::Keep,
                 }
-                let query = shown.query.clone();
-                let rows = shown.rows.clone();
-                let is_suggestions = query.trim().is_empty();
-                PaletteReply::Update(model_for_with_icons(
-                    &query,
-                    &rows,
-                    is_suggestions,
-                    &mut shown,
-                ))
             }
             PaletteEvent::Command(COMMAND_OPEN_SETTINGS) | PaletteEvent::OpenSettings => {
                 let Some(ctx) = handler_context.as_ref() else {
                     return PaletteReply::Keep;
                 };
-                ctx.palette.open_screen("Settings");
-                let rows = collect_settings_rows(ctx, "");
                 let mut shown = handler_shown.lock().expect("the palette's state");
-                shown.mode = Mode::Settings;
-                shown.query = String::new();
-                shown.rows.clear();
-                shown.settings_rows = rows.clone();
-                PaletteReply::Update(settings_model_for("", &rows, 0))
+                enter_settings(ctx, &mut shown)
             }
             PaletteEvent::Command(_) => PaletteReply::Keep,
             PaletteEvent::QueryChanged(query) => {
                 let mut shown = handler_shown.lock().expect("the palette's state");
-                match shown.mode {
+                shown.query = query.clone();
+                match &shown.mode {
                     Mode::Launcher => {
                         let is_suggestions = query.trim().is_empty();
-                        let rows = if is_suggestions {
+                        let mut rows = if is_suggestions {
                             handler_launcher.suggestions()
                         } else {
                             handler_launcher.search(&query)
                         };
-                        shown.query = query.clone();
+                        // Inline snippet keyword expansion (`!sig` / `sig`).
+                        if !is_suggestions {
+                            if let Some(ctx) = handler_context.as_ref() {
+                                if let Some(snippet) = ctx.features.find_snippet_by_keyword(&query)
+                                {
+                                    rows.insert(0, inline_snippet_row(&snippet));
+                                }
+                            }
+                        }
                         shown.rows = rows.clone();
                         PaletteReply::Update(model_for_with_icons(
                             &query,
@@ -273,76 +340,117 @@ fn build(
                             &mut shown,
                         ))
                     }
+                    Mode::Clipboard => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let filter = shown.clipboard_filter;
+                        let items = ctx.features.search_clipboard(&query, filter);
+                        shown.clipboard_items = items.clone();
+                        PaletteReply::Update(clipboard_model(&query, &items, filter, 0))
+                    }
+                    Mode::Emoji => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let cells = ctx.features.emoji_cells(&query);
+                        shown.emoji_cells = cells.clone();
+                        PaletteReply::Update(emoji_model(&query, cells, 0))
+                    }
+                    Mode::Snippets => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let list = ctx.features.search_snippets(&query);
+                        shown.snippets = list.clone();
+                        PaletteReply::Update(snippets_model(&query, &list, 0))
+                    }
+                    Mode::CreateSnippet(draft) => {
+                        let draft_clone = draft.clone();
+                        PaletteReply::Update(create_snippet_model(&draft_clone, &query))
+                    }
+                    Mode::Files => {
+                        let filter = shown.file_filter;
+                        let rows = handler_launcher.file_screen_rows(&query, filter);
+                        let indexing = handler_context
+                            .as_ref()
+                            .is_some_and(|c| c.features.is_file_indexing());
+                        shown.file_rows = rows.clone();
+                        PaletteReply::Update(files_model(
+                            &query,
+                            &rows,
+                            filter,
+                            indexing,
+                            |target| shown.lookup_or_queue_icon(target),
+                        ))
+                    }
+                    Mode::SwitchWindows => {
+                        let filtered = filter_windows(&query);
+                        shown.windows = filtered.clone();
+                        PaletteReply::Update(windows_model(&query, &filtered, 0))
+                    }
+                    Mode::CalcHistory => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let entries = ctx.features.search_calc_history(&query);
+                        shown.calc_entries = entries.clone();
+                        PaletteReply::Update(calc_history_model(&query, &entries, 0))
+                    }
                     Mode::Settings => {
                         let Some(ctx) = handler_context.as_ref() else {
                             return PaletteReply::Keep;
                         };
                         let rows = collect_settings_rows(ctx, &query);
-                        shown.query = query.clone();
                         shown.settings_rows = rows.clone();
                         PaletteReply::Update(settings_model_for(&query, &rows, 0))
                     }
                 }
             }
-            PaletteEvent::Activated(index) => {
-                let mut shown = handler_shown.lock().expect("the palette's state");
-                match shown.mode {
-                    Mode::Launcher => {
-                        let Some(row) = shown.rows.get(index) else {
-                            return PaletteReply::Keep;
-                        };
-                        let id = row.id.clone();
-                        let query = shown.query.clone();
-                        drop(shown);
-                        let _ = handler_runner.open(&id, &query, false);
-                        if quit_on_close {
-                            PaletteReply::Quit
-                        } else {
-                            PaletteReply::Close
-                        }
-                    }
-                    Mode::Settings => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let Some(setting) = shown.settings_rows.get(index) else {
-                            return PaletteReply::Keep;
-                        };
-                        let key = setting.key.clone();
-                        let query = shown.query.clone();
-                        advance_native_setting(ctx, &key);
-                        let updated = collect_settings_rows(ctx, &query);
-                        let clamped = index.min(updated.len().saturating_sub(1));
-                        shown.settings_rows = updated.clone();
-                        let model = settings_model_for(&query, &updated, clamped);
-                        if key == tc_palette::KEY_APPEARANCE {
-                            PaletteReply::UpdateTheme(
-                                Box::new(theme_from_settings(&ctx.settings)),
-                                model,
-                            )
-                        } else {
-                            PaletteReply::Update(model)
-                        }
-                    }
-                }
-            }
+            PaletteEvent::Activated(index) => handle_activate(
+                index,
+                false,
+                &handler_shown,
+                &handler_launcher,
+                &handler_runner,
+                handler_context.as_deref(),
+                &handler_handle,
+                &close_reply,
+            ),
+            PaletteEvent::SecondaryActivated(index) => handle_activate(
+                index,
+                true,
+                &handler_shown,
+                &handler_launcher,
+                &handler_runner,
+                handler_context.as_deref(),
+                &handler_handle,
+                &close_reply,
+            ),
+            PaletteEvent::Action(action, selected) => handle_action(
+                action,
+                selected,
+                &handler_shown,
+                &handler_launcher,
+                handler_context.as_deref(),
+            ),
             PaletteEvent::Escape => {
                 let mut shown = handler_shown.lock().expect("the palette's state");
-                if shown.mode == Mode::Settings {
-                    if let Some(ctx) = handler_context.as_ref() {
-                        ctx.palette.back_to_root();
+                match shown.mode {
+                    Mode::Launcher => close_reply(),
+                    Mode::CreateSnippet(_) => {
+                        if let Some(ctx) = handler_context.as_deref() {
+                            enter_snippets(ctx, &mut shown)
+                        } else {
+                            enter_launcher(&handler_launcher, &mut shown, true)
+                        }
                     }
-                    let rows = handler_launcher.suggestions();
-                    shown.mode = Mode::Launcher;
-                    shown.query = String::new();
-                    shown.rows = rows.clone();
-                    shown.settings_rows.clear();
-                    return PaletteReply::Update(model_for_with_icons("", &rows, true, &mut shown));
-                }
-                if quit_on_close {
-                    PaletteReply::Quit
-                } else {
-                    PaletteReply::Close
+                    _ => {
+                        if let Some(ctx) = handler_context.as_ref() {
+                            ctx.palette.back_to_root();
+                        }
+                        enter_launcher(&handler_launcher, &mut shown, true)
+                    }
                 }
             }
             PaletteEvent::Dismissed => {
@@ -367,6 +475,492 @@ fn build(
     Ok(palette)
 }
 
+#[allow(clippy::too_many_arguments)]
+fn handle_activate(
+    index: usize,
+    secondary: bool,
+    shown_lock: &Arc<Mutex<Shown>>,
+    launcher: &Arc<LauncherState>,
+    runner: &Arc<Runner>,
+    ctx: Option<&NativeContext>,
+    handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
+    close_reply: &dyn Fn() -> PaletteReply,
+) -> PaletteReply {
+    let mut shown = shown_lock.lock().expect("the palette's state");
+    match &shown.mode {
+        Mode::Launcher => {
+            let Some(row) = shown.rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+
+            // 1. Inline snippet keyword match -> expand & paste (or copy on Ctrl+Enter).
+            if let Some(snippet_id) = row.id.strip_prefix(INLINE_SNIPPET_PREFIX) {
+                if let Some(ctx) = ctx {
+                    let record = ctx
+                        .features
+                        .snippets
+                        .lock()
+                        .ok()
+                        .and_then(|g| g.record(snippet_id).cloned());
+                    if let Some(record) = record {
+                        let expanded = ctx.features.expand_snippet(&record);
+                        drop(shown);
+                        if secondary {
+                            let _ = tc_platform_win::clipboard().write_text(&expanded);
+                        } else {
+                            let _ = tc_platform_win::copy_and_paste_async(expanded);
+                        }
+                        return close_reply();
+                    }
+                }
+                return PaletteReply::Keep;
+            }
+
+            // 2. Built-in screen commands navigate cleanly inside the same palette window!
+            if let Some(cmd) = LauncherState::command_of(&row.id) {
+                if let Some(ctx) = ctx {
+                    match cmd {
+                        CommandId::ClipboardHistory => return enter_clipboard(ctx, &mut shown),
+                        CommandId::SearchEmoji => return enter_emoji(ctx, &mut shown),
+                        CommandId::SearchSnippets => return enter_snippets(ctx, &mut shown),
+                        CommandId::CreateSnippet => return enter_create_snippet(&mut shown),
+                        CommandId::SearchFiles => {
+                            return enter_files(launcher, ctx, handle_slot, &mut shown);
+                        }
+                        CommandId::SwitchWindows => return enter_switch_windows(&mut shown),
+                        CommandId::CalculatorHistory => return enter_calc_history(ctx, &mut shown),
+                        CommandId::Settings => return enter_settings(ctx, &mut shown),
+                        _ => {}
+                    }
+                }
+            }
+
+            // 3. Calculator answer -> remember in persistent Calculator History!
+            if row.id.starts_with(CALCULATOR_PREFIX) {
+                if let Some(ctx) = ctx {
+                    let badge = row.calc_badge.as_deref().unwrap_or("Result");
+                    ctx.features
+                        .record_calc(&row.detail, &row.name, &row.target, badge);
+                }
+            }
+
+            // 4. Secondary action (`Ctrl+Enter`) on a File row -> Reveal in File Explorer.
+            if secondary {
+                if let Some(path) = row.id.strip_prefix(FILE_PREFIX) {
+                    let path = path.to_string();
+                    drop(shown);
+                    let _ = tc_platform_win::reveal(&path);
+                    return close_reply();
+                }
+            }
+
+            let id = row.id.clone();
+            let query = shown.query.clone();
+            drop(shown);
+            let _ = runner.open(&id, &query, false);
+            close_reply()
+        }
+        Mode::Clipboard => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let Some(item) = shown.clipboard_items.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let Some(text) = item.text.clone() else {
+                return PaletteReply::Keep;
+            };
+            ctx.features.promote_clipboard_item(&item);
+            drop(shown);
+            if secondary {
+                let _ = tc_platform_win::clipboard().write_text(&text);
+            } else {
+                let _ = tc_platform_win::copy_and_paste_async(text);
+            }
+            close_reply()
+        }
+        Mode::Emoji => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let Some(cell) = shown.emoji_cells.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            ctx.features.record_emoji_use(&cell.glyph);
+            drop(shown);
+            if secondary {
+                let _ = tc_platform_win::clipboard().write_text(&cell.glyph);
+            } else {
+                let _ = tc_platform_win::copy_and_paste_async(cell.glyph);
+            }
+            close_reply()
+        }
+        Mode::Snippets => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            if index == shown.snippets.len() {
+                return enter_create_snippet(&mut shown);
+            }
+            let Some(record) = shown.snippets.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let expanded = ctx.features.expand_snippet(&record);
+            drop(shown);
+            if secondary {
+                let _ = tc_platform_win::clipboard().write_text(&expanded);
+            } else {
+                let _ = tc_platform_win::copy_and_paste_async(expanded);
+            }
+            close_reply()
+        }
+        Mode::CreateSnippet(draft) => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut next_draft = draft.clone();
+            let input = shown.query.clone();
+            match next_draft.step {
+                SnippetDraftStep::Name => {
+                    let trimmed = input.trim();
+                    if trimmed.is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    next_draft.name = trimmed.to_string();
+                    next_draft.step = SnippetDraftStep::Keyword;
+                    shown.mode = Mode::CreateSnippet(next_draft.clone());
+                    shown.query.clear();
+                    PaletteReply::Navigate(create_snippet_model(&next_draft, ""))
+                }
+                SnippetDraftStep::Keyword => {
+                    next_draft.keyword = input.trim().trim_start_matches('!').trim().to_string();
+                    next_draft.step = SnippetDraftStep::Content;
+                    shown.mode = Mode::CreateSnippet(next_draft.clone());
+                    shown.query.clear();
+                    PaletteReply::Navigate(create_snippet_model(&next_draft, ""))
+                }
+                SnippetDraftStep::Content => {
+                    let body = if input.trim().is_empty() {
+                        tc_platform_win::clipboard().read_text().unwrap_or_default()
+                    } else {
+                        input
+                    };
+                    if body.trim().is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    let kw = if next_draft.keyword.is_empty() {
+                        None
+                    } else {
+                        Some(next_draft.keyword.clone())
+                    };
+                    let _ = ctx.features.create_snippet(next_draft.name, kw, body);
+                    enter_snippets(ctx, &mut shown)
+                }
+            }
+        }
+        Mode::Files => {
+            let Some(row) = shown.file_rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let path = row.target.clone();
+            drop(shown);
+            if secondary {
+                let _ = tc_platform_win::reveal(&path);
+            } else {
+                let _ = tc_platform_win::open(&path);
+            }
+            close_reply()
+        }
+        Mode::SwitchWindows => {
+            let Some(win) = shown.windows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            drop(shown);
+            let _ = tc_platform_win::window_control::focus_window(win.handle);
+            close_reply()
+        }
+        Mode::CalcHistory => {
+            let Some(entry) = shown.calc_entries.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            drop(shown);
+            if secondary {
+                let _ = tc_platform_win::copy_and_paste_async(entry.copy_text);
+            } else {
+                let _ = tc_platform_win::clipboard().write_text(&entry.copy_text);
+            }
+            close_reply()
+        }
+        Mode::Settings => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let Some(setting) = shown.settings_rows.get(index) else {
+                return PaletteReply::Keep;
+            };
+            let key = setting.key.clone();
+            let query = shown.query.clone();
+            advance_native_setting(ctx, launcher, handle_slot, &key);
+            let updated = collect_settings_rows(ctx, &query);
+            let clamped = index.min(updated.len().saturating_sub(1));
+            shown.settings_rows = updated.clone();
+            let model = settings_model_for(&query, &updated, clamped);
+            if key == tc_palette::KEY_APPEARANCE {
+                PaletteReply::UpdateTheme(Box::new(theme_from_settings(&ctx.settings)), model)
+            } else {
+                PaletteReply::Update(model)
+            }
+        }
+    }
+}
+
+fn handle_action(
+    action: ActionKey,
+    selected: usize,
+    shown_lock: &Arc<Mutex<Shown>>,
+    launcher: &Arc<LauncherState>,
+    ctx: Option<&NativeContext>,
+) -> PaletteReply {
+    let Some(ctx) = ctx else {
+        return PaletteReply::Keep;
+    };
+    let mut shown = shown_lock.lock().expect("the palette's state");
+    match (&shown.mode, action) {
+        // Tab from Launcher (with empty search) flips straight to Clipboard History;
+        // Tab from Clipboard History returns to Launcher.
+        (Mode::Launcher, ActionKey::Tab) if shown.query.trim().is_empty() => {
+            enter_clipboard(ctx, &mut shown)
+        }
+        (Mode::Clipboard, ActionKey::Tab) => enter_launcher(launcher, &mut shown, true),
+
+        // Clipboard actions: Ctrl+P Pin, Ctrl+K Cycle Filter, Ctrl+Delete Remove.
+        (Mode::Clipboard, ActionKey::CtrlP) => {
+            if let Some(item) = shown.clipboard_items.get(selected).cloned() {
+                ctx.features.toggle_clipboard_pin(&item);
+                let q = shown.query.clone();
+                let filter = shown.clipboard_filter;
+                let items = ctx.features.search_clipboard(&q, filter);
+                let next_sel = selected.min(items.len().saturating_sub(1));
+                shown.clipboard_items = items.clone();
+                return PaletteReply::Update(clipboard_model(&q, &items, filter, next_sel));
+            }
+            PaletteReply::Keep
+        }
+        (Mode::Clipboard, ActionKey::CtrlK) => {
+            shown.clipboard_filter = next_clipboard_filter(shown.clipboard_filter);
+            let q = shown.query.clone();
+            let filter = shown.clipboard_filter;
+            let items = ctx.features.search_clipboard(&q, filter);
+            shown.clipboard_items = items.clone();
+            PaletteReply::Update(clipboard_model(&q, &items, filter, 0))
+        }
+        (Mode::Clipboard, ActionKey::CtrlDelete) => {
+            if let Some(item) = shown.clipboard_items.get(selected).cloned() {
+                ctx.features.remove_clipboard_item(&item);
+                let q = shown.query.clone();
+                let filter = shown.clipboard_filter;
+                let items = ctx.features.search_clipboard(&q, filter);
+                let next_sel = selected.min(items.len().saturating_sub(1));
+                shown.clipboard_items = items.clone();
+                return PaletteReply::Update(clipboard_model(&q, &items, filter, next_sel));
+            }
+            PaletteReply::Keep
+        }
+
+        // Emoji actions: Ctrl+P Pin/Unpin selected emoji cell.
+        (Mode::Emoji, ActionKey::CtrlP) => {
+            if let Some(cell) = shown.emoji_cells.get(selected).cloned() {
+                ctx.features.toggle_emoji_pin(&cell.glyph);
+                let q = shown.query.clone();
+                let cells = ctx.features.emoji_cells(&q);
+                let next_sel = selected.min(cells.len().saturating_sub(1));
+                shown.emoji_cells = cells.clone();
+                return PaletteReply::Update(emoji_model(&q, cells, next_sel));
+            }
+            PaletteReply::Keep
+        }
+
+        // Snippets actions: Ctrl+K Create New, Ctrl+Delete Remove selected snippet.
+        (Mode::Snippets, ActionKey::CtrlK) => enter_create_snippet(&mut shown),
+        (Mode::Snippets, ActionKey::CtrlDelete) => {
+            if let Some(rec) = shown.snippets.get(selected).cloned() {
+                ctx.features.delete_snippet(&rec.id());
+                let q = shown.query.clone();
+                let list = ctx.features.search_snippets(&q);
+                let next_sel = selected.min(list.len().saturating_sub(1));
+                shown.snippets = list.clone();
+                return PaletteReply::Update(snippets_model(&q, &list, next_sel));
+            }
+            PaletteReply::Keep
+        }
+
+        // Files actions: Ctrl+P Cycle FileType filter.
+        (Mode::Files, ActionKey::CtrlP) => {
+            shown.file_filter = shown.file_filter.next();
+            let q = shown.query.clone();
+            let filter = shown.file_filter;
+            let rows = launcher.file_screen_rows(&q, filter);
+            let indexing = ctx.features.is_file_indexing();
+            shown.file_rows = rows.clone();
+            PaletteReply::Update(files_model(&q, &rows, filter, indexing, |target| {
+                shown.lookup_or_queue_icon(target)
+            }))
+        }
+
+        // Calculator History: Ctrl+Delete Remove selected entry.
+        (Mode::CalcHistory, ActionKey::CtrlDelete) => {
+            if let Some(entry) = shown.calc_entries.get(selected).cloned() {
+                ctx.features.remove_calc_entry(&entry);
+                let q = shown.query.clone();
+                let entries = ctx.features.search_calc_history(&q);
+                let next_sel = selected.min(entries.len().saturating_sub(1));
+                shown.calc_entries = entries.clone();
+                return PaletteReply::Update(calc_history_model(&q, &entries, next_sel));
+            }
+            PaletteReply::Keep
+        }
+
+        _ => PaletteReply::Keep,
+    }
+}
+
+fn enter_launcher(launcher: &LauncherState, shown: &mut Shown, clear_edit: bool) -> PaletteReply {
+    let rows = launcher.suggestions();
+    shown.mode = Mode::Launcher;
+    shown.query.clear();
+    shown.rows = rows.clone();
+    shown.settings_rows.clear();
+    let model = model_for_with_icons("", &rows, true, shown);
+    if clear_edit {
+        PaletteReply::Navigate(model)
+    } else {
+        PaletteReply::Update(model)
+    }
+}
+
+fn enter_clipboard(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    ctx.palette.open_screen("Clipboard History");
+    shown.mode = Mode::Clipboard;
+    shown.query.clear();
+    shown.clipboard_filter = ClipboardFilter::All;
+    let items = ctx.features.search_clipboard("", ClipboardFilter::All);
+    shown.clipboard_items = items.clone();
+    PaletteReply::Navigate(clipboard_model("", &items, ClipboardFilter::All, 0))
+}
+
+fn enter_emoji(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    ctx.palette.open_screen("Emoji & Symbols");
+    shown.mode = Mode::Emoji;
+    shown.query.clear();
+    let cells = ctx.features.emoji_cells("");
+    shown.emoji_cells = cells.clone();
+    PaletteReply::Navigate(emoji_model("", cells, 0))
+}
+
+fn enter_snippets(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    ctx.palette.open_screen("Snippets");
+    shown.mode = Mode::Snippets;
+    shown.query.clear();
+    let list = ctx.features.search_snippets("");
+    shown.snippets = list.clone();
+    PaletteReply::Navigate(snippets_model("", &list, 0))
+}
+
+fn enter_create_snippet(shown: &mut Shown) -> PaletteReply {
+    let draft = SnippetDraft::new();
+    shown.mode = Mode::CreateSnippet(draft.clone());
+    shown.query.clear();
+    PaletteReply::Navigate(create_snippet_model(&draft, ""))
+}
+
+fn enter_files(
+    launcher: &Arc<LauncherState>,
+    ctx: &NativeContext,
+    handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
+    shown: &mut Shown,
+) -> PaletteReply {
+    ctx.palette.open_screen("File Search");
+    shown.mode = Mode::Files;
+    shown.query.clear();
+    shown.file_filter = FileType::All;
+    if !launcher.has_file_search() {
+        let _ = ctx.settings.set(FILE_SEARCH_ENABLED, "true");
+        ctx.features
+            .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
+    }
+    let rows = launcher.file_screen_rows("", FileType::All);
+    let indexing = ctx.features.is_file_indexing();
+    shown.file_rows = rows.clone();
+    PaletteReply::Navigate(files_model("", &rows, FileType::All, indexing, |target| {
+        shown.lookup_or_queue_icon(target)
+    }))
+}
+
+fn enter_switch_windows(shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::SwitchWindows;
+    shown.query.clear();
+    let windows = filter_windows("");
+    shown.windows = windows.clone();
+    PaletteReply::Navigate(windows_model("", &windows, 0))
+}
+
+fn enter_calc_history(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::CalcHistory;
+    shown.query.clear();
+    let entries = ctx.features.search_calc_history("");
+    shown.calc_entries = entries.clone();
+    PaletteReply::Navigate(calc_history_model("", &entries, 0))
+}
+
+fn enter_settings(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    ctx.palette.open_screen("Settings");
+    let rows = collect_settings_rows(ctx, "");
+    shown.mode = Mode::Settings;
+    shown.query.clear();
+    shown.rows.clear();
+    shown.settings_rows = rows.clone();
+    PaletteReply::Navigate(settings_model_for("", &rows, 0))
+}
+
+fn filter_windows(query: &str) -> Vec<WindowInfo> {
+    let q = query.trim().to_ascii_lowercase();
+    let all = tc_platform_win::window_control::list_switchable_windows();
+    if q.is_empty() {
+        return all;
+    }
+    all.into_iter()
+        .filter(|w| {
+            w.title.to_ascii_lowercase().contains(&q) || w.class.to_ascii_lowercase().contains(&q)
+        })
+        .collect()
+}
+
+fn inline_snippet_row(record: &StoredSnippet) -> ResultRow {
+    let kw = record
+        .snippet
+        .keyword
+        .as_deref()
+        .map(|k| format!("!{k}"))
+        .unwrap_or_default();
+    let preview: String = record
+        .snippet
+        .text
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .take(64)
+        .collect();
+    ResultRow {
+        id: format!("{INLINE_SNIPPET_PREFIX}{}", record.id()),
+        name: format!("{}  ({kw})", record.snippet.name),
+        detail: preview,
+        kind: SNIPPET_SECTION.to_string(),
+        target: record.id().to_string(),
+        ..ResultRow::default()
+    }
+}
+
 fn theme_from_settings(settings: &WindowsSettings) -> Theme {
     let appearance = settings
         .get(tc_palette::KEY_APPEARANCE)
@@ -384,22 +978,46 @@ fn theme_from_settings(settings: &WindowsSettings) -> Theme {
     }
 }
 
-/// Collect all native Settings rows (Hotkey + General), filtered by query.
+/// Collect all native Settings rows (Hotkey + Feature Toggles + General), filtered by query.
 fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
     let mut rows = ctx.palette.settings_rows();
     let current_hotkey = ctx
         .settings
         .get(KEY_LAUNCHER_HOTKEY)
         .unwrap_or_else(|| HotkeyTrigger::default_launcher().format());
-    rows.insert(
-        0,
+    let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() == Some("true");
+    let fs_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true");
+    let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
+
+    let extra = vec![
         SettingRow {
             key: KEY_LAUNCHER_HOTKEY.to_string(),
             label: "Launcher Hotkey".to_string(),
             value: current_hotkey,
             options: HOTKEY_PRESETS.iter().map(|s| (*s).to_string()).collect(),
         },
-    );
+        SettingRow {
+            key: KEY_WINDOW_MANAGEMENT_ENABLED.to_string(),
+            label: "Window Management".to_string(),
+            value: if wm_on { "true" } else { "false" }.to_string(),
+            options: vec!["true".to_string(), "false".to_string()],
+        },
+        SettingRow {
+            key: FILE_SEARCH_ENABLED.to_string(),
+            label: "File Search Indexing".to_string(),
+            value: if fs_on { "true" } else { "false" }.to_string(),
+            options: vec!["true".to_string(), "false".to_string()],
+        },
+        SettingRow {
+            key: FILE_SEARCH_SHOW.to_string(),
+            label: "Show Files in Launcher".to_string(),
+            value: if fs_show { "true" } else { "false" }.to_string(),
+            options: vec!["true".to_string(), "false".to_string()],
+        },
+    ];
+    for (idx, item) in extra.into_iter().enumerate() {
+        rows.insert(idx, item);
+    }
 
     let trimmed = query.trim().to_ascii_lowercase();
     if trimmed.is_empty() {
@@ -413,8 +1031,13 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
         .collect()
 }
 
-/// Cycle one setting in native Settings and persist it to `settings.json`.
-fn advance_native_setting(ctx: &NativeContext, key: &str) {
+/// Cycle one setting in native Settings, persist it, and apply it live.
+fn advance_native_setting(
+    ctx: &NativeContext,
+    launcher: &Arc<LauncherState>,
+    handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
+    key: &str,
+) {
     if key == KEY_LAUNCHER_HOTKEY {
         let current = ctx
             .settings
@@ -433,6 +1056,42 @@ fn advance_native_setting(ctx: &NativeContext, key: &str) {
         return;
     }
 
+    if key == KEY_WINDOW_MANAGEMENT_ENABLED {
+        let now_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("true");
+        let _ = ctx.settings.set(
+            KEY_WINDOW_MANAGEMENT_ENABLED,
+            if now_on { "true" } else { "false" },
+        );
+        launcher.set_show_window_commands(now_on);
+        return;
+    }
+
+    if key == FILE_SEARCH_ENABLED {
+        let now_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("true");
+        let _ = ctx
+            .settings
+            .set(FILE_SEARCH_ENABLED, if now_on { "true" } else { "false" });
+        if now_on {
+            ctx.features
+                .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
+        }
+        return;
+    }
+
+    if key == FILE_SEARCH_SHOW {
+        let now_on = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() != Some("true");
+        let _ = ctx
+            .settings
+            .set(FILE_SEARCH_SHOW, if now_on { "true" } else { "false" });
+        launcher.set_show_files(now_on);
+        if now_on && !launcher.has_file_search() {
+            let _ = ctx.settings.set(FILE_SEARCH_ENABLED, "true");
+            ctx.features
+                .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
+        }
+        return;
+    }
+
     if let Some(next) = ctx.palette.advance_setting(key) {
         let _ = ctx.settings.set(key, &next);
     }
@@ -444,7 +1103,6 @@ fn model_for_with_icons(
     is_suggestions: bool,
     shown: &mut Shown,
 ) -> Model {
-    // Only extract real icons for up to the first 30 rows to keep typing instant.
     let ui_rows: Vec<Row> = rows
         .iter()
         .enumerate()
@@ -476,11 +1134,12 @@ fn model_for_with_icons(
         result_count: Some(count_label),
         footer_hints: vec![
             ("↵".to_string(), "Open".to_string()),
-            ("↑↓".to_string(), "Move".to_string()),
+            ("Tab".to_string(), "Clipboard".to_string()),
             ("Ctrl+,".to_string(), "Settings".to_string()),
             ("Esc".to_string(), "Close".to_string()),
         ],
         scroll_offset: 0.0,
+        grid: None,
     }
 }
 
@@ -505,6 +1164,7 @@ fn model_for(query: &str, rows: &[ResultRow]) -> Model {
             ("Esc".to_string(), "Close".to_string()),
         ],
         scroll_offset: 0.0,
+        grid: None,
     }
 }
 
@@ -513,15 +1173,18 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
     let ui_rows: Vec<Row> = rows
         .iter()
         .map(|row| {
-            let section = if row.key == KEY_LAUNCHER_HOTKEY {
-                "Hotkeys"
-            } else {
-                "General"
+            let section = match row.key.as_str() {
+                KEY_LAUNCHER_HOTKEY => "Hotkeys",
+                KEY_WINDOW_MANAGEMENT_ENABLED | FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => {
+                    "Features"
+                }
+                _ => "General",
             };
-            let glyph = if row.key == KEY_LAUNCHER_HOTKEY {
-                "⌘"
-            } else {
-                "⚙"
+            let glyph = match row.key.as_str() {
+                KEY_LAUNCHER_HOTKEY => "⌘",
+                KEY_WINDOW_MANAGEMENT_ENABLED => "⊞",
+                FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => "F",
+                _ => "⚙",
             };
             let display_value = match row.value.trim().to_ascii_lowercase().as_str() {
                 "true" => "On".to_string(),
@@ -530,6 +1193,11 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
             };
             let description = match row.key.as_str() {
                 KEY_LAUNCHER_HOTKEY => "Global shortcut to summon YAL",
+                KEY_WINDOW_MANAGEMENT_ENABLED => {
+                    "Snap windows with Left/Right Half, Maximize, Center"
+                }
+                FILE_SEARCH_ENABLED => "Index Desktop, Documents, Downloads in background",
+                FILE_SEARCH_SHOW => "Include indexed files inside root Launcher results",
                 tc_palette::KEY_APPEARANCE => "Color theme",
                 tc_palette::KEY_ANIMATIONS => "Motion & transitions",
                 tc_palette::KEY_INTERFACE_SIZE => "Palette text scale",
@@ -564,11 +1232,12 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
         header_badge: Some("Settings".to_string()),
         result_count: Some(count_label),
         footer_hints: vec![
-            ("↵".to_string(), "Cycle".to_string()),
+            ("↵".to_string(), "Toggle / Cycle".to_string()),
             ("↑↓".to_string(), "Move".to_string()),
             ("Esc".to_string(), "Back".to_string()),
         ],
         scroll_offset: 0.0,
+        grid: None,
     }
 }
 
@@ -634,6 +1303,7 @@ fn icon_of(result: &ResultRow) -> Icon {
         WINDOW_COMMAND_SECTION => "⊞".to_string(),
         SYSTEM_ACTION_SECTION => "⚡".to_string(),
         FILE_SECTION => "📄".to_string(),
+        SNIPPET_SECTION => "✂".to_string(),
         _ => letter_of(&result.name),
     };
     Icon::new(glyph, color_of(&result.kind))
@@ -650,7 +1320,7 @@ fn color_of(kind: &str) -> Color {
     match kind {
         APPLICATIONS => Color::rgb(0x5e, 0x8b, 0xff),
         FILE_SECTION => Color::rgb(0x38, 0xbd, 0xf8),
-        COMMAND_SECTION => Color::rgb(0x34, 0xd3, 0x99),
+        COMMAND_SECTION | SNIPPET_SECTION => Color::rgb(0x34, 0xd3, 0x99),
         CUSTOM_COMMAND_SECTION => Color::rgb(0xa7, 0x8b, 0xfa),
         WINDOW_COMMAND_SECTION => Color::rgb(0xfb, 0x92, 0x3c),
         SYSTEM_ACTION_SECTION => Color::rgb(0xf8, 0x71, 0x71),

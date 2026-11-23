@@ -3,6 +3,19 @@
 use crate::model::Model;
 use crate::theme::Theme;
 
+/// High-level screen action chords forwarded from the palette window.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ActionKey {
+    /// `Tab` — cycle between Launcher and Clipboard (or next screen).
+    Tab,
+    /// `Ctrl+P` — pin/unpin item (Clipboard/Emoji) or cycle filter (File Search).
+    CtrlP,
+    /// `Ctrl+K` — toggle quick actions panel / view.
+    CtrlK,
+    /// `Ctrl+Shift+Backspace` or `Ctrl+Delete` — remove selected item.
+    CtrlDelete,
+}
+
 /// Something the palette tells the app.
 #[derive(Clone, Debug, PartialEq)]
 pub enum PaletteEvent {
@@ -10,8 +23,13 @@ pub enum PaletteEvent {
     Shown,
     /// The query in the search field changed.
     QueryChanged(String),
-    /// The user chose the row at this position in the list.
+    /// The user chose the item (list row or grid cell) at this index (`Enter` / click).
     Activated(usize),
+    /// The user triggered the secondary action on this index (`Ctrl+Enter`).
+    SecondaryActivated(usize),
+    /// The user pressed an action chord (`Tab`, `Ctrl+P`, `Ctrl+K`, `Ctrl+Delete`)
+    /// along with the currently selected row/cell index.
+    Action(ActionKey, usize),
     /// The user pressed Escape with an empty search box.
     Escape,
     /// The user pressed `Ctrl+,` to open Settings.
@@ -29,8 +47,10 @@ pub enum PaletteEvent {
 pub enum PaletteReply {
     /// Nothing changes.
     Keep,
-    /// Replace the palette's content and repaint.
+    /// Replace the palette's content and repaint (preserving current search box text).
     Update(Model),
+    /// Navigate to another screen: clears the search box silently and applies the new model.
+    Navigate(Model),
     /// Replace both the live theme (dark/light/style pack) and content immediately.
     UpdateTheme(Box<Theme>, Model),
     /// Hide the palette window.
@@ -44,7 +64,9 @@ impl PaletteReply {
     pub fn model(&self) -> Option<&Model> {
         match self {
             PaletteReply::Keep | PaletteReply::Close | PaletteReply::Quit => None,
-            PaletteReply::Update(model) | PaletteReply::UpdateTheme(_, model) => Some(model),
+            PaletteReply::Update(model)
+            | PaletteReply::Navigate(model)
+            | PaletteReply::UpdateTheme(_, model) => Some(model),
         }
     }
 
@@ -101,6 +123,8 @@ mod tests {
             PaletteEvent::Shown,
             PaletteEvent::QueryChanged("rust".to_string()),
             PaletteEvent::Activated(0),
+            PaletteEvent::SecondaryActivated(0),
+            PaletteEvent::Action(ActionKey::Tab, 0),
             PaletteEvent::Escape,
             PaletteEvent::OpenSettings,
             PaletteEvent::Dismissed,

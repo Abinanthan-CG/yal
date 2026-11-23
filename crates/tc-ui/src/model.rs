@@ -11,6 +11,78 @@ pub const SECTION_HEADER_HEIGHT: f32 = 26.0;
 /// Height of a Calculator hero card in DIPs.
 pub const CALC_HERO_HEIGHT: f32 = 100.0;
 
+/// Height of one cell row in 2D Emoji Grid mode (in DIPs).
+pub const GRID_CELL_HEIGHT: f32 = 62.0;
+
+/// One tile in a 2D Emoji / Symbol grid.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct GridCell {
+    pub glyph: String,
+    pub name: String,
+    pub pinned: bool,
+}
+
+/// 2D grid content rendered instead of list rows (used by the Emoji Picker).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct GridModel {
+    pub columns: usize,
+    pub cells: Vec<GridCell>,
+    pub selected: usize,
+    pub hovered: Option<usize>,
+}
+
+impl GridModel {
+    pub fn cols(&self) -> usize {
+        self.columns.max(1)
+    }
+
+    pub fn row_count(&self) -> usize {
+        if self.cells.is_empty() {
+            0
+        } else {
+            self.cells.len().div_ceil(self.cols())
+        }
+    }
+
+    pub fn select_left(&mut self) {
+        if self.selected > 0 {
+            self.selected -= 1;
+        }
+    }
+
+    pub fn select_right(&mut self) {
+        if self.selected + 1 < self.cells.len() {
+            self.selected += 1;
+        }
+    }
+
+    pub fn select_up(&mut self) {
+        let cols = self.cols();
+        if self.selected >= cols {
+            self.selected -= cols;
+        }
+    }
+
+    pub fn select_down(&mut self) {
+        let cols = self.cols();
+        if self.selected + cols < self.cells.len() {
+            self.selected += cols;
+        } else if !self.cells.is_empty() {
+            let cur_row = self.selected / cols;
+            let last_row = (self.cells.len() - 1) / cols;
+            if cur_row < last_row {
+                self.selected = self.cells.len() - 1;
+            }
+        }
+    }
+
+    pub fn active_cell(&self) -> Option<&GridCell> {
+        self.hovered
+            .and_then(|i| self.cells.get(i))
+            .or_else(|| self.cells.get(self.selected))
+    }
+}
+
 /// Premultiplied top-down RGBA bitmap for a real application icon.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IconBitmap {
@@ -107,6 +179,12 @@ impl Row {
         self.bitmap = Some(bitmap);
         self
     }
+
+    /// Attach a live RGBA color preview swatch.
+    pub fn with_color_swatch(mut self, rgba: [u8; 4]) -> Self {
+        self.color_swatch = Some(rgba);
+        self
+    }
 }
 
 /// The whole of the palette's content.
@@ -132,6 +210,8 @@ pub struct Model {
     pub footer_hints: Vec<(String, String)>,
     /// Vertical scroll offset inside the list viewport, in DIPs.
     pub scroll_offset: f32,
+    /// Optional 2D Emoji / Symbol grid; when `Some`, rendered instead of `rows`.
+    pub grid: Option<GridModel>,
 }
 
 /// Positioned section header in content-space DIPs (relative to `list_top`).
@@ -236,6 +316,28 @@ impl Model {
     /// Compute the shared DIP layout geometry used by both painting and hit-testing.
     pub fn layout(&self, metrics: Metrics) -> PaletteLayout {
         let list_top = metrics.field_height + 1.0 + metrics.list_gap;
+
+        if let Some(grid) = self.grid.as_ref() {
+            let row_count = grid.row_count();
+            let content_height = if row_count == 0 {
+                56.0
+            } else {
+                row_count as f32 * GRID_CELL_HEIGHT + 8.0
+            };
+            let max_grid_height = 5.0 * GRID_CELL_HEIGHT + 8.0;
+            let visible_height = content_height.min(max_grid_height);
+            let list_bottom = list_top + visible_height;
+            let window_height = list_bottom + metrics.list_gap + metrics.footer_height;
+            return PaletteLayout {
+                list_top,
+                list_bottom,
+                content_height,
+                window_height,
+                sections: Vec::new(),
+                rows: Vec::new(),
+            };
+        }
+
         let mut sections = Vec::new();
         let mut rows = Vec::with_capacity(self.rows.len());
 
@@ -295,10 +397,63 @@ impl Model {
         }
     }
 
-    /// Clamp `scroll_offset` and ensure the selected row is visible.
+    /// Clamp `scroll_offset` and ensure the selected item (list row or grid cell) is visible.
     pub fn ensure_selected_visible(&mut self, metrics: Metrics) {
         let layout = self.layout(metrics);
-        self.scroll_offset = layout.scroll_for_selected(self.selected, self.scroll_offset);
+        if let Some(grid) = self.grid.as_ref() {
+            let max_scroll = layout.max_scroll();
+            let mut scroll = self.scroll_offset.clamp(0.0, max_scroll);
+            if grid.selected < grid.cells.len() {
+                let r = grid.selected / grid.cols();
+                let cell_top = r as f32 * GRID_CELL_HEIGHT;
+                let cell_bottom = cell_top + GRID_CELL_HEIGHT;
+                let viewport = layout.viewport_height();
+                if cell_top < scroll {
+                    scroll = cell_top;
+                } else if cell_bottom > scroll + viewport {
+                    scroll = (cell_bottom - viewport).max(0.0);
+                }
+            }
+            self.scroll_offset = scroll.clamp(0.0, max_scroll);
+        } else {
+            self.scroll_offset = layout.scroll_for_selected(self.selected, self.scroll_offset);
+        }
+    }
+
+    /// Hit-test a 2D point `(x_dip, y_dip)` against either the Emoji Grid or the row list.
+    pub fn hit_test_dip(&self, x_dip: f32, y_dip: f32, metrics: Metrics) -> Option<usize> {
+        let layout = self.layout(metrics);
+        if y_dip < layout.list_top || y_dip >= layout.list_bottom {
+            return None;
+        }
+        if let Some(grid) = self.grid.as_ref() {
+            let cols = grid.cols();
+            let show_scrollbar = layout.max_scroll() > 1.0;
+            let left = metrics.padding;
+            let right = metrics.width
+                - if show_scrollbar {
+                    metrics.padding + 8.0
+                } else {
+                    metrics.padding
+                };
+            if x_dip < left || x_dip >= right {
+                return None;
+            }
+            let cell_w = (right - left) / cols as f32;
+            let col = ((x_dip - left) / cell_w).floor() as usize;
+            let content_y = (y_dip - layout.list_top) + self.scroll_offset;
+            if content_y < 0.0 {
+                return None;
+            }
+            let row = (content_y / GRID_CELL_HEIGHT).floor() as usize;
+            let idx = row * cols + col.min(cols - 1);
+            return if idx < grid.cells.len() {
+                Some(idx)
+            } else {
+                None
+            };
+        }
+        layout.row_at_y(y_dip, self.scroll_offset)
     }
 
     /// Apply a mouse-wheel delta (in DIPs; positive scrolls down).

@@ -11,11 +11,12 @@ use tc_commands::COMMANDS_FILE;
 use tc_core::CommandId;
 use tc_platform::{FileSystem, Settings, SingleInstance};
 use tc_platform_win::{
-    GlobalHotkeyService, HotkeyBinding, HotkeyTrigger, QuitWatcher, ShowWatcher, TrayAction,
-    WindowsSettings, WindowsSingleInstance, WindowsTray,
+    ClipboardWatcher, GlobalHotkeyService, HotkeyBinding, HotkeyTrigger, QuitWatcher, ShowWatcher,
+    TrayAction, WindowsSettings, WindowsSingleInstance, WindowsTray,
 };
 use tc_ui::{PaletteHandle, Theme, Tokens};
 
+use crate::features::FeatureStores;
 use crate::launcher::{FileSearch, LauncherState, RANKING_FILE};
 use crate::native::{NativeContext, NativePalette, COMMAND_OPEN_SETTINGS, KEY_LAUNCHER_HOTKEY};
 use crate::open::Runner;
@@ -116,8 +117,22 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     let _ = fs.ensure_dir(&paths.cache_dir);
 
     let settings = Arc::new(WindowsSettings::load(paths.settings_file.clone()));
+    let features = Arc::new(FeatureStores::open(&paths));
     let launcher = Arc::new(build_launcher(&paths, &settings));
     spawn_rates_refresh(Arc::clone(&launcher), paths.data_dir.join(RATES_FILE));
+    if settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true") {
+        features.trigger_file_index(Arc::clone(&launcher), Some(Arc::clone(&handle_slot)));
+    }
+    let clip_features = Arc::clone(&features);
+    let clipboard_watcher = match ClipboardWatcher::spawn(move |text, source| {
+        clip_features.record_clipboard_text(&text, source.as_deref());
+    }) {
+        Ok(watcher) => Some(watcher),
+        Err(error) => {
+            eprintln!("yal: clipboard watcher unavailable: {error}");
+            None
+        }
+    };
     let palette_state = Arc::new(build_palette_state(&settings));
     let window_commands = Arc::new(build_window_commands(&settings));
 
@@ -143,6 +158,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         NativeContext {
             palette: Arc::clone(&palette_state),
             settings: Arc::clone(&settings),
+            features: Arc::clone(&features),
             on_hotkey_changed: Some(Arc::new(move |trigger| {
                 if let Ok(guard) = hotkey_updater.lock() {
                     if let Some(service) = guard.as_ref() {
@@ -210,6 +226,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     native.run();
 
     // Explicit ordered teardown before releasing the single-instance lock.
+    drop(clipboard_watcher);
     drop(show_watcher);
     drop(quit_watcher);
     drop(tray);

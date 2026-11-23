@@ -12,15 +12,19 @@ publish = false
 [dependencies]
 tc-apps = { path = "../../crates/tc-apps" }
 tc-calc = { path = "../../crates/tc-calc" }
+tc-clipboard = { path = "../../crates/tc-clipboard" }
 tc-core = { path = "../../crates/tc-core" }
 tc-commands = { path = "../../crates/tc-commands" }
+tc-emoji = { path = "../../crates/tc-emoji" }
 tc-files = { path = "../../crates/tc-files" }
 tc-palette = { path = "../../crates/tc-palette" }
 tc-platform = { path = "../../crates/tc-platform" }
 tc-platform-win = { path = "../../crates/tc-platform-win" }
+tc-snippets = { path = "../../crates/tc-snippets" }
 tc-ui = { path = "../../crates/tc-ui" }
 tc-windows = { path = "../../crates/tc-windows" }
 tc-search = { path = "../../crates/tc-search" }
+chrono = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

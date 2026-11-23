@@ -5,6 +5,7 @@
 //! and keeps the learned ranking in the app's own folder.
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -68,9 +69,19 @@ pub const FILE_PREFIX: &str = "file:";
 /// The built-in commands this build can run.
 ///
 /// The catalogue holds every built-in command; the launcher offers only the
-/// ones whose feature is in the build, so a row is never a dead end. The rest
-/// arrive with their features.
-const AVAILABLE_COMMANDS: [CommandId; 2] = [CommandId::Quit, CommandId::Support];
+/// ones whose feature is in the build, so a row is never a dead end.
+const AVAILABLE_COMMANDS: [CommandId; 10] = [
+    CommandId::ClipboardHistory,
+    CommandId::SearchEmoji,
+    CommandId::SearchSnippets,
+    CommandId::CreateSnippet,
+    CommandId::SearchFiles,
+    CommandId::SwitchWindows,
+    CommandId::CalculatorHistory,
+    CommandId::Settings,
+    CommandId::Support,
+    CommandId::Quit,
+];
 
 /// One value a command asks for before it runs.
 #[derive(Debug, Clone, Serialize)]
@@ -173,16 +184,16 @@ pub struct LauncherState {
     /// Whether the window commands are listed in the results. This is the
     /// "Show in launcher" switch, and window management is off until it is
     /// turned on - upstream's own default.
-    show_window_commands: bool,
+    show_window_commands: AtomicBool,
     /// The built-in commands, and the switches that decide which of them exist.
     commands: CommandSettings,
     /// The user's own shell commands.
     custom_commands: Vec<CustomCommand>,
     /// The file search, when it is on.
-    files: Option<FileSearch>,
+    files: Mutex<Option<FileSearch>>,
     /// Whether the files are listed in the launcher. This is the
     /// "Show in launcher" switch under the File Search one.
-    show_files: bool,
+    show_files: AtomicBool,
     /// Live exchange rates snapshot (loaded from cache/bundled and refreshed in background).
     rates: Mutex<Arc<ExchangeRates>>,
     /// Base pixels per `1rem`/`1em` for CSS calculations (default 16.0).
@@ -220,11 +231,11 @@ impl LauncherState {
             entries,
             ranking: Mutex::new(LauncherRankingStore::open(ranking_file, now_seconds())),
             sensitivity: SearchSensitivity::Medium,
-            show_window_commands: false,
+            show_window_commands: AtomicBool::new(false),
             commands: CommandSettings::new(),
             custom_commands: Vec::new(),
-            files: None,
-            show_files: false,
+            files: Mutex::new(None),
+            show_files: AtomicBool::new(false),
             rates: Mutex::new(Arc::new(ExchangeRates::bundled())),
             rem_px: 16.0,
         }
@@ -244,14 +255,14 @@ impl LauncherState {
         }
     }
 
-    /// Show or hide the files in the launcher.
-    pub fn set_show_files(&mut self, show: bool) {
-        self.show_files = show;
+    /// Show or hide the files in the launcher (safe to toggle live from Settings).
+    pub fn set_show_files(&self, show: bool) {
+        self.show_files.store(show, Ordering::Relaxed);
     }
 
-    /// Show or hide the window commands in the results.
-    pub fn set_show_window_commands(&mut self, show: bool) {
-        self.show_window_commands = show;
+    /// Show or hide the window commands in the results (safe to toggle live from Settings).
+    pub fn set_show_window_commands(&self, show: bool) {
+        self.show_window_commands.store(show, Ordering::Relaxed);
     }
 
     /// The built-in commands, and the switches that decide which of them exist.
@@ -264,18 +275,25 @@ impl LauncherState {
         self.custom_commands = commands;
     }
 
-    /// Turn the file search on, with its index.
-    pub fn set_file_search(&mut self, files: FileSearch) {
-        self.files = Some(files);
+    /// Turn the file search on, with its index (safe to attach live after background walk).
+    pub fn set_file_search(&self, files: FileSearch) {
+        if let Ok(mut guard) = self.files.lock() {
+            *guard = Some(files);
+        }
+    }
+
+    /// Whether a file index store is currently attached.
+    pub fn has_file_search(&self) -> bool {
+        self.files.lock().ok().is_some_and(|g| g.is_some())
     }
 
     /// The rows of the file-search screen.
     ///
     /// With nothing typed the list is the recent files; with something typed
     /// it is the results. The filter narrows the search as it runs.
-    #[allow(dead_code)]
     pub fn file_screen_rows(&self, query: &str, filter: FileType) -> Vec<ResultRow> {
-        let Some(files) = &self.files else {
+        let guard = self.files.lock().expect("the file search lock");
+        let Some(files) = guard.as_ref() else {
             return Vec::new();
         };
         tc_palette::screen_rows(
@@ -295,7 +313,8 @@ impl LauncherState {
     /// "When your search has three or more characters, a Files section lists
     /// up to five matches."
     pub fn launcher_file_rows(&self, query: &str) -> Vec<ResultRow> {
-        let Some(files) = &self.files else {
+        let guard = self.files.lock().expect("the file search lock");
+        let Some(files) = guard.as_ref() else {
             return Vec::new();
         };
         tc_palette::launcher_rows(&files.entries(), query, &files.home, &files.favorites)
@@ -458,7 +477,7 @@ impl LauncherState {
         rows.extend(self.custom_command_rows(query));
         // The files come last of all: "It sits below the apps and commands,
         // so return still opens the top result."
-        if self.show_files {
+        if self.show_files.load(Ordering::Relaxed) {
             rows.extend(self.launcher_file_rows(query));
         }
         rows
@@ -470,7 +489,7 @@ impl LauncherState {
     /// actions are found: "left" finds "Left Half" and "Top Left Quarter",
     /// and "lhf" finds nothing at all.
     pub fn window_commands_matching(&self, query: &str) -> Vec<ResultRow> {
-        if !self.show_window_commands {
+        if !self.show_window_commands.load(Ordering::Relaxed) {
             return Vec::new();
         }
         let wanted = query.trim().to_lowercase();
@@ -725,7 +744,7 @@ mod tests {
 
     #[test]
     fn the_files_are_listed_under_their_own_section() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_file_search(file_search(sample_files()));
         launcher.set_show_files(true);
         let rows = launcher.search("annual");
@@ -736,7 +755,7 @@ mod tests {
 
     #[test]
     fn the_files_sit_below_the_programs() {
-        let mut launcher = launcher(vec![program("Annual")]);
+        let launcher = launcher(vec![program("Annual")]);
         launcher.set_file_search(file_search(sample_files()));
         launcher.set_show_files(true);
         let rows = launcher.search("annual");
@@ -746,7 +765,7 @@ mod tests {
 
     #[test]
     fn the_files_can_be_kept_out_of_the_launcher() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_file_search(file_search(sample_files()));
         launcher.set_show_files(false);
         let rows = launcher.search("annual");
@@ -755,7 +774,7 @@ mod tests {
 
     #[test]
     fn the_file_screen_shows_the_recent_files_with_nothing_typed() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_file_search(file_search(sample_files()));
         let rows = launcher.file_screen_rows("", FileType::All);
         assert_eq!(rows[0].name, "notes.txt", "the newest own file");
@@ -763,7 +782,7 @@ mod tests {
 
     #[test]
     fn the_file_screen_shows_the_results_with_something_typed() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_file_search(file_search(sample_files()));
         let rows = launcher.file_screen_rows("annual", FileType::All);
         assert_eq!(rows.len(), 2);
@@ -771,7 +790,7 @@ mod tests {
 
     #[test]
     fn the_file_screen_narrows_to_the_folders() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_file_search(file_search(sample_files()));
         let rows = launcher.file_screen_rows("annual", FileType::Folders);
         assert_eq!(rows.len(), 1);
@@ -781,7 +800,7 @@ mod tests {
 
     #[test]
     fn a_file_row_says_where_the_file_is() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_file_search(file_search(sample_files()));
         let rows = launcher.file_screen_rows("notes", FileType::All);
         assert_eq!(rows[0].detail, "C:\\Users\\dabin\\Documents");
@@ -818,7 +837,7 @@ mod tests {
 
     #[test]
     fn a_window_command_is_found_by_its_name() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_show_window_commands(true);
         let rows = launcher.search("left half");
         assert_eq!(rows.len(), 1);
@@ -829,7 +848,7 @@ mod tests {
 
     #[test]
     fn the_window_commands_are_listed_under_their_own_section() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_show_window_commands(true);
         let rows = launcher.search("quarter");
         assert_eq!(rows.len(), 4, "the four quarters");
@@ -840,7 +859,7 @@ mod tests {
 
     #[test]
     fn the_window_commands_can_be_hidden_from_the_launcher() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         // Window management is off until it is turned on, so the commands are
         // not in the results to begin with.
         assert!(launcher.search("left half").is_empty());
@@ -863,7 +882,7 @@ mod tests {
 
     #[test]
     fn a_window_command_is_found_by_a_word_of_its_name() {
-        let mut launcher = launcher(vec![]);
+        let launcher = launcher(vec![]);
         launcher.set_show_window_commands(true);
         // "half" finds the halves, the quarters are not halves.
         let rows = launcher.search("half");

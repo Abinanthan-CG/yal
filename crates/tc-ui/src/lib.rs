@@ -12,8 +12,8 @@ pub mod theme;
 pub mod tokens;
 pub mod window;
 
-pub use event::{ignore, Handler, PaletteEvent, PaletteReply};
-pub use model::{Icon, IconBitmap, Model, PaletteLayout, Row};
+pub use event::{ignore, ActionKey, Handler, PaletteEvent, PaletteReply};
+pub use model::{GridCell, GridModel, Icon, IconBitmap, Model, PaletteLayout, Row};
 pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};
 pub use window::{

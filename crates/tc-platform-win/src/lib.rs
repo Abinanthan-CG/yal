@@ -5,10 +5,12 @@
 //! desktop.
 
 mod clipboard;
+pub mod clipboard_watcher;
 pub mod hotkey;
 pub mod http;
 pub mod icons;
 mod launch;
+pub mod paste;
 mod paths;
 mod programs;
 mod quit;
@@ -19,6 +21,7 @@ pub mod window_control;
 mod windows;
 
 pub use clipboard::WindowsClipboard;
+pub use clipboard_watcher::ClipboardWatcher;
 /// The Windows clipboard, as text.
 pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()
@@ -31,6 +34,7 @@ pub use hotkey::{
 pub use http::https_get;
 pub use icons::{application_icon, extract_icon, shell_item_icon, IconImage};
 pub use launch::{open, recycle, reveal};
+pub use paste::copy_and_paste_async;
 pub use paths::is_portable;
 pub use paths::windows_paths;
 pub use programs::programs;

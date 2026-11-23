@@ -6,10 +6,12 @@
 //!
 //! Run `yal.exe --self-test` for a headless check of every subsystem.
 
+mod features;
 mod launcher;
 mod native;
 mod open;
 mod palette;
+mod screens;
 mod selftest;
 mod shell;
 

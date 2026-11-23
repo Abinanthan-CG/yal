@@ -30,8 +30,9 @@ use windows::Win32::UI::HiDpi::{
     DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, MDT_EFFECTIVE_DPI,
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetKeyState, SetFocus, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_CONTROL, VK_DOWN,
-    VK_ESCAPE, VK_OEM_COMMA, VK_RETURN, VK_UP,
+    GetKeyState, SetFocus, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_CONTROL,
+    VK_DELETE, VK_DOWN, VK_ESCAPE, VK_K, VK_LEFT, VK_OEM_COMMA, VK_P, VK_RETURN, VK_RIGHT,
+    VK_SHIFT, VK_TAB, VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW,
@@ -41,15 +42,15 @@ use windows::Win32::UI::WindowsAndMessaging::{
     SetWindowLongPtrW, SetWindowPos, ShowWindow, TranslateMessage, CREATESTRUCTW, CS_HREDRAW,
     CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA, GWLP_WNDPROC, HTCLIENT,
     IDC_ARROW, MINMAXINFO, MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOZORDER, SW_HIDE,
-    SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_COMMAND, WM_CREATE,
-    WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_GETMINMAXINFO, WM_KEYDOWN,
-    WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCCALCSIZE, WM_NCCREATE, WM_NCHITTEST, WM_PAINT,
-    WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN,
-    WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_THICKFRAME,
-    WS_VISIBLE,
+    SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_CHAR, WM_COMMAND,
+    WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_GETMINMAXINFO,
+    WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCCALCSIZE, WM_NCCREATE,
+    WM_NCHITTEST, WM_PAINT, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WNDCLASSEXW, WS_CHILD,
+    WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP,
+    WS_THICKFRAME, WS_VISIBLE,
 };
 
-use crate::event::{Handler, PaletteEvent, PaletteReply};
+use crate::event::{ActionKey, Handler, PaletteEvent, PaletteReply};
 use crate::model::Model;
 use crate::paint::Renderer;
 use crate::theme::{Appearance, Color, Metrics, Theme};
@@ -69,6 +70,15 @@ const WM_APP_COMMAND: u32 = 0x8008;
 const WM_APP_TOGGLE_TRAY: u32 = 0x8009;
 const WM_APP_SETTINGS: u32 = 0x800A;
 const WM_APP_REFRESH: u32 = 0x800B;
+const WM_APP_LEFT: u32 = 0x800C;
+const WM_APP_RIGHT: u32 = 0x800D;
+const WM_APP_CTRL_RETURN: u32 = 0x800E;
+const WM_APP_ACTION: u32 = 0x800F;
+
+const ACTION_TAB: usize = 1;
+const ACTION_CTRL_P: usize = 2;
+const ACTION_CTRL_K: usize = 3;
+const ACTION_CTRL_DELETE: usize = 4;
 
 /// Debounce window so clicking the tray icon while the palette is open closes
 /// the palette rather than blur-dismissing and immediately re-opening it.
@@ -550,7 +560,8 @@ unsafe extern "system" fn window_procedure(
         }
         WM_NCHITTEST => LRESULT(HTCLIENT as isize),
         WM_MOUSEMOVE => {
-            let y_phys = (lparam.0 >> 16) as i16 as f32;
+            let x_phys = (lparam.0 & 0xffff) as i16 as f32;
+            let y_phys = ((lparam.0 >> 16) & 0xffff) as i16 as f32;
             let state = &mut *state_ptr;
             if !state.tracking_mouse_leave {
                 let mut tme = TRACKMOUSEEVENT {
@@ -563,9 +574,17 @@ unsafe extern "system" fn window_procedure(
                     state.tracking_mouse_leave = true;
                 }
             }
-            let hovered = hit_test_row(hwnd, state, y_phys);
-            if state.model.hovered != hovered {
+            let hovered = hit_test_point(hwnd, state, x_phys, y_phys);
+            let changed = if let Some(grid) = state.model.grid.as_mut() {
+                let c = grid.hovered != hovered;
+                grid.hovered = hovered;
+                c
+            } else {
+                let c = state.model.hovered != hovered;
                 state.model.hovered = hovered;
+                c
+            };
+            if changed {
                 let _ = InvalidateRect(Some(hwnd), None, false);
             }
             LRESULT(0)
@@ -573,7 +592,12 @@ unsafe extern "system" fn window_procedure(
         WM_MOUSELEAVE => {
             let state = &mut *state_ptr;
             state.tracking_mouse_leave = false;
-            if state.model.hovered.take().is_some() {
+            let cleared = if let Some(grid) = state.model.grid.as_mut() {
+                grid.hovered.take().is_some()
+            } else {
+                state.model.hovered.take().is_some()
+            };
+            if cleared {
                 let _ = InvalidateRect(Some(hwnd), None, false);
             }
             LRESULT(0)
@@ -589,12 +613,17 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_LBUTTONUP => {
-            let y_phys = (lparam.0 >> 16) as i16 as f32;
+            let x_phys = (lparam.0 & 0xffff) as i16 as f32;
+            let y_phys = ((lparam.0 >> 16) & 0xffff) as i16 as f32;
             let clicked = {
                 let state = &mut *state_ptr;
-                let hit = hit_test_row(hwnd, state, y_phys);
+                let hit = hit_test_point(hwnd, state, x_phys, y_phys);
                 if let Some(index) = hit {
-                    state.model.selected = index;
+                    if let Some(grid) = state.model.grid.as_mut() {
+                        grid.selected = index;
+                    } else {
+                        state.model.selected = index;
+                    }
                 }
                 hit
             };
@@ -629,7 +658,11 @@ unsafe extern "system" fn window_procedure(
         }
         WM_APP_UP => {
             let state = &mut *state_ptr;
-            state.model.select_previous();
+            if let Some(grid) = state.model.grid.as_mut() {
+                grid.select_up();
+            } else {
+                state.model.select_previous();
+            }
             let metrics = state.theme.metrics;
             state.model.ensure_selected_visible(metrics);
             let _ = InvalidateRect(Some(hwnd), None, false);
@@ -637,10 +670,34 @@ unsafe extern "system" fn window_procedure(
         }
         WM_APP_DOWN => {
             let state = &mut *state_ptr;
-            state.model.select_next();
+            if let Some(grid) = state.model.grid.as_mut() {
+                grid.select_down();
+            } else {
+                state.model.select_next();
+            }
             let metrics = state.theme.metrics;
             state.model.ensure_selected_visible(metrics);
             let _ = InvalidateRect(Some(hwnd), None, false);
+            LRESULT(0)
+        }
+        WM_APP_LEFT => {
+            let state = &mut *state_ptr;
+            if let Some(grid) = state.model.grid.as_mut() {
+                grid.select_left();
+                let metrics = state.theme.metrics;
+                state.model.ensure_selected_visible(metrics);
+                let _ = InvalidateRect(Some(hwnd), None, false);
+            }
+            LRESULT(0)
+        }
+        WM_APP_RIGHT => {
+            let state = &mut *state_ptr;
+            if let Some(grid) = state.model.grid.as_mut() {
+                grid.select_right();
+                let metrics = state.theme.metrics;
+                state.model.ensure_selected_visible(metrics);
+                let _ = InvalidateRect(Some(hwnd), None, false);
+            }
             LRESULT(0)
         }
         WM_APP_ESCAPE => {
@@ -648,8 +705,27 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_APP_RETURN => {
-            let selected = (*state_ptr).model.selected;
+            let selected = active_selected_index(&(*state_ptr).model);
             dispatch(state_ptr, PaletteEvent::Activated(selected));
+            LRESULT(0)
+        }
+        WM_APP_CTRL_RETURN => {
+            let selected = active_selected_index(&(*state_ptr).model);
+            dispatch(state_ptr, PaletteEvent::SecondaryActivated(selected));
+            LRESULT(0)
+        }
+        WM_APP_ACTION => {
+            let action = match wparam.0 {
+                ACTION_TAB => Some(ActionKey::Tab),
+                ACTION_CTRL_P => Some(ActionKey::CtrlP),
+                ACTION_CTRL_K => Some(ActionKey::CtrlK),
+                ACTION_CTRL_DELETE => Some(ActionKey::CtrlDelete),
+                _ => None,
+            };
+            if let Some(key) = action {
+                let selected = active_selected_index(&(*state_ptr).model);
+                dispatch(state_ptr, PaletteEvent::Action(key, selected));
+            }
             LRESULT(0)
         }
         WM_APP_SETTINGS => {
@@ -704,17 +780,25 @@ unsafe extern "system" fn window_procedure(
     }
 }
 
-/// Convert physical mouse Y into exact 1:1 DIPs and hit-test against the exact
-/// same `Model::layout` geometry that `Renderer::draw` paints.
-unsafe fn hit_test_row(hwnd: HWND, state: &State, y_phys: f32) -> Option<usize> {
-    let dpi_scale = GetDpiForWindow(hwnd).max(96) as f32 / 96.0;
-    let y_dip = y_phys / dpi_scale;
-    let layout = state.model.layout(state.theme.metrics);
-    layout.row_at_y(y_dip, state.model.scroll_offset)
+fn active_selected_index(model: &Model) -> usize {
+    if let Some(grid) = model.grid.as_ref() {
+        grid.selected
+    } else {
+        model.selected
+    }
 }
 
-/// Subclassed edit control: forwards navigation keys & `Ctrl+,` cleanly to the
-/// palette while letting Windows handle all typing, paste, selection, and IME.
+/// Convert physical mouse coordinates into exact 1:1 DIPs and hit-test against
+/// the exact same `Model::hit_test_dip` geometry that `Renderer::draw` paints.
+unsafe fn hit_test_point(hwnd: HWND, state: &State, x_phys: f32, y_phys: f32) -> Option<usize> {
+    let dpi_scale = GetDpiForWindow(hwnd).max(96) as f32 / 96.0;
+    let x_dip = x_phys / dpi_scale;
+    let y_dip = y_phys / dpi_scale;
+    state.model.hit_test_dip(x_dip, y_dip, state.theme.metrics)
+}
+
+/// Subclassed edit control: forwards navigation keys & action chords cleanly to
+/// the palette while letting Windows handle all typing, paste, selection, and IME.
 unsafe extern "system" fn edit_procedure(
     hwnd: HWND,
     message: u32,
@@ -724,29 +808,54 @@ unsafe extern "system" fn edit_procedure(
     let parent = GetParent(hwnd).unwrap_or_default();
     let pointer = GetWindowLongPtrW(parent, GWLP_USERDATA) as *mut State;
 
-    // Copy edit_proc up front; never hold &State across SendMessageW.
-    let edit_proc = if !pointer.is_null() {
-        (*pointer).edit_proc
+    // Copy needed values up front; never hold &State across SendMessageW.
+    let (edit_proc, in_grid) = if !pointer.is_null() {
+        ((*pointer).edit_proc, (*pointer).model.grid.is_some())
     } else {
-        0
+        (0, false)
     };
+
+    if message == WM_CHAR {
+        // Suppress system beep on Enter, Ctrl+Enter, Escape, Tab, Ctrl+P, Ctrl+K.
+        let ch = wparam.0 as u32;
+        if matches!(ch, 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x1B) {
+            return LRESULT(0);
+        }
+    }
 
     if message == WM_KEYDOWN {
         let key = wparam.0 as u16;
         let ctrl_down = (GetKeyState(VK_CONTROL.0 as i32) as u16 & 0x8000) != 0;
-        let forwarded = if ctrl_down && key == VK_OEM_COMMA.0 {
-            Some(WM_APP_SETTINGS)
+        let shift_down = (GetKeyState(VK_SHIFT.0 as i32) as u16 & 0x8000) != 0;
+        let empty_text = GetWindowTextLengthW(hwnd) == 0;
+
+        let forwarded: Option<(u32, usize)> = if ctrl_down && key == VK_OEM_COMMA.0 {
+            Some((WM_APP_SETTINGS, 0))
+        } else if ctrl_down && key == VK_RETURN.0 {
+            Some((WM_APP_CTRL_RETURN, 0))
+        } else if ctrl_down && key == VK_P.0 {
+            Some((WM_APP_ACTION, ACTION_CTRL_P))
+        } else if ctrl_down && key == VK_K.0 {
+            Some((WM_APP_ACTION, ACTION_CTRL_K))
+        } else if ctrl_down && (key == VK_DELETE.0 || (shift_down && key == VK_BACK.0)) {
+            Some((WM_APP_ACTION, ACTION_CTRL_DELETE))
+        } else if key == VK_TAB.0 && !ctrl_down {
+            Some((WM_APP_ACTION, ACTION_TAB))
+        } else if in_grid && (empty_text || ctrl_down) && key == VK_LEFT.0 {
+            Some((WM_APP_LEFT, 0))
+        } else if in_grid && (empty_text || ctrl_down) && key == VK_RIGHT.0 {
+            Some((WM_APP_RIGHT, 0))
         } else {
             match key {
-                value if value == VK_UP.0 => Some(WM_APP_UP),
-                value if value == VK_DOWN.0 => Some(WM_APP_DOWN),
-                value if value == VK_ESCAPE.0 => Some(WM_APP_ESCAPE),
-                value if value == VK_RETURN.0 => Some(WM_APP_RETURN),
+                value if value == VK_UP.0 => Some((WM_APP_UP, 0)),
+                value if value == VK_DOWN.0 => Some((WM_APP_DOWN, 0)),
+                value if value == VK_ESCAPE.0 => Some((WM_APP_ESCAPE, 0)),
+                value if value == VK_RETURN.0 => Some((WM_APP_RETURN, 0)),
                 _ => None,
             }
         };
-        if let Some(custom) = forwarded {
-            let _ = SendMessageW(parent, custom, Some(WPARAM(0)), Some(LPARAM(0)));
+        if let Some((custom, arg)) = forwarded {
+            let _ = SendMessageW(parent, custom, Some(WPARAM(arg)), Some(LPARAM(0)));
             return LRESULT(0);
         }
     }
@@ -922,6 +1031,10 @@ unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
     match reply {
         PaletteReply::Keep => {}
         PaletteReply::Update(model) => {
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::Navigate(model) => {
+            clear_edit_silently(state_ptr);
             apply_model_update(state_ptr, hwnd, edit, model);
         }
         PaletteReply::UpdateTheme(new_theme, model) => {

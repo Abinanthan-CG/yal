@@ -12,8 +12,8 @@ use windows::Win32::Graphics::Direct2D::{
     },
     D2D1CreateFactory, ID2D1Bitmap, ID2D1Factory, ID2D1HwndRenderTarget, ID2D1SolidColorBrush,
     ID2D1StrokeStyle, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-    D2D1_BITMAP_PROPERTIES, D2D1_DRAW_TEXT_OPTIONS_CLIP, D2D1_ELLIPSE,
-    D2D1_FACTORY_TYPE_SINGLE_THREADED, D2D1_FEATURE_LEVEL_DEFAULT,
+    D2D1_BITMAP_PROPERTIES, D2D1_DRAW_TEXT_OPTIONS_CLIP, D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+    D2D1_ELLIPSE, D2D1_FACTORY_TYPE_SINGLE_THREADED, D2D1_FEATURE_LEVEL_DEFAULT,
     D2D1_HWND_RENDER_TARGET_PROPERTIES, D2D1_PRESENT_OPTIONS_NONE, D2D1_RENDER_TARGET_PROPERTIES,
     D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_ROUNDED_RECT,
 };
@@ -29,12 +29,14 @@ use windows::Win32::Graphics::DirectWrite::{
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
 use windows_numerics::Vector2;
 
-use crate::model::{IconBitmap, Model, Row};
+use crate::model::{GridModel, IconBitmap, Model, Row, GRID_CELL_HEIGHT};
 use crate::theme::{Appearance, Color, Theme};
 
 /// Primary UI font (DirectWrite cleanly resolves Segoe UI Variable on Windows 11
 /// and falls back gracefully on Windows 10).
 const FONT_FAMILY: &str = "Segoe UI";
+/// Windows color emoji font for the 2D Emoji & Symbol grid.
+const EMOJI_FONT_FAMILY: &str = "Segoe UI Emoji";
 
 /// Maximum GPU-cached application icon bitmaps to keep RAM strictly bounded.
 const MAX_CACHED_BITMAPS: usize = 128;
@@ -56,6 +58,8 @@ pub struct Renderer {
     calc_answer_med_format: IDWriteTextFormat,
     calc_answer_sm_format: IDWriteTextFormat,
     calc_arrow_format: IDWriteTextFormat,
+    emoji_glyph_format: IDWriteTextFormat,
+    emoji_label_format: IDWriteTextFormat,
     brushes: Vec<(Color, ID2D1SolidColorBrush)>,
     bitmaps: HashMap<String, ID2D1Bitmap>,
 }
@@ -189,6 +193,20 @@ impl Renderer {
             15.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
+        let emoji_glyph_format = dwrite_format(
+            &dwrite,
+            EMOJI_FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            24.0,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+        )?;
+        let emoji_label_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            10.0,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+        )?;
 
         let renderer = Self {
             target,
@@ -206,6 +224,8 @@ impl Renderer {
             calc_answer_med_format,
             calc_answer_sm_format,
             calc_arrow_format,
+            emoji_glyph_format,
+            emoji_label_format,
             brushes: Vec::new(),
             bitmaps: HashMap::new(),
         };
@@ -229,6 +249,7 @@ impl Renderer {
             &self.calc_answer_format,
             &self.calc_answer_med_format,
             &self.calc_answer_sm_format,
+            &self.emoji_label_format,
         ] {
             unsafe {
                 let sign = self
@@ -370,7 +391,45 @@ impl Renderer {
                 .PushAxisAlignedClip(&viewport_clip, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
         }
 
-        if model.rows.is_empty() {
+        if let Some(grid) = model.grid.as_ref() {
+            if grid.cells.is_empty() {
+                if let Some(text_layout) = self.layout(
+                    "No matching emoji or symbols",
+                    &self.footer_format,
+                    width - pad * 4.0,
+                    20.0,
+                ) {
+                    if let Some(brush) = self.brush(theme.text_dim) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: pad + 12.0,
+                                    Y: layout.list_top + 18.0,
+                                },
+                                &text_layout,
+                                &brush,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
+                }
+            } else {
+                let show_scrollbar = layout.max_scroll() > 1.0;
+                let right_margin = if show_scrollbar { pad + 8.0 } else { pad };
+                self.draw_emoji_grid(
+                    grid,
+                    theme,
+                    pad,
+                    layout.list_top,
+                    width - right_margin,
+                    layout.list_bottom,
+                    model.scroll_offset,
+                );
+                if show_scrollbar {
+                    self.draw_scrollbar(&layout, model.scroll_offset, width, theme);
+                }
+            }
+        } else if model.rows.is_empty() {
             let empty_text = if model.query.trim().is_empty() {
                 "Start typing to search apps, commands, or calculate…"
             } else {
@@ -465,28 +524,7 @@ impl Renderer {
 
             // Slim rounded scrollbar when content overflows.
             if show_scrollbar {
-                let track_h = layout.viewport_height() - 8.0;
-                if track_h > 20.0 {
-                    let ratio = (layout.viewport_height() / layout.content_height).clamp(0.12, 1.0);
-                    let thumb_h = (track_h * ratio).max(24.0);
-                    let progress = (scroll / layout.max_scroll()).clamp(0.0, 1.0);
-                    let thumb_top = layout.list_top + 4.0 + progress * (track_h - thumb_h);
-                    let bar = D2D1_ROUNDED_RECT {
-                        rect: D2D_RECT_F {
-                            left: width - 7.0,
-                            top: thumb_top,
-                            right: width - 3.0,
-                            bottom: thumb_top + thumb_h,
-                        },
-                        radiusX: 2.0,
-                        radiusY: 2.0,
-                    };
-                    if let Some(brush) = self.brush(theme.text_dim.with_alpha(0.32)) {
-                        unsafe {
-                            self.target.FillRoundedRectangle(&bar, &brush);
-                        }
-                    }
-                }
+                self.draw_scrollbar(&layout, scroll, width, theme);
             }
         }
 
@@ -581,30 +619,58 @@ impl Renderer {
             }
         }
 
-        // Row Icon: real Windows GPU-cached bitmap when available, else soft-tinted squircle badge.
+        // Row Icon: color swatch (for clipboard colors), real Windows GPU-cached bitmap,
+        // or soft-tinted squircle badge.
         let icon_size = metrics.icon_size;
         let icon_left = left + 13.0;
         let icon_top = top + (row_height - icon_size) / 2.0;
         let mut drew_bitmap = false;
 
-        if let (Some(key), Some(bitmap_data)) = (row.icon_key.as_deref(), row.bitmap.as_deref()) {
-            if let Some(gpu_bitmap) = self.cached_bitmap(key, bitmap_data) {
-                let dest = D2D_RECT_F {
+        if let Some([r, g, b, a]) = row.color_swatch {
+            let swatch = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
                     left: icon_left,
                     top: icon_top,
                     right: icon_left + icon_size,
                     bottom: icon_top + icon_size,
-                };
+                },
+                radiusX: 6.5,
+                radiusY: 6.5,
+            };
+            if let Some(fill) = self.brush(Color::rgba(r, g, b, a)) {
                 unsafe {
-                    self.target.DrawBitmap(
-                        &gpu_bitmap,
-                        Some(&dest),
-                        1.0,
-                        D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-                        None,
-                    );
+                    self.target.FillRoundedRectangle(&swatch, &fill);
                 }
-                drew_bitmap = true;
+            }
+            if let Some(ring) = self.brush(Color::rgba(0xff, 0xff, 0xff, 0x40)) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&swatch, &ring, 1.0, None);
+                }
+            }
+            drew_bitmap = true;
+        }
+
+        if !drew_bitmap {
+            if let (Some(key), Some(bitmap_data)) = (row.icon_key.as_deref(), row.bitmap.as_deref())
+            {
+                if let Some(gpu_bitmap) = self.cached_bitmap(key, bitmap_data) {
+                    let dest = D2D_RECT_F {
+                        left: icon_left,
+                        top: icon_top,
+                        right: icon_left + icon_size,
+                        bottom: icon_top + icon_size,
+                    };
+                    unsafe {
+                        self.target.DrawBitmap(
+                            &gpu_bitmap,
+                            Some(&dest),
+                            1.0,
+                            D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+                            None,
+                        );
+                    }
+                    drew_bitmap = true;
+                }
             }
         }
 
@@ -957,6 +1023,163 @@ impl Renderer {
         );
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn draw_emoji_grid(
+        &mut self,
+        grid: &GridModel,
+        theme: &Theme,
+        left: f32,
+        list_top: f32,
+        right: f32,
+        list_bottom: f32,
+        scroll: f32,
+    ) {
+        let cols = grid.cols();
+        let cell_w = ((right - left) / cols as f32).max(28.0);
+        let first_row = (scroll / GRID_CELL_HEIGHT).floor().max(0.0) as usize;
+        let visible_rows = (((list_bottom - list_top) / GRID_CELL_HEIGHT).ceil() as usize) + 2;
+        let total_rows = grid.row_count();
+        let end_row = (first_row + visible_rows).min(total_rows);
+
+        for r in first_row..end_row {
+            let cell_top = list_top + r as f32 * GRID_CELL_HEIGHT - scroll;
+            if cell_top + GRID_CELL_HEIGHT < list_top || cell_top > list_bottom {
+                continue;
+            }
+            for c in 0..cols {
+                let idx = r * cols + c;
+                let Some(cell) = grid.cells.get(idx) else {
+                    break;
+                };
+                let cell_left = left + c as f32 * cell_w;
+                let tile = D2D1_ROUNDED_RECT {
+                    rect: D2D_RECT_F {
+                        left: cell_left + 3.0,
+                        top: cell_top + 3.0,
+                        right: cell_left + cell_w - 3.0,
+                        bottom: cell_top + GRID_CELL_HEIGHT - 3.0,
+                    },
+                    radiusX: 9.0,
+                    radiusY: 9.0,
+                };
+                let is_selected = idx == grid.selected;
+                let is_hovered = grid.hovered == Some(idx) && !is_selected;
+
+                if is_selected {
+                    if let Some(bg) = self.brush(theme.selection) {
+                        unsafe {
+                            self.target.FillRoundedRectangle(&tile, &bg);
+                        }
+                    }
+                    if let Some(ring) = self.brush(theme.accent.with_alpha(0.70)) {
+                        unsafe {
+                            self.target.DrawRoundedRectangle(&tile, &ring, 1.4, None);
+                        }
+                    }
+                } else if is_hovered {
+                    if let Some(bg) = self.brush(theme.hover) {
+                        unsafe {
+                            self.target.FillRoundedRectangle(&tile, &bg);
+                        }
+                    }
+                }
+
+                // True GPU Color Emoji rendering via Direct2D COLOR_FONT flag.
+                if let Some(glyph_layout) =
+                    self.layout(&cell.glyph, &self.emoji_glyph_format, cell_w - 6.0, 34.0)
+                {
+                    if let Some(fg) = self.brush(theme.text) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: cell_left + 3.0,
+                                    Y: cell_top + 6.0,
+                                },
+                                &glyph_layout,
+                                &fg,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP
+                                    | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                            );
+                        }
+                    }
+                }
+
+                // Crisp micro-label under the emoji.
+                if let Some(label_layout) =
+                    self.layout(&cell.name, &self.emoji_label_format, cell_w - 10.0, 14.0)
+                {
+                    let fg_col = if is_selected {
+                        theme.text
+                    } else {
+                        theme.text_dim
+                    };
+                    if let Some(fg) = self.brush(fg_col) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: cell_left + 5.0,
+                                    Y: cell_top + GRID_CELL_HEIGHT - 19.0,
+                                },
+                                &label_layout,
+                                &fg,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
+                }
+
+                // Subtle pinned indicator dot in top-right corner.
+                if cell.pinned {
+                    let dot = D2D1_ELLIPSE {
+                        point: Vector2 {
+                            X: cell_left + cell_w - 10.0,
+                            Y: cell_top + 10.0,
+                        },
+                        radiusX: 2.8,
+                        radiusY: 2.8,
+                    };
+                    if let Some(accent) = self.brush(theme.accent) {
+                        unsafe {
+                            self.target.FillEllipse(&dot, &accent);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn draw_scrollbar(
+        &mut self,
+        layout: &crate::model::PaletteLayout,
+        scroll: f32,
+        width: f32,
+        theme: &Theme,
+    ) {
+        let track_h = layout.viewport_height() - 8.0;
+        if track_h <= 20.0 {
+            return;
+        }
+        let ratio = (layout.viewport_height() / layout.content_height).clamp(0.12, 1.0);
+        let thumb_h = (track_h * ratio).max(24.0);
+        let progress = (scroll / layout.max_scroll()).clamp(0.0, 1.0);
+        let thumb_top = layout.list_top + 4.0 + progress * (track_h - thumb_h);
+        let bar = D2D1_ROUNDED_RECT {
+            rect: D2D_RECT_F {
+                left: width - 7.0,
+                top: thumb_top,
+                right: width - 3.0,
+                bottom: thumb_top + thumb_h,
+            },
+            radiusX: 2.0,
+            radiusY: 2.0,
+        };
+        if let Some(brush) = self.brush(theme.text_dim.with_alpha(0.32)) {
+            unsafe {
+                self.target.FillRoundedRectangle(&bar, &brush);
+            }
+        }
+    }
+
     fn draw_footer(&mut self, model: &Model, theme: &Theme, top: f32, width: f32, height: f32) {
         let mid_y = top + height / 2.0;
 
@@ -999,13 +1222,19 @@ impl Renderer {
             }
         }
 
-        let status = model
-            .result_count
+        let active_emoji_status = model.grid.as_ref().and_then(|g| g.active_cell()).map(|c| {
+            if c.pinned {
+                format!("{}  {}  ·  Pinned", c.glyph, c.name)
+            } else {
+                format!("{}  {}", c.glyph, c.name)
+            }
+        });
+        let status = active_emoji_status
             .as_deref()
-            .filter(|s| !s.is_empty())
+            .or_else(|| model.result_count.as_deref().filter(|s| !s.is_empty()))
             .unwrap_or(&model.footer);
         if !status.is_empty() {
-            if let Some(layout) = self.layout(status, &self.footer_format, 260.0, 18.0) {
+            if let Some(layout) = self.layout(status, &self.footer_format, 280.0, 18.0) {
                 if let Some(brush) = self.brush(theme.text_dim) {
                     unsafe {
                         self.target.DrawTextLayout(
@@ -1015,7 +1244,7 @@ impl Renderer {
                             },
                             &layout,
                             &brush,
-                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
                         );
                     }
                 }

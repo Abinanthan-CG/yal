@@ -1371,18 +1371,22 @@ dependencies = [
 name = "yal"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "embed-resource",
  "serde",
  "serde_json",
  "tc-apps",
  "tc-calc",
+ "tc-clipboard",
  "tc-commands",
  "tc-core",
+ "tc-emoji",
  "tc-files",
  "tc-palette",
  "tc-platform",
  "tc-platform-win",
  "tc-search",
+ "tc-snippets",
  "tc-ui",
  "tc-windows",
 ]
