@@ -14,9 +14,9 @@ pub struct Math;
 
 impl Math {
     /// The names that take several arguments, as upstream's `CalcMath.multipleArguments`.
-    pub const MULTIPLE_ARGUMENTS: [&'static str; 19] = [
-        "hypot", "round", "log", "gcd", "lcm", "atan2", "pow", "root", "fmod", "min", "max", "sum",
-        "avg", "mean", "average", "median", "count", "stddev", "stdev",
+    pub const MULTIPLE_ARGUMENTS: [&'static str; 20] = [
+        "hypot", "round", "log", "gcd", "gcf", "lcm", "atan2", "pow", "root", "fmod", "min", "max",
+        "sum", "avg", "mean", "average", "median", "count", "stddev", "stdev",
     ];
 
     /// The names that keep the unit of their first argument, as upstream's
@@ -122,7 +122,8 @@ impl Math {
                 .iter()
                 .copied()
                 .fold(0.0, |left: f64, right: f64| left.hypot(right)),
-            "gcd" | "lcm" => return Self::greatest_common_multiple(name, values),
+            "gcd" | "gcf" => return Self::greatest_common_multiple("gcd", values),
+            "lcm" => return Self::greatest_common_multiple("lcm", values),
             _ => {
                 if values.len() == 1 {
                     let function = single_argument(name)?;
@@ -248,7 +249,7 @@ impl Math {
 fn single_argument(name: &str) -> Option<fn(f64) -> f64> {
     Some(match name {
         "sqrt" => f64::sqrt,
-        "log" => f64::log10,
+        "log" | "log10" => f64::log10,
         "ln" => f64::ln,
         "sin" => f64::sin,
         "cos" => f64::cos,

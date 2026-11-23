@@ -899,4 +899,125 @@ mod swiss_army_tests {
         assert!(eval_disp("#12F999 as oklch").starts_with("oklch(0.86"));
         assert_eq!(eval_disp("tomato at 50%"), "#FF634780");
     }
+
+    #[test]
+    fn raycast_100_query_differential_audit() {
+        let ctx = full_ctx();
+        let queries = [
+            "days till 29 nov",
+            "days until 29 nov",
+            "days until friday",
+            "days till friday",
+            "hours until 6pm",
+            "minutes till 11:30pm",
+            "Dec 25 - Nov 23",
+            "2026-12-25 - 2026-11-23",
+            "2026-12-25 - today",
+            "today + 100 days",
+            "2 weeks from friday",
+            "3 months from today",
+            "day of year",
+            "days in Q1",
+            "days in Q2 2026",
+            "moon phase",
+            "years since 1998",
+            "days since 1998-05-14",
+            "distance from Paris to Tokyo",
+            "distance between London and New York",
+            "distance from London to New York in miles",
+            "half of 50",
+            "5 multiplied by 3",
+            "2 raised to 10",
+            "2 to the power of 10",
+            "100 rounded to nearest 5",
+            "123.456 rounded to 2 decimal places",
+            "50 + 20%",
+            "50 - 20%",
+            "50 is what % of 200",
+            "50 / 200 as %",
+            "$100 split 4 people",
+            "$100 split between 4",
+            "$100 + 18% gst",
+            "$10000 at 7% for 5 years",
+            "100f in c",
+            "100c to f",
+            "0c in f",
+            "-40c to f",
+            "180cm in ft",
+            "180 cm to feet and inches",
+            "6ft 2in in cm",
+            "5 ft 10 in to cm",
+            "5kg to lbs",
+            "150 lbs in kg",
+            "1 gal in l",
+            "1 oz in g",
+            "1 tbsp in ml",
+            "1 tsp in ml",
+            "1 acre in sqm",
+            "1 hectare in acres",
+            "100 sqm in sqft",
+            "1000 sqft in sqm",
+            "100 kw in hp",
+            "1 bar in psi",
+            "1 atm in kpa",
+            "1 knot in km/h",
+            "30 mpg in l/100km",
+            "8 l/100km in mpg",
+            "500 kcal in kj",
+            "180 deg in rad",
+            "1 gb in mb",
+            "1 gib in mb",
+            "1 tb in gib",
+            "10k inr in usd",
+            "100$ in inr",
+            "usd to inr",
+            "btc to usd",
+            "0b11110000 to hex",
+            "0o755 to dec",
+            "0xFF to bin",
+            "0xFF xor 0x0F",
+            "100 mod 7",
+            "10!",
+            "gcd(48, 18)",
+            "gcf(48, 18)",
+            "lcm(12, 18)",
+            "cot(45 deg)",
+            "csc(30 deg)",
+            "sinh(1)",
+            "acos(0.5)",
+            "avg(10, 20, 30)",
+            "mean(10, 20, 30)",
+            "sum(1, 2, 3, 4)",
+            "median(1, 5, 9)",
+            "sqrt(144)",
+            "cbrt(27)",
+            "log2(1024)",
+            "log10(1000)",
+            "time tokyo",
+            "tokyo time",
+            "5pm in tokyo",
+            "5pm ist in est",
+            "9am pst in ist",
+            "time diff tokyo london",
+            "now + 3 hours",
+            "now - 30 min",
+            "tomorrow + 5 days",
+        ];
+
+        let mut missing = Vec::new();
+        for q in queries {
+            let out = evaluate_with_context(q, &FullCatalog, &ctx);
+            if out.display().is_none() {
+                missing.push(format!("{q} => {out:?}"));
+            }
+        }
+        if !missing.is_empty() {
+            panic!(
+                "Missing {}/{} Raycast-supported queries:\n  {}",
+                missing.len(),
+                queries.len(),
+                missing.join("\n  ")
+            );
+        }
+    }
 }

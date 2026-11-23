@@ -76,7 +76,12 @@ pub fn evaluate(query: &str, ctx: &CalcContext) -> Option<CalcResult> {
         return Some(card);
     }
 
-    // 12. Explicit date arithmetic (`August 5 + 5`, `2026-12-25 - 10 days`, `now + 3 hours`, `today + 2 weeks - 3 days`).
+    // 12. Date subtraction (`Dec 25 - Nov 23`, `2026-12-25 - 2026-11-23`, `2026-12-25 - today`).
+    if let Some(card) = eval_date_subtraction(&lower, raw, &local) {
+        return Some(card);
+    }
+
+    // 13. Explicit date arithmetic (`August 5 + 5`, `2026-12-25 - 10 days`, `now + 3 hours`, `today + 2 weeks - 3 days`).
     if let Some(card) = eval_date_arithmetic(&lower, raw, &local, ctx) {
         return Some(card);
     }
@@ -355,6 +360,29 @@ fn eval_week_query(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResult> 
 fn eval_calendar_facts(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResult> {
     let today = local.date();
 
+    // `day of year` / `day of the year`
+    if matches!(lower, "day of year" | "day of the year") {
+        let doy = today.day_of_year();
+        return Some(unchained(CalcResult::with_badges(
+            raw.to_string(),
+            "Calendar",
+            "Day of Year",
+            Payload::number(doy as f64),
+        )));
+    }
+
+    // `moon phase` / `current moon phase` / `lunar phase`
+    if matches!(lower, "moon phase" | "current moon phase" | "lunar phase") {
+        let (phase_name, illum_pct) = moon_phase_for_timestamp(local.timestamp());
+        let badge = format!("Moon ({illum_pct}% lit)");
+        return Some(unchained(CalcResult::with_badges(
+            raw.to_string(),
+            "Astronomy",
+            &badge,
+            Payload::text(phase_name),
+        )));
+    }
+
     // `is 2028 a leap year` / `is 2028 leap year`
     if let Some(rest) = lower.strip_prefix("is ") {
         if let Some(year_str) = rest
@@ -449,7 +477,9 @@ fn eval_calendar_facts(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResu
             let parts: Vec<&str> = rest.split_whitespace().collect();
             let (start, end) = match parts.as_slice() {
                 [y] => {
-                    if let Ok(year) = y.parse::<i16>() {
+                    if let Some(q) = parse_quarter(y) {
+                        quarter_bounds(today.year(), q)?
+                    } else if let Ok(year) = y.parse::<i16>() {
                         (Date::new(year, 1, 1).ok()?, Date::new(year, 12, 31).ok()?)
                     } else {
                         let month = parse_month(y)?;
@@ -459,11 +489,15 @@ fn eval_calendar_facts(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResu
                     }
                 }
                 [m, y] => {
-                    let month = parse_month(m)?;
                     let year = y.parse::<i16>().ok()?;
-                    let first = Date::new(year, month, 1).ok()?;
-                    let last = Date::new(year, month, first.days_in_month()).ok()?;
-                    (first, last)
+                    if let Some(q) = parse_quarter(m) {
+                        quarter_bounds(year, q)?
+                    } else {
+                        let month = parse_month(m)?;
+                        let first = Date::new(year, month, 1).ok()?;
+                        let last = Date::new(year, month, first.days_in_month()).ok()?;
+                        (first, last)
+                    }
                 }
                 _ => return None,
             };
@@ -915,6 +949,73 @@ fn apply_relative(
     }
 }
 
+fn eval_date_subtraction(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResult> {
+    let (lhs, rhs) = lower.split_once(" - ")?;
+    let l = lhs.trim();
+    let r = rhs.trim();
+    // Guard against plain arithmetic (`2026 - 1990`, `5 - 3`).
+    let is_plain_num =
+        |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit() || b == b'.');
+    if is_plain_num(l) || is_plain_num(r) {
+        return None;
+    }
+    let today = local.date();
+    let d1 = parse_date_expr(l, today, Bias::Nearest)?;
+    let d2 = parse_date_expr(r, today, Bias::Nearest)?;
+    let days = d2.until(d1).ok()?.get_days() as i64;
+    let display = format!(
+        "{} {}",
+        Formatter::grouped(&days.to_string()),
+        if days.abs() == 1 { "day" } else { "days" }
+    );
+    Some(unchained(CalcResult::with_badges(
+        raw.to_string(),
+        "Date Difference",
+        "Days",
+        Payload::text(&display),
+    )))
+}
+
+fn parse_quarter(s: &str) -> Option<i8> {
+    match s {
+        "q1" => Some(1),
+        "q2" => Some(2),
+        "q3" => Some(3),
+        "q4" => Some(4),
+        _ => None,
+    }
+}
+
+fn quarter_bounds(year: i16, quarter: i8) -> Option<(Date, Date)> {
+    let start_month = (quarter - 1) * 3 + 1;
+    let end_month = quarter * 3;
+    let start = Date::new(year, start_month, 1).ok()?;
+    let end_first = Date::new(year, end_month, 1).ok()?;
+    let end = Date::new(year, end_month, end_first.days_in_month()).ok()?;
+    Some((start, end))
+}
+
+/// Clean-room synodic lunar phase from the J2000 reference New Moon
+/// (`2000-01-06 18:14:00 UTC`, synodic month = `29.530588853` days).
+fn moon_phase_for_timestamp(ts: Timestamp) -> (&'static str, u32) {
+    const REF_NEW_MOON_SECS: f64 = 947_182_440.0; // 2000-01-06T18:14:00Z
+    const SYNODIC_MONTH_SECS: f64 = 29.530_588_853 * 86_400.0;
+    let elapsed = ts.as_second() as f64 - REF_NEW_MOON_SECS;
+    let frac = (elapsed / SYNODIC_MONTH_SECS).rem_euclid(1.0);
+    let illum = ((1.0 - (frac * std::f64::consts::TAU).cos()) * 50.0).round() as u32;
+    let name = match ((frac * 8.0) + 0.5).floor() as u32 % 8 {
+        0 => "New Moon",
+        1 => "Waxing Crescent",
+        2 => "First Quarter",
+        3 => "Waxing Gibbous",
+        4 => "Full Moon",
+        5 => "Waning Gibbous",
+        6 => "Last Quarter",
+        _ => "Waning Crescent",
+    };
+    (name, illum.min(100))
+}
+
 fn eval_date_arithmetic(
     lower: &str,
     raw: &str,
@@ -1086,6 +1187,16 @@ fn parse_date_expr(input: &str, today: Date, bias: Bias) -> Option<Date> {
             Bias::Past if d > today => holiday_date(s, today.year() - 1)?,
             _ => d,
         });
+    }
+
+    // Bare 4-digit year (`years since 1998`, `days until 2030`) — only reached
+    // inside explicit date clauses (never bare standalone numbers).
+    if s.len() == 4 && s.bytes().all(|b| b.is_ascii_digit()) {
+        if let Ok(year) = s.parse::<i16>() {
+            if (1000..=2999).contains(&year) {
+                return Date::new(year, 1, 1).ok();
+            }
+        }
     }
 
     // Bare weekday (`days till friday`, `days since monday`).

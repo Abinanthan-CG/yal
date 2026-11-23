@@ -57,6 +57,9 @@ pub fn evaluate(query: &str, ctx: &CalcContext) -> Option<CalcResult> {
     if let Some(c) = eval_text_utility(raw) {
         return Some(c);
     }
+    if let Some(c) = eval_city_distance(raw) {
+        return Some(c);
+    }
     if let Some(c) = eval_molar_mass(raw) {
         return Some(c);
     }
@@ -208,6 +211,195 @@ fn eval_text_utility(raw: &str) -> Option<CalcResult> {
         }
         _ => None,
     }
+}
+
+// ---------------------------------------------------------------------------
+// 1b. Great-Circle Distance Between World Cities (Haversine formula)
+// ---------------------------------------------------------------------------
+
+fn eval_city_distance(raw: &str) -> Option<CalcResult> {
+    let folded = fold_ascii_simple(raw);
+    let rest = folded
+        .strip_prefix("distance between ")
+        .or_else(|| folded.strip_prefix("distance from "))
+        .or_else(|| folded.strip_prefix("distance "))?;
+
+    // Optional trailing target unit: `in miles`, `to km`, `in nm`, `in meters`.
+    let (places_part, target_unit) = if let Some((l, r)) = rest
+        .rsplit_once(" in ")
+        .or_else(|| rest.rsplit_once(" to "))
+    {
+        if matches!(
+            r.trim(),
+            "km" | "kilometers"
+                | "kilometres"
+                | "mi"
+                | "mile"
+                | "miles"
+                | "m"
+                | "meters"
+                | "nm"
+                | "nmi"
+                | "nautical miles"
+        ) {
+            (l.trim(), Some(r.trim()))
+        } else {
+            (rest.trim(), None)
+        }
+    } else {
+        (rest.trim(), None)
+    };
+
+    let (a_str, b_str) = places_part
+        .split_once(" to ")
+        .or_else(|| places_part.split_once(" and "))
+        .or_else(|| places_part.split_once(" - "))?;
+    let a = lookup_city_coords(a_str.trim())?;
+    let b = lookup_city_coords(b_str.trim())?;
+
+    let km = haversine_km(a.1, a.2, b.1, b.2);
+    let (val, sym) = match target_unit {
+        Some("mi" | "mile" | "miles") => (km / 1.609_344, "mi"),
+        Some("m" | "meters") => (km * 1000.0, "m"),
+        Some("nm" | "nmi" | "nautical miles") => (km / 1.852, "nmi"),
+        _ => (km, "km"),
+    };
+    let rounded = (val * 100.0).round() / 100.0;
+    let text = Formatter::copy_text(rounded);
+    Some(CalcResult::with_badges(
+        format!("{} → {}", a.0, b.0),
+        "Distance",
+        sym,
+        Payload::Value {
+            display: format!("{} {sym}", Formatter::grouped(&text)),
+            copy_text: format!("{text} {sym}"),
+        },
+    ))
+}
+
+fn haversine_km(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    const R_KM: f64 = 6_371.008_8;
+    let dlat = (lat2 - lat1).to_radians();
+    let dlon = (lon2 - lon1).to_radians();
+    let lat1_r = lat1.to_radians();
+    let lat2_r = lat2.to_radians();
+    let a = (dlat / 2.0).sin().powi(2) + lat1_r.cos() * lat2_r.cos() * (dlon / 2.0).sin().powi(2);
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+    R_KM * c
+}
+
+fn fold_ascii_simple(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for ch in s.chars() {
+        let m = match ch {
+            'á' | 'à' | 'â' | 'ä' | 'ã' | 'å' | 'Á' | 'À' | 'Â' | 'Ä' | 'Ã' | 'Å' => {
+                'a'
+            }
+            'é' | 'è' | 'ê' | 'ë' | 'É' | 'È' | 'Ê' | 'Ë' => 'e',
+            'í' | 'ì' | 'î' | 'ï' | 'Í' | 'Ì' | 'Î' | 'Ï' => 'i',
+            'ó' | 'ò' | 'ô' | 'ö' | 'õ' | 'ø' | 'Ó' | 'Ò' | 'Ô' | 'Ö' | 'Õ' | 'Ø' => {
+                'o'
+            }
+            'ú' | 'ù' | 'û' | 'ü' | 'Ú' | 'Ù' | 'Û' | 'Ü' => 'u',
+            'ñ' | 'Ñ' => 'n',
+            'ç' | 'Ç' => 'c',
+            other => other.to_ascii_lowercase(),
+        };
+        out.push(m);
+    }
+    out.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// Curated WGS84 coordinates `(display_name, lat_deg, lon_deg)` for major world cities.
+fn lookup_city_coords(key: &str) -> Option<(&'static str, f64, f64)> {
+    Some(match key {
+        "london" | "ldn" | "lhr" => ("London", 51.5074, -0.1278),
+        "paris" | "cdg" => ("Paris", 48.8566, 2.3522),
+        "chamonix" => ("Chamonix", 45.9237, 6.8694),
+        "tokyo" | "nrt" | "hnd" => ("Tokyo", 35.6762, 139.6503),
+        "new york" | "nyc" | "jfk" => ("New York", 40.7128, -74.0060),
+        "san francisco" | "sf" | "sfo" => ("San Francisco", 37.7749, -122.4194),
+        "los angeles" | "la" | "lax" => ("Los Angeles", 34.0522, -118.2437),
+        "chicago" | "chi" | "ord" => ("Chicago", 41.8781, -87.6298),
+        "seattle" | "sea" => ("Seattle", 47.6062, -122.3321),
+        "boston" | "bos" => ("Boston", 42.3601, -71.0589),
+        "miami" | "mia" => ("Miami", 25.7617, -80.1918),
+        "austin" => ("Austin", 30.2672, -97.7431),
+        "dallas" | "dfw" => ("Dallas", 32.7767, -96.7970),
+        "denver" | "den" => ("Denver", 39.7392, -104.9903),
+        "washington" | "dc" => ("Washington, D.C.", 38.9072, -77.0369),
+        "honolulu" => ("Honolulu", 21.3069, -157.8583),
+        "toronto" | "yyz" => ("Toronto", 43.6532, -79.3832),
+        "vancouver" | "yvr" => ("Vancouver", 49.2827, -123.1207),
+        "montreal" => ("Montreal", 45.5017, -73.5673),
+        "mexico city" | "mex" => ("Mexico City", 19.4326, -99.1332),
+        "sao paulo" | "gru" => ("São Paulo", -23.5505, -46.6333),
+        "rio de janeiro" | "rio" => ("Rio de Janeiro", -22.9068, -43.1729),
+        "buenos aires" => ("Buenos Aires", -34.6037, -58.3816),
+        "santiago" => ("Santiago", -33.4489, -70.6693),
+        "lima" => ("Lima", -12.0464, -77.0428),
+        "bogota" => ("Bogotá", 4.7110, -74.0721),
+        "berlin" => ("Berlin", 52.5200, 13.4050),
+        "munich" | "munchen" => ("Munich", 48.1351, 11.5820),
+        "frankfurt" | "fra" => ("Frankfurt", 50.1109, 8.6821),
+        "amsterdam" | "ams" => ("Amsterdam", 52.3676, 4.9041),
+        "madrid" => ("Madrid", 40.4168, -3.7038),
+        "barcelona" => ("Barcelona", 41.3874, 2.1686),
+        "rome" => ("Rome", 41.9028, 12.4964),
+        "milan" => ("Milan", 45.4642, 9.1900),
+        "zurich" => ("Zurich", 47.3769, 8.5417),
+        "geneva" => ("Geneva", 46.2044, 6.1432),
+        "vienna" => ("Vienna", 48.2082, 16.3738),
+        "prague" => ("Prague", 50.0755, 14.4378),
+        "warsaw" => ("Warsaw", 52.2297, 21.0122),
+        "dublin" => ("Dublin", 53.3498, -6.2603),
+        "lisbon" => ("Lisbon", 38.7223, -9.1393),
+        "stockholm" => ("Stockholm", 59.3293, 18.0686),
+        "oslo" => ("Oslo", 59.9139, 10.7522),
+        "copenhagen" => ("Copenhagen", 55.6761, 12.5683),
+        "helsinki" => ("Helsinki", 60.1699, 24.9384),
+        "athens" => ("Athens", 37.9838, 23.7275),
+        "istanbul" => ("Istanbul", 41.0082, 28.9784),
+        "moscow" => ("Moscow", 55.7558, 37.6173),
+        "reykjavik" => ("Reykjavik", 64.1466, -21.9426),
+        "dubai" | "dxb" => ("Dubai", 25.2048, 55.2708),
+        "riyadh" => ("Riyadh", 24.7136, 46.6753),
+        "doha" => ("Doha", 25.2854, 51.5310),
+        "cairo" => ("Cairo", 30.0444, 31.2357),
+        "johannesburg" => ("Johannesburg", -26.2041, 28.0473),
+        "cape town" => ("Cape Town", -33.9249, 18.4241),
+        "nairobi" => ("Nairobi", -1.2921, 36.8219),
+        "lagos" => ("Lagos", 6.5244, 3.3792),
+        "mumbai" | "bom" => ("Mumbai", 19.0760, 72.8777),
+        "delhi" | "new delhi" | "del" => ("New Delhi", 28.6139, 77.2090),
+        "bengaluru" | "bangalore" | "blr" => ("Bengaluru", 12.9716, 77.5946),
+        "chennai" | "maa" => ("Chennai", 13.0827, 80.2707),
+        "kochi" | "cochin" | "cok" => ("Kochi", 9.9312, 76.2673),
+        "kolkata" => ("Kolkata", 22.5726, 88.3639),
+        "hyderabad" => ("Hyderabad", 17.3850, 78.4867),
+        "pune" => ("Pune", 18.5204, 73.8567),
+        "colombo" => ("Colombo", 6.9271, 79.8612),
+        "kathmandu" => ("Kathmandu", 27.7172, 85.3240),
+        "karachi" => ("Karachi", 24.8607, 67.0011),
+        "dhaka" => ("Dhaka", 23.8103, 90.4125),
+        "bangkok" => ("Bangkok", 13.7563, 100.5018),
+        "singapore" | "sin" => ("Singapore", 1.3521, 103.8198),
+        "kuala lumpur" => ("Kuala Lumpur", 3.1390, 101.6869),
+        "jakarta" => ("Jakarta", -6.2088, 106.8456),
+        "manila" => ("Manila", 14.5995, 120.9842),
+        "hong kong" | "hkg" => ("Hong Kong", 22.3193, 114.1694),
+        "taipei" => ("Taipei", 25.0330, 121.5654),
+        "shanghai" => ("Shanghai", 31.2304, 121.4737),
+        "beijing" => ("Beijing", 39.9042, 116.4074),
+        "seoul" | "icn" => ("Seoul", 37.5665, 126.9780),
+        "osaka" => ("Osaka", 34.6937, 135.5023),
+        "sydney" | "syd" => ("Sydney", -33.8688, 151.2093),
+        "melbourne" | "mel" => ("Melbourne", -37.8136, 144.9631),
+        "brisbane" | "bne" => ("Brisbane", -27.4705, 153.0260),
+        "perth" => ("Perth", -31.9505, 115.8605),
+        "auckland" => ("Auckland", -36.8485, 174.7633),
+        _ => return None,
+    })
 }
 
 // ---------------------------------------------------------------------------

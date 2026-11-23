@@ -93,14 +93,16 @@ fn eval_time_diff(folded: &str, raw: &str, ctx: &CalcContext) -> Option<CalcResu
         let pa = resolve_place(a.trim())?;
         let pb = resolve_place(b.trim())?;
         (pa.label, pa.tz, pb.label, pb.tz)
-    } else {
-        let target = resolve_place(rest)?;
+    } else if let Some(target) = resolve_place(rest) {
         (
             "Local".to_string(),
             ctx.local_tz.clone(),
             target.label,
             target.tz,
         )
+    } else {
+        let (pa, pb) = split_two_places(rest)?;
+        (pa.label, pa.tz, pb.label, pb.tz)
     };
 
     let off_a = ctx.now_utc.to_zoned(tz_a).offset().seconds();
@@ -119,6 +121,21 @@ fn eval_time_diff(folded: &str, raw: &str, ctx: &CalcContext) -> Option<CalcResu
         &label_b,
         Payload::text(&display),
     )))
+}
+
+fn split_two_places(rest: &str) -> Option<(Place, Place)> {
+    let words: Vec<&str> = rest.split_whitespace().collect();
+    if words.len() < 2 {
+        return None;
+    }
+    for split in 1..words.len() {
+        let left = words[..split].join(" ");
+        let right = words[split..].join(" ");
+        if let (Some(a), Some(b)) = (resolve_place(&left), resolve_place(&right)) {
+            return Some((a, b));
+        }
+    }
+    None
 }
 
 fn eval_time_in_delay(folded: &str, raw: &str, ctx: &CalcContext) -> Option<CalcResult> {
