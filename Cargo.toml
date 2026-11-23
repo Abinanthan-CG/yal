@@ -53,6 +53,7 @@ smallvec = "1"
 unicode-segmentation = "1"
 unicode-normalization = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
+jiff = "0.2"
 icu = { version = "1", features = ["compiled_data"] }
 url = "2"
 percent-encoding = "2"

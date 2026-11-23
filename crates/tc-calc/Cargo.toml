@@ -11,3 +11,6 @@ publish = false
 
 [dependencies]
 tc-core = { path = "../tc-core" }
+jiff = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

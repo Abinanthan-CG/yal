@@ -5,12 +5,12 @@
 //! and keeps the learned ranking in the app's own folder.
 
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 use tc_apps::Program;
-use tc_calc::{evaluate, CalcOutcome, FullCatalog};
+use tc_calc::{evaluate_with_context, CalcContext, CalcOutcome, ExchangeRates, FullCatalog};
 use tc_commands::catalog::{pane_of, CommandSettings};
 use tc_commands::model::CustomCommand;
 use tc_core::{CommandId, SystemActionId};
@@ -82,7 +82,7 @@ pub struct CommandArgument {
 }
 
 /// One row in the results list.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct ResultRow {
     /// The key the launcher opens the row by.
     pub id: String,
@@ -102,6 +102,12 @@ pub struct ResultRow {
     /// Whether the row is a folder. Only the file rows say.
     #[serde(default)]
     pub is_dir: Option<bool>,
+    /// Optional pill badge for calculator hero cards (e.g. "US Dollar → Indian Rupee").
+    #[serde(default)]
+    pub calc_badge: Option<String>,
+    /// Optional RGBA preview swatch for color calculator results.
+    #[serde(default)]
+    pub color_swatch: Option<[u8; 4]>,
 }
 
 /// A program, with the names the search matches against.
@@ -174,6 +180,10 @@ pub struct LauncherState {
     /// Whether the files are listed in the launcher. This is the
     /// "Show in launcher" switch under the File Search one.
     show_files: bool,
+    /// Live exchange rates snapshot (loaded from cache/bundled and refreshed in background).
+    rates: Mutex<Arc<ExchangeRates>>,
+    /// Base pixels per `1rem`/`1em` for CSS calculations (default 16.0).
+    rem_px: f64,
 }
 
 impl LauncherState {
@@ -212,6 +222,22 @@ impl LauncherState {
             custom_commands: Vec::new(),
             files: None,
             show_files: false,
+            rates: Mutex::new(Arc::new(ExchangeRates::bundled())),
+            rem_px: 16.0,
+        }
+    }
+
+    /// Replace the live currency & crypto exchange-rate snapshot (safe from any thread).
+    pub fn set_rates(&self, rates: Arc<ExchangeRates>) {
+        if let Ok(mut guard) = self.rates.lock() {
+            *guard = rates;
+        }
+    }
+
+    /// Configure the CSS `1rem`/`1em` pixel base for the calculator.
+    pub fn set_rem_px(&mut self, rem_px: f64) {
+        if rem_px.is_finite() && rem_px > 0.0 {
+            self.rem_px = rem_px;
         }
     }
 
@@ -305,6 +331,7 @@ impl LauncherState {
                 needs_confirm: false,
                 is_dir: None,
                 arguments: Vec::new(),
+                ..ResultRow::default()
             })
             .collect()
     }
@@ -339,6 +366,7 @@ impl LauncherState {
                         is_optional: argument.is_optional,
                     })
                     .collect(),
+                ..ResultRow::default()
             })
             .collect()
     }
@@ -395,11 +423,21 @@ impl LauncherState {
                     needs_confirm: false,
                     is_dir: None,
                     arguments: Vec::new(),
+                    ..ResultRow::default()
                 })
                 .collect();
         // The calculator's answer comes first: a query that is a calculation is
         // asking for the answer, not for a program.
-        let mut rows = match calculator_row(query) {
+        let rates = self
+            .rates
+            .lock()
+            .ok()
+            .map(|guard| Arc::clone(&*guard))
+            .unwrap_or_else(|| Arc::new(ExchangeRates::bundled()));
+        let calc_ctx = CalcContext::live()
+            .with_rates(Some(rates))
+            .with_rem_px(self.rem_px);
+        let mut rows = match calculator_row_with_ctx(query, &calc_ctx) {
             Some(row) => {
                 rows.insert(0, row);
                 rows
@@ -448,6 +486,7 @@ impl LauncherState {
                 needs_confirm: false,
                 is_dir: None,
                 arguments: Vec::new(),
+                ..ResultRow::default()
             })
             .collect()
     }
@@ -480,6 +519,7 @@ impl LauncherState {
                 needs_confirm: action.confirmation() != tc_core::SystemActionConfirmation::None,
                 is_dir: None,
                 arguments: Vec::new(),
+                ..ResultRow::default()
             })
             .collect()
     }
@@ -536,6 +576,7 @@ impl LauncherState {
                 needs_confirm: false,
                 is_dir: None,
                 arguments: Vec::new(),
+                ..ResultRow::default()
             })
             .collect()
     }
@@ -555,6 +596,7 @@ fn file_row(entry: FileEntry) -> ResultRow {
         needs_confirm: false,
         is_dir: Some(entry.is_dir),
         arguments: Vec::new(),
+        ..ResultRow::default()
     }
 }
 
@@ -566,16 +608,19 @@ pub fn now_seconds() -> f64 {
         .unwrap_or(0.0)
 }
 
-/// The calculator's answer to the query, as a row.
-///
-/// The answer is copied when the row is opened, so the row's target is the text
-/// that lands on the clipboard.
+/// The calculator's answer to the query, using default live context.
+#[cfg(test)]
 fn calculator_row(query: &str) -> Option<ResultRow> {
+    calculator_row_with_ctx(query, &CalcContext::live())
+}
+
+/// The calculator's answer to the query, as a row, using the provided context.
+fn calculator_row_with_ctx(query: &str, ctx: &CalcContext) -> Option<ResultRow> {
     let trimmed = query.trim();
     if trimmed.is_empty() {
         return None;
     }
-    let CalcOutcome::Card(card) = evaluate(trimmed, &FullCatalog) else {
+    let CalcOutcome::Card(card) = evaluate_with_context(trimmed, &FullCatalog, ctx) else {
         return None;
     };
     let tc_calc::Payload::Value { display, copy_text } = &card.payload else {
@@ -585,6 +630,12 @@ fn calculator_row(query: &str) -> Option<ResultRow> {
     if display == trimmed {
         return None;
     }
+    let badge = match (&card.source_badge, &card.target_badge) {
+        (Some(src), Some(dst)) if src != "Expression" && src != dst => format!("{src} → {dst}"),
+        (_, Some(dst)) => dst.clone(),
+        (Some(src), None) => src.clone(),
+        (None, None) => "Calculator".to_string(),
+    };
     Some(ResultRow {
         id: format!("{CALCULATOR_PREFIX}{copy_text}"),
         name: display.clone(),
@@ -594,6 +645,8 @@ fn calculator_row(query: &str) -> Option<ResultRow> {
         needs_confirm: false,
         is_dir: None,
         arguments: Vec::new(),
+        calc_badge: Some(badge),
+        color_swatch: card.color_swatch,
     })
 }
 

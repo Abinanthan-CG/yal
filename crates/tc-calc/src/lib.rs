@@ -27,11 +27,15 @@
 //! ```
 
 pub mod catalog;
+pub mod color;
+pub mod context;
 pub mod currency;
+pub mod datetime;
 pub mod duration;
 pub mod engine;
 pub mod finance;
 pub mod formatter;
+pub mod fx;
 pub mod growth;
 pub mod math;
 pub mod measure;
@@ -40,9 +44,11 @@ pub mod parser;
 pub mod percent;
 pub mod result;
 pub mod rounding;
+pub mod specialty;
 pub mod split;
 pub mod spoken;
 pub mod statistics;
+pub mod timezone;
 pub mod token;
 pub mod tokenizer;
 pub mod units;
@@ -71,8 +77,9 @@ mod growth_tests;
 mod statistics_tests;
 
 pub use catalog::{Catalog, CurrencyInfo, FullCatalog, NameCatalog, UnitInfo};
+pub use context::{CalcContext, ExchangeRates};
 pub use currency::{CurrencyCatalog, CurrencyDef};
-pub use engine::{evaluate, CalcOutcome};
+pub use engine::{evaluate, evaluate_with_context, CalcOutcome};
 pub use formatter::Formatter;
 pub use math::Math;
 pub use measure::Measurement;

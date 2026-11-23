@@ -116,6 +116,8 @@ pub struct CalcResult {
     pub can_chain: bool,
     /// Whether the answer is money.
     pub is_currency: bool,
+    /// Optional RGBA preview swatch for color inputs and conversions.
+    pub color_swatch: Option<[u8; 4]>,
 }
 
 impl CalcResult {
@@ -128,6 +130,7 @@ impl CalcResult {
             payload,
             can_chain: true,
             is_currency: false,
+            color_swatch: None,
         }
     }
 
@@ -145,7 +148,14 @@ impl CalcResult {
             payload,
             can_chain: true,
             is_currency: false,
+            color_swatch: None,
         }
+    }
+
+    /// Attach an RGBA swatch preview (for color inputs/conversions).
+    pub fn with_color_swatch(mut self, rgba: [u8; 4]) -> Self {
+        self.color_swatch = Some(rgba);
+        self
     }
 
     /// The card of a phrase, as upstream's `CalcResult.phrase`.

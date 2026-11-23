@@ -166,6 +166,30 @@ fn adjustments() -> Vec<Adjustment> {
             pattern: vec![
                 None,
                 Some(percent()),
+                Some(word("decrease")),
+                Some(word("from")),
+                None,
+            ],
+            badge: "Discounted",
+            amount_index: 1,
+            factor: |percentage| 1.0 - percentage / 100.0,
+        },
+        Adjustment {
+            pattern: vec![
+                None,
+                Some(percent()),
+                Some(word("increase")),
+                Some(word("from")),
+                None,
+            ],
+            badge: "Increased",
+            amount_index: 1,
+            factor: |percentage| 1.0 + percentage / 100.0,
+        },
+        Adjustment {
+            pattern: vec![
+                None,
+                Some(percent()),
                 Some(word("off")),
                 Some(word("of")),
                 None,

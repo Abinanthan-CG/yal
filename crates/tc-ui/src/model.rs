@@ -55,6 +55,8 @@ pub struct Row {
     pub badge: String,
     /// Render this row as a large split Calculator hero card.
     pub is_calculator: bool,
+    /// Optional RGBA preview swatch painted inside the Calculator hero card (for colors).
+    pub color_swatch: Option<[u8; 4]>,
     /// Real application icon pixels (premultiplied RGBA) when extracted.
     pub bitmap: Option<Arc<IconBitmap>>,
     /// Stable cache key for GPU `ID2D1Bitmap` reuse across repaints.

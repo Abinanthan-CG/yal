@@ -45,6 +45,12 @@ pub const FILE_SEARCH_SHOW: &str = "fileSearch.showInLauncher";
 /// The name of the file index in the app's own folder.
 pub const INDEX_FILE: &str = "file-index.sqlite3";
 
+/// Cached live fiat & crypto exchange rates in `%APPDATA%\yal\`.
+const RATES_FILE: &str = "currency-rates.json";
+
+/// Setting key for CSS `1rem`/`1em` pixel base in Calculator (default `16`).
+const KEY_CALCULATOR_REM_PX: &str = "calculator.remPx";
+
 /// Hotkey binding ID for toggling the launcher palette.
 const BINDING_LAUNCHER_TOGGLE: &str = "launcher.toggle";
 
@@ -111,6 +117,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 
     let settings = Arc::new(WindowsSettings::load(paths.settings_file.clone()));
     let launcher = Arc::new(build_launcher(&paths, &settings));
+    spawn_rates_refresh(Arc::clone(&launcher), paths.data_dir.join(RATES_FILE));
     let palette_state = Arc::new(build_palette_state(&settings));
     let window_commands = Arc::new(build_window_commands(&settings));
 
@@ -261,7 +268,56 @@ fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> Lau
         launcher.set_show_files(true);
     }
 
+    // Load cached exchange rates (or bundled fallback) immediately so currency &
+    // crypto conversions work offline from millisecond zero.
+    let cached_rates = tc_calc::fx::load_rates_cache(&paths.data_dir.join(RATES_FILE));
+    launcher.set_rates(Arc::new(cached_rates));
+
+    if let Some(rem) = settings
+        .get(KEY_CALCULATOR_REM_PX)
+        .and_then(|v| v.parse::<f64>().ok())
+    {
+        launcher.set_rem_px(rem);
+    }
+
     launcher
+}
+
+/// Silently refresh fiat & crypto exchange rates in a background thread when the
+/// cached snapshot is missing or older than 24 hours. Never blocks startup.
+fn spawn_rates_refresh(launcher: Arc<LauncherState>, rates_path: std::path::PathBuf) {
+    let _ = std::thread::Builder::new()
+        .name("yal-fx-refresh".to_string())
+        .spawn(move || {
+            let now_secs = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0);
+            let mut snapshot = tc_calc::fx::load_rates_cache(&rates_path);
+            let age = now_secs.saturating_sub(snapshot.fetched_at_secs);
+            if snapshot.fetched_at_secs > 0 && age < tc_calc::fx::RATES_REFRESH_SECS {
+                return;
+            }
+
+            let mut updated = false;
+            if let Ok(body) = tc_platform_win::https_get(tc_calc::fx::FIAT_FEED_URL, 10_000) {
+                if let Some((fiat_map, date)) = tc_calc::fx::parse_open_er_api_json(&body) {
+                    snapshot.merge_fiat(fiat_map, date, now_secs);
+                    updated = true;
+                }
+            }
+            if let Ok(body) = tc_platform_win::https_get(tc_calc::fx::CRYPTO_FEED_URL, 10_000) {
+                if let Some(crypto_map) = tc_calc::fx::parse_coingecko_simple_json(&body) {
+                    snapshot.merge_crypto_usd_prices(crypto_map);
+                    updated = true;
+                }
+            }
+
+            if updated {
+                let _ = tc_calc::fx::save_rates_cache(&rates_path, &snapshot);
+                launcher.set_rates(Arc::new(snapshot));
+            }
+        });
 }
 
 fn build_palette_state(settings: &WindowsSettings) -> PaletteState {

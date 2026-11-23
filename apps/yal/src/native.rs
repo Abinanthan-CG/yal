@@ -575,18 +575,25 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
 /// A result, as the palette draws it.
 fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
     if result.kind == CALCULATOR_SECTION {
+        let expr = if result.detail.is_empty() {
+            query.trim().to_string()
+        } else {
+            result.detail.clone()
+        };
+        let badge = result
+            .calc_badge
+            .clone()
+            .filter(|b| !b.is_empty())
+            .unwrap_or_else(|| "Result".to_string());
         return Row {
             name: result.name.clone(),
-            detail: query.trim().to_string(),
+            detail: expr,
             shortcut: String::new(),
             icon: Some(Icon::new("=", color_of(&result.kind))),
             section: CALCULATOR_SECTION.to_string(),
-            badge: if result.detail.is_empty() {
-                "Result".to_string()
-            } else {
-                result.detail.clone()
-            },
+            badge,
             is_calculator: true,
+            color_swatch: result.color_swatch,
             ..Row::default()
         };
     }
@@ -691,6 +698,8 @@ mod tests {
             needs_confirm: false,
             arguments: Vec::new(),
             is_dir: None,
+            calc_badge: None,
+            color_swatch: None,
         }
     }
 
@@ -705,7 +714,8 @@ mod tests {
 
     #[test]
     fn calculator_result_renders_as_hero_card_with_badge() {
-        let calc = result("17.00 USD", "Tip", CALCULATOR_SECTION);
+        let mut calc = result("17.00 USD", "20% tip on $85", CALCULATOR_SECTION);
+        calc.calc_badge = Some("Tip".to_string());
         let row = row_of(&calc, "20% tip on $85", false);
         assert!(row.is_calculator);
         assert_eq!(row.name, "17.00 USD");

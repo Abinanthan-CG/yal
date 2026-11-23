@@ -52,6 +52,8 @@ pub struct Renderer {
     icon_format: IDWriteTextFormat,
     calc_expr_format: IDWriteTextFormat,
     calc_answer_format: IDWriteTextFormat,
+    calc_answer_med_format: IDWriteTextFormat,
+    calc_answer_sm_format: IDWriteTextFormat,
     brushes: Vec<(Color, ID2D1SolidColorBrush)>,
     bitmaps: HashMap<String, ID2D1Bitmap>,
 }
@@ -157,6 +159,20 @@ impl Renderer {
             27.0,
             DWRITE_TEXT_ALIGNMENT_TRAILING,
         )?;
+        let calc_answer_med_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_BOLD,
+            21.0,
+            DWRITE_TEXT_ALIGNMENT_TRAILING,
+        )?;
+        let calc_answer_sm_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            17.5,
+            DWRITE_TEXT_ALIGNMENT_TRAILING,
+        )?;
 
         let renderer = Self {
             target,
@@ -170,6 +186,8 @@ impl Renderer {
             icon_format,
             calc_expr_format,
             calc_answer_format,
+            calc_answer_med_format,
+            calc_answer_sm_format,
             brushes: Vec::new(),
             bitmaps: HashMap::new(),
         };
@@ -190,6 +208,8 @@ impl Renderer {
             &self.footer_format,
             &self.calc_expr_format,
             &self.calc_answer_format,
+            &self.calc_answer_med_format,
+            &self.calc_answer_sm_format,
         ] {
             unsafe {
                 let sign = self
@@ -746,14 +766,70 @@ impl Renderer {
             theme.border,
         );
 
-        // Left side: expression + badge pill.
-        let expr_w = (mid_x - left - 28.0).max(0.0);
+        // Left side: optional live color swatch + expression + badge pill.
+        let mut expr_left = left + 16.0;
+        if let Some([r, g, b, a]) = row.color_swatch {
+            let sw = 44.0_f32;
+            let sw_top = top + (height - sw) / 2.0;
+            let swatch_rect = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: expr_left,
+                    top: sw_top,
+                    right: expr_left + sw,
+                    bottom: sw_top + sw,
+                },
+                radiusX: 10.0,
+                radiusY: 10.0,
+            };
+            // Subtle checkerboard base when alpha < 255 so transparency is visible.
+            if a < 255 {
+                if let Some(base) = self.brush(Color::rgb(0x40, 0x42, 0x4c)) {
+                    unsafe {
+                        self.target.FillRoundedRectangle(&swatch_rect, &base);
+                    }
+                }
+                let cell = sw / 4.0;
+                if let Some(light) = self.brush(Color::rgb(0x74, 0x78, 0x86)) {
+                    for gy in 0..4 {
+                        for gx in 0..4 {
+                            if (gx + gy) % 2 == 0 {
+                                let tile = D2D_RECT_F {
+                                    left: expr_left + gx as f32 * cell + 2.0,
+                                    top: sw_top + gy as f32 * cell + 2.0,
+                                    right: (expr_left + (gx + 1) as f32 * cell - 1.0)
+                                        .min(expr_left + sw - 2.0),
+                                    bottom: (sw_top + (gy + 1) as f32 * cell - 1.0)
+                                        .min(sw_top + sw - 2.0),
+                                };
+                                unsafe {
+                                    self.target.FillRectangle(&tile, &light);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if let Some(fill) = self.brush(Color::rgba(r, g, b, a)) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&swatch_rect, &fill);
+                }
+            }
+            if let Some(ring) = self.brush(Color::rgba(0xff, 0xff, 0xff, 0x35)) {
+                unsafe {
+                    self.target
+                        .DrawRoundedRectangle(&swatch_rect, &ring, 1.2, None);
+                }
+            }
+            expr_left += sw + 14.0;
+        }
+
+        let expr_w = (mid_x - expr_left - 12.0).max(0.0);
         if let Some(layout) = self.layout(&row.detail, &self.calc_expr_format, expr_w, 22.0) {
             if let Some(brush) = self.brush(theme.text_dim) {
                 unsafe {
                     self.target.DrawTextLayout(
                         Vector2 {
-                            X: left + 16.0,
+                            X: expr_left,
                             Y: top + 20.0,
                         },
                         &layout,
@@ -770,23 +846,41 @@ impl Renderer {
         };
         self.draw_pill_left(
             badge,
-            left + 16.0,
+            expr_left,
             top + height - 25.0,
             theme.accent.with_alpha(0.18),
             theme.accent.with_alpha(0.40),
             theme.accent,
         );
 
-        // Right side: big crisp bold answer + subtle Copy hint.
-        let ans_left = mid_x + 16.0;
+        // Right side: big crisp bold answer (auto-fitted so long strings like
+        // OKLCH colors or ISO timestamps never clip) + subtle Copy hint.
+        let ans_left = mid_x + 14.0;
         let ans_w = (right - 18.0 - ans_left).max(0.0);
-        if let Some(layout) = self.layout(&row.name, &self.calc_answer_format, ans_w, 40.0) {
+        let (ans_format, ans_y_offset) = {
+            let probe = self.layout(&row.name, &self.calc_answer_format, 2000.0, 40.0);
+            let fits_large = probe.as_ref().is_some_and(|l| measure_width(l) <= ans_w);
+            if fits_large {
+                (&self.calc_answer_format, 16.0_f32)
+            } else {
+                let probe_med = self.layout(&row.name, &self.calc_answer_med_format, 2000.0, 34.0);
+                let fits_med = probe_med
+                    .as_ref()
+                    .is_some_and(|l| measure_width(l) <= ans_w);
+                if fits_med {
+                    (&self.calc_answer_med_format, 21.0_f32)
+                } else {
+                    (&self.calc_answer_sm_format, 24.0_f32)
+                }
+            }
+        };
+        if let Some(layout) = self.layout(&row.name, ans_format, ans_w, 40.0) {
             if let Some(brush) = self.brush(theme.text) {
                 unsafe {
                     self.target.DrawTextLayout(
                         Vector2 {
                             X: ans_left,
-                            Y: top + 16.0,
+                            Y: top + ans_y_offset,
                         },
                         &layout,
                         &brush,

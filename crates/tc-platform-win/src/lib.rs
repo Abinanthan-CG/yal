@@ -6,6 +6,7 @@
 
 mod clipboard;
 pub mod hotkey;
+pub mod http;
 pub mod icons;
 mod launch;
 mod paths;
@@ -27,6 +28,7 @@ pub use hotkey::{
     HotkeyBinding, HotkeyMatcher, HotkeyModifiers, HotkeyTrigger, KeyEvent, ModifierKey,
     ModifierSide, WindowsHotkey, TAP_WINDOW_MS,
 };
+pub use http::https_get;
 pub use icons::{application_icon, extract_icon, shell_item_icon, IconImage};
 pub use launch::{open, recycle, reveal};
 pub use paths::is_portable;
