@@ -187,7 +187,8 @@ fn payload_digest(payload: &BackupPayload) -> Result<String, BackupError> {
     Ok(hex::encode(hasher.finalize()))
 }
 
-/// Strictly permit only known root JSON files or `snippets/<name>.md` / `notes/<name>.md`.
+/// Strictly permit only known root JSON files or `snippets/<name>.md` / `notes/<name>.md`,
+/// rejecting path traversal, illegal Windows filename chars, and reserved device names.
 fn validate_safe_rel_path(rel: &str) -> Result<(), BackupError> {
     if rel.is_empty() || rel.contains('\\') || rel.contains(':') || rel.contains('\0') {
         return Err(BackupError::UnsafePath(rel.to_string()));
@@ -207,16 +208,54 @@ fn validate_safe_rel_path(rel: &str) -> Result<(), BackupError> {
 
     match parts.as_slice() {
         [file] if ROOT_FILES.contains(file) => Ok(()),
-        [dir, file]
-            if MARKDOWN_DIRS.contains(dir)
-                && !file.is_empty()
-                && !file.starts_with('.')
-                && file.to_ascii_lowercase().ends_with(".md") =>
-        {
+        [dir, file] if MARKDOWN_DIRS.contains(dir) && is_safe_windows_markdown_filename(file) => {
             Ok(())
         }
         _ => Err(BackupError::UnsafePath(rel.to_string())),
     }
+}
+
+fn is_safe_windows_markdown_filename(file: &str) -> bool {
+    if file.is_empty()
+        || file.starts_with('.')
+        || file.ends_with(' ')
+        || file.ends_with('.')
+        || !file.to_ascii_lowercase().ends_with(".md")
+    {
+        return false;
+    }
+    if file
+        .chars()
+        .any(|c| c.is_control() || matches!(c, '<' | '>' | '"' | '|' | '?' | '*' | '/' | '\\'))
+    {
+        return false;
+    }
+    let stem = file.split('.').next().unwrap_or("").to_ascii_uppercase();
+    !matches!(
+        stem.as_str(),
+        "CON"
+            | "PRN"
+            | "AUX"
+            | "NUL"
+            | "COM1"
+            | "COM2"
+            | "COM3"
+            | "COM4"
+            | "COM5"
+            | "COM6"
+            | "COM7"
+            | "COM8"
+            | "COM9"
+            | "LPT1"
+            | "LPT2"
+            | "LPT3"
+            | "LPT4"
+            | "LPT5"
+            | "LPT6"
+            | "LPT7"
+            | "LPT8"
+            | "LPT9"
+    )
 }
 
 #[cfg(test)]
@@ -323,5 +362,21 @@ mod tests {
             payload,
         };
         assert!(matches!(archive.verify(), Err(BackupError::UnsafePath(_))));
+    }
+
+    #[test]
+    fn rejects_windows_reserved_device_names_and_illegal_chars() {
+        for bad in [
+            "notes/CON.md",
+            "snippets/nul.md",
+            "notes/com1.md",
+            "notes/bad?.md",
+        ] {
+            assert!(
+                matches!(validate_safe_rel_path(bad), Err(BackupError::UnsafePath(_))),
+                "expected `{bad}` to be rejected"
+            );
+        }
+        assert!(validate_safe_rel_path("notes/meeting-notes.md").is_ok());
     }
 }

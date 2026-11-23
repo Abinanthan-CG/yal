@@ -494,7 +494,7 @@ unsafe extern "system" fn window_procedure(
                 let m = state.theme.metrics;
                 (state.edit, m, state.model.layout(m).window_height)
             };
-            resize_window_rect(hwnd, metrics, target_h);
+            resize_window_rect_for_dpi(hwnd, metrics, target_h, dpi as f32);
             let width_px = ((metrics.width * (dpi as f32 / 96.0)).round()) as i32;
             let has_badge = (*state_ptr).model.header_badge.is_some();
             place_field_rect(hwnd, edit, metrics, width_px, has_badge);
@@ -816,9 +816,10 @@ unsafe extern "system" fn edit_procedure(
     };
 
     if message == WM_CHAR {
-        // Suppress system beep on Enter, Ctrl+Enter, Escape, Tab, Ctrl+P, Ctrl+K.
+        // Suppress system beep / control char box on Enter, Ctrl+Enter, Escape, Tab,
+        // Ctrl+P, Ctrl+K, and Ctrl+Shift+Backspace (0x7F DEL).
         let ch = wparam.0 as u32;
-        if matches!(ch, 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x1B) {
+        if matches!(ch, 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x1B | 0x7F) {
             return LRESULT(0);
         }
     }
@@ -1065,14 +1066,19 @@ unsafe fn dispatch_refresh(state_ptr: *mut State) {
         state.hwnd
     };
     if let PaletteReply::Update(mut model) = reply {
-        {
+        let (metrics, target_h) = {
             let state = &mut *state_ptr;
+            let metrics = state.theme.metrics;
             let max_idx = model.rows.len().saturating_sub(1);
             model.selected = state.model.selected.min(max_idx);
             model.hovered = state.model.hovered.filter(|&i| i < model.rows.len());
             model.scroll_offset = state.model.scroll_offset;
+            model.ensure_selected_visible(metrics);
+            let target_h = model.layout(metrics).window_height;
             state.model = model;
-        }
+            (metrics, target_h)
+        };
+        resize_window_rect(hwnd, metrics, target_h);
         let _ = InvalidateRect(Some(hwnd), None, false);
     }
 }
@@ -1182,7 +1188,11 @@ fn place_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
 /// Resizes the window to fit its content in exact monitor DPI physical pixels.
 fn resize_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
     let dpi = unsafe { GetDpiForWindow(hwnd).max(96) } as f32;
-    let scale = dpi / 96.0;
+    resize_window_rect_for_dpi(hwnd, metrics, window_height_dip, dpi);
+}
+
+fn resize_window_rect_for_dpi(hwnd: HWND, metrics: Metrics, window_height_dip: f32, dpi: f32) {
+    let scale = dpi.max(96.0) / 96.0;
     let width = (metrics.width * scale).round() as i32;
     let height = (window_height_dip * scale).round() as i32;
     unsafe {

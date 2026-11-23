@@ -32,14 +32,18 @@ use crate::palette::{PaletteState, SettingRow};
 use crate::screens::{
     calc_history_model, clipboard_model, create_note_model, create_quicklink_model,
     create_snippet_model, emoji_model, fallback_search_rows, files_model, next_clipboard_filter,
-    notes_model, quicklink_arg_model, quicklinks_model, run_shell_model, snippets_model,
-    status_screen_model, windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft,
-    QuicklinkDraftStep, SnippetDraft, SnippetDraftStep, FALLBACK_URL_PREFIX,
+    notes_model, quicklink_arg_model, quicklinks_model, run_shell_model, shows_create_note_row,
+    shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
+    windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
+    SnippetDraftStep, FALLBACK_URL_PREFIX,
 };
 use crate::shell::{FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW};
 
 /// Cross-thread command code asking the native palette to open Settings.
 pub const COMMAND_OPEN_SETTINGS: u32 = 1;
+/// Cross-thread command code asking the palette to re-show with a pending status banner
+/// (for example after an off-thread `IFileOpenDialog` backup or Raycast import finishes).
+const COMMAND_SHOW_STATUS: u32 = 2;
 
 /// Setting key storing the launcher's global hotkey in `settings.json`.
 pub const KEY_LAUNCHER_HOTKEY: &str = "launcher.hotkey";
@@ -139,6 +143,7 @@ struct Shown {
     notes: Vec<NoteItem>,
     quicklinks: Vec<Quicklink>,
     last_shell_output: Option<String>,
+    pending_status: Option<(String, String, String, bool)>,
     file_rows: Vec<ResultRow>,
     file_filter: FileType,
     windows: Vec<WindowInfo>,
@@ -165,6 +170,7 @@ impl Shown {
             notes: Vec::new(),
             quicklinks: Vec::new(),
             last_shell_output: None,
+            pending_status: None,
             file_rows: Vec::new(),
             file_filter: FileType::All,
             windows: Vec::new(),
@@ -323,6 +329,11 @@ fn build(
                             |target| shown.lookup_or_queue_icon(target),
                         ))
                     }
+                    Mode::RunShell => {
+                        let query = shown.query.clone();
+                        let last = shown.last_shell_output.clone();
+                        PaletteReply::Update(run_shell_model(&query, last.as_deref()))
+                    }
                     _ => PaletteReply::Keep,
                 }
             }
@@ -332,6 +343,25 @@ fn build(
                 };
                 let mut shown = handler_shown.lock().expect("the palette's state");
                 enter_settings(ctx, &mut shown)
+            }
+            PaletteEvent::Command(COMMAND_SHOW_STATUS) => {
+                let mut shown = handler_shown.lock().expect("the palette's state");
+                let Some((badge, title, detail, refresh_theme)) = shown.pending_status.take()
+                else {
+                    return PaletteReply::Keep;
+                };
+                shown.mode = Mode::Status;
+                shown.query.clear();
+                let model = status_screen_model(&badge, &title, &detail, Vec::new());
+                if refresh_theme {
+                    if let Some(ctx) = handler_context.as_ref() {
+                        return PaletteReply::UpdateTheme(
+                            Box::new(theme_from_settings(&ctx.settings)),
+                            model,
+                        );
+                    }
+                }
+                PaletteReply::Navigate(model)
             }
             PaletteEvent::Command(_) => PaletteReply::Keep,
             PaletteEvent::QueryChanged(query) => {
@@ -477,7 +507,7 @@ fn build(
                 &handler_shown,
                 &handler_launcher,
                 &handler_runner,
-                handler_context.as_deref(),
+                handler_context.as_ref(),
                 &handler_handle,
                 &close_reply,
             ),
@@ -487,7 +517,7 @@ fn build(
                 &handler_shown,
                 &handler_launcher,
                 &handler_runner,
-                handler_context.as_deref(),
+                handler_context.as_ref(),
                 &handler_handle,
                 &close_reply,
             ),
@@ -580,10 +610,11 @@ fn handle_activate(
     shown_lock: &Arc<Mutex<Shown>>,
     launcher: &Arc<LauncherState>,
     runner: &Arc<Runner>,
-    ctx: Option<&NativeContext>,
+    ctx_arc: Option<&Arc<NativeContext>>,
     handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
     close_reply: &dyn Fn() -> PaletteReply,
 ) -> PaletteReply {
+    let ctx = ctx_arc.map(Arc::as_ref);
     let mut shown = shown_lock.lock().expect("the palette's state");
     match &shown.mode {
         Mode::Launcher => {
@@ -638,9 +669,30 @@ fn handle_activate(
                         CommandId::CreateQuicklink => return enter_create_quicklink(&mut shown),
                         CommandId::RunShellCommand => return enter_run_shell(&mut shown),
                         CommandId::ExportSettings => return run_export_backup(ctx, &mut shown),
-                        CommandId::ImportSettings => return run_import_backup(ctx, &mut shown),
+                        CommandId::ImportSettings => {
+                            if let Some(ctx_shared) = ctx_arc {
+                                drop(shown);
+                                spawn_import_backup_dialog(
+                                    Arc::clone(ctx_shared),
+                                    Arc::clone(launcher),
+                                    Arc::clone(shown_lock),
+                                    Arc::clone(handle_slot),
+                                );
+                                return close_reply();
+                            }
+                            return PaletteReply::Keep;
+                        }
                         CommandId::ImportFromRaycast => {
-                            return run_import_raycast(ctx, &mut shown);
+                            if let Some(ctx_shared) = ctx_arc {
+                                drop(shown);
+                                spawn_import_raycast_dialog(
+                                    Arc::clone(ctx_shared),
+                                    Arc::clone(shown_lock),
+                                    Arc::clone(handle_slot),
+                                );
+                                return close_reply();
+                            }
+                            return PaletteReply::Keep;
                         }
                         CommandId::About => return enter_about(launcher, &mut shown),
                         CommandId::SearchFiles => {
@@ -718,7 +770,7 @@ fn handle_activate(
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
             };
-            if index == shown.snippets.len() {
+            if index == shown.snippets.len() && shows_create_snippet_row(&shown.query) {
                 return enter_create_snippet(&mut shown);
             }
             let Some(record) = shown.snippets.get(index).cloned() else {
@@ -778,7 +830,7 @@ fn handle_activate(
             }
         }
         Mode::Notes => {
-            if index == shown.notes.len() {
+            if index == shown.notes.len() && shows_create_note_row(&shown.query) {
                 return enter_create_note(&mut shown);
             }
             let Some(note) = shown.notes.get(index).cloned() else {
@@ -825,7 +877,7 @@ fn handle_activate(
             }
         }
         Mode::Quicklinks => {
-            if index == shown.quicklinks.len() {
+            if index == shown.quicklinks.len() && shows_create_quicklink_row(&shown.query) {
                 return enter_create_quicklink(&mut shown);
             }
             let Some(link) = shown.quicklinks.get(index).cloned() else {
@@ -881,16 +933,33 @@ fn handle_activate(
             if cmd.is_empty() {
                 return PaletteReply::Keep;
             }
-            let output = match FeatureStores::run_shell_command(&cmd) {
-                Ok(out) => {
-                    let _ = tc_platform_win::clipboard().write_text(&out);
-                    out
-                }
-                Err(err) => format!("Error: {err}"),
-            };
-            shown.last_shell_output = Some(output.clone());
+            let running_msg = format!("Running `{cmd}`…");
+            shown.last_shell_output = Some(running_msg.clone());
             shown.query.clear();
-            PaletteReply::Navigate(run_shell_model("", Some(&output)))
+            drop(shown);
+
+            let shown_bg = Arc::clone(shown_lock);
+            let handle_bg = Arc::clone(handle_slot);
+            let _ = std::thread::Builder::new()
+                .name("yal-shell-cmd".to_string())
+                .spawn(move || {
+                    let output = match FeatureStores::run_shell_command(&cmd) {
+                        Ok(out) => {
+                            let _ = tc_platform_win::clipboard().write_text(&out);
+                            out
+                        }
+                        Err(err) => format!("Error: {err}"),
+                    };
+                    if let Ok(mut guard) = shown_bg.lock() {
+                        guard.last_shell_output = Some(output);
+                    }
+                    if let Ok(guard) = handle_bg.lock() {
+                        if let Some(handle) = *guard {
+                            tc_ui::post_refresh(handle);
+                        }
+                    }
+                });
+            PaletteReply::Navigate(run_shell_model("", Some(&running_msg)))
         }
         Mode::Status => enter_launcher(launcher, ctx, &mut shown, true),
         Mode::Files => {
@@ -1213,68 +1282,110 @@ fn run_export_backup(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     }
 }
 
-fn run_import_backup(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
-    let picked = tc_platform_win::pick_file(
-        "Select YAL Backup (.yalbackup.json)",
-        "YAL Backup (*.json)",
-        "*.json",
-    );
-    shown.mode = Mode::Status;
-    shown.query.clear();
-    let Some(path) = picked else {
-        return PaletteReply::Navigate(status_screen_model(
-            "Import Cancelled",
-            "No backup file selected",
-            "Press Esc to return to Launcher",
-            Vec::new(),
-        ));
-    };
-    match ctx.features.import_backup_from(&path) {
-        Ok(count) => PaletteReply::Navigate(status_screen_model(
-            "Backup Restored",
-            &format!("Verified SHA-256 & restored {count} files"),
-            &path.to_string_lossy(),
-            Vec::new(),
-        )),
-        Err(err) => PaletteReply::Navigate(status_screen_model(
-            "Import Failed",
-            "Backup verification or restore failed",
-            &err,
-            Vec::new(),
-        )),
-    }
+/// Show the Windows 11 native file picker on a dedicated STA thread (never inside
+/// `WndProc`), restore & hot-reload all stores, then re-open the palette with status.
+fn spawn_import_backup_dialog(
+    ctx: Arc<NativeContext>,
+    launcher: Arc<LauncherState>,
+    shown: Arc<Mutex<Shown>>,
+    handle_slot: Arc<Mutex<Option<PaletteHandle>>>,
+) {
+    let _ = std::thread::Builder::new()
+        .name("yal-file-dialog".to_string())
+        .spawn(move || {
+            let picked = tc_platform_win::pick_file(
+                "Select YAL Backup (.yalbackup.json)",
+                "YAL Backup (*.json)",
+                "*.json",
+            );
+            let status = match picked {
+                None => (
+                    "Import Cancelled".to_string(),
+                    "No backup file selected".to_string(),
+                    "Press Esc to return to Launcher".to_string(),
+                    false,
+                ),
+                Some(path) => match ctx
+                    .features
+                    .import_backup_from(&path, &ctx.settings, &launcher)
+                {
+                    Ok(count) => {
+                        let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref()
+                            == Some("true");
+                        launcher.set_show_window_commands(wm_on);
+                        let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
+                        launcher.set_show_files(fs_show);
+                        (
+                            "Backup Restored".to_string(),
+                            format!("Verified SHA-256 & restored {count} files"),
+                            path.to_string_lossy().to_string(),
+                            true,
+                        )
+                    }
+                    Err(err) => (
+                        "Import Failed".to_string(),
+                        "Backup verification or restore failed".to_string(),
+                        err,
+                        false,
+                    ),
+                },
+            };
+            if let Ok(mut guard) = shown.lock() {
+                guard.pending_status = Some(status);
+            }
+            if let Ok(guard) = handle_slot.lock() {
+                if let Some(handle) = *guard {
+                    tc_ui::post_command(handle, COMMAND_SHOW_STATUS);
+                }
+            }
+        });
 }
 
-fn run_import_raycast(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
-    let picked = tc_platform_win::pick_file(
-        "Select Raycast Snippets JSON Export",
-        "Raycast Export (*.json)",
-        "*.json",
-    );
-    shown.mode = Mode::Status;
-    shown.query.clear();
-    let Some(path) = picked else {
-        return PaletteReply::Navigate(status_screen_model(
-            "Import Cancelled",
-            "No Raycast file selected",
-            "Press Esc to return to Launcher",
-            Vec::new(),
-        ));
-    };
-    match ctx.features.import_raycast_snippets_from(&path) {
-        Ok(count) => PaletteReply::Navigate(status_screen_model(
-            "Raycast Import",
-            &format!("Imported {count} Raycast snippets"),
-            "Open Search Snippets to browse & expand them",
-            Vec::new(),
-        )),
-        Err(err) => PaletteReply::Navigate(status_screen_model(
-            "Import Failed",
-            "Could not import Raycast snippets",
-            &err,
-            Vec::new(),
-        )),
-    }
+/// Show the Windows 11 native file picker on a dedicated STA thread for Raycast snippets.
+fn spawn_import_raycast_dialog(
+    ctx: Arc<NativeContext>,
+    shown: Arc<Mutex<Shown>>,
+    handle_slot: Arc<Mutex<Option<PaletteHandle>>>,
+) {
+    let _ = std::thread::Builder::new()
+        .name("yal-file-dialog".to_string())
+        .spawn(move || {
+            let picked = tc_platform_win::pick_file(
+                "Select Raycast Snippets JSON Export",
+                "Raycast Export (*.json)",
+                "*.json",
+            );
+            let status = match picked {
+                None => (
+                    "Import Cancelled".to_string(),
+                    "No Raycast file selected".to_string(),
+                    "Press Esc to return to Launcher".to_string(),
+                    false,
+                ),
+                Some(path) => match ctx.features.import_raycast_snippets_from(&path) {
+                    Ok(count) => (
+                        "Raycast Import".to_string(),
+                        format!("Imported {count} Raycast snippets"),
+                        "Open Search Snippets to browse & expand them".to_string(),
+                        false,
+                    ),
+                    Err(err) => (
+                        "Import Failed".to_string(),
+                        "Could not import Raycast snippets".to_string(),
+                        err,
+                        false,
+                    ),
+                },
+            };
+            if let Ok(mut guard) = shown.lock() {
+                guard.pending_status = Some(status);
+            }
+            if let Ok(guard) = handle_slot.lock() {
+                if let Some(handle) = *guard {
+                    tc_ui::post_command(handle, COMMAND_SHOW_STATUS);
+                }
+            }
+        });
 }
 
 fn enter_about(launcher: &LauncherState, shown: &mut Shown) -> PaletteReply {

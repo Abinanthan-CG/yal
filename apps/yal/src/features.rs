@@ -476,6 +476,7 @@ impl FavoritesStore {
 pub struct FeatureStores {
     pub data_dir: PathBuf,
     pub home_dir: PathBuf,
+    pub settings_file: PathBuf,
     pub clipboard: Mutex<Option<ClipboardStore>>,
     pub emoji_index: Arc<EmojiIndex>,
     pub emoji_pins: Mutex<PinnedEmojiStore>,
@@ -521,6 +522,7 @@ impl FeatureStores {
         Self {
             data_dir: paths.data_dir.clone(),
             home_dir: paths.home_dir.clone(),
+            settings_file: paths.settings_file.clone(),
             clipboard: Mutex::new(clipboard),
             emoji_index,
             emoji_pins: Mutex::new(emoji_pins),
@@ -896,6 +898,14 @@ impl FeatureStores {
 
     /// Export a verified `.yalbackup.json` snapshot to the user's Desktop (or home dir).
     pub fn export_backup_to_desktop(&self) -> Result<(PathBuf, usize), String> {
+        // Mirror live `settings_file` into `data_dir/settings.json` before bundling so
+        // `tc_backup` captures the exact active settings even when stored under `.config`.
+        if self.settings_file.is_file() {
+            let mirror = self.data_dir.join("settings.json");
+            if mirror != self.settings_file {
+                let _ = std::fs::copy(&self.settings_file, &mirror);
+            }
+        }
         let date = Local::now().format("%Y-%m-%d");
         let target_dir = {
             let desktop = self.home_dir.join("Desktop");
@@ -910,9 +920,28 @@ impl FeatureStores {
         Ok((out, summary.files_processed))
     }
 
-    /// Verify and restore a `.yalbackup.json` file and hot-reload all stores.
-    pub fn import_backup_from(&self, path: &Path) -> Result<usize, String> {
+    /// Verify and restore a `.yalbackup.json` file and hot-reload EVERY in-memory store
+    /// so no subsequent action can overwrite restored files with stale memory state.
+    pub fn import_backup_from(
+        &self,
+        path: &Path,
+        settings: &tc_platform_win::WindowsSettings,
+        launcher: &LauncherState,
+    ) -> Result<usize, String> {
         let summary = tc_backup::import_backup(path, &self.data_dir).map_err(|e| e.to_string())?;
+
+        // Sync restored `data_dir/settings.json` back to `paths.settings_file` and reload.
+        let restored_settings = self.data_dir.join("settings.json");
+        if restored_settings.is_file() && restored_settings != self.settings_file {
+            if let Some(parent) = self.settings_file.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+            let _ = std::fs::copy(&restored_settings, &self.settings_file);
+        }
+        settings.reload();
+
+        // Reload launcher ranking & every feature store from disk.
+        launcher.reload_ranking(self.data_dir.join(crate::launcher::RANKING_FILE));
         if let Ok(mut s) = self.snippets.lock() {
             let _ = s.start();
         }
@@ -924,6 +953,15 @@ impl FeatureStores {
         }
         if let Ok(mut f) = self.favorites.lock() {
             f.reload();
+        }
+        if let Ok(mut pins) = self.emoji_pins.lock() {
+            *pins = PinnedEmojiStore::open(self.data_dir.join(EMOJI_PINS_FILE));
+        }
+        if let Ok(mut freq) = self.emoji_freq.lock() {
+            *freq = FrequentEmojiStore::open(self.data_dir.join(EMOJI_FREQ_FILE));
+        }
+        if let Ok(mut hist) = self.calc_history.lock() {
+            *hist = CalcHistoryStore::open(self.data_dir.join(CALC_HISTORY_FILE));
         }
         Ok(summary.files_processed)
     }

@@ -54,57 +54,63 @@ pub fn programs() -> Vec<Program> {
 fn store_programs() -> Vec<Program> {
     use windows::core::HSTRING;
     use windows::Management::Deployment::PackageManager;
-    use windows::Win32::System::WinRT::{RoInitialize, RO_INIT_MULTITHREADED};
+    use windows::Win32::System::WinRT::{RoInitialize, RoUninitialize, RO_INIT_MULTITHREADED};
 
-    unsafe {
-        let _ = RoInitialize(RO_INIT_MULTITHREADED);
-    }
-
-    let Ok(manager) = PackageManager::new() else {
-        return Vec::new();
-    };
-    let Ok(packages) = manager.FindPackagesByUserSecurityId(&HSTRING::new()) else {
-        return Vec::new();
-    };
-
-    let mut found = Vec::new();
-    for package in packages {
-        if package.IsFramework().unwrap_or(true) || package.IsResourcePackage().unwrap_or(true) {
-            continue;
-        }
-        let publisher = package
-            .PublisherDisplayName()
-            .ok()
-            .map(|p| p.to_string())
-            .filter(|p| !p.trim().is_empty());
-
-        let Ok(entries) = package.GetAppListEntries() else {
-            continue;
+    let ro_ok = unsafe { RoInitialize(RO_INIT_MULTITHREADED) }.is_ok();
+    let found = (|| -> Vec<Program> {
+        let Ok(manager) = PackageManager::new() else {
+            return Vec::new();
         };
-        for entry in entries {
-            let Ok(aumid) = entry.AppUserModelId() else {
+        let Ok(packages) = manager.FindPackagesByUserSecurityId(&HSTRING::new()) else {
+            return Vec::new();
+        };
+
+        let mut found = Vec::new();
+        for package in packages {
+            if package.IsFramework().unwrap_or(true) || package.IsResourcePackage().unwrap_or(true)
+            {
+                continue;
+            }
+            let publisher = package
+                .PublisherDisplayName()
+                .ok()
+                .map(|p| p.to_string())
+                .filter(|p| !p.trim().is_empty());
+
+            let Ok(entries) = package.GetAppListEntries() else {
                 continue;
             };
-            let aumid = aumid.to_string();
-            if aumid.trim().is_empty() {
-                continue;
+            for entry in entries {
+                let Ok(aumid) = entry.AppUserModelId() else {
+                    continue;
+                };
+                let aumid = aumid.to_string();
+                if aumid.trim().is_empty() {
+                    continue;
+                }
+                let name = entry
+                    .DisplayInfo()
+                    .ok()
+                    .and_then(|info| info.DisplayName().ok())
+                    .map(|d| d.to_string())
+                    .unwrap_or_default();
+                let trimmed = name.trim();
+                if trimmed.is_empty() || trimmed.contains("${") || trimmed.starts_with('@') {
+                    continue;
+                }
+                let target = format!(r"shell:AppsFolder\{aumid}");
+                found.push(
+                    Program::new(trimmed.to_string(), target, Source::Store)
+                        .with_publisher(publisher.clone()),
+                );
             }
-            let name = entry
-                .DisplayInfo()
-                .ok()
-                .and_then(|info| info.DisplayName().ok())
-                .map(|d| d.to_string())
-                .unwrap_or_default();
-            let trimmed = name.trim();
-            if trimmed.is_empty() || trimmed.contains("${") || trimmed.starts_with('@') {
-                continue;
-            }
-            let target = format!(r"shell:AppsFolder\{aumid}");
-            found.push(
-                Program::new(trimmed.to_string(), target, Source::Store)
-                    .with_publisher(publisher.clone()),
-            );
         }
+        found
+    })();
+
+    // All WinRT objects have dropped above; now balance the apartment init.
+    if ro_ok {
+        unsafe { RoUninitialize() };
     }
     found
 }

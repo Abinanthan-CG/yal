@@ -251,6 +251,13 @@ impl LauncherState {
         }
     }
 
+    /// Re-read the persisted learned ranking file from disk (e.g. after restoring a backup).
+    pub fn reload_ranking(&self, ranking_file: PathBuf) {
+        if let Ok(mut guard) = self.ranking.lock() {
+            *guard = LauncherRankingStore::open(ranking_file, now_seconds());
+        }
+    }
+
     /// Replace the live currency & crypto exchange-rate snapshot (safe from any thread).
     pub fn set_rates(&self, rates: Arc<ExchangeRates>) {
         if let Ok(mut guard) = self.rates.lock() {

@@ -135,6 +135,17 @@ impl WindowsSettings {
             file,
         }
     }
+
+    /// Re-read the settings file from disk (for example after restoring a backup).
+    pub fn reload(&self) {
+        if let Ok(text) = std::fs::read_to_string(&self.file) {
+            if let Ok(fresh) = serde_json::from_str::<BTreeMap<String, String>>(&text) {
+                if let Ok(mut guard) = self.values.lock() {
+                    *guard = fresh;
+                }
+            }
+        }
+    }
 }
 
 impl Settings for WindowsSettings {

@@ -2,8 +2,10 @@
 //!
 //! When the user chooses a Clipboard History entry, an Emoji, or a Snippet,
 //! YAL hides its palette, writes the chosen text to the clipboard, returns
-//! focus to the previously active window, and injects a clean `Ctrl+V` via
-//! `SendInput` (flagged `LLKHF_INJECTED` so our hotkey hook ignores it).
+//! focus to the previously active window, and — only if Windows actually
+//! restored focus to that exact window — injects `Ctrl+V` via `SendInput`.
+//! If the previous window is gone or refuses foreground focus, the text stays
+//! safely on the clipboard without pasting into an unintended application.
 
 use std::ffi::c_void;
 use std::time::Duration;
@@ -13,31 +15,39 @@ use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP, VK_CONTROL, VK_V,
 };
-use windows::Win32::UI::WindowsAndMessaging::{IsWindow, SetForegroundWindow};
+use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, IsWindow, SetForegroundWindow};
 
 use crate::clipboard::WindowsClipboard;
 use crate::window_control;
 
 /// Write `text` to the clipboard immediately, then asynchronously restore the
-/// previous foreground window and send `Ctrl+V` after YAL hides.
+/// previous foreground window and send `Ctrl+V` only if focus returned to it.
 pub fn copy_and_paste_async(text: String) -> Result<(), String> {
     WindowsClipboard::new().write_text(&text)?;
-    let target = window_control::last_foreground();
+    let Some(handle) = window_control::last_foreground() else {
+        return Ok(());
+    };
 
     std::thread::spawn(move || {
         // Give YAL a brief moment to hide before restoring focus to the target app.
         std::thread::sleep(Duration::from_millis(45));
-        if let Some(handle) = target {
-            let hwnd = HWND(handle as *mut c_void);
-            unsafe {
-                if !hwnd.0.is_null() && IsWindow(Some(hwnd)).as_bool() {
-                    let _ = SetForegroundWindow(hwnd);
-                }
-            }
-            std::thread::sleep(Duration::from_millis(35));
+        let hwnd = HWND(handle as *mut c_void);
+        if hwnd.0.is_null() {
+            return;
         }
         unsafe {
-            send_ctrl_v();
+            if !IsWindow(Some(hwnd)).as_bool() {
+                return;
+            }
+            let _ = SetForegroundWindow(hwnd);
+        }
+        std::thread::sleep(Duration::from_millis(35));
+        unsafe {
+            // Only send Ctrl+V if Windows genuinely restored focus to the
+            // exact target window we came from (never paste into a random app).
+            if IsWindow(Some(hwnd)).as_bool() && GetForegroundWindow() == hwnd {
+                send_ctrl_v();
+            }
         }
     });
     Ok(())

@@ -16,9 +16,10 @@ use windows::Win32::System::DataExchange::{
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetMessageW,
-    GetWindowLongPtrW, PostMessageW, PostQuitMessage, RegisterClassExW, SetWindowLongPtrW,
-    TranslateMessage, CREATESTRUCTW, GWLP_USERDATA, HWND_MESSAGE, MSG, WINDOW_EX_STYLE,
-    WINDOW_STYLE, WM_CLIPBOARDUPDATE, WM_CLOSE, WM_DESTROY, WM_NCCREATE, WM_NCDESTROY, WNDCLASSEXW,
+    GetWindowLongPtrW, IsWindow, PostMessageW, PostQuitMessage, RegisterClassExW,
+    SetWindowLongPtrW, TranslateMessage, CREATESTRUCTW, GWLP_USERDATA, HWND_MESSAGE, MSG,
+    WINDOW_EX_STYLE, WINDOW_STYLE, WM_CLIPBOARDUPDATE, WM_CLOSE, WM_DESTROY, WM_NCCREATE,
+    WM_NCDESTROY, WNDCLASSEXW,
 };
 
 use tc_platform::{Clipboard, WindowSystem};
@@ -174,6 +175,13 @@ fn run_watcher_thread(on_copy: OnCopy, ready_tx: mpsc::Sender<Result<isize, Stri
         while GetMessageW(&mut msg, None, 0, 0).0 > 0 {
             let _ = TranslateMessage(&msg);
             DispatchMessageW(&msg);
+        }
+        // Defensively detach GWLP_USERDATA and destroy hwnd if GetMessageW
+        // returned -1 before WM_NCDESTROY ran.
+        if IsWindow(Some(hwnd)).as_bool() {
+            let _ = RemoveClipboardFormatListener(hwnd);
+            let _ = SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+            let _ = DestroyWindow(hwnd);
         }
         drop(Box::from_raw(state_ptr));
     }

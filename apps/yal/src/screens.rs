@@ -255,6 +255,24 @@ pub fn emoji_model(query: &str, cells: Vec<GridCell>, selected: usize) -> Model 
     }
 }
 
+/// Whether the trailing "Create New Snippet" action row is shown for `query`.
+pub fn shows_create_snippet_row(query: &str) -> bool {
+    let q = query.trim().to_ascii_lowercase();
+    q.is_empty() || "create new snippet".contains(&q)
+}
+
+/// Whether the trailing "Create New Note" action row is shown for `query`.
+pub fn shows_create_note_row(query: &str) -> bool {
+    let q = query.trim().to_ascii_lowercase();
+    q.is_empty() || "create new note".contains(&q)
+}
+
+/// Whether the trailing "Create New Quicklink" action row is shown for `query`.
+pub fn shows_create_quicklink_row(query: &str) -> bool {
+    let q = query.trim().to_ascii_lowercase();
+    q.is_empty() || "create quicklink".contains(&q)
+}
+
 /// Build the native Snippets browser screen model.
 pub fn snippets_model(query: &str, snippets: &[StoredSnippet], selected: usize) -> Model {
     let mut rows: Vec<Row> = snippets
@@ -281,10 +299,7 @@ pub fn snippets_model(query: &str, snippets: &[StoredSnippet], selected: usize) 
         })
         .collect();
 
-    // Always append a quick "Create New Snippet" action at the bottom when query is empty
-    // or matches "new"/"create", so users can create snippets straight from the list.
-    let q = query.trim().to_ascii_lowercase();
-    if q.is_empty() || "create new snippet".contains(&q) {
+    if shows_create_snippet_row(query) {
         rows.push(
             Row::detailed(
                 "Create New Snippet",
@@ -302,10 +317,11 @@ pub fn snippets_model(query: &str, snippets: &[StoredSnippet], selected: usize) 
         n => format!("{n} snippets"),
     };
 
+    let selected = selected.min(rows.len().saturating_sub(1));
     Model {
         query: query.to_string(),
         rows,
-        selected: selected.min(snippets.len()),
+        selected,
         hovered: None,
         footer: count_label.clone(),
         placeholder: "Search snippets or type !keyword…".to_string(),
@@ -585,8 +601,7 @@ pub fn notes_model(query: &str, notes: &[NoteItem], selected: usize) -> Model {
         })
         .collect();
 
-    let q = query.trim().to_ascii_lowercase();
-    if q.is_empty() || "create new note".contains(&q) {
+    if shows_create_note_row(query) {
         rows.push(
             Row::detailed(
                 "Create New Note",
@@ -604,10 +619,11 @@ pub fn notes_model(query: &str, notes: &[NoteItem], selected: usize) -> Model {
         n => format!("{n} notes"),
     };
 
+    let selected = selected.min(rows.len().saturating_sub(1));
     Model {
         query: query.to_string(),
         rows,
-        selected: selected.min(notes.len()),
+        selected,
         hovered: None,
         footer: count_label.clone(),
         placeholder: "Search quick notes…".to_string(),
@@ -685,8 +701,7 @@ pub fn quicklinks_model(query: &str, links: &[Quicklink], selected: usize) -> Mo
         })
         .collect();
 
-    let q = query.trim().to_ascii_lowercase();
-    if q.is_empty() || "create quicklink".contains(&q) {
+    if shows_create_quicklink_row(query) {
         rows.push(
             Row::detailed(
                 "Create New Quicklink",
@@ -704,10 +719,11 @@ pub fn quicklinks_model(query: &str, links: &[Quicklink], selected: usize) -> Mo
         n => format!("{n} quicklinks"),
     };
 
+    let selected = selected.min(rows.len().saturating_sub(1));
     Model {
         query: query.to_string(),
         rows,
-        selected: selected.min(links.len()),
+        selected,
         hovered: None,
         footer: count_label.clone(),
         placeholder: "Search quicklinks…".to_string(),
