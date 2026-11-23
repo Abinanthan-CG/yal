@@ -76,8 +76,8 @@ pub fn evaluate(query: &str, ctx: &CalcContext) -> Option<CalcResult> {
         return Some(card);
     }
 
-    // 12. Explicit date arithmetic (`August 5 + 5`, `2026-12-25 - 10 days`, `today + 2 weeks - 3 days`).
-    if let Some(card) = eval_date_arithmetic(&lower, raw, &local) {
+    // 12. Explicit date arithmetic (`August 5 + 5`, `2026-12-25 - 10 days`, `now + 3 hours`, `today + 2 weeks - 3 days`).
+    if let Some(card) = eval_date_arithmetic(&lower, raw, &local, ctx) {
         return Some(card);
     }
 
@@ -112,6 +112,20 @@ fn eval_named_moment(
         "today" => Some(date_card(raw, "Today", local.date())),
         "tomorrow" => Some(date_card(raw, "Tomorrow", local.date().tomorrow().ok()?)),
         "yesterday" => Some(date_card(raw, "Yesterday", local.date().yesterday().ok()?)),
+        "end of month" | "end of this month" => {
+            let d = local.date();
+            let last = Date::new(d.year(), d.month(), d.days_in_month()).ok()?;
+            Some(date_card(raw, "End of Month", last))
+        }
+        "end of year" | "end of this year" => {
+            let last = Date::new(local.date().year(), 12, 31).ok()?;
+            Some(date_card(raw, "End of Year", last))
+        }
+        "start of next month" | "next month" => {
+            let next = local.date().checked_add(1.months()).ok()?;
+            let first = Date::new(next.year(), next.month(), 1).ok()?;
+            Some(date_card(raw, "Next Month", first))
+        }
         "now as unix" | "now to unix" | "now in unix" | "unix now" | "timestamp now"
         | "unix timestamp" | "today as unix" | "today to unix" => {
             let secs = ctx.now_utc.as_second().to_string();
@@ -494,6 +508,8 @@ fn eval_date_distance(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResul
     for (prefix, unit) in [
         ("days between ", DistUnit::Days),
         ("weeks between ", DistUnit::Weeks),
+        ("months between ", DistUnit::Months),
+        ("years between ", DistUnit::Years),
         ("workdays between ", DistUnit::Workdays),
         ("business days between ", DistUnit::Workdays),
     ] {
@@ -507,37 +523,111 @@ fn eval_date_distance(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResul
         }
     }
 
-    // `<unit> until <target>`
-    for (prefix, unit) in [
-        ("days until ", DistUnit::Days),
-        ("days to ", DistUnit::Days),
-        ("weeks until ", DistUnit::Weeks),
-        ("months until ", DistUnit::Months),
-        ("workdays until ", DistUnit::Workdays),
-        ("business days until ", DistUnit::Workdays),
-        ("hours until ", DistUnit::Hours),
-    ] {
-        if let Some(rest) = lower.strip_prefix(prefix) {
-            let target = parse_date_expr(rest.trim(), today, Bias::Future)?;
-            return Some(format_distance_card(raw, today, target, unit));
+    // Countdowns: `<unit> (until|till|til|'til|to|before|left until|left till|...) <target>`
+    // Also supports `how long until/till <target>` and `time until/till <target>`,
+    // and clock-time targets like `hours till 6pm` or `minutes until 11:30pm`!
+    if let Some((lhs_unit, target_str)) = split_countdown_clause(lower) {
+        let unit = parse_dist_unit(lhs_unit)?;
+
+        // Clock-time target (`hours till 6pm`, `minutes until 11:30pm`, `time till 5pm`).
+        if let Some(clock) = parse_clock_time(target_str) {
+            let now_t = local.time();
+            let s1 =
+                now_t.hour() as i64 * 3600 + now_t.minute() as i64 * 60 + now_t.second() as i64;
+            let s2 =
+                clock.hour() as i64 * 3600 + clock.minute() as i64 * 60 + clock.second() as i64;
+            let diff_secs = if s2 >= s1 { s2 - s1 } else { 86_400 - s1 + s2 };
+            return Some(format_clock_distance_card(raw, diff_secs, unit));
         }
+
+        let target = parse_date_expr(target_str, today, Bias::Future)?;
+        return Some(format_distance_card(raw, today, target, unit));
     }
 
-    // `<unit> since <target>`
-    for (prefix, unit) in [
-        ("days since ", DistUnit::Days),
-        ("weeks since ", DistUnit::Weeks),
-        ("months since ", DistUnit::Months),
-        ("workdays since ", DistUnit::Workdays),
-        ("business days since ", DistUnit::Workdays),
-    ] {
-        if let Some(rest) = lower.strip_prefix(prefix) {
-            let target = parse_date_expr(rest.trim(), today, Bias::Past)?;
-            return Some(format_distance_card(raw, target, today, unit));
+    // Elapsed: `<unit> since <target>`
+    if let Some((lhs_unit, target_str)) = lower.split_once(" since ") {
+        let unit = parse_dist_unit(lhs_unit.trim())?;
+        if let Some(clock) = parse_clock_time(target_str.trim()) {
+            let now_t = local.time();
+            let s1 =
+                clock.hour() as i64 * 3600 + clock.minute() as i64 * 60 + clock.second() as i64;
+            let s2 =
+                now_t.hour() as i64 * 3600 + now_t.minute() as i64 * 60 + now_t.second() as i64;
+            let diff_secs = if s2 >= s1 { s2 - s1 } else { 86_400 - s1 + s2 };
+            return Some(format_clock_distance_card(raw, diff_secs, unit));
         }
+        let target = parse_date_expr(target_str.trim(), today, Bias::Past)?;
+        return Some(format_distance_card(raw, target, today, unit));
     }
 
     None
+}
+
+fn split_countdown_clause(lower: &str) -> Option<(&str, &str)> {
+    const CONNECTORS: &[&str] = &[
+        " remaining until ",
+        " remaining till ",
+        " remaining til ",
+        " left until ",
+        " left till ",
+        " left til ",
+        " left 'til ",
+        " left to ",
+        " until ",
+        " till ",
+        " til ",
+        " 'til ",
+        " before ",
+        " to ",
+    ];
+    for conn in CONNECTORS {
+        if let Some((lhs, rhs)) = lower.split_once(conn) {
+            let l = lhs.trim();
+            let r = rhs.trim();
+            if !l.is_empty() && !r.is_empty() {
+                return Some((l, r));
+            }
+        }
+    }
+    None
+}
+
+fn parse_dist_unit(s: &str) -> Option<DistUnit> {
+    Some(match s {
+        "day" | "days" | "how long" | "time" | "time left" => DistUnit::Days,
+        "week" | "weeks" => DistUnit::Weeks,
+        "month" | "months" => DistUnit::Months,
+        "year" | "years" => DistUnit::Years,
+        "workday" | "workdays" | "business day" | "business days" => DistUnit::Workdays,
+        "hour" | "hours" | "hr" | "hrs" => DistUnit::Hours,
+        "minute" | "minutes" | "min" | "mins" => DistUnit::Minutes,
+        "second" | "seconds" | "sec" | "secs" => DistUnit::Seconds,
+        _ => return None,
+    })
+}
+
+fn format_clock_distance_card(raw: &str, diff_secs: i64, unit: DistUnit) -> CalcResult {
+    let (display, badge) = match unit {
+        DistUnit::Hours => {
+            let h = (diff_secs as f64 / 3600.0 * 100.0).round() / 100.0;
+            (format!("{} hours", Formatter::display(h)), "Hours")
+        }
+        DistUnit::Minutes => {
+            let m = (diff_secs as f64 / 60.0 * 100.0).round() / 100.0;
+            (format!("{} minutes", Formatter::display(m)), "Minutes")
+        }
+        DistUnit::Seconds => (
+            format!("{} seconds", Formatter::grouped(&diff_secs.to_string())),
+            "Seconds",
+        ),
+        _ => (format_timespan_seconds(diff_secs as f64), "Duration"),
+    };
+    unchained(CalcResult::with_badges(
+        raw.to_string(),
+        "Expression",
+        badge,
+        Payload::text(&display),
+    ))
 }
 
 #[derive(Clone, Copy)]
@@ -545,8 +635,11 @@ enum DistUnit {
     Days,
     Weeks,
     Months,
+    Years,
     Workdays,
     Hours,
+    Minutes,
+    Seconds,
 }
 
 fn format_distance_card(raw: &str, start: Date, end: Date, unit: DistUnit) -> CalcResult {
@@ -574,6 +667,13 @@ fn format_distance_card(raw: &str, start: Date, end: Date, unit: DistUnit) -> Ca
                 "Months",
             )
         }
+        DistUnit::Years => {
+            let y = days as f64 / 365.2425;
+            (
+                format!("{} years", Formatter::display((y * 100.0).round() / 100.0)),
+                "Years",
+            )
+        }
         DistUnit::Workdays => {
             let wd = if start <= end {
                 count_workdays_exclusive_start(start, end)
@@ -596,10 +696,24 @@ fn format_distance_card(raw: &str, start: Date, end: Date, unit: DistUnit) -> Ca
                 "Hours",
             )
         }
+        DistUnit::Minutes => {
+            let m = days * 24 * 60;
+            (
+                format!("{} minutes", Formatter::grouped(&m.to_string())),
+                "Minutes",
+            )
+        }
+        DistUnit::Seconds => {
+            let s = days * 86_400;
+            (
+                format!("{} seconds", Formatter::grouped(&s.to_string())),
+                "Seconds",
+            )
+        }
     };
     unchained(CalcResult::with_badges(
         raw.to_string(),
-        "Calendar",
+        "Expression",
         badge,
         Payload::text(&display),
     ))
@@ -801,7 +915,12 @@ fn apply_relative(
     }
 }
 
-fn eval_date_arithmetic(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResult> {
+fn eval_date_arithmetic(
+    lower: &str,
+    raw: &str,
+    local: &Zoned,
+    ctx: &CalcContext,
+) -> Option<CalcResult> {
     let today = local.date();
 
     // Parse chained `<date> (+|-) <term> [(+|-) <term> ...]`
@@ -814,6 +933,17 @@ fn eval_date_arithmetic(lower: &str, raw: &str, local: &Zoned) -> Option<CalcRes
     if first.bytes().all(|b| b.is_ascii_digit() || b == b'.') {
         return None;
     }
+
+    // `now + 3 hours`, `now - 45 min` -> shift live Zoned clock!
+    if first == "now" && tokens.len() == 2 {
+        let (sign, term) = tokens[1];
+        if let Some((n, unit)) = parse_span_qty(term.trim()) {
+            if matches!(unit, RelUnit::Seconds | RelUnit::Minutes | RelUnit::Hours) {
+                return apply_relative(raw, local, sign * n, unit, ctx);
+            }
+        }
+    }
+
     let mut current = parse_date_expr(first, today, Bias::Nearest)?;
 
     for &(sign, term) in &tokens[1..] {
@@ -958,6 +1088,27 @@ fn parse_date_expr(input: &str, today: Date, bias: Bias) -> Option<Date> {
         });
     }
 
+    // Bare weekday (`days till friday`, `days since monday`).
+    if let Some(target_wd) = parse_weekday(s) {
+        let cur = today.weekday().to_monday_zero_offset() as i64;
+        let tgt = target_wd.to_monday_zero_offset() as i64;
+        let delta = match bias {
+            Bias::Future | Bias::Nearest => {
+                let d = (tgt - cur).rem_euclid(7);
+                if d == 0 {
+                    7
+                } else {
+                    d
+                }
+            }
+            Bias::Past => {
+                let d = (cur - tgt).rem_euclid(7);
+                -(if d == 0 { 7 } else { d })
+            }
+        };
+        return today.checked_add(delta.days()).ok();
+    }
+
     // Bare month name (only used in `days until december` / `days since march`).
     if let Some(month) = parse_month(s) {
         let this_yr = Date::new(today.year(), month, 1).ok()?;
@@ -968,11 +1119,43 @@ fn parse_date_expr(input: &str, today: Date, bias: Bias) -> Option<Date> {
         });
     }
 
-    // ISO date `YYYY-MM-DD`.
-    if let Some((y, rest)) = s.split_once('-') {
-        if y.len() == 4 {
-            if let Some((m, d)) = rest.split_once('-') {
-                return Date::new(y.parse().ok()?, m.parse().ok()?, d.parse().ok()?).ok();
+    // ISO date `YYYY-MM-DD`, `YYYY/MM/DD`, or `DD-MM-YYYY` / `DD.MM.YYYY` / `DD/MM/YYYY` / `DD/MM`.
+    if let Some((a, rest)) = s
+        .split_once('-')
+        .or_else(|| s.split_once('/'))
+        .or_else(|| s.split_once('.'))
+    {
+        if let Some((b, c)) = rest
+            .split_once('-')
+            .or_else(|| rest.split_once('/'))
+            .or_else(|| rest.split_once('.'))
+        {
+            if a.len() == 4 {
+                return Date::new(a.parse().ok()?, b.parse().ok()?, c.parse().ok()?).ok();
+            }
+            if c.len() == 4 {
+                // Day-first (`29.11.2026`, `29/11/2026`, `29-11-2026`), falling back to month-first if day > 12 on second slot.
+                let n1 = a.parse::<i8>().ok()?;
+                let n2 = b.parse::<i8>().ok()?;
+                let year = c.parse::<i16>().ok()?;
+                if (1..=12).contains(&n2) {
+                    if let Ok(d) = Date::new(year, n2, n1) {
+                        return Some(d);
+                    }
+                }
+                if (1..=12).contains(&n1) {
+                    return Date::new(year, n1, n2).ok();
+                }
+            }
+        } else if s.contains('/') || s.contains('.') {
+            // Yearless `DD/MM` or `DD.MM` (only reached inside explicit date queries like `days till 29/11`).
+            let n1 = a.parse::<i8>().ok()?;
+            let n2 = rest.parse::<i8>().ok()?;
+            if (1..=12).contains(&n2) && (1..=31).contains(&n1) {
+                return resolve_yearless_date(n2, n1, today, bias);
+            }
+            if (1..=12).contains(&n1) && (1..=31).contains(&n2) {
+                return resolve_yearless_date(n1, n2, today, bias);
             }
         }
     }
@@ -1442,6 +1625,17 @@ mod tests {
     #[test]
     fn evaluates_countdowns_elapsed_and_period_workdays() {
         assert_eq!(disp("days until 25 Dec").as_deref(), Some("33 days"));
+        assert_eq!(disp("days till 29 nov").as_deref(), Some("7 days"));
+        assert_eq!(disp("days til 29 nov").as_deref(), Some("7 days"));
+        assert_eq!(disp("days left till 29 nov").as_deref(), Some("7 days"));
+        assert_eq!(disp("days till 29/11").as_deref(), Some("7 days"));
+        assert_eq!(disp("days till friday").as_deref(), Some("5 days"));
+        assert_eq!(disp("hours till 11pm").as_deref(), Some("1.85 hours"));
+        assert_eq!(
+            disp("now + 3 hours").as_deref(),
+            Some("November 23, 2026, 12:09 AM")
+        );
+        assert_eq!(disp("end of month").as_deref(), Some("November 30, 2026"));
         assert_eq!(disp("days until christmas").as_deref(), Some("33 days"));
         assert_eq!(disp("days since march").as_deref(), Some("266 days"));
         assert_eq!(disp("days left in this month").as_deref(), Some("8 days"));

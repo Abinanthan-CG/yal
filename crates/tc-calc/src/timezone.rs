@@ -153,9 +153,12 @@ fn eval_time_in_delay(folded: &str, raw: &str, ctx: &CalcContext) -> Option<Calc
 fn eval_time_at_place(folded: &str, raw: &str, ctx: &CalcContext) -> Option<CalcResult> {
     let body = folded
         .strip_prefix("what time is it in ")
+        .or_else(|| folded.strip_prefix("what time in "))
         .or_else(|| folded.strip_prefix("current time in "))
         .or_else(|| folded.strip_prefix("time in "))
         .or_else(|| folded.strip_prefix("time at "))
+        .or_else(|| folded.strip_prefix("time "))
+        .or_else(|| folded.strip_suffix(" current time"))
         .or_else(|| folded.strip_suffix(" time"));
     let body = body?.trim();
     if body.is_empty() {
@@ -193,7 +196,9 @@ fn eval_time_at_place(folded: &str, raw: &str, ctx: &CalcContext) -> Option<Calc
 fn eval_clock_conversion(folded: &str, raw: &str, ctx: &CalcContext) -> Option<CalcResult> {
     let (lhs, rhs) = folded
         .rsplit_once(" in ")
-        .or_else(|| folded.rsplit_once(" to "))?;
+        .or_else(|| folded.rsplit_once(" into "))
+        .or_else(|| folded.rsplit_once(" to "))
+        .or_else(|| folded.rsplit_once(" -> "))?;
     let target = resolve_place(rhs.trim())?;
 
     let lhs = lhs.trim();

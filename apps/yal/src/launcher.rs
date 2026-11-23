@@ -102,7 +102,10 @@ pub struct ResultRow {
     /// Whether the row is a folder. Only the file rows say.
     #[serde(default)]
     pub is_dir: Option<bool>,
-    /// Optional pill badge for calculator hero cards (e.g. "US Dollar → Indian Rupee").
+    /// Optional left-side source pill badge on a calculator hero card (e.g. "US Dollar", "Expression").
+    #[serde(default)]
+    pub calc_source_badge: Option<String>,
+    /// Optional right-side target pill badge on a calculator hero card (e.g. "Days", "Indian Rupee").
     #[serde(default)]
     pub calc_badge: Option<String>,
     /// Optional RGBA preview swatch for color calculator results.
@@ -630,12 +633,14 @@ fn calculator_row_with_ctx(query: &str, ctx: &CalcContext) -> Option<ResultRow> 
     if display == trimmed {
         return None;
     }
-    let badge = match (&card.source_badge, &card.target_badge) {
-        (Some(src), Some(dst)) if src != "Expression" && src != dst => format!("{src} → {dst}"),
-        (_, Some(dst)) => dst.clone(),
-        (Some(src), None) => src.clone(),
-        (None, None) => "Calculator".to_string(),
-    };
+    let source_badge = card
+        .source_badge
+        .clone()
+        .unwrap_or_else(|| "Expression".to_string());
+    let target_badge = card
+        .target_badge
+        .clone()
+        .unwrap_or_else(|| "Result".to_string());
     Some(ResultRow {
         id: format!("{CALCULATOR_PREFIX}{copy_text}"),
         name: display.clone(),
@@ -645,7 +650,8 @@ fn calculator_row_with_ctx(query: &str, ctx: &CalcContext) -> Option<ResultRow> 
         needs_confirm: false,
         is_dir: None,
         arguments: Vec::new(),
-        calc_badge: Some(badge),
+        calc_source_badge: Some(source_badge),
+        calc_badge: Some(target_badge),
         color_swatch: card.color_swatch,
     })
 }

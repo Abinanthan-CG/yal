@@ -553,9 +553,10 @@ fn ends_operand(token: &Token) -> bool {
             op,
             Operator::Close | Operator::Factorial | Operator::Percent
         ),
-        Token::Ident(name) => {
-            !matches!(name.as_str(), "to" | "in" | "of" | "mod" | "power" | "and")
-        }
+        Token::Ident(name) => !matches!(
+            name.as_str(),
+            "to" | "in" | "into" | "of" | "mod" | "power" | "and"
+        ),
         Token::Arrow | Token::Comma => false,
     }
 }

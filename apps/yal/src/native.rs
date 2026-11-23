@@ -580,6 +580,11 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
         } else {
             result.detail.clone()
         };
+        let source_badge = result
+            .calc_source_badge
+            .clone()
+            .filter(|b| !b.is_empty())
+            .unwrap_or_else(|| "Expression".to_string());
         let badge = result
             .calc_badge
             .clone()
@@ -591,6 +596,7 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
             shortcut: String::new(),
             icon: Some(Icon::new("=", color_of(&result.kind))),
             section: CALCULATOR_SECTION.to_string(),
+            source_badge,
             badge,
             is_calculator: true,
             color_swatch: result.color_swatch,
@@ -698,6 +704,7 @@ mod tests {
             needs_confirm: false,
             arguments: Vec::new(),
             is_dir: None,
+            calc_source_badge: None,
             calc_badge: None,
             color_swatch: None,
         }

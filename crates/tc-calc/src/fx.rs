@@ -310,7 +310,7 @@ fn token_as_currency(token: &Token) -> Option<CurrencyDef> {
 fn is_connector(token: &Token) -> bool {
     match token {
         Token::Arrow => true,
-        Token::Ident(s) => matches!(s.as_str(), "to" | "in" | "as"),
+        Token::Ident(s) => matches!(s.as_str(), "to" | "in" | "as" | "into"),
         _ => false,
     }
 }

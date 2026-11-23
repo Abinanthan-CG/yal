@@ -9,7 +9,7 @@ use crate::theme::{Color, Metrics};
 pub const SECTION_HEADER_HEIGHT: f32 = 26.0;
 
 /// Height of a Calculator hero card in DIPs.
-pub const CALC_HERO_HEIGHT: f32 = 90.0;
+pub const CALC_HERO_HEIGHT: f32 = 100.0;
 
 /// Premultiplied top-down RGBA bitmap for a real application icon.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -51,7 +51,9 @@ pub struct Row {
     pub icon: Option<Icon>,
     /// Optional section title; a header is rendered whenever this changes.
     pub section: String,
-    /// Optional pill badge label (e.g. "Result", "Tip", "Unit" on calculator cards).
+    /// Optional left-side pill badge on a Calculator hero card (e.g. "Expression", "US Dollar").
+    pub source_badge: String,
+    /// Optional right-side pill badge label (e.g. "Days", "Tip", "Indian Rupee", "OKLCH").
     pub badge: String,
     /// Render this row as a large split Calculator hero card.
     pub is_calculator: bool,

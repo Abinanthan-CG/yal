@@ -454,7 +454,16 @@ fn atomic_weight(symbol: &str) -> Option<f64> {
 fn eval_transfer_time(raw: &str) -> Option<CalcResult> {
     let lower = raw.to_ascii_lowercase();
     let body = lower
-        .strip_prefix("transfer ")
+        .strip_prefix("how long to download ")
+        .or_else(|| lower.strip_prefix("how long to upload "))
+        .or_else(|| lower.strip_prefix("how long to transfer "))
+        .or_else(|| lower.strip_prefix("time to download "))
+        .or_else(|| lower.strip_prefix("time to upload "))
+        .or_else(|| lower.strip_prefix("time to transfer "))
+        .or_else(|| lower.strip_prefix("download time for "))
+        .or_else(|| lower.strip_prefix("upload time for "))
+        .or_else(|| lower.strip_prefix("transfer time for "))
+        .or_else(|| lower.strip_prefix("transfer "))
         .or_else(|| lower.strip_prefix("download "))
         .or_else(|| lower.strip_prefix("upload "))
         .unwrap_or(&lower);
@@ -1566,7 +1575,7 @@ fn eval_specialized_units(raw: &str) -> Option<CalcResult> {
 // ---------------------------------------------------------------------------
 
 fn split_connector(s: &str) -> Option<(&str, &str)> {
-    for sep in [" to ", " in ", " as ", " -> "] {
+    for sep in [" to ", " in ", " into ", " as ", " -> "] {
         if let Some((l, r)) = s.rsplit_once(sep) {
             let l = l.trim();
             let r = r.trim();

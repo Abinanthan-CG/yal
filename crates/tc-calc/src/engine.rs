@@ -533,7 +533,7 @@ fn radix_target(tokens: &[Token]) -> Option<(usize, u32, &'static str, String)> 
 fn is_connector(token: &Token) -> bool {
     match token {
         Token::Arrow => true,
-        Token::Ident(name) => matches!(name.as_str(), "to" | "in" | "as"),
+        Token::Ident(name) => matches!(name.as_str(), "to" | "in" | "as" | "into"),
         _ => false,
     }
 }

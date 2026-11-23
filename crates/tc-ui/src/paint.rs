@@ -51,9 +51,11 @@ pub struct Renderer {
     keycap_format: IDWriteTextFormat,
     icon_format: IDWriteTextFormat,
     calc_expr_format: IDWriteTextFormat,
+    calc_expr_sm_format: IDWriteTextFormat,
     calc_answer_format: IDWriteTextFormat,
     calc_answer_med_format: IDWriteTextFormat,
     calc_answer_sm_format: IDWriteTextFormat,
+    calc_arrow_format: IDWriteTextFormat,
     brushes: Vec<(Color, ID2D1SolidColorBrush)>,
     bitmaps: HashMap<String, ID2D1Bitmap>,
 }
@@ -148,30 +150,44 @@ impl Renderer {
         let calc_expr_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_NORMAL,
-            13.5,
-            DWRITE_TEXT_ALIGNMENT_LEADING,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            20.0,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+        )?;
+        let calc_expr_sm_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            14.5,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_answer_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_BOLD,
-            27.0,
-            DWRITE_TEXT_ALIGNMENT_TRAILING,
+            26.0,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_answer_med_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_BOLD,
-            21.0,
-            DWRITE_TEXT_ALIGNMENT_TRAILING,
+            20.5,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_answer_sm_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            17.5,
-            DWRITE_TEXT_ALIGNMENT_TRAILING,
+            16.5,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+        )?;
+        let calc_arrow_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            15.0,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
 
         let renderer = Self {
@@ -185,9 +201,11 @@ impl Renderer {
             keycap_format,
             icon_format,
             calc_expr_format,
+            calc_expr_sm_format,
             calc_answer_format,
             calc_answer_med_format,
             calc_answer_sm_format,
+            calc_arrow_format,
             brushes: Vec::new(),
             bitmaps: HashMap::new(),
         };
@@ -207,6 +225,7 @@ impl Renderer {
             &self.section_format,
             &self.footer_format,
             &self.calc_expr_format,
+            &self.calc_expr_sm_format,
             &self.calc_answer_format,
             &self.calc_answer_med_format,
             &self.calc_answer_sm_format,
@@ -756,32 +775,56 @@ impl Renderer {
             }
         }
 
-        // Subtle center divider.
-        let mid_x = left + (right - left) * 0.45;
+        // Symmetric 50/50 split with subtle hairline interrupted by a crisp `→` arrow.
+        let mid_x = left + (right - left) * 0.50;
+        let mid_y = top + height * 0.50;
+        self.fill_rect(mid_x, top + 14.0, mid_x + 1.0, mid_y - 12.0, theme.border);
         self.fill_rect(
             mid_x,
-            top + 16.0,
+            mid_y + 12.0,
             mid_x + 1.0,
-            top + height - 16.0,
+            top + height - 14.0,
             theme.border,
         );
+        if let Some(arrow) = self.layout("→", &self.calc_arrow_format, 24.0, 22.0) {
+            if let Some(brush) = self.brush(theme.text_dim) {
+                unsafe {
+                    self.target.DrawTextLayout(
+                        Vector2 {
+                            X: mid_x - 12.0,
+                            Y: mid_y - 10.5,
+                        },
+                        &arrow,
+                        &brush,
+                        D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                    );
+                }
+            }
+        }
 
-        // Left side: optional live color swatch + expression + badge pill.
-        let mut expr_left = left + 16.0;
+        let pill_bg = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x0e),
+            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x0b),
+        };
+        let pill_border = theme.border;
+        let pill_fg = theme.text_dim;
+
+        // Left half: optional glossy Color Swatch + centered expression + centered source pill.
+        let mut lhs_left = left + 18.0;
+        let lhs_right = mid_x - 16.0;
         if let Some([r, g, b, a]) = row.color_swatch {
             let sw = 44.0_f32;
             let sw_top = top + (height - sw) / 2.0;
             let swatch_rect = D2D1_ROUNDED_RECT {
                 rect: D2D_RECT_F {
-                    left: expr_left,
+                    left: lhs_left,
                     top: sw_top,
-                    right: expr_left + sw,
+                    right: lhs_left + sw,
                     bottom: sw_top + sw,
                 },
                 radiusX: 10.0,
                 radiusY: 10.0,
             };
-            // Subtle checkerboard base when alpha < 255 so transparency is visible.
             if a < 255 {
                 if let Some(base) = self.brush(Color::rgb(0x40, 0x42, 0x4c)) {
                     unsafe {
@@ -794,10 +837,10 @@ impl Renderer {
                         for gx in 0..4 {
                             if (gx + gy) % 2 == 0 {
                                 let tile = D2D_RECT_F {
-                                    left: expr_left + gx as f32 * cell + 2.0,
+                                    left: lhs_left + gx as f32 * cell + 2.0,
                                     top: sw_top + gy as f32 * cell + 2.0,
-                                    right: (expr_left + (gx + 1) as f32 * cell - 1.0)
-                                        .min(expr_left + sw - 2.0),
+                                    right: (lhs_left + (gx + 1) as f32 * cell - 1.0)
+                                        .min(lhs_left + sw - 2.0),
                                     bottom: (sw_top + (gy + 1) as f32 * cell - 1.0)
                                         .min(sw_top + sw - 2.0),
                                 };
@@ -820,17 +863,26 @@ impl Renderer {
                         .DrawRoundedRectangle(&swatch_rect, &ring, 1.2, None);
                 }
             }
-            expr_left += sw + 14.0;
+            lhs_left += sw + 12.0;
         }
 
-        let expr_w = (mid_x - expr_left - 12.0).max(0.0);
-        if let Some(layout) = self.layout(&row.detail, &self.calc_expr_format, expr_w, 22.0) {
-            if let Some(brush) = self.brush(theme.text_dim) {
+        let expr_w = (lhs_right - lhs_left).max(0.0);
+        let lhs_center = lhs_left + expr_w / 2.0;
+        let (expr_fmt, expr_y_off) = {
+            let probe = self.layout(&row.detail, &self.calc_expr_format, 2000.0, 32.0);
+            if probe.as_ref().is_some_and(|l| measure_width(l) <= expr_w) {
+                (&self.calc_expr_format, 21.0_f32)
+            } else {
+                (&self.calc_expr_sm_format, 25.0_f32)
+            }
+        };
+        if let Some(layout) = self.layout(&row.detail, expr_fmt, expr_w, 32.0) {
+            if let Some(brush) = self.brush(theme.text) {
                 unsafe {
                     self.target.DrawTextLayout(
                         Vector2 {
-                            X: expr_left,
-                            Y: top + 20.0,
+                            X: lhs_left,
+                            Y: top + expr_y_off,
                         },
                         &layout,
                         &brush,
@@ -839,29 +891,30 @@ impl Renderer {
                 }
             }
         }
-        let badge = if row.badge.is_empty() {
-            "Calculator"
+        let src_badge = if row.source_badge.is_empty() {
+            "Expression"
         } else {
-            row.badge.as_str()
+            row.source_badge.as_str()
         };
-        self.draw_pill_left(
-            badge,
-            expr_left,
-            top + height - 25.0,
-            theme.accent.with_alpha(0.18),
-            theme.accent.with_alpha(0.40),
-            theme.accent,
+        self.draw_pill_centered(
+            src_badge,
+            lhs_center,
+            top + height - 22.0,
+            pill_bg,
+            pill_border,
+            pill_fg,
         );
 
-        // Right side: big crisp bold answer (auto-fitted so long strings like
-        // OKLCH colors or ISO timestamps never clip) + subtle Copy hint.
-        let ans_left = mid_x + 14.0;
-        let ans_w = (right - 18.0 - ans_left).max(0.0);
+        // Right half: big crisp centered auto-fitted answer + centered target pill.
+        let ans_left = mid_x + 16.0;
+        let ans_right = right - 18.0;
+        let ans_w = (ans_right - ans_left).max(0.0);
+        let rhs_center = ans_left + ans_w / 2.0;
         let (ans_format, ans_y_offset) = {
             let probe = self.layout(&row.name, &self.calc_answer_format, 2000.0, 40.0);
             let fits_large = probe.as_ref().is_some_and(|l| measure_width(l) <= ans_w);
             if fits_large {
-                (&self.calc_answer_format, 16.0_f32)
+                (&self.calc_answer_format, 17.0_f32)
             } else {
                 let probe_med = self.layout(&row.name, &self.calc_answer_med_format, 2000.0, 34.0);
                 let fits_med = probe_med
@@ -889,21 +942,19 @@ impl Renderer {
                 }
             }
         }
-        if let Some(hint) = self.layout("Enter to copy", &self.detail_format, ans_w, 18.0) {
-            if let Some(brush) = self.brush(theme.text_dim) {
-                unsafe {
-                    self.target.DrawTextLayout(
-                        Vector2 {
-                            X: ans_left,
-                            Y: top + height - 28.0,
-                        },
-                        &hint,
-                        &brush,
-                        D2D1_DRAW_TEXT_OPTIONS_CLIP,
-                    );
-                }
-            }
-        }
+        let dst_badge = if row.badge.is_empty() {
+            "Result"
+        } else {
+            row.badge.as_str()
+        };
+        self.draw_pill_centered(
+            dst_badge,
+            rhs_center,
+            top + height - 22.0,
+            theme.accent.with_alpha(0.16),
+            theme.accent.with_alpha(0.38),
+            theme.accent,
+        );
     }
 
     fn draw_footer(&mut self, model: &Model, theme: &Theme, top: f32, width: f32, height: f32) {
@@ -1065,21 +1116,22 @@ impl Renderer {
         pill_w
     }
 
-    fn draw_pill_left(
+    fn draw_pill_centered(
         &mut self,
         text: &str,
-        left: f32,
+        center_x: f32,
         center_y: f32,
         bg: Color,
         border: Color,
         fg: Color,
     ) -> f32 {
-        let Some(probe) = self.layout(text, &self.pill_format, 200.0, 18.0) else {
+        let Some(probe) = self.layout(text, &self.pill_format, 220.0, 18.0) else {
             return 0.0;
         };
         let text_w = measure_width(&probe);
-        let pill_w = (text_w + 16.0).max(32.0);
+        let pill_w = (text_w + 18.0).max(36.0);
         let pill_h = 21.0;
+        let left = center_x - pill_w / 2.0;
         let top = center_y - pill_h / 2.0;
         self.paint_pill(text, left, top, pill_w, pill_h, bg, border, fg);
         pill_w
