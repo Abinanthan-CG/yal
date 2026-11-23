@@ -10,5 +10,10 @@ description = "YAL port: tc-backup"
 publish = false
 
 [dependencies]
+hex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
 tc-core = { path = "../tc-core" }
 tc-platform = { path = "../tc-platform" }
+thiserror = { workspace = true }

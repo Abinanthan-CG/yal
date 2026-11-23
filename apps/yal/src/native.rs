@@ -21,7 +21,7 @@ use tc_ui::{
     PaletteReply, Row, Theme, Tokens,
 };
 
-use crate::features::{CalcHistoryEntry, FeatureStores};
+use crate::features::{CalcHistoryEntry, FeatureStores, NoteItem, Quicklink};
 use crate::launcher::{
     LauncherState, ResultRow, CALCULATOR_PREFIX, CALCULATOR_SECTION, COMMAND_SECTION,
     CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION, RANKING_FILE, SYSTEM_ACTION_SECTION,
@@ -30,8 +30,11 @@ use crate::launcher::{
 use crate::open::Runner;
 use crate::palette::{PaletteState, SettingRow};
 use crate::screens::{
-    calc_history_model, clipboard_model, create_snippet_model, emoji_model, files_model,
-    next_clipboard_filter, snippets_model, windows_model, SnippetDraft, SnippetDraftStep,
+    calc_history_model, clipboard_model, create_note_model, create_quicklink_model,
+    create_snippet_model, emoji_model, fallback_search_rows, files_model, next_clipboard_filter,
+    notes_model, quicklink_arg_model, quicklinks_model, run_shell_model, snippets_model,
+    status_screen_model, windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft,
+    QuicklinkDraftStep, SnippetDraft, SnippetDraftStep, FALLBACK_URL_PREFIX,
 };
 use crate::shell::{FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW};
 
@@ -112,6 +115,13 @@ enum Mode {
     Emoji,
     Snippets,
     CreateSnippet(SnippetDraft),
+    Notes,
+    CreateNote(NoteDraft),
+    Quicklinks,
+    QuicklinkArg(Quicklink),
+    CreateQuicklink(QuicklinkDraft),
+    RunShell,
+    Status,
     Files,
     SwitchWindows,
     CalcHistory,
@@ -126,6 +136,9 @@ struct Shown {
     clipboard_filter: ClipboardFilter,
     emoji_cells: Vec<GridCell>,
     snippets: Vec<StoredSnippet>,
+    notes: Vec<NoteItem>,
+    quicklinks: Vec<Quicklink>,
+    last_shell_output: Option<String>,
     file_rows: Vec<ResultRow>,
     file_filter: FileType,
     windows: Vec<WindowInfo>,
@@ -149,6 +162,9 @@ impl Shown {
             clipboard_filter: ClipboardFilter::All,
             emoji_cells: Vec::new(),
             snippets: Vec::new(),
+            notes: Vec::new(),
+            quicklinks: Vec::new(),
+            last_shell_output: None,
             file_rows: Vec::new(),
             file_filter: FileType::All,
             windows: Vec::new(),
@@ -269,7 +285,12 @@ fn build(
                     ctx.palette.back_to_root();
                 }
                 let mut shown = handler_shown.lock().expect("the palette's state");
-                enter_launcher(&handler_launcher, &mut shown, false)
+                enter_launcher(
+                    &handler_launcher,
+                    handler_context.as_deref(),
+                    &mut shown,
+                    false,
+                )
             }
             PaletteEvent::Refresh => {
                 let mut shown = handler_shown.lock().expect("the palette's state");
@@ -282,6 +303,7 @@ fn build(
                             &query,
                             &rows,
                             is_suggestions,
+                            handler_context.as_deref(),
                             &mut shown,
                         ))
                     }
@@ -319,7 +341,10 @@ fn build(
                     Mode::Launcher => {
                         let is_suggestions = query.trim().is_empty();
                         let mut rows = if is_suggestions {
-                            handler_launcher.suggestions()
+                            suggestions_with_favorites(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                            )
                         } else {
                             handler_launcher.search(&query)
                         };
@@ -330,6 +355,11 @@ fn build(
                                 {
                                     rows.insert(0, inline_snippet_row(&snippet));
                                 }
+                                // Fallback web search when nothing local matched.
+                                if rows.is_empty() {
+                                    let links = ctx.features.search_quicklinks("");
+                                    rows = fallback_search_rows(&query, &links);
+                                }
                             }
                         }
                         shown.rows = rows.clone();
@@ -337,6 +367,7 @@ fn build(
                             &query,
                             &rows,
                             is_suggestions,
+                            handler_context.as_deref(),
                             &mut shown,
                         ))
                     }
@@ -369,6 +400,39 @@ fn build(
                         let draft_clone = draft.clone();
                         PaletteReply::Update(create_snippet_model(&draft_clone, &query))
                     }
+                    Mode::Notes => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let list = ctx.features.search_notes(&query);
+                        shown.notes = list.clone();
+                        PaletteReply::Update(notes_model(&query, &list, 0))
+                    }
+                    Mode::CreateNote(draft) => {
+                        let draft_clone = draft.clone();
+                        PaletteReply::Update(create_note_model(&draft_clone, &query))
+                    }
+                    Mode::Quicklinks => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let list = ctx.features.search_quicklinks(&query);
+                        shown.quicklinks = list.clone();
+                        PaletteReply::Update(quicklinks_model(&query, &list, 0))
+                    }
+                    Mode::QuicklinkArg(link) => {
+                        let link_clone = link.clone();
+                        PaletteReply::Update(quicklink_arg_model(&link_clone, &query))
+                    }
+                    Mode::CreateQuicklink(draft) => {
+                        let draft_clone = draft.clone();
+                        PaletteReply::Update(create_quicklink_model(&draft_clone, &query))
+                    }
+                    Mode::RunShell => {
+                        let last = shown.last_shell_output.clone();
+                        PaletteReply::Update(run_shell_model(&query, last.as_deref()))
+                    }
+                    Mode::Status => PaletteReply::Keep,
                     Mode::Files => {
                         let filter = shown.file_filter;
                         let rows = handler_launcher.file_screen_rows(&query, filter);
@@ -442,14 +506,48 @@ fn build(
                         if let Some(ctx) = handler_context.as_deref() {
                             enter_snippets(ctx, &mut shown)
                         } else {
-                            enter_launcher(&handler_launcher, &mut shown, true)
+                            enter_launcher(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                                &mut shown,
+                                true,
+                            )
+                        }
+                    }
+                    Mode::CreateNote(_) => {
+                        if let Some(ctx) = handler_context.as_deref() {
+                            enter_notes(ctx, &mut shown)
+                        } else {
+                            enter_launcher(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                                &mut shown,
+                                true,
+                            )
+                        }
+                    }
+                    Mode::QuicklinkArg(_) | Mode::CreateQuicklink(_) => {
+                        if let Some(ctx) = handler_context.as_deref() {
+                            enter_quicklinks(ctx, &mut shown)
+                        } else {
+                            enter_launcher(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                                &mut shown,
+                                true,
+                            )
                         }
                     }
                     _ => {
                         if let Some(ctx) = handler_context.as_ref() {
                             ctx.palette.back_to_root();
                         }
-                        enter_launcher(&handler_launcher, &mut shown, true)
+                        enter_launcher(
+                            &handler_launcher,
+                            handler_context.as_deref(),
+                            &mut shown,
+                            true,
+                        )
                     }
                 }
             }
@@ -463,11 +561,11 @@ fn build(
         }
     };
 
-    let rows = launcher.suggestions();
+    let rows = suggestions_with_favorites(&launcher, context.as_deref());
     let initial_model = {
         let mut guard = shown.lock().expect("the palette's state");
         guard.rows = rows.clone();
-        model_for_with_icons("", &rows, true, &mut guard)
+        model_for_with_icons("", &rows, true, context.as_deref(), &mut guard)
     };
 
     let palette = Palette::with_handler(theme, initial_model, Box::new(handler))?;
@@ -516,6 +614,14 @@ fn handle_activate(
                 return PaletteReply::Keep;
             }
 
+            // 1b. Fallback web search URL -> open in default browser immediately.
+            if let Some(url) = row.id.strip_prefix(FALLBACK_URL_PREFIX) {
+                let url = url.to_string();
+                drop(shown);
+                let _ = tc_platform_win::open(&url);
+                return close_reply();
+            }
+
             // 2. Built-in screen commands navigate cleanly inside the same palette window!
             if let Some(cmd) = LauncherState::command_of(&row.id) {
                 if let Some(ctx) = ctx {
@@ -524,6 +630,19 @@ fn handle_activate(
                         CommandId::SearchEmoji => return enter_emoji(ctx, &mut shown),
                         CommandId::SearchSnippets => return enter_snippets(ctx, &mut shown),
                         CommandId::CreateSnippet => return enter_create_snippet(&mut shown),
+                        CommandId::ShowNotes | CommandId::SearchNotes => {
+                            return enter_notes(ctx, &mut shown);
+                        }
+                        CommandId::CreateNote => return enter_create_note(&mut shown),
+                        CommandId::SearchQuicklinks => return enter_quicklinks(ctx, &mut shown),
+                        CommandId::CreateQuicklink => return enter_create_quicklink(&mut shown),
+                        CommandId::RunShellCommand => return enter_run_shell(&mut shown),
+                        CommandId::ExportSettings => return run_export_backup(ctx, &mut shown),
+                        CommandId::ImportSettings => return run_import_backup(ctx, &mut shown),
+                        CommandId::ImportFromRaycast => {
+                            return run_import_raycast(ctx, &mut shown);
+                        }
+                        CommandId::About => return enter_about(launcher, &mut shown),
                         CommandId::SearchFiles => {
                             return enter_files(launcher, ctx, handle_slot, &mut shown);
                         }
@@ -658,6 +777,122 @@ fn handle_activate(
                 }
             }
         }
+        Mode::Notes => {
+            if index == shown.notes.len() {
+                return enter_create_note(&mut shown);
+            }
+            let Some(note) = shown.notes.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            drop(shown);
+            if secondary {
+                let _ = tc_platform_win::open(&note.path.to_string_lossy());
+            } else {
+                let _ = tc_platform_win::clipboard().write_text(&note.body);
+            }
+            close_reply()
+        }
+        Mode::CreateNote(draft) => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut next_draft = draft.clone();
+            let input = shown.query.clone();
+            match next_draft.step {
+                NoteDraftStep::Title => {
+                    let trimmed = input.trim();
+                    if trimmed.is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    next_draft.title = trimmed.to_string();
+                    next_draft.step = NoteDraftStep::Body;
+                    shown.mode = Mode::CreateNote(next_draft.clone());
+                    shown.query.clear();
+                    PaletteReply::Navigate(create_note_model(&next_draft, ""))
+                }
+                NoteDraftStep::Body => {
+                    let body = if input.trim().is_empty() {
+                        tc_platform_win::clipboard().read_text().unwrap_or_default()
+                    } else {
+                        input
+                    };
+                    if body.trim().is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    let _ = ctx.features.create_note(&next_draft.title, &body);
+                    enter_notes(ctx, &mut shown)
+                }
+            }
+        }
+        Mode::Quicklinks => {
+            if index == shown.quicklinks.len() {
+                return enter_create_quicklink(&mut shown);
+            }
+            let Some(link) = shown.quicklinks.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            if link.needs_query() {
+                shown.mode = Mode::QuicklinkArg(link.clone());
+                shown.query.clear();
+                return PaletteReply::Navigate(quicklink_arg_model(&link, ""));
+            }
+            let url = link.expand_url("");
+            drop(shown);
+            let _ = tc_platform_win::open(&url);
+            close_reply()
+        }
+        Mode::QuicklinkArg(link) => {
+            let url = link.expand_url(&shown.query);
+            drop(shown);
+            let _ = tc_platform_win::open(&url);
+            close_reply()
+        }
+        Mode::CreateQuicklink(draft) => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut next_draft = draft.clone();
+            let input = shown.query.clone();
+            match next_draft.step {
+                QuicklinkDraftStep::Name => {
+                    let trimmed = input.trim();
+                    if trimmed.is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    next_draft.name = trimmed.to_string();
+                    next_draft.step = QuicklinkDraftStep::Url;
+                    shown.mode = Mode::CreateQuicklink(next_draft.clone());
+                    shown.query.clear();
+                    PaletteReply::Navigate(create_quicklink_model(&next_draft, ""))
+                }
+                QuicklinkDraftStep::Url => {
+                    let trimmed = input.trim();
+                    if trimmed.is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    ctx.features
+                        .add_quicklink(next_draft.name, trimmed.to_string());
+                    enter_quicklinks(ctx, &mut shown)
+                }
+            }
+        }
+        Mode::RunShell => {
+            let cmd = shown.query.trim().to_string();
+            if cmd.is_empty() {
+                return PaletteReply::Keep;
+            }
+            let output = match FeatureStores::run_shell_command(&cmd) {
+                Ok(out) => {
+                    let _ = tc_platform_win::clipboard().write_text(&out);
+                    out
+                }
+                Err(err) => format!("Error: {err}"),
+            };
+            shown.last_shell_output = Some(output.clone());
+            shown.query.clear();
+            PaletteReply::Navigate(run_shell_model("", Some(&output)))
+        }
+        Mode::Status => enter_launcher(launcher, ctx, &mut shown, true),
         Mode::Files => {
             let Some(row) = shown.file_rows.get(index).cloned() else {
                 return PaletteReply::Keep;
@@ -731,7 +966,60 @@ fn handle_action(
         (Mode::Launcher, ActionKey::Tab) if shown.query.trim().is_empty() => {
             enter_clipboard(ctx, &mut shown)
         }
-        (Mode::Clipboard, ActionKey::Tab) => enter_launcher(launcher, &mut shown, true),
+        (Mode::Clipboard, ActionKey::Tab) => enter_launcher(launcher, Some(ctx), &mut shown, true),
+
+        // Launcher Ctrl+P: Pin / unpin selected app as a Favorite!
+        (Mode::Launcher, ActionKey::CtrlP) => {
+            if let Some(row) = shown.rows.get(selected).cloned() {
+                if row.kind == APPLICATIONS {
+                    ctx.features.toggle_favorite(&row.id);
+                    let q = shown.query.clone();
+                    let is_suggestions = q.trim().is_empty();
+                    let rows = if is_suggestions {
+                        suggestions_with_favorites(launcher, Some(ctx))
+                    } else {
+                        shown.rows.clone()
+                    };
+                    shown.rows = rows.clone();
+                    return PaletteReply::Update(model_for_with_icons(
+                        &q,
+                        &rows,
+                        is_suggestions,
+                        Some(ctx),
+                        &mut shown,
+                    ));
+                }
+            }
+            PaletteReply::Keep
+        }
+
+        // Notes actions: Ctrl+K Create New, Ctrl+Delete Remove selected note.
+        (Mode::Notes, ActionKey::CtrlK) => enter_create_note(&mut shown),
+        (Mode::Notes, ActionKey::CtrlDelete) => {
+            if let Some(note) = shown.notes.get(selected).cloned() {
+                ctx.features.delete_note(&note.path);
+                let q = shown.query.clone();
+                let list = ctx.features.search_notes(&q);
+                let next_sel = selected.min(list.len().saturating_sub(1));
+                shown.notes = list.clone();
+                return PaletteReply::Update(notes_model(&q, &list, next_sel));
+            }
+            PaletteReply::Keep
+        }
+
+        // Quicklinks actions: Ctrl+K Create New, Ctrl+Delete Remove selected link.
+        (Mode::Quicklinks, ActionKey::CtrlK) => enter_create_quicklink(&mut shown),
+        (Mode::Quicklinks, ActionKey::CtrlDelete) => {
+            if let Some(link) = shown.quicklinks.get(selected).cloned() {
+                ctx.features.delete_quicklink(&link.name);
+                let q = shown.query.clone();
+                let list = ctx.features.search_quicklinks(&q);
+                let next_sel = selected.min(list.len().saturating_sub(1));
+                shown.quicklinks = list.clone();
+                return PaletteReply::Update(quicklinks_model(&q, &list, next_sel));
+            }
+            PaletteReply::Keep
+        }
 
         // Clipboard actions: Ctrl+P Pin, Ctrl+K Cycle Filter, Ctrl+Delete Remove.
         (Mode::Clipboard, ActionKey::CtrlP) => {
@@ -824,18 +1112,194 @@ fn handle_action(
     }
 }
 
-fn enter_launcher(launcher: &LauncherState, shown: &mut Shown, clear_edit: bool) -> PaletteReply {
-    let rows = launcher.suggestions();
+fn enter_launcher(
+    launcher: &LauncherState,
+    ctx: Option<&NativeContext>,
+    shown: &mut Shown,
+    clear_edit: bool,
+) -> PaletteReply {
+    let rows = suggestions_with_favorites(launcher, ctx);
     shown.mode = Mode::Launcher;
     shown.query.clear();
     shown.rows = rows.clone();
     shown.settings_rows.clear();
-    let model = model_for_with_icons("", &rows, true, shown);
+    let model = model_for_with_icons("", &rows, true, ctx, shown);
     if clear_edit {
         PaletteReply::Navigate(model)
     } else {
         PaletteReply::Update(model)
     }
+}
+
+fn suggestions_with_favorites(
+    launcher: &LauncherState,
+    ctx: Option<&NativeContext>,
+) -> Vec<ResultRow> {
+    let mut base = launcher.suggestions();
+    let Some(ctx) = ctx else {
+        return base;
+    };
+    let fav_ids = ctx.features.favorite_ids();
+    if fav_ids.is_empty() {
+        return base;
+    }
+    let mut favs = Vec::new();
+    for id in &fav_ids {
+        if let Some(pos) = base.iter().position(|r| r.id == *id) {
+            favs.push(base.remove(pos));
+        }
+    }
+    favs.extend(base);
+    favs
+}
+
+fn enter_notes(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::Notes;
+    shown.query.clear();
+    let list = ctx.features.search_notes("");
+    shown.notes = list.clone();
+    PaletteReply::Navigate(notes_model("", &list, 0))
+}
+
+fn enter_create_note(shown: &mut Shown) -> PaletteReply {
+    let draft = NoteDraft::new();
+    shown.mode = Mode::CreateNote(draft.clone());
+    shown.query.clear();
+    PaletteReply::Navigate(create_note_model(&draft, ""))
+}
+
+fn enter_quicklinks(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::Quicklinks;
+    shown.query.clear();
+    let list = ctx.features.search_quicklinks("");
+    shown.quicklinks = list.clone();
+    PaletteReply::Navigate(quicklinks_model("", &list, 0))
+}
+
+fn enter_create_quicklink(shown: &mut Shown) -> PaletteReply {
+    let draft = QuicklinkDraft::new();
+    shown.mode = Mode::CreateQuicklink(draft.clone());
+    shown.query.clear();
+    PaletteReply::Navigate(create_quicklink_model(&draft, ""))
+}
+
+fn enter_run_shell(shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::RunShell;
+    shown.query.clear();
+    let last = shown.last_shell_output.clone();
+    PaletteReply::Navigate(run_shell_model("", last.as_deref()))
+}
+
+fn run_export_backup(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::Status;
+    shown.query.clear();
+    match ctx.features.export_backup_to_desktop() {
+        Ok((path, count)) => {
+            let path_str = path.to_string_lossy().to_string();
+            let _ = tc_platform_win::reveal(&path_str);
+            PaletteReply::Navigate(status_screen_model(
+                "Backup Exported",
+                &format!("Saved {count} files with SHA-256 checksum"),
+                &path_str,
+                Vec::new(),
+            ))
+        }
+        Err(err) => PaletteReply::Navigate(status_screen_model(
+            "Backup Failed",
+            "Could not export backup",
+            &err,
+            Vec::new(),
+        )),
+    }
+}
+
+fn run_import_backup(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    let picked = tc_platform_win::pick_file(
+        "Select YAL Backup (.yalbackup.json)",
+        "YAL Backup (*.json)",
+        "*.json",
+    );
+    shown.mode = Mode::Status;
+    shown.query.clear();
+    let Some(path) = picked else {
+        return PaletteReply::Navigate(status_screen_model(
+            "Import Cancelled",
+            "No backup file selected",
+            "Press Esc to return to Launcher",
+            Vec::new(),
+        ));
+    };
+    match ctx.features.import_backup_from(&path) {
+        Ok(count) => PaletteReply::Navigate(status_screen_model(
+            "Backup Restored",
+            &format!("Verified SHA-256 & restored {count} files"),
+            &path.to_string_lossy(),
+            Vec::new(),
+        )),
+        Err(err) => PaletteReply::Navigate(status_screen_model(
+            "Import Failed",
+            "Backup verification or restore failed",
+            &err,
+            Vec::new(),
+        )),
+    }
+}
+
+fn run_import_raycast(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+    let picked = tc_platform_win::pick_file(
+        "Select Raycast Snippets JSON Export",
+        "Raycast Export (*.json)",
+        "*.json",
+    );
+    shown.mode = Mode::Status;
+    shown.query.clear();
+    let Some(path) = picked else {
+        return PaletteReply::Navigate(status_screen_model(
+            "Import Cancelled",
+            "No Raycast file selected",
+            "Press Esc to return to Launcher",
+            Vec::new(),
+        ));
+    };
+    match ctx.features.import_raycast_snippets_from(&path) {
+        Ok(count) => PaletteReply::Navigate(status_screen_model(
+            "Raycast Import",
+            &format!("Imported {count} Raycast snippets"),
+            "Open Search Snippets to browse & expand them",
+            Vec::new(),
+        )),
+        Err(err) => PaletteReply::Navigate(status_screen_model(
+            "Import Failed",
+            "Could not import Raycast snippets",
+            &err,
+            Vec::new(),
+        )),
+    }
+}
+
+fn enter_about(launcher: &LauncherState, shown: &mut Shown) -> PaletteReply {
+    shown.mode = Mode::Status;
+    shown.query.clear();
+    let extra = vec![
+        Row::detailed(
+            "Pure Win32 + Direct2D + DirectWrite",
+            "Zero WebView2, zero Node, 0% idle CPU",
+        )
+        .with_section("Runtime")
+        .with_icon(Icon::new("⚡", Color::rgb(0x34, 0xd3, 0x99))),
+        Row::detailed(
+            format!("{} Indexed Applications", launcher.program_count()),
+            "Start Menu, Microsoft Store/MSIX, Registry & App Paths",
+        )
+        .with_section("Runtime")
+        .with_icon(Icon::new("⊞", Color::rgb(0x38, 0xbd, 0xf8))),
+    ];
+    PaletteReply::Navigate(status_screen_model(
+        "About YAL",
+        &format!("YAL v{}", env!("CARGO_PKG_VERSION")),
+        "Yet Another Launcher — Native Windows Port of Tinycast",
+        extra,
+    ))
 }
 
 fn enter_clipboard(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
@@ -1101,6 +1565,7 @@ fn model_for_with_icons(
     query: &str,
     rows: &[ResultRow],
     is_suggestions: bool,
+    ctx: Option<&NativeContext>,
     shown: &mut Shown,
 ) -> Model {
     let ui_rows: Vec<Row> = rows
@@ -1108,6 +1573,14 @@ fn model_for_with_icons(
         .enumerate()
         .map(|(idx, result)| {
             let mut row = row_of(result, query, is_suggestions);
+            if result.kind == APPLICATIONS
+                && ctx.is_some_and(|c| c.features.is_favorite(&result.id))
+            {
+                if is_suggestions {
+                    row.section = "Favorites".to_string();
+                }
+                row.shortcut = "★".to_string();
+            }
             if idx < 30 && matches!(result.kind.as_str(), APPLICATIONS | FILE_SECTION) {
                 if let Some(bitmap) = shown.lookup_or_queue_icon(&result.target) {
                     row = row.with_bitmap(result.target.clone(), bitmap);

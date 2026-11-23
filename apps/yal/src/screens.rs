@@ -8,8 +8,55 @@ use tc_platform_win::window_control::WindowInfo;
 use tc_snippets::StoredSnippet;
 use tc_ui::{Color, GridCell, GridModel, Icon, IconBitmap, Model, Row};
 
-use crate::features::CalcHistoryEntry;
+use crate::features::{CalcHistoryEntry, NoteItem, Quicklink};
 use crate::launcher::ResultRow;
+
+/// Prefix for fallback web-search rows surfaced when root Launcher has no local matches.
+pub const FALLBACK_URL_PREFIX: &str = "fallback-url:";
+
+/// Wizard step when creating a Quick Note inline.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NoteDraft {
+    pub step: NoteDraftStep,
+    pub title: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NoteDraftStep {
+    Title,
+    Body,
+}
+
+impl NoteDraft {
+    pub fn new() -> Self {
+        Self {
+            step: NoteDraftStep::Title,
+            title: String::new(),
+        }
+    }
+}
+
+/// Wizard step when creating a Quicklink inline.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QuicklinkDraft {
+    pub step: QuicklinkDraftStep,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QuicklinkDraftStep {
+    Name,
+    Url,
+}
+
+impl QuicklinkDraft {
+    pub fn new() -> Self {
+        Self {
+            step: QuicklinkDraftStep::Name,
+            name: String::new(),
+        }
+    }
+}
 
 /// Wizard step when creating a snippet inline inside the palette.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -512,6 +559,336 @@ pub fn calc_history_model(query: &str, entries: &[CalcHistoryEntry], selected: u
         scroll_offset: 0.0,
         grid: None,
     }
+}
+
+/// Build the Quick Notes browser screen model.
+pub fn notes_model(query: &str, notes: &[NoteItem], selected: usize) -> Model {
+    let mut rows: Vec<Row> = notes
+        .iter()
+        .map(|note| {
+            let preview: String = note
+                .body
+                .split_whitespace()
+                .collect::<Vec<_>>()
+                .join(" ")
+                .chars()
+                .take(72)
+                .collect();
+            let detail = if preview.is_empty() {
+                relative_time_ms(note.modified_ms)
+            } else {
+                format!("{preview} · {}", relative_time_ms(note.modified_ms))
+            };
+            Row::detailed(&note.title, detail)
+                .with_section("Notes")
+                .with_icon(Icon::new("✎", Color::rgb(0xfb, 0xbf, 0x24)))
+        })
+        .collect();
+
+    let q = query.trim().to_ascii_lowercase();
+    if q.is_empty() || "create new note".contains(&q) {
+        rows.push(
+            Row::detailed(
+                "Create New Note",
+                "Saved as portable Markdown under %APPDATA%\\yal\\notes",
+            )
+            .with_section("Actions")
+            .with_shortcut("Ctrl+K")
+            .with_icon(Icon::new("+", Color::rgb(0x63, 0x66, 0xf1))),
+        );
+    }
+
+    let count_label = match notes.len() {
+        0 => "No notes yet — press Ctrl+K to write one".to_string(),
+        1 => "1 note".to_string(),
+        n => format!("{n} notes"),
+    };
+
+    Model {
+        query: query.to_string(),
+        rows,
+        selected: selected.min(notes.len()),
+        hovered: None,
+        footer: count_label.clone(),
+        placeholder: "Search quick notes…".to_string(),
+        header_badge: Some("Notes".to_string()),
+        result_count: Some(count_label),
+        footer_hints: vec![
+            ("↵".to_string(), "Copy".to_string()),
+            ("Ctrl+↵".to_string(), "Open File".to_string()),
+            ("Ctrl+K".to_string(), "New".to_string()),
+            ("Esc".to_string(), "Back".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Build the 2-step inline Create Note wizard model.
+pub fn create_note_model(draft: &NoteDraft, input: &str) -> Model {
+    let (placeholder, badge, prompt, detail) = match draft.step {
+        NoteDraftStep::Title => (
+            "Step 1/2 — Note title…",
+            "New Note · 1/2",
+            if input.trim().is_empty() {
+                "Type a title for this note and press Enter".to_string()
+            } else {
+                format!("Title: {}", input.trim())
+            },
+            "Stored as a portable .md file included in YAL backups".to_string(),
+        ),
+        NoteDraftStep::Body => (
+            "Step 2/2 — Note text (or Enter empty to save Clipboard)…",
+            "New Note · 2/2",
+            if input.trim().is_empty() {
+                "Press Enter to save current Clipboard text into this note".to_string()
+            } else {
+                format!("Save note: {}", input.trim())
+            },
+            format!("Title: {}", draft.title),
+        ),
+    };
+
+    Model {
+        query: input.to_string(),
+        rows: vec![Row::detailed(prompt, detail)
+            .with_section("Create Note")
+            .with_shortcut("↵ Continue")
+            .with_icon(Icon::new("✎", Color::rgb(0xfb, 0xbf, 0x24)))],
+        selected: 0,
+        hovered: None,
+        footer: badge.to_string(),
+        placeholder: placeholder.to_string(),
+        header_badge: Some(badge.to_string()),
+        result_count: Some(badge.to_string()),
+        footer_hints: vec![
+            ("↵".to_string(), "Next / Save".to_string()),
+            ("Esc".to_string(), "Cancel".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Build the Quicklinks browser screen model.
+pub fn quicklinks_model(query: &str, links: &[Quicklink], selected: usize) -> Model {
+    let mut rows: Vec<Row> = links
+        .iter()
+        .map(|link| {
+            let mut row = Row::detailed(&link.name, &link.url_template)
+                .with_section("Quicklinks")
+                .with_icon(Icon::new("↗", Color::rgb(0x38, 0xbd, 0xf8)));
+            if link.needs_query() {
+                row = row.with_shortcut("{query}");
+            }
+            row
+        })
+        .collect();
+
+    let q = query.trim().to_ascii_lowercase();
+    if q.is_empty() || "create quicklink".contains(&q) {
+        rows.push(
+            Row::detailed(
+                "Create New Quicklink",
+                "Use {query} in any URL for instant parameterized web search",
+            )
+            .with_section("Actions")
+            .with_shortcut("Ctrl+K")
+            .with_icon(Icon::new("+", Color::rgb(0x63, 0x66, 0xf1))),
+        );
+    }
+
+    let count_label = match links.len() {
+        0 => "No matching quicklinks".to_string(),
+        1 => "1 quicklink".to_string(),
+        n => format!("{n} quicklinks"),
+    };
+
+    Model {
+        query: query.to_string(),
+        rows,
+        selected: selected.min(links.len()),
+        hovered: None,
+        footer: count_label.clone(),
+        placeholder: "Search quicklinks…".to_string(),
+        header_badge: Some("Quicklinks".to_string()),
+        result_count: Some(count_label),
+        footer_hints: vec![
+            ("↵".to_string(), "Open".to_string()),
+            ("Ctrl+K".to_string(), "New".to_string()),
+            ("Ctrl+Del".to_string(), "Remove".to_string()),
+            ("Esc".to_string(), "Back".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Build the inline argument entry prompt for a parameterized `{query}` quicklink.
+pub fn quicklink_arg_model(link: &Quicklink, input: &str) -> Model {
+    let preview_url = link.expand_url(input);
+    let label = if input.trim().is_empty() {
+        format!("Type search query for {}", link.name)
+    } else {
+        format!("Search {} for \"{}\"", link.name, input.trim())
+    };
+    Model {
+        query: input.to_string(),
+        rows: vec![Row::detailed(label, preview_url)
+            .with_section("Quicklink")
+            .with_shortcut("↵ Open")
+            .with_icon(Icon::new("↗", Color::rgb(0x38, 0xbd, 0xf8)))],
+        selected: 0,
+        hovered: None,
+        footer: link.name.clone(),
+        placeholder: format!("{} query…", link.name),
+        header_badge: Some(link.name.clone()),
+        result_count: Some("Press Enter to open in browser".to_string()),
+        footer_hints: vec![
+            ("↵".to_string(), "Open Browser".to_string()),
+            ("Esc".to_string(), "Back".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Build the 2-step inline Create Quicklink wizard model.
+pub fn create_quicklink_model(draft: &QuicklinkDraft, input: &str) -> Model {
+    let (placeholder, badge, prompt, detail) = match draft.step {
+        QuicklinkDraftStep::Name => (
+            "Step 1/2 — Quicklink name (e.g. Rust Docs)…",
+            "New Quicklink · 1/2",
+            if input.trim().is_empty() {
+                "Type a name for this quicklink and press Enter".to_string()
+            } else {
+                format!("Name: {}", input.trim())
+            },
+            "Appears in Quicklinks screen and YAL backups".to_string(),
+        ),
+        QuicklinkDraftStep::Url => (
+            "Step 2/2 — URL (include {query} for search)…",
+            "New Quicklink · 2/2",
+            if input.trim().is_empty() {
+                "Type URL e.g. https://docs.rs/releases/search?query={query}".to_string()
+            } else {
+                format!("Save URL: {}", input.trim())
+            },
+            format!("Quicklink: {}", draft.name),
+        ),
+    };
+
+    Model {
+        query: input.to_string(),
+        rows: vec![Row::detailed(prompt, detail)
+            .with_section("Create Quicklink")
+            .with_shortcut("↵ Continue")
+            .with_icon(Icon::new("↗", Color::rgb(0x38, 0xbd, 0xf8)))],
+        selected: 0,
+        hovered: None,
+        footer: badge.to_string(),
+        placeholder: placeholder.to_string(),
+        header_badge: Some(badge.to_string()),
+        result_count: Some(badge.to_string()),
+        footer_hints: vec![
+            ("↵".to_string(), "Next / Save".to_string()),
+            ("Esc".to_string(), "Cancel".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Build the inline Run Shell Command screen model.
+pub fn run_shell_model(input: &str, last_result: Option<&str>) -> Model {
+    let mut rows = vec![Row::detailed(
+        if input.trim().is_empty() {
+            "Type a PowerShell command and press Enter".to_string()
+        } else {
+            format!("Run: {}", input.trim())
+        },
+        "Runs in PowerShell and copies output to clipboard",
+    )
+    .with_section("Shell")
+    .with_shortcut("↵ Run")
+    .with_icon(Icon::new(">_", Color::rgb(0xa7, 0x8b, 0xfa)))];
+
+    if let Some(output) = last_result {
+        let preview: String = output
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .chars()
+            .take(110)
+            .collect();
+        rows.push(
+            Row::detailed(preview, "Copied to clipboard")
+                .with_section("Last Output")
+                .with_icon(Icon::new("✓", Color::rgb(0x34, 0xd3, 0x99))),
+        );
+    }
+
+    Model {
+        query: input.to_string(),
+        rows,
+        selected: 0,
+        hovered: None,
+        footer: "PowerShell".to_string(),
+        placeholder: "Run PowerShell command…".to_string(),
+        header_badge: Some("Shell".to_string()),
+        result_count: Some("Output copied to clipboard".to_string()),
+        footer_hints: vec![
+            ("↵".to_string(), "Run".to_string()),
+            ("Esc".to_string(), "Back".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Build the About YAL screen (or toast/status feedback view).
+pub fn status_screen_model(badge: &str, title: &str, detail: &str, extra_rows: Vec<Row>) -> Model {
+    let mut rows = vec![Row::detailed(title, detail)
+        .with_section(badge)
+        .with_icon(Icon::new("✦", Color::rgb(0x63, 0x66, 0xf1)))];
+    rows.extend(extra_rows);
+    Model {
+        query: String::new(),
+        rows,
+        selected: 0,
+        hovered: None,
+        footer: badge.to_string(),
+        placeholder: "Press Esc to return to Launcher…".to_string(),
+        header_badge: Some(badge.to_string()),
+        result_count: Some(badge.to_string()),
+        footer_hints: vec![("Esc".to_string(), "Back".to_string())],
+        scroll_offset: 0.0,
+        grid: None,
+    }
+}
+
+/// Fallback web search rows offered at root Launcher when no local result matched `query`.
+pub fn fallback_search_rows(query: &str, quicklinks: &[Quicklink]) -> Vec<ResultRow> {
+    let trimmed = query.trim();
+    if trimmed.chars().count() < 2 {
+        return Vec::new();
+    }
+    quicklinks
+        .iter()
+        .filter(|l| l.needs_query())
+        .take(4)
+        .map(|link| {
+            let url = link.expand_url(trimmed);
+            ResultRow {
+                id: format!("{FALLBACK_URL_PREFIX}{url}"),
+                name: format!("Search {} for \"{trimmed}\"", link.name),
+                detail: url.clone(),
+                kind: "Fallback Search".to_string(),
+                target: url,
+                ..ResultRow::default()
+            }
+        })
+        .collect()
 }
 
 /// Format a millisecond Unix timestamp as a crisp relative age label (`Just now`, `4m ago`, `2h ago`, `3d ago`).

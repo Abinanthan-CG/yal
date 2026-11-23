@@ -11,6 +11,7 @@ publish = false
 
 [dependencies]
 tc-apps = { path = "../../crates/tc-apps" }
+tc-backup = { path = "../../crates/tc-backup" }
 tc-calc = { path = "../../crates/tc-calc" }
 tc-clipboard = { path = "../../crates/tc-clipboard" }
 tc-core = { path = "../../crates/tc-core" }
@@ -25,6 +26,7 @@ tc-ui = { path = "../../crates/tc-ui" }
 tc-windows = { path = "../../crates/tc-windows" }
 tc-search = { path = "../../crates/tc-search" }
 chrono = { workspace = true }
+percent-encoding = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

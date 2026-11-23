@@ -70,7 +70,7 @@ pub const FILE_PREFIX: &str = "file:";
 ///
 /// The catalogue holds every built-in command; the launcher offers only the
 /// ones whose feature is in the build, so a row is never a dead end.
-const AVAILABLE_COMMANDS: [CommandId; 10] = [
+const AVAILABLE_COMMANDS: [CommandId; 20] = [
     CommandId::ClipboardHistory,
     CommandId::SearchEmoji,
     CommandId::SearchSnippets,
@@ -78,7 +78,17 @@ const AVAILABLE_COMMANDS: [CommandId; 10] = [
     CommandId::SearchFiles,
     CommandId::SwitchWindows,
     CommandId::CalculatorHistory,
+    CommandId::ShowNotes,
+    CommandId::CreateNote,
+    CommandId::SearchNotes,
+    CommandId::SearchQuicklinks,
+    CommandId::CreateQuicklink,
+    CommandId::RunShellCommand,
+    CommandId::ExportSettings,
+    CommandId::ImportSettings,
+    CommandId::ImportFromRaycast,
     CommandId::Settings,
+    CommandId::About,
     CommandId::Support,
     CommandId::Quit,
 ];
@@ -811,8 +821,13 @@ mod tests {
     fn a_program_is_found_by_its_name() {
         let launcher = launcher(vec![program("Notepad"), program("WordPad")]);
         let rows = launcher.search("note");
-        assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0].name, "Notepad");
+        let apps: Vec<&ResultRow> = rows.iter().filter(|r| r.kind == "Applications").collect();
+        assert_eq!(apps.len(), 1);
+        assert_eq!(apps[0].name, "Notepad");
+        assert_eq!(
+            rows[0].name, "Notepad",
+            "Applications always rank above Commands"
+        );
     }
 
     #[test]

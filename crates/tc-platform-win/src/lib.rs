@@ -6,6 +6,7 @@
 
 mod clipboard;
 pub mod clipboard_watcher;
+pub mod dialog;
 pub mod hotkey;
 pub mod http;
 pub mod icons;
@@ -22,6 +23,7 @@ mod windows;
 
 pub use clipboard::WindowsClipboard;
 pub use clipboard_watcher::ClipboardWatcher;
+pub use dialog::pick_file;
 /// The Windows clipboard, as text.
 pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()
