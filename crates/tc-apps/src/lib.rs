@@ -19,6 +19,8 @@ use tc_search::fuzzy::normalized;
 pub enum Source {
     /// A shortcut in the Start Menu: the name Windows shows the user.
     StartMenu,
+    /// A Microsoft Store / MSIX packaged application (`shell:AppsFolder\<AUMID>`).
+    Store,
     /// The registry's uninstall key: an installed program.
     Registry,
     /// The registry's App Paths key: an executable Windows can start.
@@ -30,6 +32,7 @@ impl Source {
     pub fn label(&self) -> &'static str {
         match self {
             Source::StartMenu => "Start menu",
+            Source::Store => "Microsoft Store",
             Source::Registry => "Installed program",
             Source::AppPath => "Application path",
         }

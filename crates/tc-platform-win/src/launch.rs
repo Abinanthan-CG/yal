@@ -4,61 +4,58 @@
 //! Windows equivalent is the shell itself, which is also what makes a `.lnk`
 //! shortcut work without resolving it to an executable first.
 
-use windows::core::PCWSTR;
+use windows::core::{w, PCWSTR};
+use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
 use windows::Win32::UI::Shell::{
     SHFileOperationW, ShellExecuteW, FOF_ALLOWUNDO, FOF_NOCONFIRMATION, FOF_NOERRORUI, FOF_SILENT,
     FO_DELETE, SHFILEOPSTRUCTW,
 };
 use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
-/// Open a program, a file or a folder, the way the shell does.
-///
-/// The target may be an executable, a Start Menu shortcut, a document or a
-/// folder: the shell knows what each of them is.
+/// Open a program, Store app (`shell:AppsFolder\<AUMID>`), file, URL, or folder.
 pub fn open(target: &str) -> Result<(), String> {
     let wide = to_wide(target);
-    // SAFETY: both strings are null-terminated, and the shell only reads
-    // them for the length of the call.
+    let com_ok = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }.is_ok();
     let result = unsafe {
         ShellExecuteW(
             None,
-            PCWSTR::null(),
+            w!("open"),
             PCWSTR(wide.as_ptr()),
             PCWSTR::null(),
             PCWSTR::null(),
             SW_SHOWNORMAL,
         )
     };
-    // A result of 32 or more is an error code; below that it is a handle.
+    if com_ok {
+        unsafe { CoUninitialize() };
+    }
     if result.0 as isize <= 32 {
         return Err(format!("Windows could not open `{target}`"));
     }
     Ok(())
 }
 
-/// Show a file in the file manager, with it selected.
+/// Show a file in File Explorer, with the file selected.
 pub fn reveal(target: &str) -> Result<(), String> {
-    let wide = to_wide(target);
-    // SAFETY: the string is null-terminated and the shell only reads it.
+    let args = to_wide(&format!("/select,\"{target}\""));
+    let com_ok = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }.is_ok();
     let result = unsafe {
         ShellExecuteW(
             None,
-            PCWSTR(wide_explorer().as_ptr()),
-            PCWSTR(wide.as_ptr()),
-            PCWSTR::null(),
+            w!("open"),
+            w!("explorer.exe"),
+            PCWSTR(args.as_ptr()),
             PCWSTR::null(),
             SW_SHOWNORMAL,
         )
     };
+    if com_ok {
+        unsafe { CoUninitialize() };
+    }
     if result.0 as isize <= 32 {
         return Err(format!("Windows could not show `{target}`"));
     }
     Ok(())
-}
-
-/// The verb that opens the file manager with a file selected.
-fn wide_explorer() -> Vec<u16> {
-    to_wide("explorer")
 }
 
 /// Move a file or a folder to the Recycle Bin.

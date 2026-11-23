@@ -35,11 +35,78 @@ const APP_PATHS_KEY: &str = r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Path
 
 /// Every program the machine can open.
 pub fn programs() -> Vec<Program> {
+    // Run Store / MSIX WinRT discovery concurrently on an MTA helper thread so
+    // it never collides with the UI thread's STA COM apartment and adds near-zero latency.
+    let store_handle = std::thread::spawn(store_programs);
+
     let mut found = Vec::new();
     found.extend(start_menu_programs());
     found.extend(registry_programs());
     found.extend(app_path_programs());
+    if let Ok(store) = store_handle.join() {
+        found.extend(store);
+    }
     deduplicate(found)
+}
+
+/// Microsoft Store / MSIX packaged applications enumerated via WinRT
+/// `PackageManager::FindPackagesByUserSecurityId` -> `GetAppListEntries`.
+fn store_programs() -> Vec<Program> {
+    use windows::core::HSTRING;
+    use windows::Management::Deployment::PackageManager;
+    use windows::Win32::System::WinRT::{RoInitialize, RO_INIT_MULTITHREADED};
+
+    unsafe {
+        let _ = RoInitialize(RO_INIT_MULTITHREADED);
+    }
+
+    let Ok(manager) = PackageManager::new() else {
+        return Vec::new();
+    };
+    let Ok(packages) = manager.FindPackagesByUserSecurityId(&HSTRING::new()) else {
+        return Vec::new();
+    };
+
+    let mut found = Vec::new();
+    for package in packages {
+        if package.IsFramework().unwrap_or(true) || package.IsResourcePackage().unwrap_or(true) {
+            continue;
+        }
+        let publisher = package
+            .PublisherDisplayName()
+            .ok()
+            .map(|p| p.to_string())
+            .filter(|p| !p.trim().is_empty());
+
+        let Ok(entries) = package.GetAppListEntries() else {
+            continue;
+        };
+        for entry in entries {
+            let Ok(aumid) = entry.AppUserModelId() else {
+                continue;
+            };
+            let aumid = aumid.to_string();
+            if aumid.trim().is_empty() {
+                continue;
+            }
+            let name = entry
+                .DisplayInfo()
+                .ok()
+                .and_then(|info| info.DisplayName().ok())
+                .map(|d| d.to_string())
+                .unwrap_or_default();
+            let trimmed = name.trim();
+            if trimmed.is_empty() || trimmed.contains("${") || trimmed.starts_with('@') {
+                continue;
+            }
+            let target = format!(r"shell:AppsFolder\{aumid}");
+            found.push(
+                Program::new(trimmed.to_string(), target, Source::Store)
+                    .with_publisher(publisher.clone()),
+            );
+        }
+    }
+    found
 }
 
 /// The programs in the Start Menu, per user and per machine.
@@ -376,6 +443,20 @@ mod tests {
             "notepad was not found among {} programs",
             found.len()
         );
+    }
+
+    #[test]
+    fn discovers_windows_store_msix_applications() {
+        let store = std::thread::spawn(store_programs)
+            .join()
+            .expect("mta thread");
+        assert!(
+            !store.is_empty(),
+            "expected at least one Microsoft Store / MSIX app on Windows 11"
+        );
+        assert!(store
+            .iter()
+            .all(|p| p.source == Source::Store && p.target.starts_with(r"shell:AppsFolder\")));
     }
 
     #[test]
