@@ -90,20 +90,20 @@ pub struct Metrics {
 impl Default for Metrics {
     fn default() -> Self {
         Self {
-            width: 720.0,
-            height: 460.0,
+            width: 750.0,
+            height: 475.0,
             padding: 10.0,
-            field_height: 54.0,
+            field_height: 52.0,
             field_inset: 44.0,
             row_height: 44.0,
-            icon_size: 24.0,
-            name_size: 14.0,
+            icon_size: 22.0,
+            name_size: 13.5,
             detail_size: 12.0,
             footer_size: 11.5,
             icon_text_size: 12.0,
             radius: 10.0,
             list_gap: 6.0,
-            footer_height: 38.0,
+            footer_height: 42.0,
             max_rows: 8,
         }
     }

@@ -14,6 +14,196 @@ pub const CALC_HERO_HEIGHT: f32 = 100.0;
 /// Height of one cell row in 2D Emoji Grid mode (in DIPs).
 pub const GRID_CELL_HEIGHT: f32 = 62.0;
 
+/// Left master list ratio in Master-Detail split views (exact Raycast 285/750 split).
+pub const MASTER_SPLIT_RATIO: f32 = 0.38;
+
+/// Minimum list viewport height when Master-Detail split view is active.
+pub const SPLIT_VIEW_MIN_HEIGHT: f32 = 368.0;
+
+/// Right-side Master-Detail preview & metadata pane (used by Clipboard, Files, Snippets, Notes).
+#[derive(Clone, Debug, Default)]
+pub struct DetailPane {
+    /// Preview headline (file name, clip type, note title, snippet name).
+    pub title: String,
+    /// Multi-line wrapped preview text (clipboard body, file text snippet, note markdown).
+    pub body: String,
+    /// Optional large color preview swatch banner (RGBA).
+    pub color_swatch: Option<[u8; 4]>,
+    /// Optional preview bitmap (clipboard image thumbnail or large shell icon).
+    pub image: Option<Arc<IconBitmap>>,
+    /// Stable GPU cache key for `image`.
+    pub image_key: Option<String>,
+    /// Bottom Raycast-style key-value metadata table `(Label, Value)`.
+    pub metadata: Vec<(String, String)>,
+}
+
+/// One selectable command inside the floating `Ctrl+K` Action Panel popover.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ActionMenuItem {
+    pub id: String,
+    pub title: String,
+    pub section: String,
+    pub shortcut: String,
+    pub glyph: String,
+    pub destructive: bool,
+}
+
+impl ActionMenuItem {
+    pub fn new(
+        id: impl Into<String>,
+        title: impl Into<String>,
+        section: impl Into<String>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            title: title.into(),
+            section: section.into(),
+            shortcut: String::new(),
+            glyph: "›".to_string(),
+            destructive: false,
+        }
+    }
+
+    pub fn with_shortcut(mut self, s: impl Into<String>) -> Self {
+        self.shortcut = s.into();
+        self
+    }
+
+    pub fn with_glyph(mut self, g: impl Into<String>) -> Self {
+        self.glyph = g.into();
+        self
+    }
+
+    pub fn destructive(mut self) -> Self {
+        self.destructive = true;
+        self
+    }
+}
+
+/// Floating bottom-right Raycast-style Action Panel (`Ctrl+K`).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ActionMenuModel {
+    pub title: String,
+    pub query: String,
+    pub items: Vec<ActionMenuItem>,
+    pub selected: usize,
+    pub hovered: Option<usize>,
+}
+
+/// Action Panel layout constants shared by paint and hit-testing.
+pub const ACTION_MENU_WIDTH: f32 = 304.0;
+pub const ACTION_MENU_HEADER_H: f32 = 32.0;
+pub const ACTION_MENU_ROW_H: f32 = 32.0;
+pub const ACTION_MENU_MAX_VISIBLE: usize = 8;
+
+impl ActionMenuModel {
+    pub fn filtered_indices(&self) -> Vec<usize> {
+        let q = self.query.trim().to_ascii_lowercase();
+        if q.is_empty() {
+            return (0..self.items.len()).collect();
+        }
+        self.items
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| {
+                item.title.to_ascii_lowercase().contains(&q)
+                    || item.section.to_ascii_lowercase().contains(&q)
+            })
+            .map(|(idx, _)| idx)
+            .collect()
+    }
+
+    pub fn selected_item(&self) -> Option<&ActionMenuItem> {
+        let indices = self.filtered_indices();
+        let raw_idx = *indices.get(self.selected)?;
+        self.items.get(raw_idx)
+    }
+
+    pub fn select_next(&mut self) {
+        let len = self.filtered_indices().len();
+        if self.selected + 1 < len {
+            self.selected += 1;
+        }
+    }
+
+    pub fn select_previous(&mut self) {
+        if self.selected > 0 {
+            self.selected -= 1;
+        }
+    }
+
+    /// Bounding rectangle `(left, top, right, bottom)` in DIPs anchored bottom-right above footer.
+    pub fn rect(&self, metrics: Metrics, window_height: f32) -> (f32, f32, f32, f32) {
+        let count = self
+            .filtered_indices()
+            .len()
+            .clamp(1, ACTION_MENU_MAX_VISIBLE);
+        let h = ACTION_MENU_HEADER_H + count as f32 * ACTION_MENU_ROW_H + 12.0;
+        let right = metrics.width - 10.0;
+        let left = (right - ACTION_MENU_WIDTH).max(10.0);
+        let bottom = (window_height - metrics.footer_height - 8.0).max(metrics.field_height + 40.0);
+        let top = (bottom - h).max(metrics.field_height + 8.0);
+        (left, top, right, bottom)
+    }
+
+    /// Hit-test a DIP point against the Action Panel rows; returns filtered row index.
+    pub fn hit_test_dip(
+        &self,
+        x_dip: f32,
+        y_dip: f32,
+        metrics: Metrics,
+        window_height: f32,
+    ) -> Option<usize> {
+        let (left, top, right, bottom) = self.rect(metrics, window_height);
+        if x_dip < left || x_dip > right || y_dip < top || y_dip > bottom {
+            return None;
+        }
+        let rows_top = top + ACTION_MENU_HEADER_H + 4.0;
+        if y_dip < rows_top {
+            return None;
+        }
+        let idx = ((y_dip - rows_top) / ACTION_MENU_ROW_H).floor() as usize;
+        let filtered = self.filtered_indices();
+        let scroll = self.scroll_start(filtered.len());
+        let target = scroll + idx;
+        if target < filtered.len() && idx < ACTION_MENU_MAX_VISIBLE {
+            Some(target)
+        } else {
+            None
+        }
+    }
+
+    pub fn scroll_start(&self, total: usize) -> usize {
+        if total <= ACTION_MENU_MAX_VISIBLE || self.selected < ACTION_MENU_MAX_VISIBLE {
+            0
+        } else {
+            (self.selected + 1 - ACTION_MENU_MAX_VISIBLE).min(total - ACTION_MENU_MAX_VISIBLE)
+        }
+    }
+}
+
+/// Visual tone for an inline bottom footer toast.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ToastKind {
+    Success,
+    Info,
+    Error,
+}
+
+/// Inline status toast displayed in the left slot of the footer bar.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ToastModel {
+    pub kind: ToastKind,
+    pub message: String,
+}
+
+/// Active inline header argument pill (e.g. `GitHub Search ▸`) while typing a command argument.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct InlineArgBanner {
+    pub command_name: String,
+    pub arg_label: String,
+}
+
 /// One tile in a 2D Emoji / Symbol grid.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct GridCell {
@@ -212,6 +402,18 @@ pub struct Model {
     pub scroll_offset: f32,
     /// Optional 2D Emoji / Symbol grid; when `Some`, rendered instead of `rows`.
     pub grid: Option<GridModel>,
+    /// Show a clickable `←` back button in the header left slot (sub-screens).
+    pub back_button: bool,
+    /// Optional Master-Detail split preview/metadata pane on the right (465 DIPs).
+    pub detail: Option<DetailPane>,
+    /// Optional floating bottom-right `Ctrl+K` Action Panel popover.
+    pub action_menu: Option<ActionMenuModel>,
+    /// Optional inline toast banner rendered in the left footer slot.
+    pub toast: Option<ToastModel>,
+    /// Active inline `Tab` argument pill inside the search header.
+    pub inline_arg: Option<InlineArgBanner>,
+    /// Primary action verb shown in the right footer slot (e.g. "Open", "Paste", "Copy").
+    pub primary_action: Option<String>,
 }
 
 /// Positioned section header in content-space DIPs (relative to `list_top`).
@@ -383,7 +585,11 @@ impl Model {
         };
 
         let max_list_height = metrics.max_rows as f32 * metrics.row_height + SECTION_HEADER_HEIGHT;
-        let visible_list_height = content_height.min(max_list_height);
+        let visible_list_height = if self.detail.is_some() {
+            SPLIT_VIEW_MIN_HEIGHT.max(content_height.min(max_list_height))
+        } else {
+            content_height.min(max_list_height)
+        };
         let list_bottom = list_top + visible_list_height;
         let window_height = list_bottom + metrics.list_gap + metrics.footer_height;
 
@@ -452,6 +658,13 @@ impl Model {
             } else {
                 None
             };
+        }
+        // In Master-Detail split mode, only clicks in the left master list hit rows.
+        if self.detail.is_some() {
+            let split_x = (metrics.width * MASTER_SPLIT_RATIO).round();
+            if x_dip >= split_x {
+                return None;
+            }
         }
         layout.row_at_y(y_dip, self.scroll_offset)
     }

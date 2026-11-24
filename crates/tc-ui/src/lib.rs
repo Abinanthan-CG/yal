@@ -1,11 +1,10 @@
 //! The palette, drawn by the system rather than by a browser.
 //!
 //! `tc-ui` is the native surface: a borderless window, painted with Direct2D
-//! and typed into with a real Windows edit control. It exists because the
-//! browser engine a web view brings costs more memory than the whole rest of
-//! YAL put together; see `docs/port-notes/024-the-weight-of-the-app.md`.
+//! and typed into with a real Windows edit control.
 
 pub mod event;
+pub mod hud;
 pub mod model;
 pub mod paint;
 pub mod theme;
@@ -13,7 +12,11 @@ pub mod tokens;
 pub mod window;
 
 pub use event::{ignore, ActionKey, Handler, PaletteEvent, PaletteReply};
-pub use model::{GridCell, GridModel, Icon, IconBitmap, Model, PaletteLayout, Row};
+pub use hud::show_hud;
+pub use model::{
+    ActionMenuItem, ActionMenuModel, DetailPane, GridCell, GridModel, Icon, IconBitmap,
+    InlineArgBanner, Model, PaletteLayout, Row, ToastKind, ToastModel,
+};
 pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};
 pub use window::{

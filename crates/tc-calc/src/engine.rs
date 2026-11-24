@@ -90,6 +90,12 @@ pub fn evaluate_with_context(query: &str, catalog: &dyn Catalog, ctx: &CalcConte
         return CalcOutcome::NoCard;
     }
 
+    // 0. Inline variable assignments (`x = 42; x * 2`, `price = 120; tax = 1.18; price * tax`)
+    //    and `ans` previous-answer substitution (`ans * 1.18`).
+    if let Some(outcome) = try_eval_variables_or_ans(&trimmed, catalog, ctx) {
+        return outcome;
+    }
+
     // 1. Unwrap natural-language question leads (`what is ...`, `how many ...`, `convert ...`).
     if let Some(inner) = specialty::unwrap_question(&trimmed) {
         if let CalcOutcome::Card(card) = evaluate_with_context(inner, catalog, ctx) {
@@ -765,6 +771,200 @@ fn is_sign(index: usize, tokens: &[Token], catalog: &dyn Catalog) -> bool {
     }
 }
 
+/// Evaluates sequential `;`-separated variable assignments (`x = 42; x * 2`,
+/// `price = 120; tax = 1.18; price * tax`) and/or `ans` referencing `ctx.last_answer`.
+fn try_eval_variables_or_ans(
+    trimmed: &str,
+    catalog: &dyn Catalog,
+    ctx: &CalcContext,
+) -> Option<CalcOutcome> {
+    let has_semi = trimmed.contains(';');
+    let has_ans = ctx.last_answer.is_some() && contains_word_ci(trimmed, "ans");
+    if !has_semi && !has_ans {
+        return None;
+    }
+
+    let mut env: Vec<(String, String)> = Vec::new();
+    if let Some(ans) = ctx.last_answer {
+        env.push(("ans".to_string(), Formatter::copy_text(ans)));
+    }
+
+    // Avoid infinite recursion by clearing `last_answer` in inner evaluations.
+    let inner_ctx = ctx.clone().with_last_answer(None);
+
+    if !has_semi {
+        let substituted = substitute_identifiers(trimmed, &env);
+        if substituted == trimmed {
+            return None;
+        }
+        let outcome = evaluate_with_context(&substituted, catalog, &inner_ctx);
+        if let CalcOutcome::Card(mut card) = outcome {
+            card.expression = trimmed.to_string();
+            return Some(CalcOutcome::Card(card));
+        }
+        return None;
+    }
+
+    let segments: Vec<&str> = trimmed
+        .split(';')
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .collect();
+    if segments.len() < 2 {
+        return None;
+    }
+
+    let mut last_outcome: Option<CalcOutcome> = None;
+    for (idx, seg) in segments.iter().enumerate() {
+        let is_last = idx + 1 == segments.len();
+        if let Some((lhs, rhs)) = seg.split_once('=') {
+            let var_name = lhs.trim();
+            if is_valid_var_name(var_name) && !rhs.trim().starts_with('=') {
+                let expr_sub = substitute_identifiers(rhs.trim(), &env);
+                if let Ok(direct_val) = expr_sub.trim().replace(',', "").parse::<f64>() {
+                    if direct_val.is_finite() {
+                        let num_token = Formatter::copy_text(direct_val);
+                        if is_last {
+                            last_outcome = Some(CalcOutcome::Card(CalcResult::new(
+                                trimmed.to_string(),
+                                Payload::Value {
+                                    display: Formatter::grouped(&num_token),
+                                    copy_text: num_token.clone(),
+                                },
+                            )));
+                        }
+                        env.retain(|(k, _)| !k.eq_ignore_ascii_case(var_name));
+                        env.push((var_name.to_ascii_lowercase(), num_token));
+                        continue;
+                    }
+                }
+                let val_outcome = evaluate_with_context(&expr_sub, catalog, &inner_ctx);
+                if let CalcOutcome::Card(card) = val_outcome {
+                    if let Payload::Value { ref copy_text, .. } = card.payload {
+                        // Extract numeric portion for arithmetic reuse.
+                        let num_token = copy_text
+                            .split_whitespace()
+                            .next()
+                            .unwrap_or(copy_text.as_str())
+                            .replace(',', "");
+                        if num_token.parse::<f64>().is_ok() {
+                            env.retain(|(k, _)| !k.eq_ignore_ascii_case(var_name));
+                            env.push((var_name.to_ascii_lowercase(), num_token));
+                            if is_last {
+                                last_outcome = Some(CalcOutcome::Card(card));
+                            }
+                            continue;
+                        }
+                    }
+                }
+                return None;
+            }
+        }
+        let expr_sub = substitute_identifiers(seg, &env);
+        let outcome = evaluate_with_context(&expr_sub, catalog, &inner_ctx);
+        if is_last {
+            if let CalcOutcome::Card(mut card) = outcome {
+                card.expression = trimmed.to_string();
+                last_outcome = Some(CalcOutcome::Card(card));
+            }
+        }
+    }
+    last_outcome
+}
+
+fn is_valid_var_name(s: &str) -> bool {
+    let mut chars = s.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first.is_ascii_alphabetic() || first == '_') {
+        return false;
+    }
+    chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
+fn contains_word_ci(haystack: &str, needle: &str) -> bool {
+    let bytes = haystack.as_bytes();
+    let n = needle.len();
+    if bytes.len() < n {
+        return false;
+    }
+    for i in 0..=bytes.len() - n {
+        if haystack[i..i + n].eq_ignore_ascii_case(needle) {
+            let left_ok = i == 0 || !(bytes[i - 1].is_ascii_alphanumeric() || bytes[i - 1] == b'_');
+            let right_ok = i + n == bytes.len()
+                || !(bytes[i + n].is_ascii_alphanumeric() || bytes[i + n] == b'_');
+            if left_ok && right_ok {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn substitute_identifiers(expr: &str, env: &[(String, String)]) -> String {
+    if env.is_empty() {
+        return expr.to_string();
+    }
+    let mut out = String::with_capacity(expr.len());
+    let chars: Vec<char> = expr.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i].is_ascii_alphabetic() || chars[i] == '_' {
+            let start = i;
+            i += 1;
+            while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
+                i += 1;
+            }
+            let ident: String = chars[start..i].iter().collect();
+            if let Some((_, val)) = env.iter().find(|(k, _)| k.eq_ignore_ascii_case(&ident)) {
+                out.push('(');
+                out.push_str(val);
+                out.push(')');
+            } else {
+                out.push_str(&ident);
+            }
+        } else {
+            out.push(chars[i]);
+            i += 1;
+        }
+    }
+    out
+}
+
+/// Swap source and target units in a conversion query (`100 USD to INR` -> `100 INR to USD`,
+/// `5 km in miles` -> `5 miles in km`, `72 F -> C` -> `72 C -> F`).
+pub fn swap_units_query(query: &str) -> Option<String> {
+    let trimmed = query.trim();
+    let lower = trimmed.to_ascii_lowercase();
+    for sep in [" into ", " to ", " in ", " as ", " -> "] {
+        if let Some(pos) = lower.rfind(sep) {
+            let lhs = trimmed[..pos].trim();
+            let rhs = trimmed[pos + sep.len()..].trim();
+            if lhs.is_empty() || rhs.is_empty() {
+                continue;
+            }
+            // Split leading numeric expression from source unit (e.g. `100 USD` or `$100`).
+            let bytes = lhs.as_bytes();
+            let mut split_at = 0usize;
+            while split_at < bytes.len()
+                && (bytes[split_at].is_ascii_digit()
+                    || matches!(bytes[split_at], b'.' | b',' | b'-' | b'+'))
+            {
+                split_at += 1;
+            }
+            if split_at > 0 && split_at < lhs.len() {
+                let amount = lhs[..split_at].trim();
+                let from_unit = lhs[split_at..].trim();
+                if !from_unit.is_empty() {
+                    return Some(format!("{amount} {rhs}{sep}{from_unit}"));
+                }
+            }
+        }
+    }
+    None
+}
+
 /// The query without its question mark, as upstream's `CalcEngine.withoutQuestionMark`.
 fn without_question_mark(text: &str) -> String {
     match text.strip_suffix('?') {
@@ -802,6 +1002,49 @@ mod swiss_army_tests {
         out.display()
             .unwrap_or_else(|| panic!("expected card for query `{q}`, got {out:?}"))
             .to_string()
+    }
+
+    #[test]
+    fn inline_variables_ans_color_transforms_and_unit_swapping() {
+        let ctx = full_ctx();
+
+        assert_eq!(
+            evaluate_with_context("x = 42; x * 2", &FullCatalog, &ctx).display(),
+            Some("84")
+        );
+        assert_eq!(
+            evaluate_with_context("price = 100; tax = 1.18; price * tax", &FullCatalog, &ctx)
+                .display(),
+            Some("118")
+        );
+
+        let ctx_ans = ctx.clone().with_last_answer(Some(250.0));
+        assert_eq!(
+            evaluate_with_context("ans * 2 + 10", &FullCatalog, &ctx_ans).display(),
+            Some("510")
+        );
+
+        let lightened = evaluate_with_context("lighten(#ff0000, 20%)", &FullCatalog, &ctx);
+        assert!(
+            lightened.display().is_some(),
+            "lighten should produce output"
+        );
+        assert!(lightened.card().and_then(|c| c.color_swatch).is_some());
+
+        let mixed = evaluate_with_context("mix(#ff0000, #0000ff) as hex", &FullCatalog, &ctx);
+        assert_eq!(mixed.display(), Some("#800080"));
+
+        let inverted = evaluate_with_context("invert(#000000) as hex", &FullCatalog, &ctx);
+        assert_eq!(inverted.display(), Some("#FFFFFF"));
+
+        assert_eq!(
+            swap_units_query("100 USD to INR").as_deref(),
+            Some("100 INR to USD")
+        );
+        assert_eq!(
+            swap_units_query("5 km in miles").as_deref(),
+            Some("5 miles in km")
+        );
     }
 
     #[test]

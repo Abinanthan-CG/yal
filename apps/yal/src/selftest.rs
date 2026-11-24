@@ -78,12 +78,13 @@ fn check_window_commands() -> Vec<Check> {
     let mut checks = Vec::new();
 
     let commands = tc_windows::command::WindowCommandCatalog::all();
-    checks.push(if commands.len() == 39 {
+    let expected = tc_windows::command::WindowCommandId::ALL.len();
+    checks.push(if commands.len() == expected && expected >= 39 {
         Check::pass("window.commands", format!("{} commands", commands.len()))
     } else {
         Check::fail(
             "window.commands",
-            format!("{} commands, expected 39", commands.len()),
+            format!("{} commands, expected {expected}", commands.len()),
         )
     });
 

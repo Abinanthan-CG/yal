@@ -26,11 +26,15 @@ use windows::Win32::Graphics::Gdi::{
     EnumDisplayMonitors, GetMonitorInfoW, MonitorFromWindow, HDC, HMONITOR, MONITORINFO,
     MONITOR_DEFAULTTONEAREST,
 };
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP, VIRTUAL_KEY,
+    VK_LCONTROL, VK_LEFT, VK_LWIN, VK_RIGHT,
+};
 use windows::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, EnumWindows, GetClassNameW, GetWindowLongPtrW, GetWindowRect, GetWindowTextW,
     GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, SetForegroundWindow,
-    SetWindowPos, ShowWindow, GWL_EXSTYLE, SWP_NOACTIVATE, SWP_NOZORDER, SW_RESTORE,
-    WS_EX_TOOLWINDOW,
+    SetWindowPos, ShowWindow, GWL_EXSTYLE, HWND_NOTOPMOST, HWND_TOPMOST, SWP_NOACTIVATE,
+    SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SW_RESTORE, WS_EX_TOOLWINDOW, WS_EX_TOPMOST,
 };
 
 /// A window, named by the handle Windows gave it.
@@ -362,6 +366,87 @@ pub fn move_window(handle: WindowHandle, rect: Rect) -> Result<(), ControlError>
     )
 }
 
+/// Toggle whether a top-level window stays above non-topmost windows.
+///
+/// Returns the new always-on-top state (`true` when now topmost).
+pub fn toggle_always_on_top(handle: WindowHandle) -> Result<bool, ControlError> {
+    if handle == 0 {
+        return Err(ControlError::Gone);
+    }
+    let hwnd = hwnd_of(handle);
+    // SAFETY: `hwnd` is a non-null window handle; `IsWindow` validates whether
+    // it still names a live Win32 window without dereferencing it.
+    let valid = unsafe { IsWindow(Some(hwnd)).as_bool() };
+    if !valid {
+        return Err(ControlError::Gone);
+    }
+    // SAFETY: `hwnd` was just validated by `IsWindow`; querying `GWL_EXSTYLE`
+    // reads the window's extended style flags.
+    let ex_style = unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) } as u32;
+    let currently_topmost = (ex_style & WS_EX_TOPMOST.0) != 0;
+    let insert_after = if currently_topmost {
+        HWND_NOTOPMOST
+    } else {
+        HWND_TOPMOST
+    };
+    // SAFETY: `hwnd` is a validated window handle and `insert_after` is one of
+    // the documented `HWND_TOPMOST`/`HWND_NOTOPMOST` sentinel handles.
+    unsafe {
+        SetWindowPos(
+            hwnd,
+            Some(insert_after),
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+        )
+    }
+    .map_err(|_| {
+        ControlError::Refused("the window refused to change always-on-top state".to_string())
+    })?;
+    Ok(!currently_topmost)
+}
+
+/// Build one keyboard `INPUT` event for `SendInput`.
+fn key_input(vk: VIRTUAL_KEY, up: bool) -> INPUT {
+    INPUT {
+        r#type: INPUT_KEYBOARD,
+        Anonymous: INPUT_0 {
+            ki: KEYBDINPUT {
+                wVk: vk,
+                dwFlags: if up {
+                    KEYEVENTF_KEYUP
+                } else {
+                    Default::default()
+                },
+                ..Default::default()
+            },
+        },
+    }
+}
+
+/// Switch to the next (`Ctrl+Win+Right`) or previous (`Ctrl+Win+Left`)
+/// Windows virtual desktop via `SendInput`.
+pub fn switch_virtual_desktop(next: bool) -> Result<(), ControlError> {
+    let arrow = if next { VK_RIGHT } else { VK_LEFT };
+    let inputs = [
+        key_input(VK_LCONTROL, false),
+        key_input(VK_LWIN, false),
+        key_input(arrow, false),
+        key_input(arrow, true),
+        key_input(VK_LWIN, true),
+        key_input(VK_LCONTROL, true),
+    ];
+    // SAFETY: `inputs` is a contiguous array of initialized `INPUT` structs and
+    // `cbsize` matches `std::mem::size_of::<INPUT>()`.
+    let sent = unsafe { SendInput(&inputs, std::mem::size_of::<INPUT>() as i32) };
+    if sent == 0 {
+        return Err(ControlError::Refused("SendInput was blocked".to_string()));
+    }
+    Ok(())
+}
+
 /// Run a window command against a window.
 ///
 /// The geometry answers where the window should go; this writes it, reads the
@@ -376,6 +461,30 @@ pub fn apply_command(
     step: usize,
     restore_frame: Option<Rect>,
 ) -> Result<Outcome, ControlError> {
+    match command {
+        WindowCommandId::PreviousSpace | WindowCommandId::NextSpace => {
+            switch_virtual_desktop(command == WindowCommandId::NextSpace)?;
+            return Ok(Outcome {
+                frame: Rect::new(0.0, 0.0, 0.0, 0.0),
+                screen_id: 0,
+                aligned: false,
+            });
+        }
+        WindowCommandId::AlwaysOnTop => {
+            toggle_always_on_top(handle)?;
+            let frame = window_rect(handle).unwrap_or_else(|_| Rect::new(0.0, 0.0, 0.0, 0.0));
+            let displays = screens();
+            let screen_id = tc_windows::geometry::screen_containing(frame, &displays)
+                .map(|screen| screen.id)
+                .unwrap_or(0);
+            return Ok(Outcome {
+                frame,
+                screen_id,
+                aligned: false,
+            });
+        }
+        _ => {}
+    }
     if is_minimized(handle) {
         return Err(ControlError::Minimized);
     }
@@ -542,6 +651,30 @@ impl WindowCommands {
         handle: WindowHandle,
         command: WindowCommandId,
     ) -> Result<Outcome, ControlError> {
+        match command {
+            WindowCommandId::PreviousSpace | WindowCommandId::NextSpace => {
+                switch_virtual_desktop(command == WindowCommandId::NextSpace)?;
+                return Ok(Outcome {
+                    frame: Rect::new(0.0, 0.0, 0.0, 0.0),
+                    screen_id: 0,
+                    aligned: false,
+                });
+            }
+            WindowCommandId::AlwaysOnTop => {
+                toggle_always_on_top(handle)?;
+                let frame = window_rect(handle).unwrap_or_else(|_| Rect::new(0.0, 0.0, 0.0, 0.0));
+                let displays = screens();
+                let screen_id = tc_windows::geometry::screen_containing(frame, &displays)
+                    .map(|screen| screen.id)
+                    .unwrap_or(0);
+                return Ok(Outcome {
+                    frame,
+                    screen_id,
+                    aligned: false,
+                });
+            }
+            _ => {}
+        }
         let current = window_rect(handle)?;
         let screens = screens();
         let host = tc_windows::geometry::screen_containing(current, &screens)
@@ -995,5 +1128,37 @@ mod tests {
                 && (back.width() - start.width()).abs() <= 1.0,
             "the window is back where it started: {back:?}"
         );
+    }
+
+    #[test]
+    fn a_window_can_toggle_always_on_top() {
+        let err = toggle_always_on_top(0).expect_err("null handle is gone");
+        assert!(matches!(err, ControlError::Gone));
+
+        let window = TestWindow::new(200, 200, 400, 300);
+        window.show();
+        let is_topmost = |handle: WindowHandle| -> bool {
+            // SAFETY: `handle` belongs to the live `TestWindow` in this test.
+            let ex_style = unsafe { GetWindowLongPtrW(hwnd_of(handle), GWL_EXSTYLE) } as u32;
+            (ex_style & WS_EX_TOPMOST.0) != 0
+        };
+
+        assert!(!is_topmost(window.handle));
+        assert!(toggle_always_on_top(window.handle).expect("pin topmost"));
+        assert!(is_topmost(window.handle));
+
+        assert!(!toggle_always_on_top(window.handle).expect("unpin topmost"));
+        assert!(!is_topmost(window.handle));
+
+        let commands = WindowCommands::new(0.0, WindowCycle::Off);
+        commands
+            .run(window.handle, WindowCommandId::AlwaysOnTop)
+            .expect("command pins topmost");
+        assert!(is_topmost(window.handle));
+
+        commands
+            .run(window.handle, WindowCommandId::AlwaysOnTop)
+            .expect("command unpins topmost");
+        assert!(!is_topmost(window.handle));
     }
 }

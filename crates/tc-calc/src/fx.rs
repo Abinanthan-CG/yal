@@ -18,8 +18,8 @@ pub const FIAT_FEED_URL: &str = "https://open.er-api.com/v6/latest/USD";
 /// Public zero-API-key CoinGecko simple price endpoint for major coins.
 pub const CRYPTO_FEED_URL: &str = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano,dogecoin,avalanche-2,polkadot,matic-network,litecoin,bitcoin-cash,stellar,monero,tron,shiba-inu,tether,usd-coin,dash,eos,ethereum-classic,neo&vs_currencies=usd";
 
-/// Refresh interval for cached live rates (24 hours in seconds).
-pub const RATES_REFRESH_SECS: i64 = 24 * 3600;
+/// Refresh interval for cached live rates (2 hours in seconds).
+pub const RATES_REFRESH_SECS: i64 = 2 * 3600;
 
 /// Format a monetary amount with sub-cent widening so tiny cross-rates
 /// (e.g. `100 IDR to USD` or `100 USD to BTC`) do not collapse to `0.00`.

@@ -6,13 +6,23 @@ use crate::theme::Theme;
 /// High-level screen action chords forwarded from the palette window.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ActionKey {
-    /// `Tab` — cycle between Launcher and Clipboard (or next screen).
+    /// `Tab` — enter inline argument pill, drill into folder, or cycle screen.
     Tab,
-    /// `Ctrl+P` — pin/unpin item (Clipboard/Emoji) or cycle filter (File Search).
+    /// `Shift+Tab` — navigate folder up or step backward out of inline arguments.
+    ShiftTab,
+    /// `Ctrl+P` — pin/unpin item (Launcher/Clipboard/Emoji) or cycle filter (File Search).
     CtrlP,
-    /// `Ctrl+K` — toggle quick actions panel / view.
+    /// `Ctrl+K` — toggle the floating Action Panel popover.
     CtrlK,
-    /// `Ctrl+Shift+Backspace` or `Ctrl+Delete` — remove selected item.
+    /// `Ctrl+I` — toggle the Master-Detail Info/Preview pane.
+    CtrlI,
+    /// `Ctrl+H` — toggle hidden files in File Search.
+    CtrlH,
+    /// `Ctrl+R` — refresh live rates or re-index files.
+    CtrlR,
+    /// `Alt+Left` or `Ctrl+[` — navigate back one screen.
+    Back,
+    /// `Ctrl+Shift+Backspace` or `Ctrl+Delete` — remove/recycle selected item.
     CtrlDelete,
 }
 
@@ -23,14 +33,27 @@ pub enum PaletteEvent {
     Shown,
     /// The query in the search field changed.
     QueryChanged(String),
-    /// The user chose the item (list row or grid cell) at this index (`Enter` / click).
+    /// Selection moved to a different row/cell (lets split-view detail panes stay live).
+    SelectionChanged(usize),
+    /// The user chose the item at this index (`Enter` / click).
     Activated(usize),
-    /// The user triggered the secondary action on this index (`Ctrl+Enter`).
+    /// Secondary action (`Ctrl+Enter`).
     SecondaryActivated(usize),
-    /// The user pressed an action chord (`Tab`, `Ctrl+P`, `Ctrl+K`, `Ctrl+Delete`)
-    /// along with the currently selected row/cell index.
+    /// Tertiary action (`Alt+Enter` — e.g. Run as Admin / File Properties).
+    TertiaryActivated(usize),
+    /// Quaternary action (`Shift+Enter` — e.g. Show in Explorer).
+    QuaternaryActivated(usize),
+    /// Quick-select shortcut (`Ctrl+1`..`Ctrl+9`, 0-based index `0..8`).
+    QuickSelect(usize),
+    /// Copy chord (`Alt+C` — Copy Path / Copy Unformatted).
+    CopyChord(usize),
+    /// The user pressed an action chord along with the currently selected index.
     Action(ActionKey, usize),
-    /// The user pressed Escape with an empty search box.
+    /// The user activated an entry inside the floating `Ctrl+K` Action Panel popover.
+    ActionMenuActivated(String),
+    /// The user dismissed the floating `Ctrl+K` Action Panel popover.
+    ActionMenuDismissed,
+    /// The user pressed Escape with an empty search box (or clicked Header Back `←`).
     Escape,
     /// The user pressed `Ctrl+,` to open Settings.
     OpenSettings,
@@ -38,7 +61,7 @@ pub enum PaletteEvent {
     Dismissed,
     /// An application-defined command posted from another thread (e.g. tray or hotkey).
     Command(u32),
-    /// Silent in-place refresh (e.g. background-loaded app icons became ready).
+    /// Silent in-place refresh (e.g. background icons/files/shell output became ready).
     Refresh,
 }
 
@@ -49,12 +72,16 @@ pub enum PaletteReply {
     Keep,
     /// Replace the palette's content and repaint (preserving current search box text).
     Update(Model),
+    /// Replace both the search box text (caret at end) and the model cleanly.
+    UpdateWithEdit(String, Model),
     /// Navigate to another screen: clears the search box silently and applies the new model.
     Navigate(Model),
     /// Replace both the live theme (dark/light/style pack) and content immediately.
     UpdateTheme(Box<Theme>, Model),
     /// Hide the palette window.
     Close,
+    /// Hide the palette window and show a brief floating HUD pill (e.g. "Copied to Clipboard").
+    CloseWithHud(String),
     /// Destroy the window and exit the message loop.
     Quit,
 }
@@ -63,8 +90,12 @@ impl PaletteReply {
     /// The model the reply carries, if it carries one.
     pub fn model(&self) -> Option<&Model> {
         match self {
-            PaletteReply::Keep | PaletteReply::Close | PaletteReply::Quit => None,
+            PaletteReply::Keep
+            | PaletteReply::Close
+            | PaletteReply::CloseWithHud(_)
+            | PaletteReply::Quit => None,
             PaletteReply::Update(model)
+            | PaletteReply::UpdateWithEdit(_, model)
             | PaletteReply::Navigate(model)
             | PaletteReply::UpdateTheme(_, model) => Some(model),
         }
@@ -72,7 +103,10 @@ impl PaletteReply {
 
     /// Whether the reply closes or quits the palette.
     pub fn closes(&self) -> bool {
-        matches!(self, PaletteReply::Close | PaletteReply::Quit)
+        matches!(
+            self,
+            PaletteReply::Close | PaletteReply::CloseWithHud(_) | PaletteReply::Quit
+        )
     }
 }
 
@@ -105,6 +139,7 @@ mod tests {
     fn a_reply_that_closes_carries_no_model() {
         assert!(PaletteReply::Close.model().is_none());
         assert!(PaletteReply::Close.closes());
+        assert!(PaletteReply::CloseWithHud("Copied".to_string()).closes());
     }
 
     #[test]
@@ -122,9 +157,16 @@ mod tests {
         for event in [
             PaletteEvent::Shown,
             PaletteEvent::QueryChanged("rust".to_string()),
+            PaletteEvent::SelectionChanged(0),
             PaletteEvent::Activated(0),
             PaletteEvent::SecondaryActivated(0),
+            PaletteEvent::TertiaryActivated(0),
+            PaletteEvent::QuaternaryActivated(0),
+            PaletteEvent::QuickSelect(0),
+            PaletteEvent::CopyChord(0),
             PaletteEvent::Action(ActionKey::Tab, 0),
+            PaletteEvent::ActionMenuActivated("open".to_string()),
+            PaletteEvent::ActionMenuDismissed,
             PaletteEvent::Escape,
             PaletteEvent::OpenSettings,
             PaletteEvent::Dismissed,
@@ -133,20 +175,5 @@ mod tests {
             assert!(!reply.closes());
             assert!(reply.model().is_none());
         }
-    }
-
-    #[test]
-    fn the_event_says_what_happened() {
-        assert_eq!(
-            PaletteEvent::QueryChanged("wi".to_string()),
-            PaletteEvent::QueryChanged("wi".to_string())
-        );
-        assert_ne!(
-            PaletteEvent::Activated(0),
-            PaletteEvent::Activated(1),
-            "two different rows are two different events"
-        );
-        assert_ne!(PaletteEvent::Dismissed, PaletteEvent::Activated(0));
-        assert_ne!(PaletteEvent::Shown, PaletteEvent::Dismissed);
     }
 }

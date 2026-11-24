@@ -56,6 +56,7 @@ pub enum WindowCommandId {
     ToggleFullscreen,
     PreviousSpace,
     NextSpace,
+    AlwaysOnTop,
 }
 
 /// The group a window command is listed under.
@@ -104,6 +105,9 @@ pub enum WindowCommandKind {
     Fullscreen,
     /// The command changes the virtual desktop; no window is involved.
     Space,
+    /// The command toggles whether the window stays above other windows; no
+    /// rectangle is computed.
+    AlwaysOnTop,
 }
 
 /// One window command.
@@ -143,7 +147,7 @@ impl WindowCommand {
 impl WindowCommandId {
     /// Every command, in the order upstream declares them, which is the
     /// order the Settings pane lists them in.
-    pub const ALL: [WindowCommandId; 39] = [
+    pub const ALL: [WindowCommandId; 40] = [
         WindowCommandId::LeftHalf,
         WindowCommandId::RightHalf,
         WindowCommandId::TopHalf,
@@ -183,6 +187,7 @@ impl WindowCommandId {
         WindowCommandId::ToggleFullscreen,
         WindowCommandId::PreviousSpace,
         WindowCommandId::NextSpace,
+        WindowCommandId::AlwaysOnTop,
     ];
 
     /// The stored id.
@@ -227,6 +232,7 @@ impl WindowCommandId {
             WindowCommandId::ToggleFullscreen => "toggle-fullscreen",
             WindowCommandId::PreviousSpace => "previous-space",
             WindowCommandId::NextSpace => "next-space",
+            WindowCommandId::AlwaysOnTop => "always-on-top",
         }
     }
 
@@ -279,6 +285,7 @@ impl WindowCommandId {
             WindowCommandId::ToggleFullscreen => "Toggle Fullscreen",
             WindowCommandId::PreviousSpace => "Switch to Previous Space",
             WindowCommandId::NextSpace => "Switch to Next Space",
+            WindowCommandId::AlwaysOnTop => "Toggle Always on Top",
         }
     }
 
@@ -311,7 +318,8 @@ impl WindowCommandId {
             | WindowCommandId::CenterTwoThirds
             | WindowCommandId::MakeLarger
             | WindowCommandId::MakeSmaller
-            | WindowCommandId::Restore => WindowCommandGroup::Sizing,
+            | WindowCommandId::Restore
+            | WindowCommandId::AlwaysOnTop => WindowCommandGroup::Sizing,
             WindowCommandId::MoveLeft
             | WindowCommandId::MoveRight
             | WindowCommandId::MoveUp
@@ -335,6 +343,7 @@ impl WindowCommandId {
             WindowCommandId::Restore => WindowCommandKind::Restore,
             WindowCommandId::ToggleFullscreen => WindowCommandKind::Fullscreen,
             WindowCommandId::PreviousSpace | WindowCommandId::NextSpace => WindowCommandKind::Space,
+            WindowCommandId::AlwaysOnTop => WindowCommandKind::AlwaysOnTop,
             _ => WindowCommandKind::Geometry,
         }
     }
@@ -453,13 +462,13 @@ mod tests {
     use std::collections::HashSet;
 
     #[test]
-    fn there_are_exactly_thirty_nine_commands() {
-        assert_eq!(WindowCommandId::ALL.len(), 39);
-        assert_eq!(WindowCommandCatalog::all().len(), 39);
+    fn there_are_exactly_forty_commands() {
+        assert_eq!(WindowCommandId::ALL.len(), 40);
+        assert_eq!(WindowCommandCatalog::all().len(), 40);
     }
 
     #[test]
-    fn the_groups_count_up_to_thirty_nine() {
+    fn the_groups_count_up_to_forty() {
         let counts: Vec<(WindowCommandGroup, usize)> = [
             WindowCommandGroup::Halves,
             WindowCommandGroup::Quarters,
@@ -480,13 +489,13 @@ mod tests {
                 (WindowCommandGroup::Quarters, 4),
                 (WindowCommandGroup::Fourths, 2),
                 (WindowCommandGroup::Thirds, 5),
-                (WindowCommandGroup::Sizing, 11),
+                (WindowCommandGroup::Sizing, 12),
                 (WindowCommandGroup::Moving, 10),
                 (WindowCommandGroup::Fullscreen, 1),
                 (WindowCommandGroup::Spaces, 2),
             ]
         );
-        assert_eq!(counts.iter().map(|(_, count)| count).sum::<usize>(), 39);
+        assert_eq!(counts.iter().map(|(_, count)| count).sum::<usize>(), 40);
     }
 
     #[test]
@@ -495,10 +504,14 @@ mod tests {
             .into_iter()
             .map(WindowCommandId::as_str)
             .collect();
-        assert_eq!(ids.len(), 39);
+        assert_eq!(ids.len(), 40);
         for command in WindowCommandId::ALL {
             assert_eq!(WindowCommandId::parse(command.as_str()), Some(command));
         }
+        assert_eq!(
+            WindowCommandId::parse("always-on-top"),
+            Some(WindowCommandId::AlwaysOnTop)
+        );
         assert_eq!(WindowCommandId::parse("no-such-command"), None);
     }
 
@@ -508,7 +521,7 @@ mod tests {
             .into_iter()
             .map(WindowCommandId::english_name)
             .collect();
-        assert_eq!(names.len(), 39);
+        assert_eq!(names.len(), 40);
     }
 
     #[test]
@@ -553,6 +566,10 @@ mod tests {
             WindowCommandKind::Space
         );
         assert_eq!(WindowCommandId::NextSpace.kind(), WindowCommandKind::Space);
+        assert_eq!(
+            WindowCommandId::AlwaysOnTop.kind(),
+            WindowCommandKind::AlwaysOnTop
+        );
         assert_eq!(
             WindowCommandId::LeftHalf.kind(),
             WindowCommandKind::Geometry

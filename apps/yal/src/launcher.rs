@@ -206,6 +206,8 @@ pub struct LauncherState {
     show_files: AtomicBool,
     /// Live exchange rates snapshot (loaded from cache/bundled and refreshed in background).
     rates: Mutex<Arc<ExchangeRates>>,
+    /// Last copied/committed numeric calculator result, exposed as `ans` in subsequent queries.
+    last_calc_answer: Mutex<Option<f64>>,
     /// Base pixels per `1rem`/`1em` for CSS calculations (default 16.0).
     rem_px: f64,
 }
@@ -247,6 +249,7 @@ impl LauncherState {
             files: Mutex::new(None),
             show_files: AtomicBool::new(false),
             rates: Mutex::new(Arc::new(ExchangeRates::bundled())),
+            last_calc_answer: Mutex::new(None),
             rem_px: 16.0,
         }
     }
@@ -263,6 +266,33 @@ impl LauncherState {
         if let Ok(mut guard) = self.rates.lock() {
             *guard = rates;
         }
+    }
+
+    /// Store the latest copied/committed numeric calculator answer for `ans` chaining.
+    pub fn set_last_calc_answer(&self, value: Option<f64>) {
+        if let Ok(mut guard) = self.last_calc_answer.lock() {
+            *guard = value.filter(|v| v.is_finite());
+        }
+    }
+
+    /// Read the latest copied/committed numeric calculator answer for `ans` chaining.
+    pub fn last_calc_answer(&self) -> Option<f64> {
+        self.last_calc_answer.lock().ok().and_then(|guard| *guard)
+    }
+
+    /// Evaluate a calculator query using the live exchange rates, `rem` base, and `ans`.
+    pub fn evaluate_calc(&self, query: &str) -> Option<ResultRow> {
+        let rates = self
+            .rates
+            .lock()
+            .ok()
+            .map(|guard| Arc::clone(&*guard))
+            .unwrap_or_else(|| Arc::new(ExchangeRates::bundled()));
+        let calc_ctx = CalcContext::live()
+            .with_rates(Some(rates))
+            .with_rem_px(self.rem_px)
+            .with_last_answer(self.last_calc_answer());
+        calculator_row_with_ctx(query, &calc_ctx)
     }
 
     /// Configure the CSS `1rem`/`1em` pixel base for the calculator.
@@ -467,16 +497,7 @@ impl LauncherState {
                 .collect();
         // The calculator's answer comes first: a query that is a calculation is
         // asking for the answer, not for a program.
-        let rates = self
-            .rates
-            .lock()
-            .ok()
-            .map(|guard| Arc::clone(&*guard))
-            .unwrap_or_else(|| Arc::new(ExchangeRates::bundled()));
-        let calc_ctx = CalcContext::live()
-            .with_rates(Some(rates))
-            .with_rem_px(self.rem_px);
-        let mut rows = match calculator_row_with_ctx(query, &calc_ctx) {
+        let mut rows = match self.evaluate_calc(query) {
             Some(row) => {
                 rows.insert(0, row);
                 rows
@@ -645,6 +666,21 @@ pub fn now_seconds() -> f64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs_f64())
         .unwrap_or(0.0)
+}
+
+/// Extract a finite leading numeric value from a calculator `copy_text` string
+/// (e.g. `"42"`, `"8440.00 INR"`, `"10000 m"`, `"$1,250.50"`) for `ans` chaining.
+pub fn parse_numeric_answer(text: &str) -> Option<f64> {
+    let trimmed = text.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let token = trimmed.split_whitespace().next()?;
+    let stripped = token
+        .trim_start_matches(['$', '€', '£', '¥', '₹', '₩'])
+        .trim_end_matches('%')
+        .replace(',', "");
+    stripped.parse::<f64>().ok().filter(|v| v.is_finite())
 }
 
 /// The calculator's answer to the query, using default live context.
@@ -1121,5 +1157,23 @@ mod tests {
         let rows = launcher.search("move");
         assert_eq!(rows[0].arguments.len(), 1);
         assert!(!rows[0].arguments[0].is_optional);
+    }
+
+    #[test]
+    fn calc_ans_chaining_uses_last_committed_numeric_answer() {
+        let launcher = launcher(vec![]);
+        assert_eq!(launcher.last_calc_answer(), None);
+        launcher.set_last_calc_answer(parse_numeric_answer("42"));
+        assert_eq!(launcher.last_calc_answer(), Some(42.0));
+
+        let rows = launcher.search("ans * 2");
+        let first = rows.first().expect("chained calculation result");
+        assert_eq!(first.kind, CALCULATOR_SECTION);
+        assert_eq!(first.name, "84");
+
+        // Also extracts leading number from unit/currency answers.
+        assert_eq!(parse_numeric_answer("8,440.50 INR"), Some(8440.5));
+        assert_eq!(parse_numeric_answer("10000 m"), Some(10000.0));
+        assert_eq!(parse_numeric_answer("#ff5733"), None);
     }
 }

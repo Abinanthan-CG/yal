@@ -2,12 +2,15 @@
 //!
 //! Pure Win32 + Direct2D + DirectWrite — no WebView2, no browser runtime.
 //! Routes every native screen cleanly inside one always-ready window:
-//! Launcher, Clipboard History, 2D Color Emoji Grid, Snippets Browser & Wizard,
-//! File Search, Window Switcher, Calculator History, and live-themed Settings.
+//! Launcher (with Calculator `ans`, Quicklinks, Snippets, Windows Settings),
+//! Clipboard History, 2D Color Emoji Grid, Snippets Browser & Wizard, Quick
+//! Notes, Quicklinks & `Tab` Inline Arguments, File Search, Window Switcher,
+//! Calculator History, Shell Runner, floating `Ctrl+K` Action Panel,
+//! Master-Detail preview panes, Pop-to-Root timer, and live-themed Settings.
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{mpsc, Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use tc_clipboard::{ClipboardFilter, ClipboardItem};
 use tc_core::CommandId;
@@ -17,15 +20,16 @@ use tc_platform_win::window_control::WindowInfo;
 use tc_platform_win::{HotkeyTrigger, WindowsSettings};
 use tc_snippets::StoredSnippet;
 use tc_ui::{
-    ActionKey, Color, GridCell, Icon, IconBitmap, Model, Palette, PaletteEvent, PaletteHandle,
-    PaletteReply, Row, Theme, Tokens,
+    ActionKey, ActionMenuModel, Color, GridCell, Icon, IconBitmap, Model, Palette, PaletteEvent,
+    PaletteHandle, PaletteReply, Row, Theme, ToastKind, ToastModel, Tokens,
 };
 
+use crate::actions;
 use crate::features::{CalcHistoryEntry, FeatureStores, NoteItem, Quicklink};
 use crate::launcher::{
-    LauncherState, ResultRow, CALCULATOR_PREFIX, CALCULATOR_SECTION, COMMAND_SECTION,
-    CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION, RANKING_FILE, SYSTEM_ACTION_SECTION,
-    WINDOW_COMMAND_SECTION,
+    parse_numeric_answer, LauncherState, ResultRow, CALCULATOR_PREFIX, CALCULATOR_SECTION,
+    COMMAND_SECTION, CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION, RANKING_FILE,
+    SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
 };
 use crate::open::Runner;
 use crate::palette::{PaletteState, SettingRow};
@@ -37,22 +41,28 @@ use crate::screens::{
     windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
     SnippetDraftStep, FALLBACK_URL_PREFIX,
 };
-use crate::shell::{FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW};
+use crate::shell::{spawn_rates_refresh, FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW, RATES_FILE};
+use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
 
 /// Cross-thread command code asking the native palette to open Settings.
 pub const COMMAND_OPEN_SETTINGS: u32 = 1;
-/// Cross-thread command code asking the palette to re-show with a pending status banner
-/// (for example after an off-thread `IFileOpenDialog` backup or Raycast import finishes).
+/// Cross-thread command code asking the palette to re-show with a pending status banner.
 const COMMAND_SHOW_STATUS: u32 = 2;
 
 /// Setting key storing the launcher's global hotkey in `settings.json`.
 pub const KEY_LAUNCHER_HOTKEY: &str = "launcher.hotkey";
-/// Setting key toggling Window Management commands in the launcher.
-const KEY_WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
+/// Setting key toggling Window Management commands in the launcher (default: ON).
+pub const KEY_WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
+/// Setting key storing the Pop-to-Root timer policy (`0`, `30`, `60`, `300`, `never`).
+pub const KEY_POP_TO_ROOT_SECS: &str = "palette.popToRootSecs";
 
-/// Prefix for an inline snippet keyword match surfaced inside Launcher search.
+/// Prefix for an inline or root-search snippet row.
 const INLINE_SNIPPET_PREFIX: &str = "snippet-inline:";
 const SNIPPET_SECTION: &str = "Snippets";
+
+/// Prefix for a root-search quicklink row.
+const ROOT_QUICKLINK_PREFIX: &str = "quicklink:";
+const QUICKLINK_SECTION: &str = "Quicklinks";
 
 /// Built-in hotkey presets cycled in the native Settings pane.
 const HOTKEY_PRESETS: [&str; 4] = ["Alt+Space", "Ctrl+Space", "Double Ctrl", "Double Alt"];
@@ -62,6 +72,91 @@ const APPLICATIONS: &str = "Applications";
 
 /// Callback invoked when the user changes the launcher hotkey in Settings.
 pub type HotkeyChangedCallback = Arc<dyn Fn(HotkeyTrigger) + Send + Sync>;
+
+/// Pop-to-Root reset timeout policy cycled in Settings.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PopToRootPolicy {
+    Immediately,
+    AfterSecs(u64),
+    Never,
+}
+
+impl PopToRootPolicy {
+    /// Default Raycast-style timeout: 1 minute.
+    pub const DEFAULT: PopToRootPolicy = PopToRootPolicy::AfterSecs(60);
+
+    /// Parse stored value from `settings.json` (defaults to 1 minute).
+    pub fn parse(raw: Option<&str>) -> Self {
+        let Some(value) = raw.map(str::trim).filter(|v| !v.is_empty()) else {
+            return Self::DEFAULT;
+        };
+        let lower = value.to_ascii_lowercase();
+        match lower.as_str() {
+            "0" | "immediately" | "immediately (0s)" => Self::Immediately,
+            "30" | "30 seconds" => Self::AfterSecs(30),
+            "60" | "1 minute" | "60 seconds" => Self::AfterSecs(60),
+            "300" | "5 minutes" => Self::AfterSecs(300),
+            "never" => Self::Never,
+            other => {
+                let digits = other
+                    .strip_suffix(" seconds")
+                    .or_else(|| other.strip_suffix(" second"))
+                    .unwrap_or(other);
+                match digits.parse::<u64>() {
+                    Ok(0) => Self::Immediately,
+                    Ok(secs) => Self::AfterSecs(secs),
+                    Err(_) => Self::DEFAULT,
+                }
+            }
+        }
+    }
+
+    /// Human-readable label shown in the Settings screen.
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Immediately => "Immediately (0s)",
+            Self::AfterSecs(30) => "30 seconds",
+            Self::AfterSecs(60) => "1 minute",
+            Self::AfterSecs(300) => "5 minutes",
+            Self::AfterSecs(_) => "1 minute",
+            Self::Never => "Never",
+        }
+    }
+
+    /// Canonical value written to `settings.json`.
+    pub fn stored_value(self) -> &'static str {
+        match self {
+            Self::Immediately => "0",
+            Self::AfterSecs(30) => "30",
+            Self::AfterSecs(60) => "60",
+            Self::AfterSecs(300) => "300",
+            Self::AfterSecs(_) => "60",
+            Self::Never => "never",
+        }
+    }
+
+    /// Cycle cleanly through all five presets.
+    pub fn next(self) -> Self {
+        match self {
+            Self::Immediately => Self::AfterSecs(30),
+            Self::AfterSecs(30) => Self::AfterSecs(60),
+            Self::AfterSecs(60) => Self::AfterSecs(300),
+            Self::AfterSecs(300) => Self::Never,
+            Self::Never => Self::Immediately,
+            Self::AfterSecs(_) => Self::AfterSecs(60),
+        }
+    }
+
+    /// Whether the palette should automatically pop back to Root Search on `Shown`.
+    pub fn should_reset(self, last_dismissed_at: Option<Instant>, now: Instant) -> bool {
+        match self {
+            Self::Immediately => true,
+            Self::AfterSecs(secs) => last_dismissed_at
+                .is_some_and(|at| now.saturating_duration_since(at) >= Duration::from_secs(secs)),
+            Self::Never => false,
+        }
+    }
+}
 
 /// Application context shared with the native Direct2D palette.
 pub struct NativeContext {
@@ -111,7 +206,7 @@ impl NativePalette {
     }
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Clone)]
 enum Mode {
     #[default]
     Launcher,
@@ -122,7 +217,11 @@ enum Mode {
     Notes,
     CreateNote(NoteDraft),
     Quicklinks,
-    QuicklinkArg(Quicklink),
+    QuicklinkArg {
+        link: Quicklink,
+        from_launcher: bool,
+        previous_query: String,
+    },
     CreateQuicklink(QuicklinkDraft),
     RunShell,
     Status,
@@ -135,6 +234,11 @@ enum Mode {
 struct Shown {
     mode: Mode,
     query: String,
+    selected: usize,
+    show_detail: bool,
+    show_hidden_files: bool,
+    action_menu_open: bool,
+    last_dismissed_at: Option<Instant>,
     rows: Vec<ResultRow>,
     clipboard_items: Vec<ClipboardItem>,
     clipboard_filter: ClipboardFilter,
@@ -147,6 +251,7 @@ struct Shown {
     file_rows: Vec<ResultRow>,
     file_filter: FileType,
     windows: Vec<WindowInfo>,
+    calc_live: Option<ResultRow>,
     calc_entries: Vec<CalcHistoryEntry>,
     settings_rows: Vec<SettingRow>,
     icons: Arc<Mutex<HashMap<String, Option<Arc<IconBitmap>>>>>,
@@ -162,6 +267,11 @@ impl Shown {
         Self {
             mode: Mode::Launcher,
             query: String::new(),
+            selected: 0,
+            show_detail: true,
+            show_hidden_files: false,
+            action_menu_open: false,
+            last_dismissed_at: None,
             rows: Vec::new(),
             clipboard_items: Vec::new(),
             clipboard_filter: ClipboardFilter::All,
@@ -174,6 +284,7 @@ impl Shown {
             file_rows: Vec::new(),
             file_filter: FileType::All,
             windows: Vec::new(),
+            calc_live: None,
             calc_entries: Vec::new(),
             settings_rows: Vec::new(),
             icons,
@@ -200,6 +311,10 @@ impl Shown {
         }
         None
     }
+}
+
+fn lock_shown(lock: &Arc<Mutex<Shown>>) -> std::sync::MutexGuard<'_, Shown> {
+    lock.lock().unwrap_or_else(|err| err.into_inner())
 }
 
 fn spawn_icon_worker(
@@ -284,13 +399,69 @@ fn build(
         }
     };
 
+    let close_with_hud = move |msg: String| {
+        if quit_on_close {
+            PaletteReply::Quit
+        } else {
+            PaletteReply::CloseWithHud(msg)
+        }
+    };
+
     let handler = move |event: PaletteEvent| -> PaletteReply {
         match event {
             PaletteEvent::Shown => {
+                let mut shown = lock_shown(&handler_shown);
+                shown.action_menu_open = false;
+                let policy = handler_context
+                    .as_deref()
+                    .map(|ctx| pop_to_root_policy(&ctx.settings))
+                    .unwrap_or(PopToRootPolicy::DEFAULT);
+                let should_reset = policy.should_reset(shown.last_dismissed_at, Instant::now());
+
+                if shown.mode != Mode::Launcher {
+                    if should_reset {
+                        if let Some(ctx) = handler_context.as_ref() {
+                            ctx.palette.back_to_root();
+                        }
+                        return enter_launcher(
+                            &handler_launcher,
+                            handler_context.as_deref(),
+                            &mut shown,
+                            true,
+                        );
+                    }
+                    let saved_query = shown.query.clone();
+                    if let Some(model) =
+                        rebuild_current_model(handler_context.as_deref(), &mut shown, None)
+                    {
+                        return PaletteReply::UpdateWithEdit(saved_query, model);
+                    }
+                }
+
+                if !should_reset && !shown.query.is_empty() {
+                    let saved_query = shown.query.clone();
+                    let rows = build_root_search_rows(
+                        &handler_launcher,
+                        handler_context.as_deref(),
+                        &saved_query,
+                    );
+                    shown.rows = rows.clone();
+                    let sel = shown.selected.min(rows.len().saturating_sub(1));
+                    shown.selected = sel;
+                    let model = model_for_with_icons(
+                        &saved_query,
+                        &rows,
+                        false,
+                        sel,
+                        handler_context.as_deref(),
+                        &mut shown,
+                    );
+                    return PaletteReply::UpdateWithEdit(saved_query, model);
+                }
+
                 if let Some(ctx) = handler_context.as_ref() {
                     ctx.palette.back_to_root();
                 }
-                let mut shown = handler_shown.lock().expect("the palette's state");
                 enter_launcher(
                     &handler_launcher,
                     handler_context.as_deref(),
@@ -299,16 +470,18 @@ fn build(
                 )
             }
             PaletteEvent::Refresh => {
-                let mut shown = handler_shown.lock().expect("the palette's state");
+                let mut shown = lock_shown(&handler_shown);
                 match shown.mode {
                     Mode::Launcher => {
                         let query = shown.query.clone();
                         let rows = shown.rows.clone();
+                        let sel = shown.selected.min(rows.len().saturating_sub(1));
                         let is_suggestions = query.trim().is_empty();
                         PaletteReply::Update(model_for_with_icons(
                             &query,
                             &rows,
                             is_suggestions,
+                            sel,
                             handler_context.as_deref(),
                             &mut shown,
                         ))
@@ -316,16 +489,26 @@ fn build(
                     Mode::Files => {
                         let query = shown.query.clone();
                         let filter = shown.file_filter;
-                        let rows = handler_launcher.file_screen_rows(&query, filter);
+                        let rows = filtered_file_rows(
+                            &handler_launcher,
+                            &query,
+                            filter,
+                            shown.show_hidden_files,
+                        );
                         let indexing = handler_context
                             .as_ref()
                             .is_some_and(|c| c.features.is_file_indexing());
+                        let sel = shown.selected.min(rows.len().saturating_sub(1));
+                        let show_detail = shown.show_detail;
                         shown.file_rows = rows.clone();
+                        shown.selected = sel;
                         PaletteReply::Update(files_model(
                             &query,
                             &rows,
                             filter,
                             indexing,
+                            sel,
+                            show_detail,
                             |target| shown.lookup_or_queue_icon(target),
                         ))
                     }
@@ -337,21 +520,34 @@ fn build(
                     _ => PaletteReply::Keep,
                 }
             }
+            PaletteEvent::SelectionChanged(idx) => {
+                let mut shown = lock_shown(&handler_shown);
+                shown.selected = idx;
+                if shown.action_menu_open {
+                    return PaletteReply::Keep;
+                }
+                match rebuild_current_model(handler_context.as_deref(), &mut shown, None) {
+                    Some(model) => PaletteReply::Update(model),
+                    None => PaletteReply::Keep,
+                }
+            }
             PaletteEvent::Command(COMMAND_OPEN_SETTINGS) | PaletteEvent::OpenSettings => {
                 let Some(ctx) = handler_context.as_ref() else {
                     return PaletteReply::Keep;
                 };
-                let mut shown = handler_shown.lock().expect("the palette's state");
+                let mut shown = lock_shown(&handler_shown);
                 enter_settings(ctx, &mut shown)
             }
             PaletteEvent::Command(COMMAND_SHOW_STATUS) => {
-                let mut shown = handler_shown.lock().expect("the palette's state");
+                let mut shown = lock_shown(&handler_shown);
                 let Some((badge, title, detail, refresh_theme)) = shown.pending_status.take()
                 else {
                     return PaletteReply::Keep;
                 };
                 shown.mode = Mode::Status;
                 shown.query.clear();
+                shown.selected = 0;
+                shown.action_menu_open = false;
                 let model = status_screen_model(&badge, &title, &detail, Vec::new());
                 if refresh_theme {
                     if let Some(ctx) = handler_context.as_ref() {
@@ -365,38 +561,31 @@ fn build(
             }
             PaletteEvent::Command(_) => PaletteReply::Keep,
             PaletteEvent::QueryChanged(query) => {
-                let mut shown = handler_shown.lock().expect("the palette's state");
+                let mut shown = lock_shown(&handler_shown);
                 shown.query = query.clone();
-                match &shown.mode {
+                shown.selected = 0;
+                shown.action_menu_open = false;
+                match shown.mode.clone() {
                     Mode::Launcher => {
                         let is_suggestions = query.trim().is_empty();
-                        let mut rows = if is_suggestions {
+                        let rows = if is_suggestions {
                             suggestions_with_favorites(
                                 &handler_launcher,
                                 handler_context.as_deref(),
                             )
                         } else {
-                            handler_launcher.search(&query)
+                            build_root_search_rows(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                                &query,
+                            )
                         };
-                        // Inline snippet keyword expansion (`!sig` / `sig`).
-                        if !is_suggestions {
-                            if let Some(ctx) = handler_context.as_ref() {
-                                if let Some(snippet) = ctx.features.find_snippet_by_keyword(&query)
-                                {
-                                    rows.insert(0, inline_snippet_row(&snippet));
-                                }
-                                // Fallback web search when nothing local matched.
-                                if rows.is_empty() {
-                                    let links = ctx.features.search_quicklinks("");
-                                    rows = fallback_search_rows(&query, &links);
-                                }
-                            }
-                        }
                         shown.rows = rows.clone();
                         PaletteReply::Update(model_for_with_icons(
                             &query,
                             &rows,
                             is_suggestions,
+                            0,
                             handler_context.as_deref(),
                             &mut shown,
                         ))
@@ -408,7 +597,13 @@ fn build(
                         let filter = shown.clipboard_filter;
                         let items = ctx.features.search_clipboard(&query, filter);
                         shown.clipboard_items = items.clone();
-                        PaletteReply::Update(clipboard_model(&query, &items, filter, 0))
+                        PaletteReply::Update(clipboard_model(
+                            &query,
+                            &items,
+                            filter,
+                            0,
+                            shown.show_detail,
+                        ))
                     }
                     Mode::Emoji => {
                         let Some(ctx) = handler_context.as_ref() else {
@@ -424,11 +619,16 @@ fn build(
                         };
                         let list = ctx.features.search_snippets(&query);
                         shown.snippets = list.clone();
-                        PaletteReply::Update(snippets_model(&query, &list, 0))
+                        PaletteReply::Update(snippets_model(
+                            &query,
+                            &list,
+                            0,
+                            shown.show_detail,
+                            |rec| ctx.features.expand_snippet(rec),
+                        ))
                     }
                     Mode::CreateSnippet(draft) => {
-                        let draft_clone = draft.clone();
-                        PaletteReply::Update(create_snippet_model(&draft_clone, &query))
+                        PaletteReply::Update(create_snippet_model(&draft, &query))
                     }
                     Mode::Notes => {
                         let Some(ctx) = handler_context.as_ref() else {
@@ -436,11 +636,10 @@ fn build(
                         };
                         let list = ctx.features.search_notes(&query);
                         shown.notes = list.clone();
-                        PaletteReply::Update(notes_model(&query, &list, 0))
+                        PaletteReply::Update(notes_model(&query, &list, 0, shown.show_detail))
                     }
                     Mode::CreateNote(draft) => {
-                        let draft_clone = draft.clone();
-                        PaletteReply::Update(create_note_model(&draft_clone, &query))
+                        PaletteReply::Update(create_note_model(&draft, &query))
                     }
                     Mode::Quicklinks => {
                         let Some(ctx) = handler_context.as_ref() else {
@@ -448,15 +647,13 @@ fn build(
                         };
                         let list = ctx.features.search_quicklinks(&query);
                         shown.quicklinks = list.clone();
-                        PaletteReply::Update(quicklinks_model(&query, &list, 0))
+                        PaletteReply::Update(quicklinks_model(&query, &list, 0, shown.show_detail))
                     }
-                    Mode::QuicklinkArg(link) => {
-                        let link_clone = link.clone();
-                        PaletteReply::Update(quicklink_arg_model(&link_clone, &query))
+                    Mode::QuicklinkArg { link, .. } => {
+                        PaletteReply::Update(quicklink_arg_model(&link, &query))
                     }
                     Mode::CreateQuicklink(draft) => {
-                        let draft_clone = draft.clone();
-                        PaletteReply::Update(create_quicklink_model(&draft_clone, &query))
+                        PaletteReply::Update(create_quicklink_model(&draft, &query))
                     }
                     Mode::RunShell => {
                         let last = shown.last_shell_output.clone();
@@ -465,16 +662,24 @@ fn build(
                     Mode::Status => PaletteReply::Keep,
                     Mode::Files => {
                         let filter = shown.file_filter;
-                        let rows = handler_launcher.file_screen_rows(&query, filter);
+                        let rows = filtered_file_rows(
+                            &handler_launcher,
+                            &query,
+                            filter,
+                            shown.show_hidden_files,
+                        );
                         let indexing = handler_context
                             .as_ref()
                             .is_some_and(|c| c.features.is_file_indexing());
+                        let show_detail = shown.show_detail;
                         shown.file_rows = rows.clone();
                         PaletteReply::Update(files_model(
                             &query,
                             &rows,
                             filter,
                             indexing,
+                            0,
+                            show_detail,
                             |target| shown.lookup_or_queue_icon(target),
                         ))
                     }
@@ -487,9 +692,17 @@ fn build(
                         let Some(ctx) = handler_context.as_ref() else {
                             return PaletteReply::Keep;
                         };
+                        let live = handler_launcher.evaluate_calc(&query);
                         let entries = ctx.features.search_calc_history(&query);
+                        shown.calc_live = live.clone();
                         shown.calc_entries = entries.clone();
-                        PaletteReply::Update(calc_history_model(&query, &entries, 0))
+                        PaletteReply::Update(calc_history_model(
+                            &query,
+                            live.as_ref(),
+                            &entries,
+                            0,
+                            shown.show_detail,
+                        ))
                     }
                     Mode::Settings => {
                         let Some(ctx) = handler_context.as_ref() else {
@@ -510,6 +723,18 @@ fn build(
                 handler_context.as_ref(),
                 &handler_handle,
                 &close_reply,
+                &close_with_hud,
+            ),
+            PaletteEvent::QuickSelect(index) => handle_activate(
+                index,
+                false,
+                &handler_shown,
+                &handler_launcher,
+                &handler_runner,
+                handler_context.as_ref(),
+                &handler_handle,
+                &close_reply,
+                &close_with_hud,
             ),
             PaletteEvent::SecondaryActivated(index) => handle_activate(
                 index,
@@ -520,6 +745,20 @@ fn build(
                 handler_context.as_ref(),
                 &handler_handle,
                 &close_reply,
+                &close_with_hud,
+            ),
+            PaletteEvent::TertiaryActivated(index) => {
+                handle_tertiary(index, &handler_shown, &close_with_hud)
+            }
+            PaletteEvent::QuaternaryActivated(index) => {
+                handle_quaternary(index, &handler_shown, &close_with_hud)
+            }
+            PaletteEvent::CopyChord(index) => handle_copy_chord(
+                index,
+                &handler_shown,
+                &handler_launcher,
+                handler_context.as_deref(),
+                &close_with_hud,
             ),
             PaletteEvent::Action(action, selected) => handle_action(
                 action,
@@ -527,61 +766,35 @@ fn build(
                 &handler_shown,
                 &handler_launcher,
                 handler_context.as_deref(),
+                &handler_handle,
+                &close_with_hud,
             ),
-            PaletteEvent::Escape => {
-                let mut shown = handler_shown.lock().expect("the palette's state");
-                match shown.mode {
-                    Mode::Launcher => close_reply(),
-                    Mode::CreateSnippet(_) => {
-                        if let Some(ctx) = handler_context.as_deref() {
-                            enter_snippets(ctx, &mut shown)
-                        } else {
-                            enter_launcher(
-                                &handler_launcher,
-                                handler_context.as_deref(),
-                                &mut shown,
-                                true,
-                            )
-                        }
-                    }
-                    Mode::CreateNote(_) => {
-                        if let Some(ctx) = handler_context.as_deref() {
-                            enter_notes(ctx, &mut shown)
-                        } else {
-                            enter_launcher(
-                                &handler_launcher,
-                                handler_context.as_deref(),
-                                &mut shown,
-                                true,
-                            )
-                        }
-                    }
-                    Mode::QuicklinkArg(_) | Mode::CreateQuicklink(_) => {
-                        if let Some(ctx) = handler_context.as_deref() {
-                            enter_quicklinks(ctx, &mut shown)
-                        } else {
-                            enter_launcher(
-                                &handler_launcher,
-                                handler_context.as_deref(),
-                                &mut shown,
-                                true,
-                            )
-                        }
-                    }
-                    _ => {
-                        if let Some(ctx) = handler_context.as_ref() {
-                            ctx.palette.back_to_root();
-                        }
-                        enter_launcher(
-                            &handler_launcher,
-                            handler_context.as_deref(),
-                            &mut shown,
-                            true,
-                        )
-                    }
-                }
+            PaletteEvent::ActionMenuDismissed => {
+                let mut shown = lock_shown(&handler_shown);
+                shown.action_menu_open = false;
+                PaletteReply::Keep
             }
+            PaletteEvent::ActionMenuActivated(action_id) => handle_action_menu_choice(
+                &action_id,
+                &handler_shown,
+                &handler_launcher,
+                &handler_runner,
+                handler_context.as_ref(),
+                &handler_handle,
+                &close_reply,
+                &close_with_hud,
+            ),
+            PaletteEvent::Escape => handle_escape_or_back(
+                &handler_shown,
+                &handler_launcher,
+                handler_context.as_deref(),
+                true,
+                &close_reply,
+            ),
             PaletteEvent::Dismissed => {
+                let mut shown = lock_shown(&handler_shown);
+                shown.last_dismissed_at = Some(Instant::now());
+                shown.action_menu_open = false;
                 if quit_on_close {
                     PaletteReply::Quit
                 } else {
@@ -593,14 +806,118 @@ fn build(
 
     let rows = suggestions_with_favorites(&launcher, context.as_deref());
     let initial_model = {
-        let mut guard = shown.lock().expect("the palette's state");
+        let mut guard = lock_shown(&shown);
         guard.rows = rows.clone();
-        model_for_with_icons("", &rows, true, context.as_deref(), &mut guard)
+        model_for_with_icons("", &rows, true, 0, context.as_deref(), &mut guard)
     };
 
     let palette = Palette::with_handler(theme, initial_model, Box::new(handler))?;
-    *handle_slot.lock().expect("icon handle slot") = Some(palette.handle());
+    if let Ok(mut slot) = handle_slot.lock() {
+        *slot = Some(palette.handle());
+    }
     Ok(palette)
+}
+
+fn pop_to_root_policy(settings: &WindowsSettings) -> PopToRootPolicy {
+    let raw = settings
+        .get(KEY_POP_TO_ROOT_SECS)
+        .or_else(|| settings.get(tc_palette::KEY_POP_TO_ROOT));
+    PopToRootPolicy::parse(raw.as_deref())
+}
+
+fn filtered_file_rows(
+    launcher: &LauncherState,
+    query: &str,
+    filter: FileType,
+    show_hidden: bool,
+) -> Vec<ResultRow> {
+    let mut rows = launcher.file_screen_rows(query, filter);
+    if !show_hidden {
+        rows.retain(|r| !r.name.starts_with('.'));
+    }
+    rows
+}
+
+fn handle_escape_or_back(
+    shown_lock: &Arc<Mutex<Shown>>,
+    launcher: &Arc<LauncherState>,
+    ctx: Option<&NativeContext>,
+    close_at_root: bool,
+    close_reply: &dyn Fn() -> PaletteReply,
+) -> PaletteReply {
+    let mut shown = lock_shown(shown_lock);
+    shown.action_menu_open = false;
+    match shown.mode.clone() {
+        Mode::Launcher => {
+            if close_at_root {
+                shown.last_dismissed_at = Some(Instant::now());
+                close_reply()
+            } else {
+                PaletteReply::Keep
+            }
+        }
+        Mode::CreateSnippet(_) => {
+            if let Some(ctx) = ctx {
+                enter_snippets(ctx, &mut shown)
+            } else {
+                enter_launcher(launcher, ctx, &mut shown, true)
+            }
+        }
+        Mode::CreateNote(_) => {
+            if let Some(ctx) = ctx {
+                enter_notes(ctx, &mut shown)
+            } else {
+                enter_launcher(launcher, ctx, &mut shown, true)
+            }
+        }
+        Mode::QuicklinkArg {
+            from_launcher,
+            previous_query,
+            ..
+        } => {
+            if from_launcher {
+                restore_launcher_query(launcher, ctx, &mut shown, previous_query)
+            } else if let Some(ctx) = ctx {
+                enter_quicklinks(ctx, &mut shown)
+            } else {
+                enter_launcher(launcher, ctx, &mut shown, true)
+            }
+        }
+        Mode::CreateQuicklink(_) => {
+            if let Some(ctx) = ctx {
+                enter_quicklinks(ctx, &mut shown)
+            } else {
+                enter_launcher(launcher, ctx, &mut shown, true)
+            }
+        }
+        _ => {
+            if let Some(ctx) = ctx {
+                ctx.palette.back_to_root();
+            }
+            enter_launcher(launcher, ctx, &mut shown, true)
+        }
+    }
+}
+
+fn restore_launcher_query(
+    launcher: &LauncherState,
+    ctx: Option<&NativeContext>,
+    shown: &mut Shown,
+    query: String,
+) -> PaletteReply {
+    shown.mode = Mode::Launcher;
+    shown.query = query.clone();
+    shown.selected = 0;
+    shown.action_menu_open = false;
+    let is_suggestions = query.trim().is_empty();
+    let rows = if is_suggestions {
+        suggestions_with_favorites(launcher, ctx)
+    } else {
+        build_root_search_rows(launcher, ctx, &query)
+    };
+    shown.rows = rows.clone();
+    let model = model_for_with_icons(&query, &rows, is_suggestions, 0, ctx, shown);
+    PaletteReply::UpdateWithEdit(query, model)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -613,16 +930,18 @@ fn handle_activate(
     ctx_arc: Option<&Arc<NativeContext>>,
     handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
     close_reply: &dyn Fn() -> PaletteReply,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
 ) -> PaletteReply {
     let ctx = ctx_arc.map(Arc::as_ref);
-    let mut shown = shown_lock.lock().expect("the palette's state");
-    match &shown.mode {
+    let mut shown = lock_shown(shown_lock);
+    shown.action_menu_open = false;
+    match shown.mode.clone() {
         Mode::Launcher => {
             let Some(row) = shown.rows.get(index).cloned() else {
                 return PaletteReply::Keep;
             };
 
-            // 1. Inline snippet keyword match -> expand & paste (or copy on Ctrl+Enter).
+            // 1. Inline / Root Search snippet -> expand & paste (or copy on Ctrl+Enter).
             if let Some(snippet_id) = row.id.strip_prefix(INLINE_SNIPPET_PREFIX) {
                 if let Some(ctx) = ctx {
                     let record = ctx
@@ -633,24 +952,76 @@ fn handle_activate(
                         .and_then(|g| g.record(snippet_id).cloned());
                     if let Some(record) = record {
                         let expanded = ctx.features.expand_snippet(&record);
+                        let name = record.snippet.name.clone();
+                        shown.last_dismissed_at = Some(Instant::now());
                         drop(shown);
                         if secondary {
                             let _ = tc_platform_win::clipboard().write_text(&expanded);
-                        } else {
-                            let _ = tc_platform_win::copy_and_paste_async(expanded);
+                            return close_with_hud(format!("Copied {name}"));
                         }
-                        return close_reply();
+                        let _ = tc_platform_win::copy_and_paste_async(expanded);
+                        return close_with_hud(format!("Pasted {name}"));
                     }
                 }
                 return PaletteReply::Keep;
             }
 
-            // 1b. Fallback web search URL -> open in default browser immediately.
+            // 1b. Root Search Quicklink -> inline argument mode if parameterized, else open!
+            if let Some(ql_name) = row.id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
+                if let Some(ctx) = ctx {
+                    let link = ctx
+                        .features
+                        .search_quicklinks("")
+                        .into_iter()
+                        .find(|l| l.name == ql_name);
+                    if let Some(link) = link {
+                        if link.needs_query() {
+                            return enter_quicklink_arg(
+                                link,
+                                true,
+                                shown.query.clone(),
+                                &mut shown,
+                            );
+                        }
+                        let url = link.expand_url("");
+                        let name = link.name;
+                        shown.last_dismissed_at = Some(Instant::now());
+                        drop(shown);
+                        let _ = tc_platform_win::open(&url);
+                        return close_with_hud(format!("Opened {name}"));
+                    }
+                }
+                return PaletteReply::Keep;
+            }
+
+            // 1c. Windows Settings & Admin Tool -> launch ms-settings: URI or control applet.
+            if let Some(setting_id) = row.id.strip_prefix(WIN_SETTING_PREFIX) {
+                let target = win_settings::find_by_id(setting_id)
+                    .map(|item| item.target)
+                    .unwrap_or(&row.target)
+                    .to_string();
+                let name = row.name.clone();
+                shown.last_dismissed_at = Some(Instant::now());
+                drop(shown);
+                if secondary {
+                    let _ = tc_platform_win::clipboard().write_text(&target);
+                    return close_with_hud("Copied URI".to_string());
+                }
+                let _ = win_settings::launch(&target);
+                return close_with_hud(format!("Opened {name}"));
+            }
+
+            // 1d. Fallback web search URL -> open in default browser immediately.
             if let Some(url) = row.id.strip_prefix(FALLBACK_URL_PREFIX) {
                 let url = url.to_string();
+                shown.last_dismissed_at = Some(Instant::now());
                 drop(shown);
+                if secondary {
+                    let _ = tc_platform_win::clipboard().write_text(&url);
+                    return close_with_hud("Copied URL".to_string());
+                }
                 let _ = tc_platform_win::open(&url);
-                return close_reply();
+                return close_with_hud("Opened in Browser".to_string());
             }
 
             // 2. Built-in screen commands navigate cleanly inside the same palette window!
@@ -668,9 +1039,17 @@ fn handle_activate(
                         CommandId::SearchQuicklinks => return enter_quicklinks(ctx, &mut shown),
                         CommandId::CreateQuicklink => return enter_create_quicklink(&mut shown),
                         CommandId::RunShellCommand => return enter_run_shell(&mut shown),
-                        CommandId::ExportSettings => return run_export_backup(ctx, &mut shown),
+                        CommandId::ExportSettings => {
+                            shown.mode = Mode::Status;
+                            shown.query.clear();
+                            shown.selected = 0;
+                            shown.action_menu_open = false;
+                            drop(shown);
+                            return run_export_backup(ctx);
+                        }
                         CommandId::ImportSettings => {
                             if let Some(ctx_shared) = ctx_arc {
+                                shown.last_dismissed_at = Some(Instant::now());
                                 drop(shown);
                                 spawn_import_backup_dialog(
                                     Arc::clone(ctx_shared),
@@ -684,6 +1063,7 @@ fn handle_activate(
                         }
                         CommandId::ImportFromRaycast => {
                             if let Some(ctx_shared) = ctx_arc {
+                                shown.last_dismissed_at = Some(Instant::now());
                                 drop(shown);
                                 spawn_import_raycast_dialog(
                                     Arc::clone(ctx_shared),
@@ -699,37 +1079,63 @@ fn handle_activate(
                             return enter_files(launcher, ctx, handle_slot, &mut shown);
                         }
                         CommandId::SwitchWindows => return enter_switch_windows(&mut shown),
-                        CommandId::CalculatorHistory => return enter_calc_history(ctx, &mut shown),
+                        CommandId::CalculatorHistory => {
+                            return enter_calc_history(ctx, launcher, &mut shown);
+                        }
                         CommandId::Settings => return enter_settings(ctx, &mut shown),
                         _ => {}
                     }
                 }
             }
 
-            // 3. Calculator answer -> remember in persistent Calculator History!
+            // 3. Calculator answer -> remember in persistent Calculator History AND update `ans`!
             if row.id.starts_with(CALCULATOR_PREFIX) {
+                if secondary {
+                    let expr = row.detail.clone();
+                    shown.last_dismissed_at = Some(Instant::now());
+                    drop(shown);
+                    let _ = tc_platform_win::clipboard().write_text(&expr);
+                    return close_with_hud("Copied Expression".to_string());
+                }
                 if let Some(ctx) = ctx {
                     let badge = row.calc_badge.as_deref().unwrap_or("Result");
                     ctx.features
                         .record_calc(&row.detail, &row.name, &row.target, badge);
                 }
+                if let Some(val) = parse_numeric_answer(&row.target) {
+                    launcher.set_last_calc_answer(Some(val));
+                }
+                let answer = row.target.clone();
+                let display = row.name.clone();
+                shown.last_dismissed_at = Some(Instant::now());
+                drop(shown);
+                let _ = tc_platform_win::clipboard().write_text(&answer);
+                return close_with_hud(format!("Copied {display}"));
             }
 
-            // 4. Secondary action (`Ctrl+Enter`) on a File row -> Reveal in File Explorer.
+            // 4. Secondary action (`Ctrl+Enter`) on a File or App row -> Reveal in File Explorer.
             if secondary {
                 if let Some(path) = row.id.strip_prefix(FILE_PREFIX) {
                     let path = path.to_string();
+                    shown.last_dismissed_at = Some(Instant::now());
                     drop(shown);
                     let _ = tc_platform_win::reveal(&path);
-                    return close_reply();
+                    return close_with_hud("Opened in Explorer".to_string());
                 }
             }
 
+            let is_window_cmd = LauncherState::window_command_of(&row.id).is_some();
             let id = row.id.clone();
+            let name = row.name.clone();
             let query = shown.query.clone();
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             let _ = runner.open(&id, &query, false);
-            close_reply()
+            if is_window_cmd {
+                close_with_hud(format!("Applied {name}"))
+            } else {
+                close_reply()
+            }
         }
         Mode::Clipboard => {
             let Some(ctx) = ctx else {
@@ -742,13 +1148,15 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             ctx.features.promote_clipboard_item(&item);
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             if secondary {
                 let _ = tc_platform_win::clipboard().write_text(&text);
+                close_with_hud("Copied to Clipboard".to_string())
             } else {
                 let _ = tc_platform_win::copy_and_paste_async(text);
+                close_with_hud("Pasted".to_string())
             }
-            close_reply()
         }
         Mode::Emoji => {
             let Some(ctx) = ctx else {
@@ -758,13 +1166,16 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             ctx.features.record_emoji_use(&cell.glyph);
+            let glyph = cell.glyph.clone();
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             if secondary {
-                let _ = tc_platform_win::clipboard().write_text(&cell.glyph);
+                let _ = tc_platform_win::clipboard().write_text(&glyph);
+                close_with_hud(format!("Copied {glyph}"))
             } else {
-                let _ = tc_platform_win::copy_and_paste_async(cell.glyph);
+                let _ = tc_platform_win::copy_and_paste_async(glyph.clone());
+                close_with_hud(format!("Pasted {glyph}"))
             }
-            close_reply()
         }
         Mode::Snippets => {
             let Some(ctx) = ctx else {
@@ -777,19 +1188,22 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             let expanded = ctx.features.expand_snippet(&record);
+            let name = record.snippet.name.clone();
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             if secondary {
                 let _ = tc_platform_win::clipboard().write_text(&expanded);
+                close_with_hud(format!("Copied {name}"))
             } else {
                 let _ = tc_platform_win::copy_and_paste_async(expanded);
+                close_with_hud(format!("Pasted {name}"))
             }
-            close_reply()
         }
         Mode::CreateSnippet(draft) => {
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
             };
-            let mut next_draft = draft.clone();
+            let mut next_draft = draft;
             let input = shown.query.clone();
             match next_draft.step {
                 SnippetDraftStep::Name => {
@@ -836,19 +1250,21 @@ fn handle_activate(
             let Some(note) = shown.notes.get(index).cloned() else {
                 return PaletteReply::Keep;
             };
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             if secondary {
                 let _ = tc_platform_win::open(&note.path.to_string_lossy());
+                close_with_hud("Opened Note".to_string())
             } else {
                 let _ = tc_platform_win::clipboard().write_text(&note.body);
+                close_with_hud("Copied Note".to_string())
             }
-            close_reply()
         }
         Mode::CreateNote(draft) => {
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
             };
-            let mut next_draft = draft.clone();
+            let mut next_draft = draft;
             let input = shown.query.clone();
             match next_draft.step {
                 NoteDraftStep::Title => {
@@ -884,26 +1300,28 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             if link.needs_query() {
-                shown.mode = Mode::QuicklinkArg(link.clone());
-                shown.query.clear();
-                return PaletteReply::Navigate(quicklink_arg_model(&link, ""));
+                return enter_quicklink_arg(link, false, shown.query.clone(), &mut shown);
             }
             let url = link.expand_url("");
+            let name = link.name;
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             let _ = tc_platform_win::open(&url);
-            close_reply()
+            close_with_hud(format!("Opened {name}"))
         }
-        Mode::QuicklinkArg(link) => {
+        Mode::QuicklinkArg { link, .. } => {
             let url = link.expand_url(&shown.query);
+            let name = link.name;
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             let _ = tc_platform_win::open(&url);
-            close_reply()
+            close_with_hud(format!("Opened {name}"))
         }
         Mode::CreateQuicklink(draft) => {
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
             };
-            let mut next_draft = draft.clone();
+            let mut next_draft = draft;
             let input = shown.query.clone();
             match next_draft.step {
                 QuicklinkDraftStep::Name => {
@@ -967,33 +1385,67 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             let path = row.target.clone();
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             if secondary {
                 let _ = tc_platform_win::reveal(&path);
+                close_with_hud("Opened in Explorer".to_string())
             } else {
                 let _ = tc_platform_win::open(&path);
+                close_reply()
             }
-            close_reply()
         }
         Mode::SwitchWindows => {
             let Some(win) = shown.windows.get(index).cloned() else {
                 return PaletteReply::Keep;
             };
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             let _ = tc_platform_win::window_control::focus_window(win.handle);
             close_reply()
         }
         Mode::CalcHistory => {
-            let Some(entry) = shown.calc_entries.get(index).cloned() else {
+            // Index 0 may be a live `ans` calculation hero card.
+            if let Some(live) = shown.calc_live.clone() {
+                if index == 0 {
+                    if let Some(ctx) = ctx {
+                        let badge = live.calc_badge.as_deref().unwrap_or("Result");
+                        ctx.features
+                            .record_calc(&live.detail, &live.name, &live.target, badge);
+                    }
+                    if let Some(val) = parse_numeric_answer(&live.target) {
+                        launcher.set_last_calc_answer(Some(val));
+                    }
+                    shown.last_dismissed_at = Some(Instant::now());
+                    drop(shown);
+                    if secondary {
+                        let _ = tc_platform_win::copy_and_paste_async(live.target);
+                        return close_with_hud(format!("Pasted {}", live.name));
+                    }
+                    let _ = tc_platform_win::clipboard().write_text(&live.target);
+                    return close_with_hud(format!("Copied {}", live.name));
+                }
+            }
+            let entry_idx = if shown.calc_live.is_some() {
+                index.saturating_sub(1)
+            } else {
+                index
+            };
+            let Some(entry) = shown.calc_entries.get(entry_idx).cloned() else {
                 return PaletteReply::Keep;
             };
+            if let Some(val) = parse_numeric_answer(&entry.copy_text) {
+                launcher.set_last_calc_answer(Some(val));
+            }
+            shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
             if secondary {
                 let _ = tc_platform_win::copy_and_paste_async(entry.copy_text);
+                close_with_hud(format!("Pasted {}", entry.display))
             } else {
                 let _ = tc_platform_win::clipboard().write_text(&entry.copy_text);
+                close_with_hud(format!("Copied {}", entry.display))
             }
-            close_reply()
         }
         Mode::Settings => {
             let Some(ctx) = ctx else {
@@ -1008,6 +1460,7 @@ fn handle_activate(
             let updated = collect_settings_rows(ctx, &query);
             let clamped = index.min(updated.len().saturating_sub(1));
             shown.settings_rows = updated.clone();
+            shown.selected = clamped;
             let model = settings_model_for(&query, &updated, clamped);
             if key == tc_palette::KEY_APPEARANCE {
                 PaletteReply::UpdateTheme(Box::new(theme_from_settings(&ctx.settings)), model)
@@ -1018,30 +1471,466 @@ fn handle_activate(
     }
 }
 
+/// Tertiary action (`Alt+Enter`): Run as Administrator (App) / Properties (File) / Reveal (Note).
+fn handle_tertiary(
+    index: usize,
+    shown_lock: &Arc<Mutex<Shown>>,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
+) -> PaletteReply {
+    let mut shown = lock_shown(shown_lock);
+    match shown.mode {
+        Mode::Launcher => {
+            let Some(row) = shown.rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            match row.kind.as_str() {
+                APPLICATIONS => {
+                    let _ = tc_platform_win::run_as_admin(&row.target);
+                    close_with_hud(format!("Running {} as Admin", row.name))
+                }
+                FILE_SECTION => {
+                    let _ = tc_platform_win::show_properties(&row.target);
+                    close_with_hud("Opened Properties".to_string())
+                }
+                CALCULATOR_SECTION => {
+                    let _ = tc_platform_win::clipboard().write_text(&row.detail);
+                    close_with_hud("Copied Expression".to_string())
+                }
+                WIN_SETTING_SECTION => {
+                    let _ = tc_platform_win::clipboard().write_text(&row.target);
+                    close_with_hud("Copied URI".to_string())
+                }
+                QUICKLINK_SECTION | "Fallback Search" => {
+                    let _ = tc_platform_win::clipboard().write_text(&row.target);
+                    close_with_hud("Copied URL".to_string())
+                }
+                _ => PaletteReply::Keep,
+            }
+        }
+        Mode::Files => {
+            let Some(row) = shown.file_rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::show_properties(&row.target);
+            close_with_hud("Opened Properties".to_string())
+        }
+        Mode::Notes => {
+            let Some(note) = shown.notes.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::reveal(&note.path.to_string_lossy());
+            close_with_hud("Opened in Explorer".to_string())
+        }
+        _ => PaletteReply::Keep,
+    }
+}
+
+/// Quaternary action (`Shift+Enter`): Open File Location / Show in Explorer.
+fn handle_quaternary(
+    index: usize,
+    shown_lock: &Arc<Mutex<Shown>>,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
+) -> PaletteReply {
+    let mut shown = lock_shown(shown_lock);
+    match shown.mode {
+        Mode::Launcher => {
+            let Some(row) = shown.rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            if matches!(row.kind.as_str(), APPLICATIONS | FILE_SECTION) {
+                shown.last_dismissed_at = Some(Instant::now());
+                drop(shown);
+                let _ = tc_platform_win::reveal(&row.target);
+                return close_with_hud("Opened in Explorer".to_string());
+            }
+            PaletteReply::Keep
+        }
+        Mode::Files => {
+            let Some(row) = shown.file_rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::reveal(&row.target);
+            close_with_hud("Opened in Explorer".to_string())
+        }
+        Mode::Notes => {
+            let Some(note) = shown.notes.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::reveal(&note.path.to_string_lossy());
+            close_with_hud("Opened in Explorer".to_string())
+        }
+        _ => PaletteReply::Keep,
+    }
+}
+
+/// Copy chord (`Alt+C`): Copy Path / Plain Text / Raw Template / URL / URI / Expression.
+fn handle_copy_chord(
+    index: usize,
+    shown_lock: &Arc<Mutex<Shown>>,
+    launcher: &Arc<LauncherState>,
+    ctx: Option<&NativeContext>,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
+) -> PaletteReply {
+    let mut shown = lock_shown(shown_lock);
+    match shown.mode {
+        Mode::Launcher => {
+            let Some(row) = shown.rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let (text, hud) =
+                match row.kind.as_str() {
+                    APPLICATIONS | FILE_SECTION => (row.target.clone(), "Copied Path".to_string()),
+                    CALCULATOR_SECTION => {
+                        if let Some(val) = parse_numeric_answer(&row.target) {
+                            launcher.set_last_calc_answer(Some(val));
+                        }
+                        (row.target.clone(), format!("Copied {}", row.name))
+                    }
+                    SNIPPET_SECTION => {
+                        let raw =
+                            row.id
+                                .strip_prefix(INLINE_SNIPPET_PREFIX)
+                                .and_then(|sid| {
+                                    ctx.and_then(|c| {
+                                        c.features.snippets.lock().ok().and_then(|g| {
+                                            g.record(sid).map(|r| r.snippet.text.clone())
+                                        })
+                                    })
+                                })
+                                .unwrap_or_else(|| row.detail.clone());
+                        (raw, "Copied Template".to_string())
+                    }
+                    QUICKLINK_SECTION | "Fallback Search" => {
+                        (row.target.clone(), "Copied URL".to_string())
+                    }
+                    WIN_SETTING_SECTION => (row.target.clone(), "Copied URI".to_string()),
+                    _ => (row.name.clone(), "Copied Name".to_string()),
+                };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&text);
+            close_with_hud(hud)
+        }
+        Mode::Clipboard => {
+            let Some(item) = shown.clipboard_items.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let text = item
+                .plain_text()
+                .map(str::to_string)
+                .or(item.text)
+                .unwrap_or_default();
+            if text.is_empty() {
+                return PaletteReply::Keep;
+            }
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&text);
+            close_with_hud("Copied Plain Text".to_string())
+        }
+        Mode::Snippets => {
+            let Some(rec) = shown.snippets.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&rec.snippet.text);
+            close_with_hud("Copied Template".to_string())
+        }
+        Mode::Quicklinks => {
+            let Some(link) = shown.quicklinks.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&link.url_template);
+            close_with_hud("Copied URL".to_string())
+        }
+        Mode::Files => {
+            let Some(row) = shown.file_rows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&row.target);
+            close_with_hud("Copied Path".to_string())
+        }
+        Mode::CalcHistory => {
+            let expr = if let Some(live) = shown.calc_live.as_ref() {
+                if index == 0 {
+                    live.detail.clone()
+                } else {
+                    match shown.calc_entries.get(index.saturating_sub(1)) {
+                        Some(e) => e.expression.clone(),
+                        None => return PaletteReply::Keep,
+                    }
+                }
+            } else {
+                match shown.calc_entries.get(index) {
+                    Some(e) => e.expression.clone(),
+                    None => return PaletteReply::Keep,
+                }
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&expr);
+            close_with_hud("Copied Expression".to_string())
+        }
+        Mode::Notes => {
+            let Some(note) = shown.notes.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&note.body);
+            close_with_hud("Copied Note".to_string())
+        }
+        Mode::SwitchWindows => {
+            let Some(win) = shown.windows.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&win.title);
+            close_with_hud("Copied Window Title".to_string())
+        }
+        Mode::Emoji => {
+            let Some(cell) = shown.emoji_cells.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&cell.name);
+            close_with_hud("Copied Emoji Name".to_string())
+        }
+        _ => PaletteReply::Keep,
+    }
+}
+
 fn handle_action(
     action: ActionKey,
     selected: usize,
     shown_lock: &Arc<Mutex<Shown>>,
     launcher: &Arc<LauncherState>,
     ctx: Option<&NativeContext>,
+    handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
 ) -> PaletteReply {
+    // Back chord (`Alt+Left` / `Ctrl+[`) works even without NativeContext.
+    if action == ActionKey::Back {
+        return handle_escape_or_back(shown_lock, launcher, ctx, false, &|| PaletteReply::Keep);
+    }
+
+    let mut shown = lock_shown(shown_lock);
+    shown.selected = selected;
+
+    // 1. Floating `Ctrl+K` Action Panel toggle across ALL screens.
+    if action == ActionKey::CtrlK {
+        if shown.action_menu_open {
+            shown.action_menu_open = false;
+            return match rebuild_current_model(ctx, &mut shown, None) {
+                Some(model) => PaletteReply::Update(model),
+                None => PaletteReply::Keep,
+            };
+        }
+        if let Some(menu) = build_action_menu_for_current(ctx, &shown, selected) {
+            shown.action_menu_open = true;
+            if let Some(mut model) = rebuild_current_model(ctx, &mut shown, None) {
+                model.action_menu = Some(menu);
+                return PaletteReply::Update(model);
+            }
+        }
+        return PaletteReply::Keep;
+    }
+
+    // 2. `Ctrl+I`: Toggle Master-Detail preview pane on/off cleanly.
+    if action == ActionKey::CtrlI {
+        shown.show_detail = !shown.show_detail;
+        shown.action_menu_open = false;
+        let msg = if shown.show_detail {
+            "Preview pane shown"
+        } else {
+            "Preview pane hidden"
+        };
+        let toast = ToastModel {
+            kind: ToastKind::Info,
+            message: msg.to_string(),
+        };
+        return match rebuild_current_model(ctx, &mut shown, Some(toast)) {
+            Some(model) => PaletteReply::Update(model),
+            None => PaletteReply::Keep,
+        };
+    }
+
+    // 3. `Shift+Tab`: step cleanly out of Quicklink inline argument mode.
+    if action == ActionKey::ShiftTab {
+        if let Mode::QuicklinkArg {
+            from_launcher,
+            previous_query,
+            ..
+        } = shown.mode.clone()
+        {
+            if from_launcher {
+                return restore_launcher_query(launcher, ctx, &mut shown, previous_query);
+            }
+            if let Some(ctx) = ctx {
+                return enter_quicklinks(ctx, &mut shown);
+            }
+            return enter_launcher(launcher, ctx, &mut shown, true);
+        }
+        return PaletteReply::Keep;
+    }
+
+    // 4. `Tab`: Calculator answer into search bar, Quicklink inline argument pill,
+    //    or empty-root flip to Clipboard History.
+    if action == ActionKey::Tab {
+        match shown.mode.clone() {
+            Mode::Launcher => {
+                if let Some(row) = shown.rows.get(selected).cloned() {
+                    if row.kind == CALCULATOR_SECTION {
+                        if let Some(val) = parse_numeric_answer(&row.target) {
+                            launcher.set_last_calc_answer(Some(val));
+                        }
+                        return restore_launcher_query(launcher, ctx, &mut shown, row.target);
+                    }
+                    if let Some(ql_name) = row.id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
+                        if let Some(ctx) = ctx {
+                            if let Some(link) = ctx
+                                .features
+                                .search_quicklinks("")
+                                .into_iter()
+                                .find(|l| l.name == ql_name && l.needs_query())
+                            {
+                                return enter_quicklink_arg(
+                                    link,
+                                    true,
+                                    shown.query.clone(),
+                                    &mut shown,
+                                );
+                            }
+                        }
+                    }
+                }
+                if shown.query.trim().is_empty() {
+                    if let Some(ctx) = ctx {
+                        return enter_clipboard(ctx, &mut shown);
+                    }
+                }
+                return PaletteReply::Keep;
+            }
+            Mode::Quicklinks => {
+                if let Some(link) = shown.quicklinks.get(selected).cloned() {
+                    if link.needs_query() {
+                        return enter_quicklink_arg(link, false, shown.query.clone(), &mut shown);
+                    }
+                }
+                return PaletteReply::Keep;
+            }
+            Mode::CalcHistory => {
+                let copy_text = if let Some(live) = shown.calc_live.as_ref() {
+                    if selected == 0 {
+                        Some(live.target.clone())
+                    } else {
+                        shown
+                            .calc_entries
+                            .get(selected.saturating_sub(1))
+                            .map(|e| e.copy_text.clone())
+                    }
+                } else {
+                    shown
+                        .calc_entries
+                        .get(selected)
+                        .map(|e| e.copy_text.clone())
+                };
+                if let Some(ans_text) = copy_text {
+                    if let Some(val) = parse_numeric_answer(&ans_text) {
+                        launcher.set_last_calc_answer(Some(val));
+                    }
+                    return restore_launcher_query(launcher, ctx, &mut shown, ans_text);
+                }
+                return PaletteReply::Keep;
+            }
+            Mode::Clipboard => return enter_launcher(launcher, ctx, &mut shown, true),
+            _ => return PaletteReply::Keep,
+        }
+    }
+
+    // 5. `Ctrl+H`: toggle hidden (dot-prefixed) files in File Search.
+    if action == ActionKey::CtrlH && shown.mode == Mode::Files {
+        shown.show_hidden_files = !shown.show_hidden_files;
+        let query = shown.query.clone();
+        let filter = shown.file_filter;
+        let rows = filtered_file_rows(launcher, &query, filter, shown.show_hidden_files);
+        let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
+        let show_detail = shown.show_detail;
+        shown.file_rows = rows.clone();
+        shown.selected = 0;
+        let mut model = files_model(&query, &rows, filter, indexing, 0, show_detail, |target| {
+            shown.lookup_or_queue_icon(target)
+        });
+        model.toast = Some(ToastModel {
+            kind: ToastKind::Info,
+            message: if shown.show_hidden_files {
+                "Showing hidden files".to_string()
+            } else {
+                "Hiding dot files".to_string()
+            },
+        });
+        return PaletteReply::Update(model);
+    }
+
+    // 6. `Ctrl+R`: Refresh live FX rates (Launcher/Calc) or re-index files (Files).
+    if action == ActionKey::CtrlR {
+        if let Some(ctx) = ctx {
+            match shown.mode {
+                Mode::Launcher | Mode::CalcHistory => {
+                    let rates_path = ctx.features.data_dir.join(RATES_FILE);
+                    spawn_rates_refresh(Arc::clone(launcher), rates_path, true);
+                    let toast = ToastModel {
+                        kind: ToastKind::Info,
+                        message: "Refreshing exchange rates…".to_string(),
+                    };
+                    if let Some(model) = rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                        return PaletteReply::Update(model);
+                    }
+                }
+                Mode::Files => {
+                    ctx.features
+                        .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
+                    let toast = ToastModel {
+                        kind: ToastKind::Info,
+                        message: "Re-indexing files in background…".to_string(),
+                    };
+                    if let Some(model) = rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                        return PaletteReply::Update(model);
+                    }
+                }
+                _ => {}
+            }
+        }
+        return PaletteReply::Keep;
+    }
+
     let Some(ctx) = ctx else {
         return PaletteReply::Keep;
     };
-    let mut shown = shown_lock.lock().expect("the palette's state");
-    match (&shown.mode, action) {
-        // Tab from Launcher (with empty search) flips straight to Clipboard History;
-        // Tab from Clipboard History returns to Launcher.
-        (Mode::Launcher, ActionKey::Tab) if shown.query.trim().is_empty() => {
-            enter_clipboard(ctx, &mut shown)
-        }
-        (Mode::Clipboard, ActionKey::Tab) => enter_launcher(launcher, Some(ctx), &mut shown, true),
 
+    match (&shown.mode, action) {
         // Launcher Ctrl+P: Pin / unpin selected app as a Favorite!
         (Mode::Launcher, ActionKey::CtrlP) => {
             if let Some(row) = shown.rows.get(selected).cloned() {
                 if row.kind == APPLICATIONS {
-                    ctx.features.toggle_favorite(&row.id);
+                    let pinned = ctx.features.toggle_favorite(&row.id);
                     let q = shown.query.clone();
                     let is_suggestions = q.trim().is_empty();
                     let rows = if is_suggestions {
@@ -1050,20 +1939,68 @@ fn handle_action(
                         shown.rows.clone()
                     };
                     shown.rows = rows.clone();
-                    return PaletteReply::Update(model_for_with_icons(
-                        &q,
-                        &rows,
-                        is_suggestions,
-                        Some(ctx),
-                        &mut shown,
-                    ));
+                    let sel = selected.min(rows.len().saturating_sub(1));
+                    shown.selected = sel;
+                    let mut model =
+                        model_for_with_icons(&q, &rows, is_suggestions, sel, Some(ctx), &mut shown);
+                    model.toast = Some(ToastModel {
+                        kind: ToastKind::Success,
+                        message: if pinned {
+                            format!("Pinned {}", row.name)
+                        } else {
+                            format!("Unpinned {}", row.name)
+                        },
+                    });
+                    return PaletteReply::Update(model);
                 }
             }
             PaletteReply::Keep
         }
 
-        // Notes actions: Ctrl+K Create New, Ctrl+Delete Remove selected note.
-        (Mode::Notes, ActionKey::CtrlK) => enter_create_note(&mut shown),
+        // Launcher Ctrl+Delete: Move file to Recycle Bin or delete snippet/quicklink.
+        (Mode::Launcher, ActionKey::CtrlDelete) => {
+            if let Some(row) = shown.rows.get(selected).cloned() {
+                if row.kind == FILE_SECTION {
+                    shown.last_dismissed_at = Some(Instant::now());
+                    drop(shown);
+                    let _ = tc_platform_win::recycle(&row.target);
+                    return close_with_hud("Moved to Recycle Bin".to_string());
+                }
+                if let Some(sid) = row.id.strip_prefix(INLINE_SNIPPET_PREFIX) {
+                    ctx.features.delete_snippet(sid);
+                    let q = shown.query.clone();
+                    let rows = build_root_search_rows(launcher, Some(ctx), &q);
+                    shown.rows = rows.clone();
+                    let sel = selected.min(rows.len().saturating_sub(1));
+                    shown.selected = sel;
+                    let mut model =
+                        model_for_with_icons(&q, &rows, false, sel, Some(ctx), &mut shown);
+                    model.toast = Some(ToastModel {
+                        kind: ToastKind::Info,
+                        message: "Deleted Snippet".to_string(),
+                    });
+                    return PaletteReply::Update(model);
+                }
+                if let Some(ql_name) = row.id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
+                    ctx.features.delete_quicklink(ql_name);
+                    let q = shown.query.clone();
+                    let rows = build_root_search_rows(launcher, Some(ctx), &q);
+                    shown.rows = rows.clone();
+                    let sel = selected.min(rows.len().saturating_sub(1));
+                    shown.selected = sel;
+                    let mut model =
+                        model_for_with_icons(&q, &rows, false, sel, Some(ctx), &mut shown);
+                    model.toast = Some(ToastModel {
+                        kind: ToastKind::Info,
+                        message: "Deleted Quicklink".to_string(),
+                    });
+                    return PaletteReply::Update(model);
+                }
+            }
+            PaletteReply::Keep
+        }
+
+        // Notes Ctrl+Delete: Remove selected note.
         (Mode::Notes, ActionKey::CtrlDelete) => {
             if let Some(note) = shown.notes.get(selected).cloned() {
                 ctx.features.delete_note(&note.path);
@@ -1071,13 +2008,18 @@ fn handle_action(
                 let list = ctx.features.search_notes(&q);
                 let next_sel = selected.min(list.len().saturating_sub(1));
                 shown.notes = list.clone();
-                return PaletteReply::Update(notes_model(&q, &list, next_sel));
+                shown.selected = next_sel;
+                let mut model = notes_model(&q, &list, next_sel, shown.show_detail);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: "Deleted Note".to_string(),
+                });
+                return PaletteReply::Update(model);
             }
             PaletteReply::Keep
         }
 
-        // Quicklinks actions: Ctrl+K Create New, Ctrl+Delete Remove selected link.
-        (Mode::Quicklinks, ActionKey::CtrlK) => enter_create_quicklink(&mut shown),
+        // Quicklinks Ctrl+Delete: Remove selected quicklink.
         (Mode::Quicklinks, ActionKey::CtrlDelete) => {
             if let Some(link) = shown.quicklinks.get(selected).cloned() {
                 ctx.features.delete_quicklink(&link.name);
@@ -1085,12 +2027,18 @@ fn handle_action(
                 let list = ctx.features.search_quicklinks(&q);
                 let next_sel = selected.min(list.len().saturating_sub(1));
                 shown.quicklinks = list.clone();
-                return PaletteReply::Update(quicklinks_model(&q, &list, next_sel));
+                shown.selected = next_sel;
+                let mut model = quicklinks_model(&q, &list, next_sel, shown.show_detail);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: "Deleted Quicklink".to_string(),
+                });
+                return PaletteReply::Update(model);
             }
             PaletteReply::Keep
         }
 
-        // Clipboard actions: Ctrl+P Pin, Ctrl+K Cycle Filter, Ctrl+Delete Remove.
+        // Clipboard actions: Ctrl+P Pin, Ctrl+Delete Remove.
         (Mode::Clipboard, ActionKey::CtrlP) => {
             if let Some(item) = shown.clipboard_items.get(selected).cloned() {
                 ctx.features.toggle_clipboard_pin(&item);
@@ -1099,17 +2047,16 @@ fn handle_action(
                 let items = ctx.features.search_clipboard(&q, filter);
                 let next_sel = selected.min(items.len().saturating_sub(1));
                 shown.clipboard_items = items.clone();
-                return PaletteReply::Update(clipboard_model(&q, &items, filter, next_sel));
+                shown.selected = next_sel;
+                return PaletteReply::Update(clipboard_model(
+                    &q,
+                    &items,
+                    filter,
+                    next_sel,
+                    shown.show_detail,
+                ));
             }
             PaletteReply::Keep
-        }
-        (Mode::Clipboard, ActionKey::CtrlK) => {
-            shown.clipboard_filter = next_clipboard_filter(shown.clipboard_filter);
-            let q = shown.query.clone();
-            let filter = shown.clipboard_filter;
-            let items = ctx.features.search_clipboard(&q, filter);
-            shown.clipboard_items = items.clone();
-            PaletteReply::Update(clipboard_model(&q, &items, filter, 0))
         }
         (Mode::Clipboard, ActionKey::CtrlDelete) => {
             if let Some(item) = shown.clipboard_items.get(selected).cloned() {
@@ -1119,7 +2066,13 @@ fn handle_action(
                 let items = ctx.features.search_clipboard(&q, filter);
                 let next_sel = selected.min(items.len().saturating_sub(1));
                 shown.clipboard_items = items.clone();
-                return PaletteReply::Update(clipboard_model(&q, &items, filter, next_sel));
+                shown.selected = next_sel;
+                let mut model = clipboard_model(&q, &items, filter, next_sel, shown.show_detail);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: "Deleted Entry".to_string(),
+                });
+                return PaletteReply::Update(model);
             }
             PaletteReply::Keep
         }
@@ -1132,13 +2085,13 @@ fn handle_action(
                 let cells = ctx.features.emoji_cells(&q);
                 let next_sel = selected.min(cells.len().saturating_sub(1));
                 shown.emoji_cells = cells.clone();
+                shown.selected = next_sel;
                 return PaletteReply::Update(emoji_model(&q, cells, next_sel));
             }
             PaletteReply::Keep
         }
 
-        // Snippets actions: Ctrl+K Create New, Ctrl+Delete Remove selected snippet.
-        (Mode::Snippets, ActionKey::CtrlK) => enter_create_snippet(&mut shown),
+        // Snippets Ctrl+Delete: Remove selected snippet.
         (Mode::Snippets, ActionKey::CtrlDelete) => {
             if let Some(rec) = shown.snippets.get(selected).cloned() {
                 ctx.features.delete_snippet(&rec.id());
@@ -1146,39 +2099,681 @@ fn handle_action(
                 let list = ctx.features.search_snippets(&q);
                 let next_sel = selected.min(list.len().saturating_sub(1));
                 shown.snippets = list.clone();
-                return PaletteReply::Update(snippets_model(&q, &list, next_sel));
+                shown.selected = next_sel;
+                let mut model = snippets_model(&q, &list, next_sel, shown.show_detail, |r| {
+                    ctx.features.expand_snippet(r)
+                });
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: "Deleted Snippet".to_string(),
+                });
+                return PaletteReply::Update(model);
             }
             PaletteReply::Keep
         }
 
-        // Files actions: Ctrl+P Cycle FileType filter.
+        // Files actions: Ctrl+P Cycle FileType filter, Ctrl+Delete Move to Recycle Bin.
         (Mode::Files, ActionKey::CtrlP) => {
             shown.file_filter = shown.file_filter.next();
             let q = shown.query.clone();
             let filter = shown.file_filter;
-            let rows = launcher.file_screen_rows(&q, filter);
+            let rows = filtered_file_rows(launcher, &q, filter, shown.show_hidden_files);
             let indexing = ctx.features.is_file_indexing();
+            let show_detail = shown.show_detail;
             shown.file_rows = rows.clone();
-            PaletteReply::Update(files_model(&q, &rows, filter, indexing, |target| {
-                shown.lookup_or_queue_icon(target)
-            }))
+            shown.selected = 0;
+            PaletteReply::Update(files_model(
+                &q,
+                &rows,
+                filter,
+                indexing,
+                0,
+                show_detail,
+                |target| shown.lookup_or_queue_icon(target),
+            ))
+        }
+        (Mode::Files, ActionKey::CtrlDelete) => {
+            if let Some(row) = shown.file_rows.get(selected).cloned() {
+                shown.last_dismissed_at = Some(Instant::now());
+                drop(shown);
+                let _ = tc_platform_win::recycle(&row.target);
+                return close_with_hud("Moved to Recycle Bin".to_string());
+            }
+            PaletteReply::Keep
         }
 
         // Calculator History: Ctrl+Delete Remove selected entry.
         (Mode::CalcHistory, ActionKey::CtrlDelete) => {
-            if let Some(entry) = shown.calc_entries.get(selected).cloned() {
+            let entry_idx = if shown.calc_live.is_some() {
+                if selected == 0 {
+                    return PaletteReply::Keep;
+                }
+                selected - 1
+            } else {
+                selected
+            };
+            if let Some(entry) = shown.calc_entries.get(entry_idx).cloned() {
                 ctx.features.remove_calc_entry(&entry);
                 let q = shown.query.clone();
                 let entries = ctx.features.search_calc_history(&q);
-                let next_sel = selected.min(entries.len().saturating_sub(1));
+                let live = shown.calc_live.clone();
+                let total = entries.len() + usize::from(live.is_some());
+                let next_sel = selected.min(total.saturating_sub(1));
                 shown.calc_entries = entries.clone();
-                return PaletteReply::Update(calc_history_model(&q, &entries, next_sel));
+                shown.selected = next_sel;
+                return PaletteReply::Update(calc_history_model(
+                    &q,
+                    live.as_ref(),
+                    &entries,
+                    next_sel,
+                    shown.show_detail,
+                ));
             }
             PaletteReply::Keep
         }
 
         _ => PaletteReply::Keep,
     }
+}
+
+/// Build the contextual `ActionMenuModel` for whatever screen and row is currently selected.
+fn build_action_menu_for_current(
+    ctx: Option<&NativeContext>,
+    shown: &Shown,
+    selected: usize,
+) -> Option<ActionMenuModel> {
+    match &shown.mode {
+        Mode::Launcher => {
+            let row = shown.rows.get(selected)?;
+            let is_fav =
+                row.kind == APPLICATIONS && ctx.is_some_and(|c| c.features.is_favorite(&row.id));
+            let ql_needs_args = row
+                .id
+                .strip_prefix(ROOT_QUICKLINK_PREFIX)
+                .is_some_and(|name| {
+                    ctx.is_some_and(|c| {
+                        c.features
+                            .search_quicklinks("")
+                            .into_iter()
+                            .any(|l| l.name == name && l.needs_query())
+                    })
+                });
+            Some(actions::for_launcher_row(
+                row,
+                &shown.query,
+                is_fav,
+                ql_needs_args,
+            ))
+        }
+        Mode::Files => shown.file_rows.get(selected).map(actions::for_file_row),
+        Mode::Clipboard => shown
+            .clipboard_items
+            .get(selected)
+            .map(actions::for_clipboard_item),
+        Mode::Snippets => shown
+            .snippets
+            .get(selected)
+            .map(|rec| actions::for_snippet(rec, true)),
+        Mode::Quicklinks => shown
+            .quicklinks
+            .get(selected)
+            .map(|link| actions::for_quicklink(link, true)),
+        Mode::Notes => shown.notes.get(selected).map(actions::for_note),
+        Mode::CalcHistory => {
+            let idx = if shown.calc_live.is_some() {
+                if selected == 0 {
+                    return shown
+                        .calc_live
+                        .as_ref()
+                        .map(|r| actions::for_launcher_row(r, &shown.query, false, false));
+                }
+                selected - 1
+            } else {
+                selected
+            };
+            shown.calc_entries.get(idx).map(actions::for_calc_history)
+        }
+        Mode::SwitchWindows => shown
+            .windows
+            .get(selected)
+            .map(|w| actions::for_window(&w.title)),
+        Mode::Emoji => shown
+            .emoji_cells
+            .get(selected)
+            .map(|c| actions::for_emoji(&c.glyph, &c.name, c.pinned)),
+        _ => None,
+    }
+}
+
+/// Execute an action chosen from the floating `Ctrl+K` Action Panel popover.
+#[allow(clippy::too_many_arguments)]
+fn handle_action_menu_choice(
+    action_id: &str,
+    shown_lock: &Arc<Mutex<Shown>>,
+    launcher: &Arc<LauncherState>,
+    runner: &Arc<Runner>,
+    ctx_arc: Option<&Arc<NativeContext>>,
+    handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
+    close_reply: &dyn Fn() -> PaletteReply,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
+) -> PaletteReply {
+    let ctx = ctx_arc.map(Arc::as_ref);
+    let (mode, selected, query) = {
+        let mut shown = lock_shown(shown_lock);
+        shown.action_menu_open = false;
+        (shown.mode.clone(), shown.selected, shown.query.clone())
+    };
+
+    match action_id {
+        // Common toggle / primary / copy actions
+        actions::id::TOGGLE_DETAIL => handle_action(
+            ActionKey::CtrlI,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
+        actions::id::OPEN | actions::id::RUN_PRIMARY | actions::id::WS_OPEN => handle_activate(
+            selected,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::RUN_ADMIN => handle_tertiary(selected, shown_lock, close_with_hud),
+        actions::id::REVEAL | actions::id::NOTE_REVEAL => {
+            handle_quaternary(selected, shown_lock, close_with_hud)
+        }
+        actions::id::OPEN_TERMINAL => {
+            let target = {
+                let mut shown = lock_shown(shown_lock);
+                let t = match shown.mode {
+                    Mode::Launcher => shown.rows.get(selected).map(|r| r.target.clone()),
+                    Mode::Files => shown.file_rows.get(selected).map(|r| r.target.clone()),
+                    _ => None,
+                };
+                if t.is_some() {
+                    shown.last_dismissed_at = Some(Instant::now());
+                }
+                t
+            };
+            if let Some(path) = target {
+                let _ = tc_platform_win::open_in_terminal(&path);
+                close_with_hud("Opened in Terminal".to_string())
+            } else {
+                PaletteReply::Keep
+            }
+        }
+        actions::id::COPY_PATH
+        | actions::id::WS_COPY_URI
+        | actions::id::QL_COPY_URL
+        | actions::id::SNIPPET_COPY_RAW
+        | actions::id::CLIP_COPY_PLAIN
+        | actions::id::COPY_TEXT
+        | actions::id::EMOJI_COPY_NAME => {
+            handle_copy_chord(selected, shown_lock, launcher, ctx, close_with_hud)
+        }
+        actions::id::COPY_FILE => {
+            let target = {
+                let mut shown = lock_shown(shown_lock);
+                let t = match shown.mode {
+                    Mode::Launcher => shown.rows.get(selected).map(|r| r.target.clone()),
+                    Mode::Files => shown.file_rows.get(selected).map(|r| r.target.clone()),
+                    _ => None,
+                };
+                if t.is_some() {
+                    shown.last_dismissed_at = Some(Instant::now());
+                }
+                t
+            };
+            if let Some(path) = target {
+                let _ = tc_platform_win::clipboard().write_files(&[path]);
+                close_with_hud("Copied File".to_string())
+            } else {
+                PaletteReply::Keep
+            }
+        }
+        actions::id::PROPERTIES => {
+            let target = {
+                let mut shown = lock_shown(shown_lock);
+                let t = match shown.mode {
+                    Mode::Launcher => shown.rows.get(selected).map(|r| r.target.clone()),
+                    Mode::Files => shown.file_rows.get(selected).map(|r| r.target.clone()),
+                    _ => None,
+                };
+                if t.is_some() {
+                    shown.last_dismissed_at = Some(Instant::now());
+                }
+                t
+            };
+            if let Some(path) = target {
+                let _ = tc_platform_win::show_properties(&path);
+                close_with_hud("Opened Properties".to_string())
+            } else {
+                PaletteReply::Keep
+            }
+        }
+        actions::id::TOGGLE_PIN | actions::id::CLIP_TOGGLE_PIN | actions::id::EMOJI_TOGGLE_PIN => {
+            handle_action(
+                ActionKey::CtrlP,
+                selected,
+                shown_lock,
+                launcher,
+                ctx,
+                handle_slot,
+                close_with_hud,
+            )
+        }
+        actions::id::RECYCLE
+        | actions::id::CLIP_DELETE
+        | actions::id::SNIPPET_DELETE
+        | actions::id::QL_DELETE
+        | actions::id::NOTE_DELETE
+        | actions::id::CALCHIST_DELETE => handle_action(
+            ActionKey::CtrlDelete,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
+
+        // Calculator actions
+        actions::id::CALC_COPY_ANSWER => handle_activate(
+            selected,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::CALC_COPY_EXPR => {
+            if mode == Mode::CalcHistory {
+                handle_copy_chord(selected, shown_lock, launcher, ctx, close_with_hud)
+            } else {
+                handle_activate(
+                    selected,
+                    true,
+                    shown_lock,
+                    launcher,
+                    runner,
+                    ctx_arc,
+                    handle_slot,
+                    close_reply,
+                    close_with_hud,
+                )
+            }
+        }
+        actions::id::CALC_SWAP_UNITS => {
+            if let Some(swapped) = tc_calc::swap_units_query(&query) {
+                let mut shown = lock_shown(shown_lock);
+                if mode == Mode::CalcHistory {
+                    if let Some(ctx) = ctx {
+                        shown.query = swapped.clone();
+                        shown.selected = 0;
+                        let live = launcher.evaluate_calc(&swapped);
+                        let entries = ctx.features.search_calc_history(&swapped);
+                        shown.calc_live = live.clone();
+                        shown.calc_entries = entries.clone();
+                        let model = calc_history_model(
+                            &swapped,
+                            live.as_ref(),
+                            &entries,
+                            0,
+                            shown.show_detail,
+                        );
+                        return PaletteReply::UpdateWithEdit(swapped, model);
+                    }
+                }
+                return restore_launcher_query(launcher, ctx, &mut shown, swapped);
+            }
+            PaletteReply::Keep
+        }
+        actions::id::CALC_PUT_IN_SEARCH | actions::id::CALCHIST_USE_IN_LAUNCHER => handle_action(
+            ActionKey::Tab,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
+        actions::id::CALC_OPEN_HISTORY => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            enter_calc_history(ctx, launcher, &mut shown)
+        }
+        actions::id::CALC_REFRESH_FX => handle_action(
+            ActionKey::CtrlR,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
+
+        // Clipboard actions
+        actions::id::CLIP_PASTE | actions::id::SNIPPET_PASTE | actions::id::EMOJI_PASTE => {
+            handle_activate(
+                selected,
+                false,
+                shown_lock,
+                launcher,
+                runner,
+                ctx_arc,
+                handle_slot,
+                close_reply,
+                close_with_hud,
+            )
+        }
+        actions::id::CLIP_COPY | actions::id::SNIPPET_COPY | actions::id::EMOJI_COPY => {
+            handle_activate(
+                selected,
+                true,
+                shown_lock,
+                launcher,
+                runner,
+                ctx_arc,
+                handle_slot,
+                close_reply,
+                close_with_hud,
+            )
+        }
+        actions::id::CLIP_CYCLE_FILTER => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            shown.clipboard_filter = next_clipboard_filter(shown.clipboard_filter);
+            let q = shown.query.clone();
+            let filter = shown.clipboard_filter;
+            let items = ctx.features.search_clipboard(&q, filter);
+            shown.clipboard_items = items.clone();
+            shown.selected = 0;
+            PaletteReply::Update(clipboard_model(&q, &items, filter, 0, shown.show_detail))
+        }
+        actions::id::CLIP_CLEAR_UNPINNED => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let removed = ctx.features.clear_unpinned_clipboard();
+            let mut shown = lock_shown(shown_lock);
+            let q = shown.query.clone();
+            let filter = shown.clipboard_filter;
+            let items = ctx.features.search_clipboard(&q, filter);
+            shown.clipboard_items = items.clone();
+            shown.selected = 0;
+            let mut model = clipboard_model(&q, &items, filter, 0, shown.show_detail);
+            model.toast = Some(ToastModel {
+                kind: ToastKind::Info,
+                message: format!("Cleared {removed} unpinned clips"),
+            });
+            PaletteReply::Update(model)
+        }
+
+        // Snippet / Quicklink / Note creation & arguments
+        actions::id::SNIPPET_CREATE => {
+            let mut shown = lock_shown(shown_lock);
+            enter_create_snippet(&mut shown)
+        }
+        actions::id::QL_OPEN => handle_activate(
+            selected,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::QL_FILL_ARGS => handle_action(
+            ActionKey::Tab,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
+        actions::id::QL_CREATE => {
+            let mut shown = lock_shown(shown_lock);
+            enter_create_quicklink(&mut shown)
+        }
+        actions::id::NOTE_COPY => handle_activate(
+            selected,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::NOTE_OPEN_FILE => handle_activate(
+            selected,
+            true,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::NOTE_CREATE => {
+            let mut shown = lock_shown(shown_lock);
+            enter_create_note(&mut shown)
+        }
+
+        // Calc history actions
+        actions::id::CALCHIST_COPY => handle_activate(
+            selected,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::CALCHIST_PASTE => handle_activate(
+            selected,
+            true,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::CALCHIST_COPY_EXPR => {
+            handle_copy_chord(selected, shown_lock, launcher, ctx, close_with_hud)
+        }
+
+        _ => {
+            // Dismiss menu cleanly if an unknown ID ever arrives.
+            let mut shown = lock_shown(shown_lock);
+            match rebuild_current_model(ctx, &mut shown, None) {
+                Some(model) => PaletteReply::Update(model),
+                None => PaletteReply::Keep,
+            }
+        }
+    }
+}
+
+/// Rebuild the active screen's `Model` cleanly at `shown.selected` (used by live
+/// selection updates, `Ctrl+I` detail toggle, `Ctrl+K` popover toggle, and `Shown` resume).
+fn rebuild_current_model(
+    ctx: Option<&NativeContext>,
+    shown: &mut Shown,
+    toast: Option<ToastModel>,
+) -> Option<Model> {
+    let query = shown.query.clone();
+    let sel = shown.selected;
+    let show_detail = shown.show_detail;
+    let mut model = match shown.mode.clone() {
+        Mode::Launcher => {
+            let rows = shown.rows.clone();
+            let is_suggestions = query.trim().is_empty();
+            model_for_with_icons(&query, &rows, is_suggestions, sel, ctx, shown)
+        }
+        Mode::Clipboard => clipboard_model(
+            &query,
+            &shown.clipboard_items,
+            shown.clipboard_filter,
+            sel,
+            show_detail,
+        ),
+        Mode::Emoji => emoji_model(&query, shown.emoji_cells.clone(), sel),
+        Mode::Snippets => {
+            let ctx = ctx?;
+            snippets_model(&query, &shown.snippets, sel, show_detail, |rec| {
+                ctx.features.expand_snippet(rec)
+            })
+        }
+        Mode::CreateSnippet(draft) => create_snippet_model(&draft, &query),
+        Mode::Notes => notes_model(&query, &shown.notes, sel, show_detail),
+        Mode::CreateNote(draft) => create_note_model(&draft, &query),
+        Mode::Quicklinks => quicklinks_model(&query, &shown.quicklinks, sel, show_detail),
+        Mode::QuicklinkArg { link, .. } => quicklink_arg_model(&link, &query),
+        Mode::CreateQuicklink(draft) => create_quicklink_model(&draft, &query),
+        Mode::RunShell => run_shell_model(&query, shown.last_shell_output.as_deref()),
+        Mode::Files => {
+            let rows = shown.file_rows.clone();
+            let filter = shown.file_filter;
+            let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
+            files_model(
+                &query,
+                &rows,
+                filter,
+                indexing,
+                sel,
+                show_detail,
+                |target| shown.lookup_or_queue_icon(target),
+            )
+        }
+        Mode::SwitchWindows => windows_model(&query, &shown.windows, sel),
+        Mode::CalcHistory => calc_history_model(
+            &query,
+            shown.calc_live.as_ref(),
+            &shown.calc_entries,
+            sel,
+            show_detail,
+        ),
+        Mode::Settings => settings_model_for(&query, &shown.settings_rows, sel),
+        Mode::Status => return None,
+    };
+    if toast.is_some() {
+        model.toast = toast;
+    }
+    Some(model)
+}
+
+/// Compose Root Search results in Raycast priority order:
+/// Calculator hero card → Installed Applications → Quicklinks & Snippets →
+/// Windows Settings → Commands & Window/System Actions → Indexed Files → Fallback Web Search.
+fn build_root_search_rows(
+    launcher: &LauncherState,
+    ctx: Option<&NativeContext>,
+    query: &str,
+) -> Vec<ResultRow> {
+    let base = launcher.search(query);
+    let mut calc_rows = Vec::new();
+    let mut app_rows = Vec::new();
+    let mut other_rows = Vec::new();
+    let mut file_rows = Vec::new();
+
+    for row in base {
+        match row.kind.as_str() {
+            CALCULATOR_SECTION => calc_rows.push(row),
+            APPLICATIONS => app_rows.push(row),
+            FILE_SECTION => file_rows.push(row),
+            _ => other_rows.push(row),
+        }
+    }
+
+    let mut exact_snippet: Option<ResultRow> = None;
+    let mut exact_snippet_id: Option<String> = None;
+    let mut snippet_rows = Vec::new();
+    let mut quicklink_rows = Vec::new();
+
+    if let Some(ctx) = ctx {
+        if let Some(snippet) = ctx.features.find_snippet_by_keyword(query) {
+            exact_snippet_id = Some(snippet.id());
+            exact_snippet = Some(inline_snippet_row(&snippet));
+        }
+        let trimmed = query.trim();
+        if trimmed.chars().count() >= 2 {
+            for link in ctx.features.search_quicklinks(trimmed).into_iter().take(5) {
+                quicklink_rows.push(root_quicklink_row(&link));
+            }
+            for snippet in ctx.features.search_snippets(trimmed).into_iter().take(4) {
+                if exact_snippet_id.as_deref() == Some(snippet.id().as_str()) {
+                    continue;
+                }
+                snippet_rows.push(inline_snippet_row(&snippet));
+            }
+        }
+    }
+
+    let win_setting_rows: Vec<ResultRow> = win_settings::search(query, 8)
+        .into_iter()
+        .map(win_settings::to_result_row)
+        .collect();
+
+    let mut out = Vec::with_capacity(
+        calc_rows.len()
+            + app_rows.len()
+            + quicklink_rows.len()
+            + snippet_rows.len()
+            + win_setting_rows.len()
+            + other_rows.len()
+            + file_rows.len()
+            + 1,
+    );
+
+    out.extend(calc_rows);
+    let bang_snippet = query.trim_start().starts_with('!');
+    if bang_snippet {
+        if let Some(s) = exact_snippet.take() {
+            out.push(s);
+        }
+    }
+    out.extend(app_rows);
+    if let Some(s) = exact_snippet {
+        out.push(s);
+    }
+    out.extend(quicklink_rows);
+    out.extend(snippet_rows);
+    out.extend(win_setting_rows);
+    out.extend(other_rows);
+    out.extend(file_rows);
+
+    if out.is_empty() {
+        if let Some(ctx) = ctx {
+            let links = ctx.features.search_quicklinks("");
+            out = fallback_search_rows(query, &links);
+        }
+    }
+
+    out
 }
 
 fn enter_launcher(
@@ -1190,14 +2785,33 @@ fn enter_launcher(
     let rows = suggestions_with_favorites(launcher, ctx);
     shown.mode = Mode::Launcher;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     shown.rows = rows.clone();
     shown.settings_rows.clear();
-    let model = model_for_with_icons("", &rows, true, ctx, shown);
+    let model = model_for_with_icons("", &rows, true, 0, ctx, shown);
     if clear_edit {
         PaletteReply::Navigate(model)
     } else {
         PaletteReply::Update(model)
     }
+}
+
+fn enter_quicklink_arg(
+    link: Quicklink,
+    from_launcher: bool,
+    previous_query: String,
+    shown: &mut Shown,
+) -> PaletteReply {
+    shown.mode = Mode::QuicklinkArg {
+        link: link.clone(),
+        from_launcher,
+        previous_query,
+    };
+    shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
+    PaletteReply::UpdateWithEdit(String::new(), quicklink_arg_model(&link, ""))
 }
 
 fn suggestions_with_favorites(
@@ -1225,43 +2839,51 @@ fn suggestions_with_favorites(
 fn enter_notes(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     shown.mode = Mode::Notes;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let list = ctx.features.search_notes("");
     shown.notes = list.clone();
-    PaletteReply::Navigate(notes_model("", &list, 0))
+    PaletteReply::Navigate(notes_model("", &list, 0, shown.show_detail))
 }
 
 fn enter_create_note(shown: &mut Shown) -> PaletteReply {
     let draft = NoteDraft::new();
     shown.mode = Mode::CreateNote(draft.clone());
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     PaletteReply::Navigate(create_note_model(&draft, ""))
 }
 
 fn enter_quicklinks(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     shown.mode = Mode::Quicklinks;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let list = ctx.features.search_quicklinks("");
     shown.quicklinks = list.clone();
-    PaletteReply::Navigate(quicklinks_model("", &list, 0))
+    PaletteReply::Navigate(quicklinks_model("", &list, 0, shown.show_detail))
 }
 
 fn enter_create_quicklink(shown: &mut Shown) -> PaletteReply {
     let draft = QuicklinkDraft::new();
     shown.mode = Mode::CreateQuicklink(draft.clone());
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     PaletteReply::Navigate(create_quicklink_model(&draft, ""))
 }
 
 fn enter_run_shell(shown: &mut Shown) -> PaletteReply {
     shown.mode = Mode::RunShell;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let last = shown.last_shell_output.clone();
     PaletteReply::Navigate(run_shell_model("", last.as_deref()))
 }
 
-fn run_export_backup(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
-    shown.mode = Mode::Status;
-    shown.query.clear();
+fn run_export_backup(ctx: &NativeContext) -> PaletteReply {
     match ctx.features.export_backup_to_desktop() {
         Ok((path, count)) => {
             let path_str = path.to_string_lossy().to_string();
@@ -1311,7 +2933,7 @@ fn spawn_import_backup_dialog(
                 {
                     Ok(count) => {
                         let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref()
-                            == Some("true");
+                            != Some("false");
                         launcher.set_show_window_commands(wm_on);
                         let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
                         launcher.set_show_files(fs_show);
@@ -1391,6 +3013,8 @@ fn spawn_import_raycast_dialog(
 fn enter_about(launcher: &LauncherState, shown: &mut Shown) -> PaletteReply {
     shown.mode = Mode::Status;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let extra = vec![
         Row::detailed(
             "Pure Win32 + Direct2D + DirectWrite",
@@ -1404,6 +3028,15 @@ fn enter_about(launcher: &LauncherState, shown: &mut Shown) -> PaletteReply {
         )
         .with_section("Runtime")
         .with_icon(Icon::new("⊞", Color::rgb(0x38, 0xbd, 0xf8))),
+        Row::detailed(
+            format!(
+                "{} Windows Settings & Admin Tools",
+                win_settings::all().len()
+            ),
+            "Instant ms-settings: URIs and classic Control Panel applets",
+        )
+        .with_section("Runtime")
+        .with_icon(Icon::new("⚙", Color::rgb(0x0e, 0xa5, 0xe9))),
     ];
     PaletteReply::Navigate(status_screen_model(
         "About YAL",
@@ -1417,16 +3050,26 @@ fn enter_clipboard(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     ctx.palette.open_screen("Clipboard History");
     shown.mode = Mode::Clipboard;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     shown.clipboard_filter = ClipboardFilter::All;
     let items = ctx.features.search_clipboard("", ClipboardFilter::All);
     shown.clipboard_items = items.clone();
-    PaletteReply::Navigate(clipboard_model("", &items, ClipboardFilter::All, 0))
+    PaletteReply::Navigate(clipboard_model(
+        "",
+        &items,
+        ClipboardFilter::All,
+        0,
+        shown.show_detail,
+    ))
 }
 
 fn enter_emoji(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     ctx.palette.open_screen("Emoji & Symbols");
     shown.mode = Mode::Emoji;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let cells = ctx.features.emoji_cells("");
     shown.emoji_cells = cells.clone();
     PaletteReply::Navigate(emoji_model("", cells, 0))
@@ -1436,15 +3079,21 @@ fn enter_snippets(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     ctx.palette.open_screen("Snippets");
     shown.mode = Mode::Snippets;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let list = ctx.features.search_snippets("");
     shown.snippets = list.clone();
-    PaletteReply::Navigate(snippets_model("", &list, 0))
+    PaletteReply::Navigate(snippets_model("", &list, 0, shown.show_detail, |rec| {
+        ctx.features.expand_snippet(rec)
+    }))
 }
 
 fn enter_create_snippet(shown: &mut Shown) -> PaletteReply {
     let draft = SnippetDraft::new();
     shown.mode = Mode::CreateSnippet(draft.clone());
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     PaletteReply::Navigate(create_snippet_model(&draft, ""))
 }
 
@@ -1457,34 +3106,60 @@ fn enter_files(
     ctx.palette.open_screen("File Search");
     shown.mode = Mode::Files;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     shown.file_filter = FileType::All;
     if !launcher.has_file_search() {
         let _ = ctx.settings.set(FILE_SEARCH_ENABLED, "true");
         ctx.features
             .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
     }
-    let rows = launcher.file_screen_rows("", FileType::All);
+    let rows = filtered_file_rows(launcher, "", FileType::All, shown.show_hidden_files);
     let indexing = ctx.features.is_file_indexing();
+    let show_detail = shown.show_detail;
     shown.file_rows = rows.clone();
-    PaletteReply::Navigate(files_model("", &rows, FileType::All, indexing, |target| {
-        shown.lookup_or_queue_icon(target)
-    }))
+    PaletteReply::Navigate(files_model(
+        "",
+        &rows,
+        FileType::All,
+        indexing,
+        0,
+        show_detail,
+        |target| shown.lookup_or_queue_icon(target),
+    ))
 }
 
 fn enter_switch_windows(shown: &mut Shown) -> PaletteReply {
     shown.mode = Mode::SwitchWindows;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     let windows = filter_windows("");
     shown.windows = windows.clone();
     PaletteReply::Navigate(windows_model("", &windows, 0))
 }
 
-fn enter_calc_history(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
+fn enter_calc_history(
+    ctx: &NativeContext,
+    launcher: &LauncherState,
+    shown: &mut Shown,
+) -> PaletteReply {
     shown.mode = Mode::CalcHistory;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
+    shown.calc_live = None;
     let entries = ctx.features.search_calc_history("");
+    if launcher.last_calc_answer().is_none() {
+        if let Some(ans) = entries
+            .iter()
+            .find_map(|e| parse_numeric_answer(&e.copy_text))
+        {
+            launcher.set_last_calc_answer(Some(ans));
+        }
+    }
     shown.calc_entries = entries.clone();
-    PaletteReply::Navigate(calc_history_model("", &entries, 0))
+    PaletteReply::Navigate(calc_history_model("", None, &entries, 0, shown.show_detail))
 }
 
 fn enter_settings(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
@@ -1492,6 +3167,8 @@ fn enter_settings(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     let rows = collect_settings_rows(ctx, "");
     shown.mode = Mode::Settings;
     shown.query.clear();
+    shown.selected = 0;
+    shown.action_menu_open = false;
     shown.rows.clear();
     shown.settings_rows = rows.clone();
     PaletteReply::Navigate(settings_model_for("", &rows, 0))
@@ -1511,12 +3188,16 @@ fn filter_windows(query: &str) -> Vec<WindowInfo> {
 }
 
 fn inline_snippet_row(record: &StoredSnippet) -> ResultRow {
-    let kw = record
+    let name = match record
         .snippet
         .keyword
         .as_deref()
-        .map(|k| format!("!{k}"))
-        .unwrap_or_default();
+        .map(str::trim)
+        .filter(|k| !k.is_empty())
+    {
+        Some(k) => format!("{}  (!{})", record.snippet.name, k.trim_start_matches('!')),
+        None => record.snippet.name.clone(),
+    };
     let preview: String = record
         .snippet
         .text
@@ -1528,10 +3209,21 @@ fn inline_snippet_row(record: &StoredSnippet) -> ResultRow {
         .collect();
     ResultRow {
         id: format!("{INLINE_SNIPPET_PREFIX}{}", record.id()),
-        name: format!("{}  ({kw})", record.snippet.name),
+        name,
         detail: preview,
         kind: SNIPPET_SECTION.to_string(),
         target: record.id().to_string(),
+        ..ResultRow::default()
+    }
+}
+
+fn root_quicklink_row(link: &Quicklink) -> ResultRow {
+    ResultRow {
+        id: format!("{ROOT_QUICKLINK_PREFIX}{}", link.name),
+        name: link.name.clone(),
+        detail: link.url_template.clone(),
+        kind: QUICKLINK_SECTION.to_string(),
+        target: link.url_template.clone(),
         ..ResultRow::default()
     }
 }
@@ -1555,14 +3247,21 @@ fn theme_from_settings(settings: &WindowsSettings) -> Theme {
 
 /// Collect all native Settings rows (Hotkey + Feature Toggles + General), filtered by query.
 fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
-    let mut rows = ctx.palette.settings_rows();
+    let mut rows: Vec<SettingRow> = ctx
+        .palette
+        .settings_rows()
+        .into_iter()
+        .filter(|r| r.key != tc_palette::KEY_POP_TO_ROOT)
+        .collect();
+
     let current_hotkey = ctx
         .settings
         .get(KEY_LAUNCHER_HOTKEY)
         .unwrap_or_else(|| HotkeyTrigger::default_launcher().format());
-    let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() == Some("true");
+    let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("false");
     let fs_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true");
     let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
+    let pop_policy = pop_to_root_policy(&ctx.settings);
 
     let extra = vec![
         SettingRow {
@@ -1593,6 +3292,19 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
     for (idx, item) in extra.into_iter().enumerate() {
         rows.insert(idx, item);
     }
+
+    rows.push(SettingRow {
+        key: KEY_POP_TO_ROOT_SECS.to_string(),
+        label: "Pop to Root Search".to_string(),
+        value: pop_policy.label().to_string(),
+        options: vec![
+            "Immediately (0s)".to_string(),
+            "30 seconds".to_string(),
+            "1 minute".to_string(),
+            "5 minutes".to_string(),
+            "Never".to_string(),
+        ],
+    });
 
     let trimmed = query.trim().to_ascii_lowercase();
     if trimmed.is_empty() {
@@ -1632,12 +3344,20 @@ fn advance_native_setting(
     }
 
     if key == KEY_WINDOW_MANAGEMENT_ENABLED {
-        let now_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("true");
+        let currently_on =
+            ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("false");
+        let now_on = !currently_on;
         let _ = ctx.settings.set(
             KEY_WINDOW_MANAGEMENT_ENABLED,
             if now_on { "true" } else { "false" },
         );
         launcher.set_show_window_commands(now_on);
+        return;
+    }
+
+    if key == KEY_POP_TO_ROOT_SECS {
+        let next = pop_to_root_policy(&ctx.settings).next();
+        let _ = ctx.settings.set(KEY_POP_TO_ROOT_SECS, next.stored_value());
         return;
     }
 
@@ -1672,13 +3392,29 @@ fn advance_native_setting(
     }
 }
 
+fn primary_action_for_row(row: Option<&ResultRow>) -> &'static str {
+    let Some(row) = row else {
+        return "Open";
+    };
+    match row.kind.as_str() {
+        CALCULATOR_SECTION => "Copy",
+        SNIPPET_SECTION => "Paste",
+        WINDOW_COMMAND_SECTION => "Apply",
+        SYSTEM_ACTION_SECTION | CUSTOM_COMMAND_SECTION => "Run",
+        WIN_SETTING_SECTION => "Open Setting",
+        _ => "Open",
+    }
+}
+
 fn model_for_with_icons(
     query: &str,
     rows: &[ResultRow],
     is_suggestions: bool,
+    selected: usize,
     ctx: Option<&NativeContext>,
     shown: &mut Shown,
 ) -> Model {
+    let clamped_sel = selected.min(rows.len().saturating_sub(1));
     let ui_rows: Vec<Row> = rows
         .iter()
         .enumerate()
@@ -1707,23 +3443,40 @@ fn model_for_with_icons(
         n => format!("{n} results"),
     };
 
+    let primary = primary_action_for_row(rows.get(clamped_sel));
+    let mut hints = vec![
+        ("↵".to_string(), primary.to_string()),
+        ("Ctrl+K".to_string(), "Actions".to_string()),
+    ];
+    if is_suggestions {
+        hints.push(("Tab".to_string(), "Clipboard".to_string()));
+    } else if rows
+        .get(clamped_sel)
+        .is_some_and(|r| r.kind == CALCULATOR_SECTION)
+    {
+        hints.push(("Tab".to_string(), "Use Answer".to_string()));
+    } else if rows.get(clamped_sel).is_some_and(|r| {
+        r.kind == QUICKLINK_SECTION
+            && (r.target.contains("{query}") || r.target.contains("{argument}"))
+    }) {
+        hints.push(("Tab".to_string(), "Fill Arg".to_string()));
+    }
+
     Model {
         query: query.to_string(),
         rows: ui_rows,
-        selected: 0,
+        selected: clamped_sel,
         hovered: None,
         footer: count_label.clone(),
-        placeholder: "Search apps, commands, or calculate…".to_string(),
+        placeholder: "Search apps, settings, commands, or calculate…".to_string(),
         header_badge: None,
         result_count: Some(count_label),
-        footer_hints: vec![
-            ("↵".to_string(), "Open".to_string()),
-            ("Tab".to_string(), "Clipboard".to_string()),
-            ("Ctrl+,".to_string(), "Settings".to_string()),
-            ("Esc".to_string(), "Close".to_string()),
-        ],
+        footer_hints: hints,
         scroll_offset: 0.0,
         grid: None,
+        back_button: false,
+        primary_action: Some(primary.to_string()),
+        ..Model::default()
     }
 }
 
@@ -1734,21 +3487,25 @@ fn model_for(query: &str, rows: &[ResultRow]) -> Model {
         .iter()
         .map(|r| row_of(r, query, query.trim().is_empty()))
         .collect();
+    let primary = primary_action_for_row(rows.first());
     Model {
         query: query.to_string(),
         rows: ui_rows,
         selected: 0,
         hovered: None,
         footer: "Enter to open".to_string(),
-        placeholder: "Search apps, commands, or calculate…".to_string(),
+        placeholder: "Search apps, settings, commands, or calculate…".to_string(),
         header_badge: None,
         result_count: None,
         footer_hints: vec![
-            ("↵".to_string(), "Open".to_string()),
-            ("Esc".to_string(), "Close".to_string()),
+            ("↵".to_string(), primary.to_string()),
+            ("Ctrl+K".to_string(), "Actions".to_string()),
         ],
         scroll_offset: 0.0,
         grid: None,
+        back_button: false,
+        primary_action: Some(primary.to_string()),
+        ..Model::default()
     }
 }
 
@@ -1768,6 +3525,7 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                 KEY_LAUNCHER_HOTKEY => "⌘",
                 KEY_WINDOW_MANAGEMENT_ENABLED => "⊞",
                 FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => "F",
+                KEY_POP_TO_ROOT_SECS => "◷",
                 _ => "⚙",
             };
             let display_value = match row.value.trim().to_ascii_lowercase().as_str() {
@@ -1782,6 +3540,9 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                 }
                 FILE_SEARCH_ENABLED => "Index Desktop, Documents, Downloads in background",
                 FILE_SEARCH_SHOW => "Include indexed files inside root Launcher results",
+                KEY_POP_TO_ROOT_SECS => {
+                    "Automatically reset sub-screens to Root Search after hiding"
+                }
                 tc_palette::KEY_APPEARANCE => "Color theme",
                 tc_palette::KEY_ANIMATIONS => "Motion & transitions",
                 tc_palette::KEY_INTERFACE_SIZE => "Palette text scale",
@@ -1822,6 +3583,9 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
         ],
         scroll_offset: 0.0,
         grid: None,
+        back_button: true,
+        primary_action: Some("Toggle".to_string()),
+        ..Model::default()
     }
 }
 
@@ -1869,10 +3633,20 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
         result.detail.clone()
     };
 
+    let shortcut = if result.kind == QUICKLINK_SECTION
+        && (result.target.contains("{query}") || result.target.contains("{argument}"))
+    {
+        "Tab Arg".to_string()
+    } else if result.kind == WIN_SETTING_SECTION {
+        "Setting".to_string()
+    } else {
+        String::new()
+    };
+
     Row {
         name: result.name.clone(),
         detail,
-        shortcut: String::new(),
+        shortcut,
         icon: Some(icon_of(result)),
         section,
         ..Row::default()
@@ -1888,6 +3662,8 @@ fn icon_of(result: &ResultRow) -> Icon {
         SYSTEM_ACTION_SECTION => "⚡".to_string(),
         FILE_SECTION => "📄".to_string(),
         SNIPPET_SECTION => "✂".to_string(),
+        QUICKLINK_SECTION | "Fallback Search" => "↗".to_string(),
+        WIN_SETTING_SECTION => "⚙".to_string(),
         _ => letter_of(&result.name),
     };
     Icon::new(glyph, color_of(&result.kind))
@@ -1905,6 +3681,8 @@ fn color_of(kind: &str) -> Color {
         APPLICATIONS => Color::rgb(0x5e, 0x8b, 0xff),
         FILE_SECTION => Color::rgb(0x38, 0xbd, 0xf8),
         COMMAND_SECTION | SNIPPET_SECTION => Color::rgb(0x34, 0xd3, 0x99),
+        QUICKLINK_SECTION | "Fallback Search" => Color::rgb(0x38, 0xbd, 0xf8),
+        WIN_SETTING_SECTION => Color::rgb(0x0e, 0xa5, 0xe9),
         CUSTOM_COMMAND_SECTION => Color::rgb(0xa7, 0x8b, 0xfa),
         WINDOW_COMMAND_SECTION => Color::rgb(0xfb, 0x92, 0x3c),
         SYSTEM_ACTION_SECTION => Color::rgb(0xf8, 0x71, 0x71),
@@ -1921,6 +3699,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     let _ = data.ensure_dir(&paths.cache_dir);
 
     let launcher = Arc::new(LauncherState::new(paths.data_dir.join(RANKING_FILE)));
+    launcher.set_show_window_commands(true);
     let runner = Arc::new(Runner::new(Arc::clone(&launcher)));
 
     let theme = theme(arguments)?;
@@ -1947,6 +3726,7 @@ fn theme(arguments: &[String]) -> Result<Theme, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tc_apps::{Program, Source};
 
     fn result(name: &str, detail: &str, kind: &str) -> ResultRow {
         ResultRow {
@@ -2046,5 +3826,53 @@ mod tests {
         assert_eq!(model.rows[0].name, "Launcher Hotkey");
         assert_eq!(model.rows[0].shortcut, "Alt+Space");
         assert_eq!(model.header_badge.as_deref(), Some("Settings"));
+    }
+
+    #[test]
+    fn pop_to_root_policy_cycles_and_evaluates_timer_cleanly() {
+        assert_eq!(PopToRootPolicy::parse(None), PopToRootPolicy::AfterSecs(60));
+        assert_eq!(PopToRootPolicy::parse(None).label(), "1 minute");
+
+        let mut p = PopToRootPolicy::Immediately;
+        p = p.next();
+        assert_eq!(p, PopToRootPolicy::AfterSecs(30));
+        p = p.next();
+        assert_eq!(p, PopToRootPolicy::AfterSecs(60));
+        p = p.next();
+        assert_eq!(p, PopToRootPolicy::AfterSecs(300));
+        p = p.next();
+        assert_eq!(p, PopToRootPolicy::Never);
+        p = p.next();
+        assert_eq!(p, PopToRootPolicy::Immediately);
+
+        let now = Instant::now();
+        let ten_secs_ago = now.checked_sub(Duration::from_secs(10));
+        let two_mins_ago = now.checked_sub(Duration::from_secs(120));
+
+        assert!(PopToRootPolicy::Immediately.should_reset(ten_secs_ago, now));
+        assert!(!PopToRootPolicy::AfterSecs(60).should_reset(ten_secs_ago, now));
+        if two_mins_ago.is_some() {
+            assert!(PopToRootPolicy::AfterSecs(60).should_reset(two_mins_ago, now));
+        }
+        assert!(!PopToRootPolicy::Never.should_reset(two_mins_ago, now));
+    }
+
+    #[test]
+    fn root_search_ranks_apps_and_calc_above_windows_settings() {
+        let launcher = LauncherState::from_programs(
+            vec![Program::new(
+                "DisplayCal",
+                "C:\\DisplayCal.exe",
+                Source::Registry,
+            )],
+            std::path::PathBuf::from("unused-ranking.json"),
+        );
+        let rows = build_root_search_rows(&launcher, None, "display");
+        assert_eq!(rows[0].kind, APPLICATIONS);
+        assert_eq!(rows[0].name, "DisplayCal");
+        assert!(rows
+            .iter()
+            .skip(1)
+            .any(|r| r.kind == WIN_SETTING_SECTION && r.target == "ms-settings:display"));
     }
 }

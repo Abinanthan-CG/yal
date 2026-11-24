@@ -281,13 +281,15 @@ pub struct Quicklink {
 
 impl Quicklink {
     pub fn needs_query(&self) -> bool {
-        self.url_template.contains("{query}")
+        self.url_template.contains("{query}") || self.url_template.contains("{argument}")
     }
 
     pub fn expand_url(&self, query: &str) -> String {
         if self.needs_query() {
             let encoded = utf8_percent_encode(query.trim(), NON_ALPHANUMERIC).to_string();
-            self.url_template.replace("{query}", &encoded)
+            self.url_template
+                .replace("{query}", &encoded)
+                .replace("{argument}", &encoded)
         } else {
             self.url_template.clone()
         }
@@ -579,6 +581,29 @@ impl FeatureStores {
         }
     }
 
+    /// Remove all unpinned clipboard items, preserving pinned entries.
+    pub fn clear_unpinned_clipboard(&self) -> usize {
+        let Ok(mut guard) = self.clipboard.lock() else {
+            return 0;
+        };
+        let Some(store) = guard.as_mut() else {
+            return 0;
+        };
+        let unpinned: Vec<ClipboardItem> = store
+            .items()
+            .iter()
+            .filter(|i| !i.is_pinned())
+            .cloned()
+            .collect();
+        let mut removed = 0;
+        for item in &unpinned {
+            if store.remove(item).is_ok() {
+                removed += 1;
+            }
+        }
+        removed
+    }
+
     /// Promote a chosen clipboard item to the top of recency.
     pub fn promote_clipboard_item(&self, item: &ClipboardItem) {
         if let Ok(mut guard) = self.clipboard.lock() {
@@ -796,6 +821,15 @@ impl FeatureStores {
         if let Ok(mut guard) = self.calc_history.lock() {
             guard.record(expression, display, copy_text, badge);
         }
+    }
+
+    /// Return the most recent numeric calculator result from persistent history, if any.
+    pub fn latest_calc_numeric_answer(&self) -> Option<f64> {
+        let guard = self.calc_history.lock().ok()?;
+        guard
+            .entries()
+            .iter()
+            .find_map(|entry| crate::launcher::parse_numeric_answer(&entry.copy_text))
     }
 
     /// Search calculator history.
@@ -1093,5 +1127,35 @@ mod tests {
         let reloaded = CalcHistoryStore::open(&path);
         assert_eq!(reloaded.entries().len(), 2);
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn quicklink_expands_both_query_and_argument_placeholders() {
+        let q1 = Quicklink {
+            name: "GitHub".to_string(),
+            url_template: "https://github.com/search?q={query}".to_string(),
+            alias: Some("gh".to_string()),
+        };
+        assert!(q1.needs_query());
+        assert_eq!(
+            q1.expand_url("rust win32"),
+            "https://github.com/search?q=rust%20win32"
+        );
+
+        let q2 = Quicklink {
+            name: "Docs".to_string(),
+            url_template: "https://docs.rs/{argument}".to_string(),
+            alias: None,
+        };
+        assert!(q2.needs_query());
+        assert_eq!(q2.expand_url("serde json"), "https://docs.rs/serde%20json");
+
+        let q3 = Quicklink {
+            name: "Direct".to_string(),
+            url_template: "https://example.com".to_string(),
+            alias: None,
+        };
+        assert!(!q3.needs_query());
+        assert_eq!(q3.expand_url("ignored"), "https://example.com");
     }
 }

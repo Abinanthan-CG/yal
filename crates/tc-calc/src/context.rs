@@ -175,6 +175,8 @@ pub struct CalcContext {
     pub rem_px: f64,
     /// Use 24-hour clock output when `true`, 12-hour AM/PM when `false`.
     pub use_24h_clock: bool,
+    /// Optional previous numeric answer referenced by `ans`.
+    pub last_answer: Option<f64>,
 }
 
 impl CalcContext {
@@ -187,6 +189,7 @@ impl CalcContext {
             rates: Some(Arc::new(ExchangeRates::bundled())),
             rem_px: 16.0,
             use_24h_clock: false,
+            last_answer: None,
         }
     }
 
@@ -198,6 +201,7 @@ impl CalcContext {
             rates: Some(Arc::new(ExchangeRates::bundled())),
             rem_px: 16.0,
             use_24h_clock: false,
+            last_answer: None,
         }
     }
 
@@ -212,6 +216,12 @@ impl CalcContext {
         if rem_px.is_finite() && rem_px > 0.0 {
             self.rem_px = rem_px;
         }
+        self
+    }
+
+    /// Return a copy binding `ans` to a previous calculation's numeric result.
+    pub fn with_last_answer(mut self, last_answer: Option<f64>) -> Self {
+        self.last_answer = last_answer.filter(|v| v.is_finite());
         self
     }
 

@@ -311,18 +311,27 @@ impl IgnoreRules {
             // Build and dependency folders.
             "node_modules",
             ".git",
+            "target",
+            "__pycache__",
+            "venv",
+            ".venv",
+            "dist",
             "build",
             "DerivedData",
-            "target",
-            "venv",
-            "__pycache__",
-            // The caches.
+            "obj",
+            "bin/Debug",
+            "bin/Release",
+            // Caches and package toolchains.
             ".cache",
             ".npm",
+            ".cargo",
+            ".rustup",
+            ".gradle",
+            ".nuget",
             // The system folders that are never the user's own files.
+            "AppData",
             "$RECYCLE.BIN",
             "System Volume Information",
-            "AppData",
             "ProgramData",
             "Windows",
             "Program Files",
@@ -563,5 +572,55 @@ mod tests {
     fn an_empty_rule_matches_nothing() {
         let pattern = IgnorePattern::parse("   ");
         assert!(!pattern.matches("anything", Path::new("C:\\a\\anything"), &home()));
+    }
+
+    #[test]
+    fn all_default_noise_directories_are_ignored_while_user_files_remain() {
+        let rules = IgnoreRules::defaults();
+        let ignored_cases = [
+            ("node_modules", "C:\\proj\\node_modules"),
+            (".git", "C:\\proj\\.git"),
+            ("target", "C:\\proj\\target"),
+            ("AppData", "C:\\Users\\dabin\\AppData"),
+            ("$Recycle.Bin", "C:\\$Recycle.Bin"),
+            ("__pycache__", "C:\\proj\\__pycache__"),
+            ("venv", "C:\\proj\\venv"),
+            (".venv", "C:\\proj\\.venv"),
+            (".cache", "C:\\Users\\dabin\\.cache"),
+            (".npm", "C:\\Users\\dabin\\.npm"),
+            ("dist", "C:\\proj\\dist"),
+            ("build", "C:\\proj\\build"),
+            ("DerivedData", "C:\\proj\\DerivedData"),
+            (".cargo", "C:\\Users\\dabin\\.cargo"),
+            (".rustup", "C:\\Users\\dabin\\.rustup"),
+            (".gradle", "C:\\Users\\dabin\\.gradle"),
+            (".nuget", "C:\\Users\\dabin\\.nuget"),
+            ("obj", "C:\\proj\\obj"),
+            ("Debug", "C:\\proj\\bin\\Debug"),
+            ("Release", "C:\\proj\\bin\\Release"),
+            ("System Volume Information", "C:\\System Volume Information"),
+            ("ProgramData", "C:\\ProgramData"),
+            ("Windows", "C:\\Windows"),
+            ("Program Files", "C:\\Program Files"),
+            ("Program Files (x86)", "C:\\Program Files (x86)"),
+        ];
+        for (name, path) in ignored_cases {
+            assert!(
+                rules.is_ignored(name, Path::new(path), &home()),
+                "expected `{name}` at `{path}` to be ignored by defaults"
+            );
+        }
+
+        let kept_cases = [
+            ("Documents", "C:\\Users\\dabin\\Documents"),
+            ("report.pdf", "C:\\Users\\dabin\\Documents\\report.pdf"),
+            (".config", "C:\\Users\\dabin\\.config"),
+        ];
+        for (name, path) in kept_cases {
+            assert!(
+                !rules.is_ignored(name, Path::new(path), &home()),
+                "expected `{name}` at `{path}` not to be ignored by defaults"
+            );
+        }
     }
 }

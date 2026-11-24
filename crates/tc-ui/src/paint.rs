@@ -24,12 +24,16 @@ use windows::Win32::Graphics::DirectWrite::{
     DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_TEXT_ALIGNMENT,
     DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING,
     DWRITE_TEXT_METRICS, DWRITE_TRIMMING, DWRITE_TRIMMING_GRANULARITY_CHARACTER,
-    DWRITE_WORD_WRAPPING_NO_WRAP,
+    DWRITE_WORD_WRAPPING_NO_WRAP, DWRITE_WORD_WRAPPING_WRAP,
 };
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
 use windows_numerics::Vector2;
 
-use crate::model::{GridModel, IconBitmap, Model, Row, GRID_CELL_HEIGHT};
+use crate::model::{
+    ActionMenuModel, DetailPane, GridModel, IconBitmap, Model, Row, ToastKind,
+    ACTION_MENU_HEADER_H, ACTION_MENU_MAX_VISIBLE, ACTION_MENU_ROW_H, GRID_CELL_HEIGHT,
+    MASTER_SPLIT_RATIO,
+};
 use crate::theme::{Appearance, Color, Theme};
 
 /// Primary UI font (DirectWrite cleanly resolves Segoe UI Variable on Windows 11
@@ -60,6 +64,10 @@ pub struct Renderer {
     calc_arrow_format: IDWriteTextFormat,
     emoji_glyph_format: IDWriteTextFormat,
     emoji_label_format: IDWriteTextFormat,
+    detail_body_format: IDWriteTextFormat,
+    meta_label_format: IDWriteTextFormat,
+    meta_value_format: IDWriteTextFormat,
+    action_title_format: IDWriteTextFormat,
     brushes: Vec<(Color, ID2D1SolidColorBrush)>,
     bitmaps: HashMap<String, ID2D1Bitmap>,
 }
@@ -207,6 +215,34 @@ impl Renderer {
             10.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
+        let detail_body_format = dwrite_format_wrapped(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            13.0,
+            DWRITE_TEXT_ALIGNMENT_LEADING,
+        )?;
+        let meta_label_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_MEDIUM,
+            11.5,
+            DWRITE_TEXT_ALIGNMENT_LEADING,
+        )?;
+        let meta_value_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            11.5,
+            DWRITE_TEXT_ALIGNMENT_TRAILING,
+        )?;
+        let action_title_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_MEDIUM,
+            13.0,
+            DWRITE_TEXT_ALIGNMENT_LEADING,
+        )?;
 
         let renderer = Self {
             target,
@@ -226,6 +262,10 @@ impl Renderer {
             calc_arrow_format,
             emoji_glyph_format,
             emoji_label_format,
+            detail_body_format,
+            meta_label_format,
+            meta_value_format,
+            action_title_format,
             brushes: Vec::new(),
             bitmaps: HashMap::new(),
         };
@@ -250,6 +290,9 @@ impl Renderer {
             &self.calc_answer_med_format,
             &self.calc_answer_sm_format,
             &self.emoji_label_format,
+            &self.meta_label_format,
+            &self.meta_value_format,
+            &self.action_title_format,
         ] {
             unsafe {
                 let sign = self
@@ -353,10 +396,30 @@ impl Renderer {
             self.target.Clear(Some(&to_d2d(theme.background)));
         }
 
-        // 1. Header search icon (clean magnifying glass — handle starts from the rim!).
-        self.draw_search_glyph(theme, 16.0, metrics.field_height / 2.0);
+        // 1. Header leading control: clickable `←` back button on sub-screens,
+        // or magnifying glass icon at root.
+        if model.back_button {
+            self.draw_back_button(theme, 12.0, (metrics.field_height - 26.0) / 2.0);
+        } else {
+            self.draw_search_glyph(theme, 16.0, metrics.field_height / 2.0);
+        }
 
-        // Optional header mode pill on the right (e.g., "Settings").
+        // Optional active inline `Tab` argument pill (e.g. `GitHub Search ▸`) right beside icon.
+        if let Some(arg) = model.inline_arg.as_ref() {
+            let label = format!("{} ▸", arg.command_name);
+            let pill_x = metrics.field_inset;
+            let pill_mid_y = metrics.field_height / 2.0;
+            self.draw_pill_left(
+                &label,
+                pill_x,
+                pill_mid_y,
+                theme.accent.with_alpha(0.18),
+                theme.accent.with_alpha(0.42),
+                theme.accent,
+            );
+        }
+
+        // Optional header mode/filter pill on the right (e.g., "Settings", "Files · Images").
         if let Some(badge) = model.header_badge.as_deref() {
             if !badge.is_empty() {
                 self.draw_pill_right(
@@ -379,11 +442,18 @@ impl Renderer {
             theme.border,
         );
 
+        // Compute left list bounds (full width normally, or 38% master column in split mode).
+        let split_x = if model.detail.is_some() && model.grid.is_none() {
+            (width * MASTER_SPLIT_RATIO).round()
+        } else {
+            width
+        };
+
         // 2. Scrollable list viewport (clipped cleanly between list_top and list_bottom).
         let viewport_clip = D2D_RECT_F {
             left: 0.0,
             top: layout.list_top,
-            right: width,
+            right: split_x,
             bottom: layout.list_bottom,
         };
         unsafe {
@@ -436,7 +506,7 @@ impl Renderer {
                 "No matching results"
             };
             if let Some(text_layout) =
-                self.layout(empty_text, &self.footer_format, width - pad * 4.0, 20.0)
+                self.layout(empty_text, &self.footer_format, split_x - pad * 3.0, 20.0)
             {
                 if let Some(brush) = self.brush(theme.text_dim) {
                     unsafe {
@@ -464,7 +534,7 @@ impl Renderer {
                 if let Some(text_layout) = self.layout(
                     &section.title,
                     &self.section_format,
-                    width - pad * 2.0 - 20.0,
+                    (split_x - pad * 2.0 - 16.0).max(40.0),
                     section.height,
                 ) {
                     if let Some(brush) = self.brush(theme.text_dim.with_alpha(0.85)) {
@@ -504,7 +574,7 @@ impl Renderer {
                         theme,
                         pad,
                         top,
-                        width - right_margin,
+                        split_x - right_margin,
                         item.height,
                         is_selected,
                     );
@@ -514,17 +584,18 @@ impl Renderer {
                         theme,
                         pad,
                         top,
-                        width - right_margin,
+                        split_x - right_margin,
                         item.height,
                         is_selected,
                         is_hovered,
+                        model.detail.is_some(),
                     );
                 }
             }
 
             // Slim rounded scrollbar when content overflows.
             if show_scrollbar {
-                self.draw_scrollbar(&layout, scroll, width, theme);
+                self.draw_scrollbar(&layout, scroll, split_x, theme);
             }
         }
 
@@ -532,11 +603,26 @@ impl Renderer {
             self.target.PopAxisAlignedClip();
         }
 
-        // 3. Recessed Footer Bar with YAL emblem + result count + drawn keycap hints.
+        // 2b. Optional Master-Detail Split Preview & Metadata Pane on the right (465 DIPs).
+        if let Some(detail) = model.detail.as_ref() {
+            if model.grid.is_none() {
+                let pane_top = metrics.field_height + 1.0;
+                let pane_bottom = height - metrics.footer_height;
+                self.fill_rect(split_x, pane_top, split_x + 1.0, pane_bottom, theme.border);
+                self.draw_detail_pane(detail, theme, split_x + 1.0, pane_top, width, pane_bottom);
+            }
+        }
+
+        // 3. Recessed Footer Bar with Toast / YAL emblem + Primary Action + Actions keycap.
         let footer_top = height - metrics.footer_height;
         self.fill_rect(0.0, footer_top, width, height, theme.background_secondary);
         self.fill_rect(0.0, footer_top, width, footer_top + 1.0, theme.border);
         self.draw_footer(model, theme, footer_top, width, metrics.footer_height);
+
+        // 3b. Floating bottom-right `Ctrl+K` Action Panel Popover overlay.
+        if let Some(menu) = model.action_menu.as_ref() {
+            self.draw_action_menu(menu, theme, width, height);
+        }
 
         // 4. Crisp 1px inner-edge highlight frame so the window pops cleanly on any wallpaper.
         let frame_rect = D2D_RECT_F {
@@ -567,6 +653,7 @@ impl Renderer {
         row_height: f32,
         is_selected: bool,
         is_hovered: bool,
+        compact_master: bool,
     ) {
         let metrics = theme.metrics;
         let row_rect = D2D1_ROUNDED_RECT {
@@ -752,11 +839,11 @@ impl Renderer {
             cursor_right -= pill_w + 10.0;
         }
 
-        // Row primary title & right-aligned muted detail.
+        // Row primary title & right-aligned muted detail (hidden in narrow split-view master list).
         let text_left = icon_left + icon_size + 12.0;
         let available = (cursor_right - text_left).max(0.0);
 
-        let detail_w = if !row.detail.is_empty() && available > 120.0 {
+        let detail_w = if !compact_master && !row.detail.is_empty() && available > 120.0 {
             let max_detail = (available * 0.46).min(240.0);
             if let Some(layout) = self.layout(&row.detail, &self.detail_format, max_detail, 20.0) {
                 let measured = measure_width(&layout).min(max_detail);
@@ -1182,70 +1269,120 @@ impl Renderer {
 
     fn draw_footer(&mut self, model: &Model, theme: &Theme, top: f32, width: f32, height: f32) {
         let mid_y = top + height / 2.0;
-
-        // Left: sleek geometric YAL emblem (rounded square + inner highlight bar).
         let logo_x = 14.0;
-        let logo_y = mid_y - 7.5;
-        let logo = D2D1_ROUNDED_RECT {
-            rect: D2D_RECT_F {
-                left: logo_x,
-                top: logo_y,
-                right: logo_x + 15.0,
-                bottom: logo_y + 15.0,
-            },
-            radiusX: 4.0,
-            radiusY: 4.0,
-        };
-        if let Some(bg) = self.brush(theme.accent.with_alpha(0.22)) {
-            unsafe {
-                self.target.FillRoundedRectangle(&logo, &bg);
-            }
-        }
-        if let Some(ring) = self.brush(theme.accent.with_alpha(0.60)) {
-            unsafe {
-                self.target.DrawRoundedRectangle(&logo, &ring, 1.0, None);
-            }
-        }
-        let bar = D2D1_ROUNDED_RECT {
-            rect: D2D_RECT_F {
-                left: logo_x + 3.5,
-                top: logo_y + 6.0,
-                right: logo_x + 11.5,
-                bottom: logo_y + 9.0,
-            },
-            radiusX: 1.2,
-            radiusY: 1.2,
-        };
-        if let Some(accent) = self.brush(theme.accent) {
-            unsafe {
-                self.target.FillRoundedRectangle(&bar, &accent);
-            }
-        }
 
-        let active_emoji_status = model.grid.as_ref().and_then(|g| g.active_cell()).map(|c| {
-            if c.pinned {
-                format!("{}  {}  ·  Pinned", c.glyph, c.name)
-            } else {
-                format!("{}  {}", c.glyph, c.name)
+        if let Some(toast) = model.toast.as_ref() {
+            let dot_col = match toast.kind {
+                ToastKind::Success => Color::rgb(0x22, 0xc5, 0x5e),
+                ToastKind::Info => theme.accent,
+                ToastKind::Error => Color::rgb(0xef, 0x44, 0x44),
+            };
+            let halo = D2D1_ELLIPSE {
+                point: Vector2 {
+                    X: logo_x + 6.0,
+                    Y: mid_y,
+                },
+                radiusX: 6.5,
+                radiusY: 6.5,
+            };
+            let dot = D2D1_ELLIPSE {
+                point: Vector2 {
+                    X: logo_x + 6.0,
+                    Y: mid_y,
+                },
+                radiusX: 3.5,
+                radiusY: 3.5,
+            };
+            if let Some(b) = self.brush(dot_col.with_alpha(0.26)) {
+                unsafe {
+                    self.target.FillEllipse(&halo, &b);
+                }
             }
-        });
-        let status = active_emoji_status
-            .as_deref()
-            .or_else(|| model.result_count.as_deref().filter(|s| !s.is_empty()))
-            .unwrap_or(&model.footer);
-        if !status.is_empty() {
-            if let Some(layout) = self.layout(status, &self.footer_format, 280.0, 18.0) {
-                if let Some(brush) = self.brush(theme.text_dim) {
+            if let Some(b) = self.brush(dot_col) {
+                unsafe {
+                    self.target.FillEllipse(&dot, &b);
+                }
+            }
+            if let Some(layout) = self.layout(&toast.message, &self.footer_format, 320.0, 18.0) {
+                if let Some(brush) = self.brush(theme.text) {
                     unsafe {
                         self.target.DrawTextLayout(
                             Vector2 {
-                                X: logo_x + 23.0,
+                                X: logo_x + 19.0,
                                 Y: mid_y - 8.0,
                             },
                             &layout,
                             &brush,
-                            D2D1_DRAW_TEXT_OPTIONS_CLIP | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
                         );
+                    }
+                }
+            }
+        } else {
+            // Left: sleek geometric YAL emblem (rounded square + inner highlight bar).
+            let logo_y = mid_y - 7.5;
+            let logo = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: logo_x,
+                    top: logo_y,
+                    right: logo_x + 15.0,
+                    bottom: logo_y + 15.0,
+                },
+                radiusX: 4.0,
+                radiusY: 4.0,
+            };
+            if let Some(bg) = self.brush(theme.accent.with_alpha(0.22)) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&logo, &bg);
+                }
+            }
+            if let Some(ring) = self.brush(theme.accent.with_alpha(0.60)) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&logo, &ring, 1.0, None);
+                }
+            }
+            let bar = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: logo_x + 3.5,
+                    top: logo_y + 6.0,
+                    right: logo_x + 11.5,
+                    bottom: logo_y + 9.0,
+                },
+                radiusX: 1.2,
+                radiusY: 1.2,
+            };
+            if let Some(accent) = self.brush(theme.accent) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&bar, &accent);
+                }
+            }
+
+            let active_emoji_status = model.grid.as_ref().and_then(|g| g.active_cell()).map(|c| {
+                if c.pinned {
+                    format!("{}  {}  ·  Pinned", c.glyph, c.name)
+                } else {
+                    format!("{}  {}", c.glyph, c.name)
+                }
+            });
+            let status = active_emoji_status
+                .as_deref()
+                .or_else(|| model.result_count.as_deref().filter(|s| !s.is_empty()))
+                .unwrap_or(&model.footer);
+            if !status.is_empty() {
+                if let Some(layout) = self.layout(status, &self.footer_format, 280.0, 18.0) {
+                    if let Some(brush) = self.brush(theme.text_dim) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: logo_x + 23.0,
+                                    Y: mid_y - 8.0,
+                                },
+                                &layout,
+                                &brush,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP
+                                    | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                            );
+                        }
                     }
                 }
             }
@@ -1320,6 +1457,518 @@ impl Renderer {
                     }
                 }
                 cursor_right = cap_left - 14.0;
+            }
+        }
+    }
+
+    fn draw_back_button(&mut self, theme: &Theme, left: f32, top: f32) {
+        let size = 26.0_f32;
+        let rect = D2D1_ROUNDED_RECT {
+            rect: D2D_RECT_F {
+                left,
+                top,
+                right: left + size,
+                bottom: top + size,
+            },
+            radiusX: 6.0,
+            radiusY: 6.0,
+        };
+        let fill = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x0d),
+            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x0a),
+        };
+        if let Some(bg) = self.brush(fill) {
+            unsafe {
+                self.target.FillRoundedRectangle(&rect, &bg);
+            }
+        }
+        if let Some(border) = self.brush(theme.border) {
+            unsafe {
+                self.target.DrawRoundedRectangle(&rect, &border, 1.0, None);
+            }
+        }
+        if let Some(layout) = self.layout("←", &self.icon_format, size, size) {
+            if let Some(fg) = self.brush(theme.text) {
+                unsafe {
+                    self.target.DrawTextLayout(
+                        Vector2 {
+                            X: left,
+                            Y: top + 4.5,
+                        },
+                        &layout,
+                        &fg,
+                        D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                    );
+                }
+            }
+        }
+    }
+
+    fn draw_pill_left(
+        &mut self,
+        text: &str,
+        left: f32,
+        center_y: f32,
+        bg: Color,
+        border: Color,
+        fg: Color,
+    ) -> f32 {
+        let Some(probe) = self.layout(text, &self.pill_format, 220.0, 18.0) else {
+            return 0.0;
+        };
+        let text_w = measure_width(&probe);
+        let pill_w = (text_w + 18.0).clamp(44.0, 210.0);
+        let pill_h = 24.0;
+        let top = center_y - pill_h / 2.0;
+        self.paint_pill(text, left, top, pill_w, pill_h, bg, border, fg);
+        pill_w
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn draw_detail_pane(
+        &mut self,
+        detail: &DetailPane,
+        theme: &Theme,
+        left: f32,
+        top: f32,
+        right: f32,
+        bottom: f32,
+    ) {
+        let pad = 16.0_f32;
+        let pane_w = (right - left).max(40.0);
+        let content_w = (pane_w - pad * 2.0).max(20.0);
+        let clip = D2D_RECT_F {
+            left,
+            top,
+            right,
+            bottom,
+        };
+        unsafe {
+            self.target
+                .PushAxisAlignedClip(&clip, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        }
+
+        // Reserve bottom space for Raycast-style key-value metadata table.
+        let meta_row_h = 26.0_f32;
+        let meta_count = detail.metadata.len().min(6);
+        let meta_total_h = if meta_count > 0 {
+            meta_count as f32 * meta_row_h + 22.0
+        } else {
+            0.0
+        };
+        let preview_top = top + 14.0;
+        let preview_bottom = (bottom - meta_total_h - 10.0).max(preview_top + 48.0);
+        let preview_h = (preview_bottom - preview_top).max(40.0);
+
+        // Top preview surface: Color banner > Preview bitmap > Multi-line wrapped text.
+        if let Some([r, g, b, a]) = detail.color_swatch {
+            let sw_h = (preview_h * 0.58).clamp(72.0, 140.0);
+            let card = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: left + pad,
+                    top: preview_top,
+                    right: right - pad,
+                    bottom: preview_top + sw_h,
+                },
+                radiusX: 10.0,
+                radiusY: 10.0,
+            };
+            if let Some(fill) = self.brush(Color::rgba(r, g, b, a)) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&card, &fill);
+                }
+            }
+            if let Some(ring) = self.brush(theme.border) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&card, &ring, 1.0, None);
+                }
+            }
+            if !detail.body.is_empty() {
+                if let Some(layout) = self.layout(
+                    &detail.body,
+                    &self.detail_body_format,
+                    content_w,
+                    (preview_bottom - (preview_top + sw_h + 12.0)).max(24.0),
+                ) {
+                    if let Some(fg) = self.brush(theme.text) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: left + pad,
+                                    Y: preview_top + sw_h + 12.0,
+                                },
+                                &layout,
+                                &fg,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
+                }
+            }
+        } else if let (Some(key), Some(img)) =
+            (detail.image_key.as_deref(), detail.image.as_deref())
+        {
+            if let Some(bmp) = self.cached_bitmap(key, img) {
+                let aspect = (img.width.max(1) as f32) / (img.height.max(1) as f32);
+                let max_w = content_w;
+                let max_h = (preview_h - 12.0).max(40.0);
+                let (draw_w, draw_h) = if max_w / max_h > aspect {
+                    let h = max_h.min((img.height as f32).max(96.0));
+                    (h * aspect, h)
+                } else {
+                    let w = max_w.min((img.width as f32).max(96.0));
+                    (w, w / aspect)
+                };
+                let dx = left + pad + (content_w - draw_w) / 2.0;
+                let dy = preview_top + (preview_h - draw_h) / 2.0;
+                let dest = D2D_RECT_F {
+                    left: dx,
+                    top: dy,
+                    right: dx + draw_w,
+                    bottom: dy + draw_h,
+                };
+                unsafe {
+                    self.target.DrawBitmap(
+                        &bmp,
+                        Some(&dest),
+                        1.0,
+                        D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+                        None,
+                    );
+                }
+            }
+        } else {
+            // Subtle inner preview card for text/code/notes/clipboard body.
+            let card = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: left + pad,
+                    top: preview_top,
+                    right: right - pad,
+                    bottom: preview_bottom,
+                },
+                radiusX: 8.0,
+                radiusY: 8.0,
+            };
+            if let Some(bg) = self.brush(theme.background_secondary) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&card, &bg);
+                }
+            }
+            if let Some(border) = self.brush(theme.border) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
+                }
+            }
+            let text_content = if detail.body.trim().is_empty() {
+                detail.title.as_str()
+            } else {
+                detail.body.as_str()
+            };
+            if let Some(layout) = self.layout(
+                text_content,
+                &self.detail_body_format,
+                (content_w - 24.0).max(20.0),
+                (preview_h - 20.0).max(20.0),
+            ) {
+                if let Some(fg) = self.brush(theme.text) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: left + pad + 12.0,
+                                Y: preview_top + 10.0,
+                            },
+                            &layout,
+                            &fg,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                        );
+                    }
+                }
+            }
+        }
+
+        // Bottom metadata table (`Information` header + crisp hairline rows).
+        if meta_count > 0 {
+            let mut y = bottom - meta_total_h;
+            self.fill_rect(left + pad, y, right - pad, y + 1.0, theme.border);
+            y += 6.0;
+            if let Some(hdr) = self.layout("Information", &self.section_format, content_w, 16.0) {
+                if let Some(dim) = self.brush(theme.text_dim.with_alpha(0.85)) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: left + pad,
+                                Y: y,
+                            },
+                            &hdr,
+                            &dim,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                        );
+                    }
+                }
+            }
+            y += 18.0;
+
+            for (i, (label, val)) in detail.metadata.iter().take(6).enumerate() {
+                if i > 0 {
+                    self.fill_rect(
+                        left + pad,
+                        y,
+                        right - pad,
+                        y + 1.0,
+                        theme.border.with_alpha(0.5),
+                    );
+                }
+                let label_w = (content_w * 0.34).min(110.0);
+                let val_w = (content_w - label_w - 8.0).max(40.0);
+                if let Some(l_layout) = self.layout(label, &self.meta_label_format, label_w, 18.0) {
+                    if let Some(dim) = self.brush(theme.text_dim) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: left + pad,
+                                    Y: y + 5.0,
+                                },
+                                &l_layout,
+                                &dim,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
+                }
+                if let Some(v_layout) = self.layout(val, &self.meta_value_format, val_w, 18.0) {
+                    if let Some(fg) = self.brush(theme.text) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: right - pad - val_w,
+                                    Y: y + 5.0,
+                                },
+                                &v_layout,
+                                &fg,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
+                }
+                y += meta_row_h;
+            }
+        }
+
+        unsafe {
+            self.target.PopAxisAlignedClip();
+        }
+    }
+
+    /// Paint the floating bottom-right Raycast-style `Ctrl+K` Action Panel Popover.
+    fn draw_action_menu(&mut self, menu: &ActionMenuModel, theme: &Theme, width: f32, height: f32) {
+        let metrics = theme.metrics;
+        // Soft backdrop scrim over the list so the Action Panel pops with depth.
+        let scrim = match theme.appearance {
+            Appearance::Dark => Color::rgba(0x00, 0x00, 0x00, 0x52),
+            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x22),
+        };
+        self.fill_rect(
+            0.0,
+            metrics.field_height + 1.0,
+            width,
+            height - metrics.footer_height,
+            scrim,
+        );
+
+        let (left, top, right, bottom) = menu.rect(metrics, height);
+        let panel_w = right - left;
+        let card = D2D1_ROUNDED_RECT {
+            rect: D2D_RECT_F {
+                left,
+                top,
+                right,
+                bottom,
+            },
+            radiusX: 10.0,
+            radiusY: 10.0,
+        };
+        let panel_bg = match theme.appearance {
+            Appearance::Dark => Color::rgb(0x1c, 0x1d, 0x24),
+            Appearance::Light => Color::rgb(0xff, 0xff, 0xff),
+        };
+        if let Some(bg) = self.brush(panel_bg) {
+            unsafe {
+                self.target.FillRoundedRectangle(&card, &bg);
+            }
+        }
+        if let Some(border) = self.brush(theme.accent.with_alpha(0.38)) {
+            unsafe {
+                self.target.DrawRoundedRectangle(&card, &border, 1.1, None);
+            }
+        }
+
+        // Popover header bar: title or live filter query.
+        let header_text = if menu.query.trim().is_empty() {
+            if menu.title.is_empty() {
+                "Actions — type to filter…".to_string()
+            } else {
+                format!("{} — Actions", menu.title)
+            }
+        } else {
+            format!("Filter: {}", menu.query)
+        };
+        if let Some(hdr) = self.layout(&header_text, &self.section_format, panel_w - 24.0, 18.0) {
+            let col = if menu.query.trim().is_empty() {
+                theme.text_dim
+            } else {
+                theme.accent
+            };
+            if let Some(b) = self.brush(col) {
+                unsafe {
+                    self.target.DrawTextLayout(
+                        Vector2 {
+                            X: left + 12.0,
+                            Y: top + 9.0,
+                        },
+                        &hdr,
+                        &b,
+                        D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                    );
+                }
+            }
+        }
+        self.fill_rect(
+            left + 1.0,
+            top + ACTION_MENU_HEADER_H,
+            right - 1.0,
+            top + ACTION_MENU_HEADER_H + 1.0,
+            theme.border,
+        );
+
+        let filtered = menu.filtered_indices();
+        let rows_top = top + ACTION_MENU_HEADER_H + 4.0;
+        if filtered.is_empty() {
+            if let Some(empty) = self.layout(
+                "No matching actions",
+                &self.footer_format,
+                panel_w - 24.0,
+                18.0,
+            ) {
+                if let Some(b) = self.brush(theme.text_dim) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: left + 12.0,
+                                Y: rows_top + 6.0,
+                            },
+                            &empty,
+                            &b,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                        );
+                    }
+                }
+            }
+            return;
+        }
+
+        let start = menu.scroll_start(filtered.len());
+        let visible = filtered
+            .iter()
+            .enumerate()
+            .skip(start)
+            .take(ACTION_MENU_MAX_VISIBLE);
+        let mut last_sec: Option<&str> = None;
+
+        for (slot, (filtered_idx, &raw_idx)) in visible.enumerate() {
+            let Some(item) = menu.items.get(raw_idx) else {
+                continue;
+            };
+            let ry = rows_top + slot as f32 * ACTION_MENU_ROW_H;
+            if slot > 0 && last_sec.is_some() && last_sec != Some(item.section.as_str()) {
+                self.fill_rect(
+                    left + 10.0,
+                    ry,
+                    right - 10.0,
+                    ry + 1.0,
+                    theme.border.with_alpha(0.6),
+                );
+            }
+            last_sec = Some(item.section.as_str());
+
+            let is_sel = filtered_idx == menu.selected;
+            let is_hov = menu.hovered == Some(filtered_idx) && !is_sel;
+            let row_rr = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: left + 6.0,
+                    top: ry + 1.5,
+                    right: right - 6.0,
+                    bottom: ry + ACTION_MENU_ROW_H - 1.5,
+                },
+                radiusX: 6.0,
+                radiusY: 6.0,
+            };
+            if is_sel {
+                if let Some(b) = self.brush(theme.selection) {
+                    unsafe {
+                        self.target.FillRoundedRectangle(&row_rr, &b);
+                    }
+                }
+            } else if is_hov {
+                if let Some(b) = self.brush(theme.hover) {
+                    unsafe {
+                        self.target.FillRoundedRectangle(&row_rr, &b);
+                    }
+                }
+            }
+
+            let fg_col = if item.destructive {
+                Color::rgb(0xf8, 0x71, 0x71)
+            } else {
+                theme.text
+            };
+            if let Some(gl) = self.layout(&item.glyph, &self.icon_format, 18.0, 18.0) {
+                let gcol = if item.destructive {
+                    Color::rgb(0xf8, 0x71, 0x71)
+                } else {
+                    theme.text_dim
+                };
+                if let Some(b) = self.brush(gcol) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: left + 12.0,
+                                Y: ry + 7.5,
+                            },
+                            &gl,
+                            &b,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                        );
+                    }
+                }
+            }
+
+            let mut shortcut_reserve = 14.0_f32;
+            if !item.shortcut.is_empty() {
+                let sc_w = self.draw_pill_right(
+                    &item.shortcut,
+                    right - 12.0,
+                    ry + ACTION_MENU_ROW_H / 2.0,
+                    theme.border.with_alpha(0.35),
+                    theme.border,
+                    theme.text_dim,
+                );
+                shortcut_reserve = sc_w + 20.0;
+            }
+            let title_w = (panel_w - 36.0 - shortcut_reserve).max(40.0);
+            if let Some(tl) = self.layout(&item.title, &self.action_title_format, title_w, 20.0) {
+                if let Some(b) = self.brush(fg_col) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: left + 34.0,
+                                Y: ry + 7.0,
+                            },
+                            &tl,
+                            &b,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                        );
+                    }
+                }
             }
         }
     }
@@ -1487,6 +2136,33 @@ fn measure_width(layout: &IDWriteTextLayout) -> f32 {
         } else {
             0.0
         }
+    }
+}
+
+fn dwrite_format_wrapped(
+    dwrite: &IDWriteFactory,
+    family: &str,
+    weight: DWRITE_FONT_WEIGHT,
+    size: f32,
+    alignment: DWRITE_TEXT_ALIGNMENT,
+) -> Result<IDWriteTextFormat, String> {
+    let family_wide: Vec<u16> = family.encode_utf16().chain(std::iter::once(0)).collect();
+    let locale: Vec<u16> = "en-us".encode_utf16().chain(std::iter::once(0)).collect();
+    unsafe {
+        let format = dwrite
+            .CreateTextFormat(
+                PCWSTR(family_wide.as_ptr()),
+                None,
+                weight,
+                DWRITE_FONT_STYLE_NORMAL,
+                DWRITE_FONT_STRETCH_NORMAL,
+                size,
+                PCWSTR(locale.as_ptr()),
+            )
+            .map_err(|error| format!("the text format could not be created: {error}"))?;
+        let _ = format.SetTextAlignment(alignment);
+        let _ = format.SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+        Ok(format)
     }
 }
 

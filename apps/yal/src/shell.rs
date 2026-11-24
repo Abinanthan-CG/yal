@@ -47,7 +47,7 @@ pub const FILE_SEARCH_SHOW: &str = "fileSearch.showInLauncher";
 pub const INDEX_FILE: &str = "file-index.sqlite3";
 
 /// Cached live fiat & crypto exchange rates in `%APPDATA%\yal\`.
-const RATES_FILE: &str = "currency-rates.json";
+pub const RATES_FILE: &str = "currency-rates.json";
 
 /// Setting key for CSS `1rem`/`1em` pixel base in Calculator (default `16`).
 const KEY_CALCULATOR_REM_PX: &str = "calculator.remPx";
@@ -119,7 +119,14 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     let settings = Arc::new(WindowsSettings::load(paths.settings_file.clone()));
     let features = Arc::new(FeatureStores::open(&paths));
     let launcher = Arc::new(build_launcher(&paths, &settings));
-    spawn_rates_refresh(Arc::clone(&launcher), paths.data_dir.join(RATES_FILE));
+    if let Some(last_ans) = features.latest_calc_numeric_answer() {
+        launcher.set_last_calc_answer(Some(last_ans));
+    }
+    spawn_rates_refresh(
+        Arc::clone(&launcher),
+        paths.data_dir.join(RATES_FILE),
+        false,
+    );
     if settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true") {
         features.trigger_file_index(Arc::clone(&launcher), Some(Arc::clone(&handle_slot)));
     }
@@ -242,7 +249,8 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> LauncherState {
     let mut launcher = LauncherState::new(paths.data_dir.join(RANKING_FILE));
 
-    if settings.get(WINDOW_MANAGEMENT_ENABLED).as_deref() == Some("true") {
+    // Window Management is enabled by default (toggleable in Settings).
+    if settings.get(WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("false") {
         let show = settings.get(WINDOW_MANAGEMENT_SHOW).as_deref() != Some("false");
         launcher.set_show_window_commands(show);
     }
@@ -301,8 +309,13 @@ fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> Lau
 }
 
 /// Silently refresh fiat & crypto exchange rates in a background thread when the
-/// cached snapshot is missing or older than 24 hours. Never blocks startup.
-fn spawn_rates_refresh(launcher: Arc<LauncherState>, rates_path: std::path::PathBuf) {
+/// cached snapshot is missing or older than 24 hours (or immediately if `force` is true).
+/// Never blocks startup or the UI thread.
+pub fn spawn_rates_refresh(
+    launcher: Arc<LauncherState>,
+    rates_path: std::path::PathBuf,
+    force: bool,
+) {
     let _ = std::thread::Builder::new()
         .name("yal-fx-refresh".to_string())
         .spawn(move || {
@@ -312,7 +325,7 @@ fn spawn_rates_refresh(launcher: Arc<LauncherState>, rates_path: std::path::Path
                 .unwrap_or(0);
             let mut snapshot = tc_calc::fx::load_rates_cache(&rates_path);
             let age = now_secs.saturating_sub(snapshot.fetched_at_secs);
-            if snapshot.fetched_at_secs > 0 && age < tc_calc::fx::RATES_REFRESH_SECS {
+            if !force && snapshot.fetched_at_secs > 0 && age < tc_calc::fx::RATES_REFRESH_SECS {
                 return;
             }
 

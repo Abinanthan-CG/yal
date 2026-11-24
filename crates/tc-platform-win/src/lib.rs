@@ -7,6 +7,7 @@
 mod clipboard;
 pub mod clipboard_watcher;
 pub mod dialog;
+pub mod file_watcher;
 pub mod hotkey;
 pub mod http;
 pub mod icons;
@@ -21,22 +22,23 @@ pub mod tray;
 pub mod window_control;
 mod windows;
 
-pub use clipboard::WindowsClipboard;
-pub use clipboard_watcher::ClipboardWatcher;
+pub use clipboard::{encode_dib_rgba, is_sensitive_clipboard, parse_dib_rgba, WindowsClipboard};
+pub use clipboard_watcher::{is_password_manager_title, ClipboardUpdate, ClipboardWatcher};
 pub use dialog::pick_file;
+pub use file_watcher::FileWatcher;
 /// The Windows clipboard, as text.
 pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()
 }
 pub use hotkey::{
-    check_conflict, is_chord_available_in_os, ConflictKind, GlobalHotkeyService, HookDecision,
-    HotkeyBinding, HotkeyMatcher, HotkeyModifiers, HotkeyTrigger, KeyEvent, ModifierKey,
-    ModifierSide, WindowsHotkey, TAP_WINDOW_MS,
+    check_conflict, is_chord_available_in_os, CaptureOutcome, ConflictKind, GlobalHotkeyService,
+    HookDecision, HotkeyBinding, HotkeyCapture, HotkeyMatcher, HotkeyModifiers, HotkeyTrigger,
+    KeyEvent, ModifierKey, ModifierSide, SnippetExpander, WindowsHotkey, TAP_WINDOW_MS,
 };
 pub use http::https_get;
 pub use icons::{application_icon, extract_icon, shell_item_icon, IconImage};
-pub use launch::{open, recycle, reveal};
-pub use paste::copy_and_paste_async;
+pub use launch::{open, open_in_terminal, recycle, reveal, run_as_admin, show_properties};
+pub use paste::{copy_and_paste_async, erase_and_paste_async, paste_image_async};
 pub use paths::is_portable;
 pub use paths::windows_paths;
 pub use programs::programs;
@@ -48,8 +50,8 @@ pub use system_actions::{
 pub use tray::{TrayAction, WindowsTray};
 pub use window_control::{
     apply_command, foreground_window, is_minimized, is_visible, list_windows, move_window, screens,
-    set_window_rect, toggle_fullscreen, window_rect, ControlError, Outcome, WindowHandle,
-    WindowInfo,
+    set_window_rect, switch_virtual_desktop, toggle_always_on_top, toggle_fullscreen, window_rect,
+    ControlError, Outcome, WindowHandle, WindowInfo,
 };
 pub use windows::{extended_frame_bounds, own_integrity_level, WindowsWindows};
 

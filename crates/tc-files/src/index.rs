@@ -269,6 +269,62 @@ pub fn walk_once<B: Backing>(
     report
 }
 
+/// List the immediate children of a single directory without touching the index.
+///
+/// Directories are sorted first, then entries are sorted case-insensitively by
+/// name with a deterministic case-sensitive tie-breaker. Unreadable directories
+/// return an empty list.
+pub fn list_directory(dir: &Path, include_hidden: bool) -> Vec<Entry> {
+    let Ok(read_dir) = std::fs::read_dir(dir) else {
+        return Vec::new();
+    };
+    let parent = dir.to_string_lossy().into_owned();
+    let mut entries = Vec::new();
+    for item in read_dir {
+        let Ok(entry) = item else {
+            continue;
+        };
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let full_path = entry.path();
+        let Ok(metadata) = std::fs::symlink_metadata(&full_path) else {
+            continue;
+        };
+        if !include_hidden {
+            if name.starts_with('.') {
+                continue;
+            }
+            #[cfg(windows)]
+            {
+                use std::os::windows::fs::MetadataExt;
+                const FILE_ATTRIBUTE_HIDDEN: u32 = 0x2;
+                const FILE_ATTRIBUTE_SYSTEM: u32 = 0x4;
+                if metadata.file_attributes() & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM) != 0
+                {
+                    continue;
+                }
+            }
+        }
+        let is_dir = metadata.is_dir();
+        let size = if is_dir { 0 } else { metadata.len() };
+        let modified_ns = file_mtime_ns(&metadata).unwrap_or(0);
+        entries.push(Entry {
+            path: full_path.to_string_lossy().into_owned(),
+            name,
+            parent: parent.clone(),
+            size,
+            modified_ns,
+            is_dir,
+        });
+    }
+    entries.sort_by(|a, b| {
+        b.is_dir
+            .cmp(&a.is_dir)
+            .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+            .then_with(|| a.name.cmp(&b.name))
+    });
+    entries
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -629,6 +685,53 @@ mod tests {
         let mut backing = MemoryBacking::new();
         let report = walk_once(&mut backing, &[file], &IgnoreRules::empty(), &home());
         assert_eq!(report.listed, 0);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn list_directory_sorts_dirs_first_case_insensitively_and_filters_hidden() {
+        let root = unique_dir("list-dir");
+        std::fs::create_dir_all(root.join("zebra_dir")).unwrap();
+        std::fs::create_dir_all(root.join("Alpha_dir")).unwrap();
+        std::fs::create_dir_all(root.join(".hidden_dir")).unwrap();
+        std::fs::write(root.join("beta.txt"), b"hello").unwrap();
+        std::fs::write(root.join("Apple.txt"), b"1234567").unwrap();
+        std::fs::write(root.join(".secret"), b"shh").unwrap();
+
+        let visible = list_directory(&root, false);
+        let visible_names: Vec<&str> = visible.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(
+            visible_names,
+            vec!["Alpha_dir", "zebra_dir", "Apple.txt", "beta.txt"]
+        );
+        assert!(visible[0].is_dir);
+        assert_eq!(visible[0].size, 0);
+        assert!(visible[0].modified_ns > 0);
+        assert_eq!(visible[0].parent, root.to_string_lossy());
+
+        assert!(!visible[2].is_dir);
+        assert_eq!(visible[2].size, 7);
+        assert!(visible[2].modified_ns > 0);
+        assert_eq!(visible[3].size, 5);
+
+        let all = list_directory(&root, true);
+        let all_names: Vec<&str> = all.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(
+            all_names,
+            vec![
+                ".hidden_dir",
+                "Alpha_dir",
+                "zebra_dir",
+                ".secret",
+                "Apple.txt",
+                "beta.txt"
+            ]
+        );
+        assert_eq!(all[3].size, 3);
+
+        let missing = list_directory(&root.join("does-not-exist"), true);
+        assert!(missing.is_empty());
+
         std::fs::remove_dir_all(&root).ok();
     }
 }

@@ -22,7 +22,7 @@ pub mod scope;
 pub mod search;
 pub mod store;
 
-pub use index::{dir_mtime_ns, walk_once, Backing, Entry, WalkReport};
+pub use index::{dir_mtime_ns, list_directory, walk_once, Backing, Entry, WalkReport};
 pub use scope::{
     expanded_path, stored_path, IgnorePattern, IgnorePatternKind, IgnoreRules, Scope, ScopeList,
 };

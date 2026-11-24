@@ -217,6 +217,95 @@ fn parse_color_expression(input: &str, allow_bare_named: bool) -> Option<(Rgba, 
     parse_single_color(trimmed, allow_bare_named)
 }
 
+/// Parse CSS/design color manipulation functions:
+/// `lighten(c, 20%)`, `darken(c, 20%)`, `saturate(c, 20%)`, `desaturate(c, 20%)`,
+/// `invert(c)`, and `mix(c1, c2[, 50%])`.
+fn parse_color_transform(func: &str, inner: &str) -> Option<(Rgba, &'static str)> {
+    let args = split_top_level_commas(inner);
+    match func {
+        "lighten" | "darken" | "saturate" | "desaturate" => {
+            if args.len() != 2 {
+                return None;
+            }
+            let (base, _) = parse_color_expression(args[0], true)?;
+            let delta = parse_alpha(args[1])?;
+            let (h, mut s, mut l) = srgb_to_hsl(base.r, base.g, base.b);
+            match func {
+                "lighten" => l = (l + delta).clamp(0.0, 1.0),
+                "darken" => l = (l - delta).clamp(0.0, 1.0),
+                "saturate" => s = (s + delta).clamp(0.0, 1.0),
+                "desaturate" => s = (s - delta).clamp(0.0, 1.0),
+                _ => return None,
+            }
+            let (r, g, b) = hsl_to_srgb(h, s, l);
+            Some((Rgba { r, g, b, a: base.a }.clamped(), "Color"))
+        }
+        "invert" => {
+            if args.len() != 1 {
+                return None;
+            }
+            let (base, _) = parse_color_expression(args[0], true)?;
+            Some((
+                Rgba {
+                    r: 1.0 - base.r,
+                    g: 1.0 - base.g,
+                    b: 1.0 - base.b,
+                    a: base.a,
+                }
+                .clamped(),
+                "Color",
+            ))
+        }
+        "mix" => {
+            if args.len() != 2 && args.len() != 3 {
+                return None;
+            }
+            let (c1, _) = parse_color_expression(args[0], true)?;
+            let (c2, _) = parse_color_expression(args[1], true)?;
+            let weight = if args.len() == 3 {
+                parse_alpha(args[2])?
+            } else {
+                0.5
+            };
+            let w1 = weight.clamp(0.0, 1.0);
+            let w2 = 1.0 - w1;
+            Some((
+                Rgba {
+                    r: c1.r * w1 + c2.r * w2,
+                    g: c1.g * w1 + c2.g * w2,
+                    b: c1.b * w1 + c2.b * w2,
+                    a: c1.a * w1 + c2.a * w2,
+                }
+                .clamped(),
+                "Color",
+            ))
+        }
+        _ => None,
+    }
+}
+
+fn split_top_level_commas(input: &str) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut depth = 0usize;
+    let mut start = 0usize;
+    for (idx, ch) in input.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => {
+                parts.push(input[start..idx].trim());
+                start = idx + 1;
+            }
+            _ => {}
+        }
+    }
+    let tail = input[start..].trim();
+    if !tail.is_empty() {
+        parts.push(tail);
+    }
+    parts
+}
+
 fn parse_single_color(input: &str, allow_named: bool) -> Option<(Rgba, &'static str)> {
     let s = input.trim();
     if let Some(hex) = s.strip_prefix('#') {
@@ -227,6 +316,9 @@ fn parse_single_color(input: &str, allow_named: bool) -> Option<(Rgba, &'static 
         if s.ends_with(')') {
             let func = s[..open].trim().to_ascii_lowercase();
             let inner = &s[open + 1..s.len() - 1];
+            if let Some(transformed) = parse_color_transform(&func, inner) {
+                return Some(transformed);
+            }
             return parse_function(&func, inner);
         }
     }

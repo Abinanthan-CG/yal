@@ -79,7 +79,7 @@ mod statistics_tests;
 pub use catalog::{Catalog, CurrencyInfo, FullCatalog, NameCatalog, UnitInfo};
 pub use context::{CalcContext, ExchangeRates};
 pub use currency::{CurrencyCatalog, CurrencyDef};
-pub use engine::{evaluate, evaluate_with_context, CalcOutcome};
+pub use engine::{evaluate, evaluate_with_context, swap_units_query, CalcOutcome};
 pub use formatter::Formatter;
 pub use math::Math;
 pub use measure::Measurement;

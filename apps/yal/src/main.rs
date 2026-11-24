@@ -6,6 +6,7 @@
 //!
 //! Run `yal.exe --self-test` for a headless check of every subsystem.
 
+mod actions;
 mod features;
 mod launcher;
 mod native;
@@ -14,6 +15,7 @@ mod palette;
 mod screens;
 mod selftest;
 mod shell;
+mod win_settings;
 
 use std::process::ExitCode;
 

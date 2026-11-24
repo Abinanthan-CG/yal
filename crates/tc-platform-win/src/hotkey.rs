@@ -12,9 +12,9 @@
 //!    activation when swallowing chords, and dispatches matched binding IDs
 //!    asynchronously so the hook never stalls.
 
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 use std::sync::mpsc;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 use std::thread::JoinHandle;
 
 use tc_platform::Hotkey;
@@ -37,7 +37,25 @@ use windows::Win32::UI::WindowsAndMessaging::{
 /// double-tap) in milliseconds, matching Tinycast's 250 ms tap window.
 pub const TAP_WINDOW_MS: u32 = 250;
 
-/// Modifier virtual-key constants.
+/// Modifier and control virtual-key constants.
+const VK_BACK: u32 = 0x08;
+const VK_TAB: u32 = 0x09;
+const VK_RETURN: u32 = 0x0D;
+const VK_SHIFT: u32 = 0x10;
+const VK_CONTROL: u32 = 0x11;
+const VK_MENU: u32 = 0x12;
+const VK_CAPITAL: u32 = 0x14;
+const VK_ESCAPE: u32 = 0x1B;
+const VK_SPACE: u32 = 0x20;
+const VK_PRIOR: u32 = 0x21;
+const VK_NEXT: u32 = 0x22;
+const VK_END: u32 = 0x23;
+const VK_HOME: u32 = 0x24;
+const VK_LEFT: u32 = 0x25;
+const VK_UP: u32 = 0x26;
+const VK_RIGHT: u32 = 0x27;
+const VK_DOWN: u32 = 0x28;
+const VK_DELETE: u32 = 0x2E;
 const VK_LSHIFT: u32 = 0xA0;
 const VK_RSHIFT: u32 = 0xA1;
 const VK_LCONTROL: u32 = 0xA2;
@@ -46,6 +64,9 @@ const VK_LMENU: u32 = 0xA4;
 const VK_RMENU: u32 = 0xA5;
 const VK_LWIN: u32 = 0x5B;
 const VK_RWIN: u32 = 0x5C;
+
+/// Maximum number of recent characters retained for snippet keyword matching.
+const SNIPPET_BUFFER_CAPACITY: usize = 64;
 
 /// Unassigned virtual key injected on Alt/Win chord swallow so Windows does not
 /// interpret the solo modifier release as `SC_KEYMENU` or Start Menu.
@@ -97,6 +118,16 @@ pub struct HotkeyModifiers {
 }
 
 impl HotkeyModifiers {
+    /// All four modifiers held (`Ctrl+Alt+Shift+Win`), used by the CapsLock Hyperkey.
+    pub fn all() -> Self {
+        Self {
+            ctrl: true,
+            alt: true,
+            shift: true,
+            win: true,
+        }
+    }
+
     /// Whether no modifier is held.
     pub fn is_empty(self) -> bool {
         !self.ctrl && !self.alt && !self.shift && !self.win
@@ -196,6 +227,14 @@ impl HotkeyTrigger {
             if let Some((key, side)) = parse_modifier_with_side(&lower) {
                 if side != ModifierSide::Any {
                     return Some(HotkeyTrigger::SingleTap { key, side });
+                }
+            }
+            if let Some(vk) = named_key_to_vk(&lower) {
+                if (0x70..=0x7B).contains(&vk) {
+                    return Some(HotkeyTrigger::Chord {
+                        modifiers: HotkeyModifiers::default(),
+                        vk,
+                    });
                 }
             }
             return None;
@@ -337,8 +376,10 @@ pub fn check_conflict(
 /// when another application already owns a chord.
 pub fn is_chord_available_in_os(modifiers: HotkeyModifiers, vk: u32) -> bool {
     const PROBE_ID: i32 = 0x7A10;
+    // SAFETY: Passing `None` registers a thread-scoped probe hotkey with no window handle.
     let ok = unsafe { RegisterHotKey(None, PROBE_ID, modifiers.win32_flags(), vk) }.is_ok();
     if ok {
+        // SAFETY: `PROBE_ID` was just registered on this thread above.
         unsafe {
             let _ = UnregisterHotKey(None, PROBE_ID);
         }
@@ -467,6 +508,8 @@ pub struct HotkeyMatcher {
     pending_tap: Option<PendingTap>,
     last_tap: Option<CompletedTap>,
     suppressed_vks: HashSet<u32>,
+    hyperkey_enabled: bool,
+    hyperkey_down: bool,
 }
 
 impl HotkeyMatcher {
@@ -474,6 +517,22 @@ impl HotkeyMatcher {
         Self {
             bindings,
             ..Self::default()
+        }
+    }
+
+    /// Enable or disable CapsLock as a Hyperkey (`Ctrl+Alt+Shift+Win`).
+    pub fn set_hyperkey_enabled(&mut self, enabled: bool) {
+        self.hyperkey_enabled = enabled;
+        if !enabled {
+            self.hyperkey_down = false;
+        }
+    }
+
+    fn effective_modifiers(&self) -> HotkeyModifiers {
+        if self.hyperkey_down {
+            HotkeyModifiers::all()
+        } else {
+            self.modifiers.logical()
         }
     }
 
@@ -510,6 +569,10 @@ impl HotkeyMatcher {
                 stale_found = true;
             }
         }
+        if self.hyperkey_down && exclude_vk != VK_CAPITAL && !is_vk_physically_down(VK_CAPITAL) {
+            self.hyperkey_down = false;
+            stale_found = true;
+        }
         if stale_found {
             self.pending_tap = None;
             self.last_tap = None;
@@ -526,6 +589,19 @@ impl HotkeyMatcher {
             return HookDecision::Pass;
         }
 
+        if self.hyperkey_enabled && event.vk == VK_CAPITAL {
+            if event.is_down {
+                self.hyperkey_down = true;
+                if let Some(pending) = self.pending_tap.as_mut() {
+                    pending.tainted = true;
+                }
+                self.last_tap = None;
+            } else {
+                self.hyperkey_down = false;
+            }
+            return HookDecision::Swallow;
+        }
+
         if let Some((key, side)) = classify_modifier_vk(event.vk) {
             return self.handle_modifier(key, side, event.is_down, event.timestamp_ms);
         }
@@ -540,8 +616,9 @@ impl HotkeyMatcher {
             if self.suppressed_vks.contains(&event.vk) {
                 return HookDecision::Swallow;
             }
-            let current = self.modifiers.logical();
-            if !current.is_empty() {
+            let physical = self.modifiers.logical();
+            let current = self.effective_modifiers();
+            if !current.is_empty() || (0x70..=0x7B).contains(&event.vk) {
                 if let Some(binding) = self.bindings.iter().find(|b| {
                     matches!(
                         b.trigger,
@@ -552,7 +629,7 @@ impl HotkeyMatcher {
                     self.suppressed_vks.insert(event.vk);
                     return HookDecision::TriggerSwallow {
                         id: binding.id.clone(),
-                        mask_menu: current.alt || current.win,
+                        mask_menu: physical.alt || physical.win,
                     };
                 }
             }
@@ -577,7 +654,7 @@ impl HotkeyMatcher {
                 return HookDecision::Pass;
             }
             self.modifiers.set(key, side, true);
-            if self.modifiers.count_held() > 1 {
+            if self.modifiers.count_held() > 1 || self.hyperkey_down {
                 if let Some(pending) = self.pending_tap.as_mut() {
                     pending.tainted = true;
                 }
@@ -645,6 +722,412 @@ impl HotkeyMatcher {
             released_at_ms: timestamp_ms,
         });
         HookDecision::Pass
+    }
+
+    fn is_hyperkey_enabled(&self) -> bool {
+        self.hyperkey_enabled
+    }
+
+    fn absorb_capture_cleanup(
+        &mut self,
+        swallow_keyup_vks: HashSet<u32>,
+        modifiers: PhysicalModifiers,
+        hyperkey_down: bool,
+    ) {
+        self.suppressed_vks.extend(swallow_keyup_vks);
+        self.modifiers = modifiers;
+        if self.hyperkey_enabled {
+            self.hyperkey_down = hyperkey_down;
+        }
+        self.pending_tap = None;
+        self.last_tap = None;
+    }
+}
+
+/// Outcome of feeding a keyboard event to [`HotkeyCapture`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CaptureOutcome {
+    /// Stay in capture mode and swallow the keystroke so it does not leak.
+    PendingSwallow,
+    /// Stay in capture mode and let the keystroke pass through (modifier transitions).
+    PendingPass,
+    /// A valid trigger was captured; caller should exit capture mode.
+    Captured(HotkeyTrigger),
+    /// Capture was cancelled via bare `Escape`; caller should exit capture mode.
+    Cancelled,
+}
+
+/// Pure, deterministic state machine for live hotkey recording.
+#[derive(Debug, Default)]
+pub struct HotkeyCapture {
+    hyperkey_enabled: bool,
+    hyperkey_down: bool,
+    modifiers: PhysicalModifiers,
+    pending_tap: Option<PendingTap>,
+    last_tap: Option<CompletedTap>,
+    swallow_keyup_vks: HashSet<u32>,
+}
+
+impl HotkeyCapture {
+    pub fn new(hyperkey_enabled: bool) -> Self {
+        Self {
+            hyperkey_enabled,
+            ..Self::default()
+        }
+    }
+
+    /// Enable or disable CapsLock Hyperkey support while capturing.
+    pub fn set_hyperkey_enabled(&mut self, enabled: bool) {
+        self.hyperkey_enabled = enabled;
+        if !enabled {
+            self.hyperkey_down = false;
+        }
+    }
+
+    /// Reconcile any modifiers that Windows reports are no longer physically held.
+    pub fn clear_stale_keys(
+        &mut self,
+        exclude_vk: u32,
+        is_vk_physically_down: impl Fn(u32) -> bool,
+    ) {
+        let mut stale_found = false;
+        let checks = [
+            (VK_LCONTROL, &mut self.modifiers.lctrl),
+            (VK_RCONTROL, &mut self.modifiers.rctrl),
+            (VK_LMENU, &mut self.modifiers.lalt),
+            (VK_RMENU, &mut self.modifiers.ralt),
+            (VK_LSHIFT, &mut self.modifiers.lshift),
+            (VK_RSHIFT, &mut self.modifiers.rshift),
+            (VK_LWIN, &mut self.modifiers.lwin),
+            (VK_RWIN, &mut self.modifiers.rwin),
+        ];
+        for (vk, slot) in checks {
+            if vk != exclude_vk && *slot && !is_vk_physically_down(vk) {
+                *slot = false;
+                stale_found = true;
+            }
+        }
+        if self.hyperkey_down && exclude_vk != VK_CAPITAL && !is_vk_physically_down(VK_CAPITAL) {
+            self.hyperkey_down = false;
+            stale_found = true;
+        }
+        if stale_found {
+            self.pending_tap = None;
+            self.last_tap = None;
+        }
+    }
+
+    fn effective_modifiers(&self) -> HotkeyModifiers {
+        if self.hyperkey_down {
+            HotkeyModifiers::all()
+        } else {
+            self.modifiers.logical()
+        }
+    }
+
+    fn needs_menu_mask(&self) -> bool {
+        let physical = self.modifiers.logical();
+        physical.alt || physical.win
+    }
+
+    fn take_swallow_keyup_vks(&mut self) -> HashSet<u32> {
+        std::mem::take(&mut self.swallow_keyup_vks)
+    }
+
+    /// Process one keyboard event during live hotkey capture.
+    pub fn feed(&mut self, event: KeyEvent) -> CaptureOutcome {
+        if event.injected {
+            return CaptureOutcome::PendingPass;
+        }
+
+        if self.hyperkey_enabled && event.vk == VK_CAPITAL {
+            if event.is_down {
+                self.hyperkey_down = true;
+                if let Some(pending) = self.pending_tap.as_mut() {
+                    pending.tainted = true;
+                }
+                self.last_tap = None;
+            } else {
+                self.hyperkey_down = false;
+            }
+            return CaptureOutcome::PendingSwallow;
+        }
+
+        if let Some((key, side)) = classify_modifier_vk(event.vk) {
+            return self.handle_modifier(key, side, event.is_down, event.timestamp_ms);
+        }
+
+        if let Some(pending) = self.pending_tap.as_mut() {
+            pending.tainted = true;
+        }
+        self.last_tap = None;
+
+        if !event.is_down {
+            return if self.swallow_keyup_vks.remove(&event.vk) {
+                CaptureOutcome::PendingSwallow
+            } else {
+                CaptureOutcome::PendingPass
+            };
+        }
+
+        let modifiers = self.effective_modifiers();
+        if event.vk == VK_ESCAPE && modifiers.is_empty() {
+            self.swallow_keyup_vks.insert(event.vk);
+            return CaptureOutcome::Cancelled;
+        }
+
+        self.swallow_keyup_vks.insert(event.vk);
+        if !modifiers.is_empty() || (0x70..=0x7B).contains(&event.vk) {
+            return CaptureOutcome::Captured(HotkeyTrigger::Chord {
+                modifiers,
+                vk: event.vk,
+            });
+        }
+
+        CaptureOutcome::PendingSwallow
+    }
+
+    fn handle_modifier(
+        &mut self,
+        key: ModifierKey,
+        side: ModifierSide,
+        is_down: bool,
+        timestamp_ms: u32,
+    ) -> CaptureOutcome {
+        if is_down {
+            if self.modifiers.get(key, side) {
+                return CaptureOutcome::PendingPass;
+            }
+            self.modifiers.set(key, side, true);
+            if self.modifiers.count_held() > 1 || self.hyperkey_down {
+                if let Some(pending) = self.pending_tap.as_mut() {
+                    pending.tainted = true;
+                }
+                self.last_tap = None;
+            } else {
+                self.pending_tap = Some(PendingTap {
+                    key,
+                    side,
+                    pressed_at_ms: timestamp_ms,
+                    tainted: false,
+                });
+            }
+            return CaptureOutcome::PendingPass;
+        }
+
+        self.modifiers.set(key, side, false);
+        let Some(pending) = self.pending_tap.take() else {
+            return CaptureOutcome::PendingPass;
+        };
+
+        let within_window = timestamp_ms.wrapping_sub(pending.pressed_at_ms) <= TAP_WINDOW_MS;
+        if pending.tainted || pending.key != key || pending.side != side || !within_window {
+            self.last_tap = None;
+            return CaptureOutcome::PendingPass;
+        }
+
+        if let Some(previous) = self.last_tap {
+            let gap_ok = timestamp_ms.wrapping_sub(previous.released_at_ms) <= TAP_WINDOW_MS;
+            if gap_ok && previous.key == key {
+                self.last_tap = None;
+                return CaptureOutcome::Captured(HotkeyTrigger::DoubleTap {
+                    key,
+                    side: ModifierSide::Any,
+                });
+            }
+        }
+
+        self.last_tap = Some(CompletedTap {
+            key,
+            side,
+            released_at_ms: timestamp_ms,
+        });
+        CaptureOutcome::PendingPass
+    }
+}
+
+/// Rolling keystroke buffer that detects global snippet auto-expansion keywords.
+#[derive(Debug, Default)]
+pub struct SnippetExpander {
+    keywords: Vec<String>,
+    buffer: VecDeque<char>,
+}
+
+impl SnippetExpander {
+    /// Create a new expander initialized with `keywords` (empty strings ignored).
+    pub fn new(keywords: Vec<String>) -> Self {
+        let keywords = keywords.into_iter().filter(|kw| !kw.is_empty()).collect();
+        Self {
+            keywords,
+            buffer: VecDeque::with_capacity(SNIPPET_BUFFER_CAPACITY),
+        }
+    }
+
+    /// Replace the registered keywords (ignoring empty strings) and clear the buffer.
+    pub fn set_keywords(&mut self, keywords: Vec<String>) {
+        self.keywords = keywords.into_iter().filter(|kw| !kw.is_empty()).collect();
+        self.clear();
+    }
+
+    /// Clear all buffered characters.
+    pub fn clear(&mut self) {
+        self.buffer.clear();
+    }
+
+    fn has_keywords(&self) -> bool {
+        !self.keywords.is_empty()
+    }
+
+    fn push_char(&mut self, ch: char) {
+        if self.buffer.len() >= SNIPPET_BUFFER_CAPACITY {
+            self.buffer.pop_front();
+        }
+        self.buffer.push_back(ch);
+    }
+
+    fn buffer_ends_with_keyword(&self, kw: &str) -> Option<usize> {
+        let mut kw_len = 0usize;
+        let mut buf_iter = self.buffer.iter().rev();
+        for expected in kw.chars().rev() {
+            let actual = buf_iter.next()?;
+            if *actual != expected {
+                return None;
+            }
+            kw_len += 1;
+        }
+        if kw_len == 0 {
+            return None;
+        }
+        match buf_iter.next() {
+            None => Some(kw_len),
+            Some(prev) if prev.is_whitespace() => Some(kw_len),
+            Some(_) => None,
+        }
+    }
+
+    /// Feed one key event. Returns `Some((keyword, erase_len))` when a keyword
+    /// is completed by Space or Tab, where `erase_len` is `keyword.chars().count() + 1`.
+    pub fn feed_key(
+        &mut self,
+        vk: u32,
+        modifiers: HotkeyModifiers,
+        is_down: bool,
+    ) -> Option<(String, usize)> {
+        if !is_down {
+            return None;
+        }
+
+        if is_snippet_ignored_modifier_vk(vk) {
+            return None;
+        }
+
+        if modifiers.ctrl || modifiers.alt || modifiers.win {
+            self.clear();
+            return None;
+        }
+
+        if vk == VK_BACK {
+            self.buffer.pop_back();
+            return None;
+        }
+
+        if is_snippet_reset_vk(vk) {
+            self.clear();
+            return None;
+        }
+
+        if vk == VK_SPACE || vk == VK_TAB {
+            let mut best: Option<(&str, usize)> = None;
+            for kw in &self.keywords {
+                if let Some(char_len) = self.buffer_ends_with_keyword(kw) {
+                    if best.is_none_or(|(_, best_len)| char_len > best_len) {
+                        best = Some((kw.as_str(), char_len));
+                    }
+                }
+            }
+            if let Some((kw, char_len)) = best {
+                let matched = kw.to_string();
+                self.clear();
+                return Some((matched, char_len + 1));
+            }
+            let trigger_ch = if vk == VK_SPACE { ' ' } else { '\t' };
+            self.push_char(trigger_ch);
+            return None;
+        }
+
+        if let Some(ch) = vk_to_printable_ascii(vk, modifiers.shift) {
+            self.push_char(ch);
+        }
+        None
+    }
+}
+
+fn is_snippet_ignored_modifier_vk(vk: u32) -> bool {
+    matches!(
+        vk,
+        VK_SHIFT
+            | VK_CONTROL
+            | VK_MENU
+            | VK_CAPITAL
+            | VK_LWIN
+            | VK_RWIN
+            | VK_LSHIFT
+            | VK_RSHIFT
+            | VK_LCONTROL
+            | VK_RCONTROL
+            | VK_LMENU
+            | VK_RMENU
+    )
+}
+
+fn is_snippet_reset_vk(vk: u32) -> bool {
+    matches!(
+        vk,
+        VK_RETURN
+            | VK_ESCAPE
+            | VK_LEFT
+            | VK_UP
+            | VK_RIGHT
+            | VK_DOWN
+            | VK_HOME
+            | VK_END
+            | VK_PRIOR
+            | VK_NEXT
+            | VK_DELETE
+    )
+}
+
+fn vk_to_printable_ascii(vk: u32, shift: bool) -> Option<char> {
+    match vk {
+        0x41..=0x5A => {
+            let upper = vk as u8 as char;
+            Some(if shift {
+                upper
+            } else {
+                upper.to_ascii_lowercase()
+            })
+        }
+        0x30..=0x39 => {
+            if shift {
+                let shifted = b")!@#$%^&*(";
+                shifted.get((vk - 0x30) as usize).map(|&b| b as char)
+            } else {
+                Some(vk as u8 as char)
+            }
+        }
+        0x60..=0x69 => Some((b'0' + (vk - 0x60) as u8) as char),
+        0xBA => Some(if shift { ':' } else { ';' }),
+        0xBB => Some(if shift { '+' } else { '=' }),
+        0xBC => Some(if shift { '<' } else { ',' }),
+        0xBD => Some(if shift { '_' } else { '-' }),
+        0xBE => Some(if shift { '>' } else { '.' }),
+        0xBF => Some(if shift { '?' } else { '/' }),
+        0xC0 => Some(if shift { '~' } else { '`' }),
+        0xDB => Some(if shift { '{' } else { '[' }),
+        0xDC => Some(if shift { '|' } else { '\\' }),
+        0xDD => Some(if shift { '}' } else { ']' }),
+        0xDE => Some(if shift { '"' } else { '\'' }),
+        _ => None,
     }
 }
 
@@ -787,10 +1270,33 @@ unsafe fn suppress_modifier_menu_activation() {
     let _ = SendInput(&inputs, std::mem::size_of::<INPUT>() as i32);
 }
 
+enum DispatchEvent {
+    Hotkey(String),
+    Captured(HotkeyTrigger, Box<dyn FnOnce(HotkeyTrigger) + Send>),
+    Snippet {
+        keyword: String,
+        erase_len: usize,
+        callback: Arc<dyn Fn(String, usize) + Send + Sync>,
+    },
+}
+
+struct ActiveCapture {
+    state: HotkeyCapture,
+    on_captured: Box<dyn FnOnce(HotkeyTrigger) + Send>,
+}
+
+#[derive(Default)]
+struct SnippetState {
+    expander: SnippetExpander,
+    callback: Option<Arc<dyn Fn(String, usize) + Send + Sync>>,
+}
+
 /// Shared runtime state read by the active `WH_KEYBOARD_LL` callback.
 struct ActiveHookState {
     matcher: Arc<Mutex<HotkeyMatcher>>,
-    tx: mpsc::Sender<String>,
+    capture: Arc<Mutex<Option<ActiveCapture>>>,
+    snippets: Arc<Mutex<SnippetState>>,
+    tx: mpsc::Sender<DispatchEvent>,
 }
 
 static HOOK_STATE: OnceLock<Mutex<Option<ActiveHookState>>> = OnceLock::new();
@@ -799,13 +1305,21 @@ fn hook_state_cell() -> &'static Mutex<Option<ActiveHookState>> {
     HOOK_STATE.get_or_init(|| Mutex::new(None))
 }
 
+fn lock_or_recover<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+    mutex
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
 /// A live background global hotkey service backed by `WH_KEYBOARD_LL`.
 ///
 /// The hook thread blocks in `GetMessageW` (0% idle CPU) and sends matched
-/// binding IDs to a dedicated dispatch thread so the low-level hook callback
-/// always finishes in microseconds.
+/// binding IDs, captured triggers, and snippet matches to a dedicated dispatch
+/// thread so the low-level hook callback always finishes in microseconds.
 pub struct GlobalHotkeyService {
     matcher: Arc<Mutex<HotkeyMatcher>>,
+    capture: Arc<Mutex<Option<ActiveCapture>>>,
+    snippets: Arc<Mutex<SnippetState>>,
     hook_thread_id: u32,
     hook_thread: Option<JoinHandle<()>>,
     dispatch_thread: Option<JoinHandle<()>>,
@@ -819,15 +1333,19 @@ impl GlobalHotkeyService {
         on_trigger: impl Fn(String) + Send + 'static,
     ) -> Result<Self, String> {
         let matcher = Arc::new(Mutex::new(HotkeyMatcher::new(bindings)));
-        let (event_tx, event_rx) = mpsc::channel::<String>();
+        let capture = Arc::new(Mutex::new(None));
+        let snippets = Arc::new(Mutex::new(SnippetState::default()));
+        let (event_tx, event_rx) = mpsc::channel::<DispatchEvent>();
 
         {
-            let mut slot = hook_state_cell().lock().expect("hotkey hook state lock");
+            let mut slot = lock_or_recover(hook_state_cell());
             if slot.is_some() {
                 return Err("a global hotkey service is already running".to_string());
             }
             *slot = Some(ActiveHookState {
                 matcher: Arc::clone(&matcher),
+                capture: Arc::clone(&capture),
+                snippets: Arc::clone(&snippets),
                 tx: event_tx,
             });
         }
@@ -835,12 +1353,20 @@ impl GlobalHotkeyService {
         let dispatch_thread = std::thread::Builder::new()
             .name("yal-hotkey-dispatch".to_string())
             .spawn(move || {
-                while let Ok(id) = event_rx.recv() {
-                    on_trigger(id);
+                while let Ok(event) = event_rx.recv() {
+                    match event {
+                        DispatchEvent::Hotkey(id) => on_trigger(id),
+                        DispatchEvent::Captured(trigger, callback) => callback(trigger),
+                        DispatchEvent::Snippet {
+                            keyword,
+                            erase_len,
+                            callback,
+                        } => callback(keyword, erase_len),
+                    }
                 }
             })
             .map_err(|error| {
-                *hook_state_cell().lock().expect("hotkey hook state lock") = None;
+                *lock_or_recover(hook_state_cell()) = None;
                 format!("the hotkey dispatch thread could not be started: {error}")
             })?;
 
@@ -848,12 +1374,15 @@ impl GlobalHotkeyService {
         let hook_thread = std::thread::Builder::new()
             .name("yal-hotkey-hook".to_string())
             .spawn(move || {
-                // Ensure this thread has a message queue before installing the hook.
+                // SAFETY: Calling `PeekMessageW` with `PM_NOREMOVE` creates this thread's
+                // Win32 message queue before installing the low-level keyboard hook.
                 unsafe {
                     let mut msg = MSG::default();
                     let _ = PeekMessageW(&mut msg, None, 0, 0, PM_NOREMOVE);
                 }
+                // SAFETY: `GetCurrentThreadId` has no preconditions and returns the Win32 TID.
                 let tid = unsafe { GetCurrentThreadId() };
+                // SAFETY: Passing `None` retrieves the `HMODULE` of the current executable.
                 let module = match unsafe { GetModuleHandleW(None) } {
                     Ok(h) => Some(HINSTANCE(h.0)),
                     Err(error) => {
@@ -861,6 +1390,8 @@ impl GlobalHotkeyService {
                         return;
                     }
                 };
+                // SAFETY: `service_hook_proc` matches `HOOKPROC`, `module` is valid, and
+                // this thread pumps messages with `GetMessageW` until `WM_QUIT`.
                 let hook = match unsafe {
                     SetWindowsHookExW(WH_KEYBOARD_LL, Some(service_hook_proc), module, 0)
                 } {
@@ -875,6 +1406,8 @@ impl GlobalHotkeyService {
 
                 let _ = ready_tx.send(Ok(tid));
 
+                // SAFETY: `msg` is stack-allocated for `GetMessageW` on this thread's queue,
+                // and `hook` is unhooked on the same thread immediately after loop exit.
                 unsafe {
                     let mut msg = MSG::default();
                     while GetMessageW(&mut msg, None, 0, 0).0 > 0 {
@@ -885,20 +1418,20 @@ impl GlobalHotkeyService {
                 }
             })
             .map_err(|error| {
-                *hook_state_cell().lock().expect("hotkey hook state lock") = None;
+                *lock_or_recover(hook_state_cell()) = None;
                 format!("the hotkey thread could not be started: {error}")
             })?;
 
         let hook_thread_id = match ready_rx.recv() {
             Ok(Ok(tid)) => tid,
             Ok(Err(error)) => {
-                *hook_state_cell().lock().expect("hotkey hook state lock") = None;
+                *lock_or_recover(hook_state_cell()) = None;
                 let _ = hook_thread.join();
                 let _ = dispatch_thread.join();
                 return Err(error);
             }
             Err(_) => {
-                *hook_state_cell().lock().expect("hotkey hook state lock") = None;
+                *lock_or_recover(hook_state_cell()) = None;
                 let _ = hook_thread.join();
                 let _ = dispatch_thread.join();
                 return Err("the hotkey thread exited before installing the hook".to_string());
@@ -907,6 +1440,8 @@ impl GlobalHotkeyService {
 
         Ok(Self {
             matcher,
+            capture,
+            snippets,
             hook_thread_id,
             hook_thread: Some(hook_thread),
             dispatch_thread: Some(dispatch_thread),
@@ -915,14 +1450,49 @@ impl GlobalHotkeyService {
 
     /// Update the active hotkey bindings live without reinstalling the hook.
     pub fn set_bindings(&self, bindings: Vec<HotkeyBinding>) {
-        if let Ok(mut matcher) = self.matcher.lock() {
-            matcher.set_bindings(bindings);
+        lock_or_recover(&self.matcher).set_bindings(bindings);
+    }
+
+    /// Enable or disable CapsLock as a Hyperkey (`Ctrl+Alt+Shift+Win`) live.
+    pub fn set_hyperkey_enabled(&self, enabled: bool) {
+        lock_or_recover(&self.matcher).set_hyperkey_enabled(enabled);
+        if let Some(active_capture) = lock_or_recover(&self.capture).as_mut() {
+            active_capture.state.set_hyperkey_enabled(enabled);
         }
+    }
+
+    /// Enter live hotkey capture mode until a valid trigger is captured or cancelled.
+    pub fn begin_capture(&self, on_captured: impl FnOnce(HotkeyTrigger) + Send + 'static) {
+        let hyperkey_enabled = lock_or_recover(&self.matcher).is_hyperkey_enabled();
+        lock_or_recover(&self.snippets).expander.clear();
+        let mut guard = lock_or_recover(&self.capture);
+        *guard = Some(ActiveCapture {
+            state: HotkeyCapture::new(hyperkey_enabled),
+            on_captured: Box::new(on_captured),
+        });
+    }
+
+    /// Exit live hotkey capture mode without firing a callback.
+    pub fn cancel_capture(&self) {
+        let mut guard = lock_or_recover(&self.capture);
+        let _ = guard.take();
+    }
+
+    /// Configure global snippet keywords and the callback fired on keyword expansion.
+    pub fn set_snippet_keywords(
+        &self,
+        keywords: Vec<String>,
+        on_match: impl Fn(String, usize) + Send + Sync + 'static,
+    ) {
+        let mut guard = lock_or_recover(&self.snippets);
+        guard.expander.set_keywords(keywords);
+        guard.callback = Some(Arc::new(on_match));
     }
 
     /// Stop the hook and release resources cleanly.
     pub fn stop(&mut self) {
         if self.hook_thread_id != 0 {
+            // SAFETY: `hook_thread_id` is the live Win32 thread ID returned by `GetCurrentThreadId`.
             unsafe {
                 let _ = PostThreadMessageW(self.hook_thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
             }
@@ -932,9 +1502,7 @@ impl GlobalHotkeyService {
             let _ = handle.join();
         }
         // Clear the global state (dropping the Sender so dispatch_thread exits cleanly).
-        if let Ok(mut slot) = hook_state_cell().lock() {
-            *slot = None;
-        }
+        *lock_or_recover(hook_state_cell()) = None;
         if let Some(handle) = self.dispatch_thread.take() {
             let _ = handle.join();
         }
@@ -947,6 +1515,11 @@ impl Drop for GlobalHotkeyService {
     }
 }
 
+enum HookAction {
+    Pass,
+    Swallow { mask_menu: bool },
+}
+
 unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     if code >= 0 {
         let msg = wparam.0 as u32;
@@ -956,6 +1529,7 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
             _ => None,
         };
         if let Some(is_down) = is_down {
+            // SAFETY: For `code >= 0` in `WH_KEYBOARD_LL`, `lparam` points to a valid `KBDLLHOOKSTRUCT`.
             let info = &*(lparam.0 as *const KBDLLHOOKSTRUCT);
             let event = KeyEvent {
                 vk: info.vkCode,
@@ -964,47 +1538,144 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                 injected: (info.flags.0 & LLKHF_INJECTED.0) != 0,
             };
 
-            let decision = if let Ok(slot) = hook_state_cell().try_lock() {
+            let action = if let Ok(slot) = hook_state_cell().try_lock() {
                 if let Some(active) = slot.as_ref() {
                     if let Ok(mut matcher) = active.matcher.try_lock() {
-                        // On key-downs (modifier or non-modifier), reconcile any
-                        // stale keys Windows says are no longer physically held.
-                        if is_down {
-                            matcher.clear_stale_keys(event.vk, |vk| {
-                                (GetAsyncKeyState(vk as i32) as u16 & 0x8000) != 0
-                            });
-                        }
-                        let decision = matcher.feed(event);
-                        match &decision {
-                            HookDecision::TriggerSwallow { id, .. }
-                            | HookDecision::TriggerPass(id) => {
-                                let _ = active.tx.send(id.clone());
+                        let mut handled_by_capture = false;
+                        let mut capture_action = HookAction::Pass;
+
+                        if let Ok(mut capture_guard) = active.capture.try_lock() {
+                            if let Some(active_capture) = capture_guard.as_mut() {
+                                handled_by_capture = true;
+                                if is_down {
+                                    active_capture.state.clear_stale_keys(event.vk, |vk| {
+                                        // SAFETY: `GetAsyncKeyState` accepts any virtual-key code.
+                                        (GetAsyncKeyState(vk as i32) as u16 & 0x8000) != 0
+                                    });
+                                }
+                                match active_capture.state.feed(event) {
+                                    CaptureOutcome::PendingSwallow => {
+                                        capture_action = HookAction::Swallow { mask_menu: false };
+                                    }
+                                    CaptureOutcome::PendingPass => {
+                                        capture_action = HookAction::Pass;
+                                    }
+                                    CaptureOutcome::Captured(trigger) => {
+                                        let is_chord =
+                                            matches!(trigger, HotkeyTrigger::Chord { .. });
+                                        let mask_menu =
+                                            is_chord && active_capture.state.needs_menu_mask();
+                                        let swallow_vks =
+                                            active_capture.state.take_swallow_keyup_vks();
+                                        let mods = active_capture.state.modifiers;
+                                        let hyper_down = active_capture.state.hyperkey_down;
+                                        matcher.absorb_capture_cleanup(
+                                            swallow_vks,
+                                            mods,
+                                            hyper_down,
+                                        );
+                                        if let Some(finished) = capture_guard.take() {
+                                            let _ = active.tx.send(DispatchEvent::Captured(
+                                                trigger,
+                                                finished.on_captured,
+                                            ));
+                                        }
+                                        capture_action = if is_chord {
+                                            HookAction::Swallow { mask_menu }
+                                        } else {
+                                            HookAction::Pass
+                                        };
+                                    }
+                                    CaptureOutcome::Cancelled => {
+                                        let swallow_vks =
+                                            active_capture.state.take_swallow_keyup_vks();
+                                        let mods = active_capture.state.modifiers;
+                                        let hyper_down = active_capture.state.hyperkey_down;
+                                        matcher.absorb_capture_cleanup(
+                                            swallow_vks,
+                                            mods,
+                                            hyper_down,
+                                        );
+                                        let _ = capture_guard.take();
+                                        capture_action = HookAction::Swallow { mask_menu: false };
+                                    }
+                                }
                             }
-                            HookDecision::Pass | HookDecision::Swallow => {}
                         }
-                        decision
+
+                        if handled_by_capture {
+                            capture_action
+                        } else {
+                            // On key-downs (modifier or non-modifier), reconcile any
+                            // stale keys Windows says are no longer physically held.
+                            if is_down {
+                                matcher.clear_stale_keys(event.vk, |vk| {
+                                    // SAFETY: `GetAsyncKeyState` accepts any virtual-key code.
+                                    (GetAsyncKeyState(vk as i32) as u16 & 0x8000) != 0
+                                });
+                            }
+                            let effective_mods = matcher.effective_modifiers();
+                            let decision = matcher.feed(event);
+                            match &decision {
+                                HookDecision::TriggerSwallow { id, .. }
+                                | HookDecision::TriggerPass(id) => {
+                                    let _ = active.tx.send(DispatchEvent::Hotkey(id.clone()));
+                                }
+                                HookDecision::Pass | HookDecision::Swallow => {}
+                            }
+                            if matches!(decision, HookDecision::Pass) && !event.injected {
+                                if let Ok(mut snippets) = active.snippets.try_lock() {
+                                    if snippets.expander.has_keywords() {
+                                        if let Some((keyword, erase_len)) = snippets
+                                            .expander
+                                            .feed_key(event.vk, effective_mods, event.is_down)
+                                        {
+                                            if let Some(callback) =
+                                                snippets.callback.as_ref().map(Arc::clone)
+                                            {
+                                                let _ = active.tx.send(DispatchEvent::Snippet {
+                                                    keyword,
+                                                    erase_len,
+                                                    callback,
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            match decision {
+                                HookDecision::TriggerSwallow { mask_menu, .. } => {
+                                    HookAction::Swallow { mask_menu }
+                                }
+                                HookDecision::Swallow => HookAction::Swallow { mask_menu: false },
+                                HookDecision::Pass | HookDecision::TriggerPass(_) => {
+                                    HookAction::Pass
+                                }
+                            }
+                        }
                     } else {
-                        HookDecision::Pass
+                        HookAction::Pass
                     }
                 } else {
-                    HookDecision::Pass
+                    HookAction::Pass
                 }
             } else {
-                HookDecision::Pass
+                HookAction::Pass
             };
 
-            match decision {
-                HookDecision::TriggerSwallow { mask_menu, .. } => {
+            match action {
+                HookAction::Swallow { mask_menu } => {
                     if mask_menu {
+                        // SAFETY: Injects a synthetic `VK_MENU_MASK` down/up pair via `SendInput`.
                         suppress_modifier_menu_activation();
                     }
                     return LRESULT(1);
                 }
-                HookDecision::Swallow => return LRESULT(1),
-                HookDecision::Pass | HookDecision::TriggerPass(_) => {}
+                HookAction::Pass => {}
             }
         }
     }
+    // SAFETY: Forwarding unhandled events to `CallNextHookEx` preserves the Windows hook chain.
     CallNextHookEx(None, code, wparam, lparam)
 }
 
@@ -1014,7 +1685,10 @@ pub struct WindowsHotkey {
     hook: Mutex<Option<HHOOK>>,
 }
 
+// SAFETY: `HHOOK` is only accessed while holding `self.hook` (`Mutex`), and
+// `UnhookWindowsHookEx` is valid to call from any thread in the installing process.
 unsafe impl Send for WindowsHotkey {}
+// SAFETY: Synchronization is enforced by `Mutex<Option<HHOOK>>`.
 unsafe impl Sync for WindowsHotkey {}
 
 impl WindowsHotkey {
@@ -1024,12 +1698,14 @@ impl WindowsHotkey {
 
     /// Install a probe hook to verify the desktop allows keyboard hooks.
     pub fn install(&self) -> Option<HHOOK> {
-        let mut guard = self.hook.lock().expect("hook lock");
+        let mut guard = lock_or_recover(&self.hook);
         if let Some(hook) = *guard {
             return Some(hook);
         }
+        // SAFETY: Passing `None` retrieves the `HMODULE` of the current executable.
         let module = unsafe { GetModuleHandleW(None).ok()? };
         let module = Some(HINSTANCE(module.0));
+        // SAFETY: `probe_hook_proc` matches `HOOKPROC` and forwards all events to `CallNextHookEx`.
         let hook =
             unsafe { SetWindowsHookExW(WH_KEYBOARD_LL, Some(probe_hook_proc), module, 0) }.ok()?;
         *guard = Some(hook);
@@ -1038,8 +1714,9 @@ impl WindowsHotkey {
 
     /// Remove the probe hook if installed.
     pub fn uninstall(&self) {
-        let taken = self.hook.lock().expect("hook lock").take();
+        let taken = lock_or_recover(&self.hook).take();
         if let Some(hook) = taken {
+            // SAFETY: `hook` was returned by `SetWindowsHookExW` and has not been unhooked yet.
             unsafe {
                 let _ = UnhookWindowsHookEx(hook);
             }
@@ -1344,7 +2021,253 @@ mod tests {
                 "launcher.toggle",
                 HotkeyTrigger::fallback_launcher(),
             )]);
+            svc.set_hyperkey_enabled(true);
+            svc.set_snippet_keywords(vec!["!sig".to_string()], |_, _| {});
+            svc.begin_capture(|_| {});
+            svc.cancel_capture();
             svc.stop();
         }
+    }
+
+    #[test]
+    fn hyperkey_capslock_matches_all_modifiers_and_swallows_capslock() {
+        let mut matcher = HotkeyMatcher::new(vec![HotkeyBinding::new(
+            "hyper.j",
+            HotkeyTrigger::Chord {
+                modifiers: HotkeyModifiers::all(),
+                vk: 0x4A, // 'J'
+            },
+        )]);
+        matcher.set_hyperkey_enabled(true);
+
+        // CapsLock press, auto-repeat, and release are all swallowed.
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 100)), HookDecision::Swallow);
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 130)), HookDecision::Swallow);
+        assert_eq!(
+            matcher.feed(down(0x4A, 150)),
+            HookDecision::TriggerSwallow {
+                id: "hyper.j".to_string(),
+                mask_menu: false,
+            }
+        );
+        assert_eq!(matcher.feed(up(0x4A, 170)), HookDecision::Swallow);
+        assert_eq!(matcher.feed(up(VK_CAPITAL, 190)), HookDecision::Swallow);
+
+        // If physical Alt is also held alongside Hyperkey, mask_menu becomes true.
+        assert_eq!(matcher.feed(down(VK_LMENU, 200)), HookDecision::Pass);
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 210)), HookDecision::Swallow);
+        assert_eq!(
+            matcher.feed(down(0x4A, 220)),
+            HookDecision::TriggerSwallow {
+                id: "hyper.j".to_string(),
+                mask_menu: true,
+            }
+        );
+        assert_eq!(matcher.feed(up(0x4A, 230)), HookDecision::Swallow);
+        assert_eq!(matcher.feed(up(VK_CAPITAL, 240)), HookDecision::Swallow);
+        assert_eq!(matcher.feed(up(VK_LMENU, 250)), HookDecision::Pass);
+    }
+
+    #[test]
+    fn hyperkey_solo_tap_swallowed_and_disable_restores_passthrough() {
+        let mut matcher = HotkeyMatcher::new(vec![]);
+        matcher.set_hyperkey_enabled(true);
+
+        // Solo CapsLock tap is swallowed on both down and up so CapsLock LED never toggles.
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 100)), HookDecision::Swallow);
+        assert_eq!(matcher.feed(up(VK_CAPITAL, 150)), HookDecision::Swallow);
+
+        // Holding CapsLock while disabling hyperkey clears active hyperkey state and passes CapsLock.
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 200)), HookDecision::Swallow);
+        matcher.set_hyperkey_enabled(false);
+        assert_eq!(matcher.feed(up(VK_CAPITAL, 240)), HookDecision::Pass);
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 300)), HookDecision::Pass);
+    }
+
+    #[test]
+    fn hyperkey_stale_capslock_recovery_clears_hyperkey_down() {
+        let mut matcher = HotkeyMatcher::new(vec![HotkeyBinding::new(
+            "hyper.j",
+            HotkeyTrigger::Chord {
+                modifiers: HotkeyModifiers::all(),
+                vk: 0x4A,
+            },
+        )]);
+        matcher.set_hyperkey_enabled(true);
+
+        assert_eq!(matcher.feed(down(VK_CAPITAL, 100)), HookDecision::Swallow);
+        // Simulate missed CapsLock key-up (e.g., after desktop lock).
+        matcher.clear_stale_keys(0x4A, |_| false);
+        assert_eq!(matcher.feed(down(0x4A, 500)), HookDecision::Pass);
+    }
+
+    #[test]
+    fn hotkey_capture_records_chords_fkeys_double_tap_hyperkey_and_escape() {
+        // 1. Ctrl+Shift+K chord
+        let mut cap = HotkeyCapture::new(false);
+        assert_eq!(
+            cap.feed(down(VK_LCONTROL, 100)),
+            CaptureOutcome::PendingPass
+        );
+        assert_eq!(cap.feed(down(VK_LSHIFT, 110)), CaptureOutcome::PendingPass);
+        assert_eq!(
+            cap.feed(down(0x4B, 120)),
+            CaptureOutcome::Captured(HotkeyTrigger::Chord {
+                modifiers: HotkeyModifiers {
+                    ctrl: true,
+                    shift: true,
+                    ..Default::default()
+                },
+                vk: 0x4B,
+            })
+        );
+        assert_eq!(cap.feed(up(0x4B, 140)), CaptureOutcome::PendingSwallow);
+
+        // 2. Bare F5 (0x74)
+        let mut cap = HotkeyCapture::new(false);
+        assert_eq!(
+            cap.feed(down(0x74, 200)),
+            CaptureOutcome::Captured(HotkeyTrigger::Chord {
+                modifiers: HotkeyModifiers::default(),
+                vk: 0x74,
+            })
+        );
+
+        // 3. Bare letter 'a' is swallowed without capturing
+        let mut cap = HotkeyCapture::new(false);
+        assert_eq!(cap.feed(down(0x41, 300)), CaptureOutcome::PendingSwallow);
+        assert_eq!(cap.feed(up(0x41, 320)), CaptureOutcome::PendingSwallow);
+
+        // 4. Escape cancels and swallows Escape keyup
+        let mut cap = HotkeyCapture::new(false);
+        assert_eq!(cap.feed(down(VK_ESCAPE, 400)), CaptureOutcome::Cancelled);
+        assert_eq!(cap.feed(up(VK_ESCAPE, 420)), CaptureOutcome::PendingSwallow);
+
+        // 5. Double Ctrl tap
+        let mut cap = HotkeyCapture::new(false);
+        assert_eq!(
+            cap.feed(down(VK_LCONTROL, 500)),
+            CaptureOutcome::PendingPass
+        );
+        assert_eq!(cap.feed(up(VK_LCONTROL, 550)), CaptureOutcome::PendingPass);
+        assert_eq!(
+            cap.feed(down(VK_RCONTROL, 620)),
+            CaptureOutcome::PendingPass
+        );
+        assert_eq!(
+            cap.feed(up(VK_RCONTROL, 670)),
+            CaptureOutcome::Captured(HotkeyTrigger::DoubleTap {
+                key: ModifierKey::Ctrl,
+                side: ModifierSide::Any,
+            })
+        );
+
+        // 6. Hyperkey + J
+        let mut cap = HotkeyCapture::new(true);
+        assert_eq!(
+            cap.feed(down(VK_CAPITAL, 700)),
+            CaptureOutcome::PendingSwallow
+        );
+        assert_eq!(
+            cap.feed(down(0x4A, 720)),
+            CaptureOutcome::Captured(HotkeyTrigger::Chord {
+                modifiers: HotkeyModifiers::all(),
+                vk: 0x4A,
+            })
+        );
+    }
+
+    #[test]
+    fn snippet_expander_matches_keywords_boundaries_backspaces_and_ring_buffer() {
+        let none = HotkeyModifiers::default();
+        let shift = HotkeyModifiers {
+            shift: true,
+            ..Default::default()
+        };
+        let ctrl = HotkeyModifiers {
+            ctrl: true,
+            ..Default::default()
+        };
+
+        let mut exp = SnippetExpander::new(vec!["!sig".to_string(), "sig".to_string()]);
+
+        // `!sig ` triggers with erase count 5 (`!sig` + Space), picking longest match.
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(
+            exp.feed_key(VK_SPACE, none, true),
+            Some(("".to_string() + "!sig", 5))
+        );
+
+        // `!sig\t` also triggers with erase count 5.
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(
+            exp.feed_key(VK_TAB, none, true),
+            Some(("".to_string() + "!sig", 5))
+        );
+
+        // `hello !sig ` triggers after space boundary.
+        for vk in [0x48, 0x45, 0x4C, 0x4C, 0x4F] {
+            assert_eq!(exp.feed_key(vk, none, true), None);
+        }
+        assert_eq!(exp.feed_key(VK_SPACE, none, true), None);
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(
+            exp.feed_key(VK_SPACE, none, true),
+            Some(("".to_string() + "!sig", 5))
+        );
+
+        // `foo!sig ` does NOT trigger because there is no whitespace boundary before `!sig`.
+        for vk in [0x46, 0x4F, 0x4F] {
+            assert_eq!(exp.feed_key(vk, none, true), None);
+        }
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(exp.feed_key(VK_SPACE, none, true), None);
+
+        // Backspace edits: `!six<BS>g ` triggers `!sig`.
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x58, none, true), None); // 'x'
+        assert_eq!(exp.feed_key(VK_BACK, none, true), None);
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(
+            exp.feed_key(VK_SPACE, none, true),
+            Some(("".to_string() + "!sig", 5))
+        );
+
+        // Ctrl chord (`Ctrl+A`) clears the buffer.
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(exp.feed_key(0x41, ctrl, true), None); // Ctrl+A clears
+        assert_eq!(exp.feed_key(VK_SPACE, none, true), None);
+
+        // Ring buffer caps at 64 chars cleanly and still matches keywords after whitespace.
+        for _ in 0..80 {
+            assert_eq!(exp.feed_key(0x41, none, true), None); // 'a'
+        }
+        assert_eq!(exp.buffer.len(), SNIPPET_BUFFER_CAPACITY);
+        assert_eq!(exp.feed_key(VK_SPACE, none, true), None);
+        assert_eq!(exp.feed_key(0x31, shift, true), None); // '!'
+        assert_eq!(exp.feed_key(0x53, none, true), None); // 's'
+        assert_eq!(exp.feed_key(0x49, none, true), None); // 'i'
+        assert_eq!(exp.feed_key(0x47, none, true), None); // 'g'
+        assert_eq!(
+            exp.feed_key(VK_SPACE, none, true),
+            Some(("".to_string() + "!sig", 5))
+        );
     }
 }

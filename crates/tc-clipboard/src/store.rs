@@ -36,6 +36,9 @@ pub const MEMORY_WINDOW: usize = 1000;
 /// Upstream `ClipboardStore.searchLimit`.
 pub const SEARCH_LIMIT: usize = 200;
 
+/// The largest PNG blob accepted by [`ClipboardStore::add_image_png`].
+const MAX_IMAGE_PNG_BYTES: usize = 32 * 1024 * 1024;
+
 /// How long the history keeps an entry, in days.
 ///
 /// Upstream `ClipboardRetention`: `forever` is -1, so an unset key (0) falls
@@ -371,6 +374,80 @@ impl ClipboardStore {
         item.id = new_entry_id();
         self.insert(&item)?;
         Ok(item)
+    }
+
+    /// Encode raw 8-bit RGBA pixels to PNG and record the image in the store.
+    pub fn add_image_rgba(
+        &mut self,
+        width: u32,
+        height: u32,
+        rgba: &[u8],
+        source_bundle_id: Option<&str>,
+    ) -> Result<ClipboardItem, StoreError> {
+        let png = crate::image_blob::encode_png_rgba(width, height, rgba).ok_or_else(|| {
+            StoreError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid RGBA image dimensions or buffer length",
+            ))
+        })?;
+        self.add_image_png(&png, source_bundle_id)
+    }
+
+    /// Validate and store PNG image bytes under this store's `images` directory,
+    /// deduplicating against the newest entry if its blob bytes match.
+    pub fn add_image_png(
+        &mut self,
+        png_bytes: &[u8],
+        source_bundle_id: Option<&str>,
+    ) -> Result<ClipboardItem, StoreError> {
+        if png_bytes.is_empty()
+            || png_bytes.len() > MAX_IMAGE_PNG_BYTES
+            || !png_bytes.starts_with(crate::image_blob::PNG_SIGNATURE)
+        {
+            return Err(StoreError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid or oversized PNG image",
+            )));
+        }
+        if let Some(newest) = self.items.first() {
+            if newest.kind == ItemKind::Image {
+                if let Some(existing_path) = newest.image_path.as_deref() {
+                    if std::fs::read(existing_path).ok().as_deref() == Some(png_bytes) {
+                        return Ok(newest.clone());
+                    }
+                }
+            }
+        }
+        std::fs::create_dir_all(&self.images_dir)?;
+        let id = new_entry_id();
+        let blob_path = self.images_dir.join(format!("{id}.png"));
+        std::fs::write(&blob_path, png_bytes)?;
+        let image_path = blob_path.to_string_lossy().into_owned();
+        let mut item = ClipboardItem::image(image_path, source_bundle_id.map(str::to_string));
+        item.id = id;
+        if let Err(err) = self.insert(&item) {
+            let _ = std::fs::remove_file(&blob_path);
+            return Err(err);
+        }
+        Ok(item)
+    }
+
+    /// Load and decode an image entry's PNG blob into `(width, height, rgba)`.
+    ///
+    /// Returns `Ok(None)` if the entry is not an image, has no `image_path`, or
+    /// its file cannot be decoded as a supported 8-bit PNG.
+    pub fn load_image_rgba(
+        &self,
+        item: &ClipboardItem,
+    ) -> Result<Option<(u32, u32, Vec<u8>)>, StoreError> {
+        if item.kind != ItemKind::Image {
+            return Ok(None);
+        }
+        let Some(path) = item.image_path.as_deref() else {
+            return Ok(None);
+        };
+        let bytes = std::fs::read(path)?;
+        Ok(crate::image_blob::decode_png_rgba(&bytes))
     }
 
     /// Remove an entry.
@@ -971,5 +1048,58 @@ pub fn now_millis() -> Timestamp {
             Ok(_) => return next,
             Err(current) => previous = current,
         }
+    }
+}
+
+#[cfg(test)]
+mod image_tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn add_image_rgba_round_trips_dedups_and_deletes_blob_on_remove() {
+        let dir = TempDir::new().expect("temp dir");
+        let mut store = ClipboardStore::open(dir.path()).expect("open store");
+
+        let width = 2u32;
+        let height = 2u32;
+        let rgba = vec![
+            255, 0, 0, 255, 0, 255, 0, 255, // row 0
+            0, 0, 255, 255, 255, 255, 0, 128, // row 1
+        ];
+
+        let first = store
+            .add_image_rgba(width, height, &rgba, Some("com.example.shot"))
+            .expect("add image");
+        assert_eq!(first.kind, ItemKind::Image);
+        assert!(store.owns_image(&first));
+        let first_path = PathBuf::from(first.image_path.as_deref().expect("image path"));
+        assert!(first_path.exists());
+
+        let loaded = store
+            .load_image_rgba(&first)
+            .expect("load image")
+            .expect("decoded rgba");
+        assert_eq!(loaded, (width, height, rgba.clone()));
+
+        // Adding identical pixels again deduplicates against the newest entry.
+        let dup = store
+            .add_image_rgba(width, height, &rgba, Some("com.example.shot"))
+            .expect("dedup image");
+        assert_eq!(dup.id, first.id);
+        assert_eq!(store.items().len(), 1);
+
+        // Non-image entry returns Ok(None) from load_image_rgba.
+        let text_item = ClipboardItem::text("hello", None);
+        assert_eq!(store.load_image_rgba(&text_item).expect("load text"), None);
+
+        // Invalid PNG bytes and mismatched RGBA dimensions are rejected.
+        assert!(store.add_image_png(b"not-a-png", None).is_err());
+        assert!(store.add_image_rgba(2, 2, &[0u8; 4], None).is_err());
+
+        // Removing the entry deletes its owned PNG blob from images_dir.
+        store.remove(&first).expect("remove image");
+        assert!(store.items().is_empty());
+        assert!(!first_path.exists());
     }
 }

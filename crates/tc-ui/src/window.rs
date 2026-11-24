@@ -30,9 +30,10 @@ use windows::Win32::UI::HiDpi::{
     DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, MDT_EFFECTIVE_DPI,
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetKeyState, SetFocus, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_BACK, VK_CONTROL,
-    VK_DELETE, VK_DOWN, VK_ESCAPE, VK_K, VK_LEFT, VK_OEM_COMMA, VK_P, VK_RETURN, VK_RIGHT,
-    VK_SHIFT, VK_TAB, VK_UP,
+    GetKeyState, SetFocus, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_B, VK_BACK, VK_C,
+    VK_CONTROL, VK_DELETE, VK_DOWN, VK_ESCAPE, VK_F, VK_H, VK_I, VK_J, VK_K, VK_L, VK_LEFT,
+    VK_MENU, VK_N, VK_OEM_4, VK_OEM_COMMA, VK_P, VK_R, VK_RETURN, VK_RIGHT, VK_SHIFT, VK_TAB,
+    VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW,
@@ -45,9 +46,9 @@ use windows::Win32::UI::WindowsAndMessaging::{
     SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_CHAR, WM_COMMAND,
     WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_GETMINMAXINFO,
     WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCCALCSIZE, WM_NCCREATE,
-    WM_NCHITTEST, WM_PAINT, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WNDCLASSEXW, WS_CHILD,
-    WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP,
-    WS_THICKFRAME, WS_VISIBLE,
+    WM_NCHITTEST, WM_PAINT, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR,
+    WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW,
+    WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_THICKFRAME, WS_VISIBLE,
 };
 
 use crate::event::{ActionKey, Handler, PaletteEvent, PaletteReply};
@@ -74,11 +75,21 @@ const WM_APP_LEFT: u32 = 0x800C;
 const WM_APP_RIGHT: u32 = 0x800D;
 const WM_APP_CTRL_RETURN: u32 = 0x800E;
 const WM_APP_ACTION: u32 = 0x800F;
+const WM_APP_ALT_RETURN: u32 = 0x8010;
+const WM_APP_SHIFT_RETURN: u32 = 0x8011;
+const WM_APP_QUICK_SELECT: u32 = 0x8012;
+const WM_APP_COPY_CHORD: u32 = 0x8013;
+const WM_APP_MENU_CHAR: u32 = 0x8014;
 
 const ACTION_TAB: usize = 1;
 const ACTION_CTRL_P: usize = 2;
 const ACTION_CTRL_K: usize = 3;
 const ACTION_CTRL_DELETE: usize = 4;
+const ACTION_SHIFT_TAB: usize = 5;
+const ACTION_CTRL_I: usize = 6;
+const ACTION_CTRL_H: usize = 7;
+const ACTION_CTRL_R: usize = 8;
+const ACTION_BACK: usize = 9;
 
 /// Debounce window so clicking the tray icon while the palette is open closes
 /// the palette rather than blur-dismissing and immediately re-opening it.
@@ -497,7 +508,8 @@ unsafe extern "system" fn window_procedure(
             resize_window_rect_for_dpi(hwnd, metrics, target_h, dpi as f32);
             let width_px = ((metrics.width * (dpi as f32 / 96.0)).round()) as i32;
             let has_badge = (*state_ptr).model.header_badge.is_some();
-            place_field_rect(hwnd, edit, metrics, width_px, has_badge);
+            let inline_pill_w = inline_arg_pill_width(&(*state_ptr).model);
+            place_field_rect(hwnd, edit, metrics, width_px, has_badge, inline_pill_w);
             let _ = InvalidateRect(Some(hwnd), None, false);
             LRESULT(0)
         }
@@ -505,7 +517,7 @@ unsafe extern "system" fn window_procedure(
             let width = (lparam.0 & 0xffff) as u32;
             let height = ((lparam.0 >> 16) & 0xffff) as u32;
             let dpi = GetDpiForWindow(hwnd).max(96) as f32;
-            let (edit, metrics, has_badge) = {
+            let (edit, metrics, has_badge, inline_pill_w) = {
                 let state = &mut *state_ptr;
                 if let Some(renderer) = state.renderer.as_ref() {
                     renderer.set_dpi(dpi);
@@ -515,9 +527,10 @@ unsafe extern "system" fn window_procedure(
                     state.edit,
                     state.theme.metrics,
                     state.model.header_badge.is_some(),
+                    inline_arg_pill_width(&state.model),
                 )
             };
-            place_field_rect(hwnd, edit, metrics, width as i32, has_badge);
+            place_field_rect(hwnd, edit, metrics, width as i32, has_badge, inline_pill_w);
             LRESULT(0)
         }
         WM_SETFOCUS => {
@@ -574,7 +587,22 @@ unsafe extern "system" fn window_procedure(
                     state.tracking_mouse_leave = true;
                 }
             }
-            let hovered = hit_test_point(hwnd, state, x_phys, y_phys);
+            let dpi_scale = GetDpiForWindow(hwnd).max(96) as f32 / 96.0;
+            let x_dip = x_phys / dpi_scale;
+            let y_dip = y_phys / dpi_scale;
+            let metrics = state.theme.metrics;
+            let win_h = state.model.layout(metrics).window_height;
+
+            if let Some(menu) = state.model.action_menu.as_mut() {
+                let hovered = menu.hit_test_dip(x_dip, y_dip, metrics, win_h);
+                if menu.hovered != hovered {
+                    menu.hovered = hovered;
+                    let _ = InvalidateRect(Some(hwnd), None, false);
+                }
+                return LRESULT(0);
+            }
+
+            let hovered = state.model.hit_test_dip(x_dip, y_dip, metrics);
             let changed = if let Some(grid) = state.model.grid.as_mut() {
                 let c = grid.hovered != hovered;
                 grid.hovered = hovered;
@@ -592,7 +620,9 @@ unsafe extern "system" fn window_procedure(
         WM_MOUSELEAVE => {
             let state = &mut *state_ptr;
             state.tracking_mouse_leave = false;
-            let cleared = if let Some(grid) = state.model.grid.as_mut() {
+            let cleared = if let Some(menu) = state.model.action_menu.as_mut() {
+                menu.hovered.take().is_some()
+            } else if let Some(grid) = state.model.grid.as_mut() {
                 grid.hovered.take().is_some()
             } else {
                 state.model.hovered.take().is_some()
@@ -615,9 +645,66 @@ unsafe extern "system" fn window_procedure(
         WM_LBUTTONUP => {
             let x_phys = (lparam.0 & 0xffff) as i16 as f32;
             let y_phys = ((lparam.0 >> 16) & 0xffff) as i16 as f32;
+            let dpi_scale = GetDpiForWindow(hwnd).max(96) as f32 / 96.0;
+            let x_dip = x_phys / dpi_scale;
+            let y_dip = y_phys / dpi_scale;
+
+            let (metrics, win_h, has_menu, has_back) = {
+                let state = &*state_ptr;
+                let m = state.theme.metrics;
+                (
+                    m,
+                    state.model.layout(m).window_height,
+                    state.model.action_menu.is_some(),
+                    state.model.back_button,
+                )
+            };
+
+            // 1. Floating Action Panel click handling.
+            if has_menu {
+                let action_id = {
+                    let state = &mut *state_ptr;
+                    if let Some(menu) = state.model.action_menu.as_mut() {
+                        if let Some(filtered_idx) = menu.hit_test_dip(x_dip, y_dip, metrics, win_h)
+                        {
+                            menu.selected = filtered_idx;
+                            menu.selected_item().map(|i| i.id.clone())
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                };
+                if let Some(id) = action_id {
+                    dispatch(state_ptr, PaletteEvent::ActionMenuActivated(id));
+                } else {
+                    if let Some(menu) = (*state_ptr).model.action_menu.take() {
+                        let _ = menu;
+                    }
+                    let _ = InvalidateRect(Some(hwnd), None, false);
+                    dispatch(state_ptr, PaletteEvent::ActionMenuDismissed);
+                }
+                return LRESULT(0);
+            }
+
+            // 2. Header clickable `←` back button.
+            if has_back && x_dip <= 42.0 && y_dip <= metrics.field_height {
+                dispatch(state_ptr, PaletteEvent::Escape);
+                return LRESULT(0);
+            }
+
+            // 3. Footer right-side Actions click zone (`Ctrl+K`).
+            if y_dip >= win_h - metrics.footer_height && x_dip >= metrics.width - 125.0 {
+                let selected = active_selected_index(&(*state_ptr).model);
+                dispatch(state_ptr, PaletteEvent::Action(ActionKey::CtrlK, selected));
+                return LRESULT(0);
+            }
+
+            // 4. List row or Emoji Grid tile click.
             let clicked = {
                 let state = &mut *state_ptr;
-                let hit = hit_test_point(hwnd, state, x_phys, y_phys);
+                let hit = state.model.hit_test_dip(x_dip, y_dip, metrics);
                 if let Some(index) = hit {
                     if let Some(grid) = state.model.grid.as_mut() {
                         grid.selected = index;
@@ -657,56 +744,117 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_APP_UP => {
-            let state = &mut *state_ptr;
-            if let Some(grid) = state.model.grid.as_mut() {
-                grid.select_up();
-            } else {
-                state.model.select_previous();
-            }
-            let metrics = state.theme.metrics;
-            state.model.ensure_selected_visible(metrics);
+            let (notify_sel, new_sel) = {
+                let state = &mut *state_ptr;
+                if let Some(menu) = state.model.action_menu.as_mut() {
+                    menu.select_previous();
+                    (false, 0)
+                } else {
+                    let prev = active_selected_index(&state.model);
+                    if let Some(grid) = state.model.grid.as_mut() {
+                        grid.select_up();
+                    } else {
+                        state.model.select_previous();
+                    }
+                    let metrics = state.theme.metrics;
+                    state.model.ensure_selected_visible(metrics);
+                    let next = active_selected_index(&state.model);
+                    (state.model.detail.is_some() && next != prev, next)
+                }
+            };
             let _ = InvalidateRect(Some(hwnd), None, false);
+            if notify_sel {
+                dispatch(state_ptr, PaletteEvent::SelectionChanged(new_sel));
+            }
             LRESULT(0)
         }
         WM_APP_DOWN => {
-            let state = &mut *state_ptr;
-            if let Some(grid) = state.model.grid.as_mut() {
-                grid.select_down();
-            } else {
-                state.model.select_next();
-            }
-            let metrics = state.theme.metrics;
-            state.model.ensure_selected_visible(metrics);
+            let (notify_sel, new_sel) = {
+                let state = &mut *state_ptr;
+                if let Some(menu) = state.model.action_menu.as_mut() {
+                    menu.select_next();
+                    (false, 0)
+                } else {
+                    let prev = active_selected_index(&state.model);
+                    if let Some(grid) = state.model.grid.as_mut() {
+                        grid.select_down();
+                    } else {
+                        state.model.select_next();
+                    }
+                    let metrics = state.theme.metrics;
+                    state.model.ensure_selected_visible(metrics);
+                    let next = active_selected_index(&state.model);
+                    (state.model.detail.is_some() && next != prev, next)
+                }
+            };
             let _ = InvalidateRect(Some(hwnd), None, false);
+            if notify_sel {
+                dispatch(state_ptr, PaletteEvent::SelectionChanged(new_sel));
+            }
             LRESULT(0)
         }
         WM_APP_LEFT => {
             let state = &mut *state_ptr;
-            if let Some(grid) = state.model.grid.as_mut() {
-                grid.select_left();
-                let metrics = state.theme.metrics;
-                state.model.ensure_selected_visible(metrics);
-                let _ = InvalidateRect(Some(hwnd), None, false);
+            if state.model.action_menu.is_none() {
+                if let Some(grid) = state.model.grid.as_mut() {
+                    grid.select_left();
+                    let metrics = state.theme.metrics;
+                    state.model.ensure_selected_visible(metrics);
+                    let _ = InvalidateRect(Some(hwnd), None, false);
+                }
             }
             LRESULT(0)
         }
         WM_APP_RIGHT => {
             let state = &mut *state_ptr;
-            if let Some(grid) = state.model.grid.as_mut() {
-                grid.select_right();
-                let metrics = state.theme.metrics;
-                state.model.ensure_selected_visible(metrics);
+            if state.model.action_menu.is_none() {
+                if let Some(grid) = state.model.grid.as_mut() {
+                    grid.select_right();
+                    let metrics = state.theme.metrics;
+                    state.model.ensure_selected_visible(metrics);
+                    let _ = InvalidateRect(Some(hwnd), None, false);
+                }
+            }
+            LRESULT(0)
+        }
+        WM_APP_MENU_CHAR => {
+            let ch = wparam.0 as u32;
+            let state = &mut *state_ptr;
+            if let Some(menu) = state.model.action_menu.as_mut() {
+                if ch == 0x08 {
+                    menu.query.pop();
+                    menu.selected = 0;
+                } else if let Some(c) = char::from_u32(ch) {
+                    if !c.is_control() {
+                        menu.query.push(c);
+                        menu.selected = 0;
+                    }
+                }
                 let _ = InvalidateRect(Some(hwnd), None, false);
             }
             LRESULT(0)
         }
         WM_APP_ESCAPE => {
-            handle_escape(state_ptr);
+            if (*state_ptr).model.action_menu.take().is_some() {
+                let _ = InvalidateRect(Some(hwnd), None, false);
+                dispatch(state_ptr, PaletteEvent::ActionMenuDismissed);
+            } else {
+                handle_escape(state_ptr);
+            }
             LRESULT(0)
         }
         WM_APP_RETURN => {
-            let selected = active_selected_index(&(*state_ptr).model);
-            dispatch(state_ptr, PaletteEvent::Activated(selected));
+            let menu_choice = (*state_ptr)
+                .model
+                .action_menu
+                .as_ref()
+                .and_then(|m| m.selected_item().map(|i| i.id.clone()));
+            if let Some(action_id) = menu_choice {
+                dispatch(state_ptr, PaletteEvent::ActionMenuActivated(action_id));
+            } else if (*state_ptr).model.action_menu.is_none() {
+                let selected = active_selected_index(&(*state_ptr).model);
+                dispatch(state_ptr, PaletteEvent::Activated(selected));
+            }
             LRESULT(0)
         }
         WM_APP_CTRL_RETURN => {
@@ -714,11 +862,36 @@ unsafe extern "system" fn window_procedure(
             dispatch(state_ptr, PaletteEvent::SecondaryActivated(selected));
             LRESULT(0)
         }
+        WM_APP_ALT_RETURN => {
+            let selected = active_selected_index(&(*state_ptr).model);
+            dispatch(state_ptr, PaletteEvent::TertiaryActivated(selected));
+            LRESULT(0)
+        }
+        WM_APP_SHIFT_RETURN => {
+            let selected = active_selected_index(&(*state_ptr).model);
+            dispatch(state_ptr, PaletteEvent::QuaternaryActivated(selected));
+            LRESULT(0)
+        }
+        WM_APP_QUICK_SELECT => {
+            let idx = wparam.0;
+            dispatch(state_ptr, PaletteEvent::QuickSelect(idx));
+            LRESULT(0)
+        }
+        WM_APP_COPY_CHORD => {
+            let selected = active_selected_index(&(*state_ptr).model);
+            dispatch(state_ptr, PaletteEvent::CopyChord(selected));
+            LRESULT(0)
+        }
         WM_APP_ACTION => {
             let action = match wparam.0 {
                 ACTION_TAB => Some(ActionKey::Tab),
+                ACTION_SHIFT_TAB => Some(ActionKey::ShiftTab),
                 ACTION_CTRL_P => Some(ActionKey::CtrlP),
                 ACTION_CTRL_K => Some(ActionKey::CtrlK),
+                ACTION_CTRL_I => Some(ActionKey::CtrlI),
+                ACTION_CTRL_H => Some(ActionKey::CtrlH),
+                ACTION_CTRL_R => Some(ActionKey::CtrlR),
+                ACTION_BACK => Some(ActionKey::Back),
                 ACTION_CTRL_DELETE => Some(ActionKey::CtrlDelete),
                 _ => None,
             };
@@ -788,17 +961,19 @@ fn active_selected_index(model: &Model) -> usize {
     }
 }
 
-/// Convert physical mouse coordinates into exact 1:1 DIPs and hit-test against
-/// the exact same `Model::hit_test_dip` geometry that `Renderer::draw` paints.
-unsafe fn hit_test_point(hwnd: HWND, state: &State, x_phys: f32, y_phys: f32) -> Option<usize> {
-    let dpi_scale = GetDpiForWindow(hwnd).max(96) as f32 / 96.0;
-    let x_dip = x_phys / dpi_scale;
-    let y_dip = y_phys / dpi_scale;
-    state.model.hit_test_dip(x_dip, y_dip, state.theme.metrics)
+fn inline_arg_pill_width(model: &Model) -> f32 {
+    model
+        .inline_arg
+        .as_ref()
+        .map(|arg| {
+            ((arg.command_name.chars().count() as f32 + 2.0) * 6.8 + 26.0).clamp(52.0, 218.0)
+        })
+        .unwrap_or(0.0)
 }
 
-/// Subclassed edit control: forwards navigation keys & action chords cleanly to
-/// the palette while letting Windows handle all typing, paste, selection, and IME.
+/// Subclassed edit control: forwards navigation keys, action chords, Vim/Emacs
+/// Alt-motions, Quick-Select `Ctrl+1..9`, and Action Panel filter keys cleanly
+/// while letting Windows handle all normal typing, paste, selection, and IME.
 unsafe extern "system" fn edit_procedure(
     hwnd: HWND,
     message: u32,
@@ -809,44 +984,129 @@ unsafe extern "system" fn edit_procedure(
     let pointer = GetWindowLongPtrW(parent, GWLP_USERDATA) as *mut State;
 
     // Copy needed values up front; never hold &State across SendMessageW.
-    let (edit_proc, in_grid) = if !pointer.is_null() {
-        ((*pointer).edit_proc, (*pointer).model.grid.is_some())
+    let (edit_proc, in_grid, menu_open) = if !pointer.is_null() {
+        (
+            (*pointer).edit_proc,
+            (*pointer).model.grid.is_some(),
+            (*pointer).model.action_menu.is_some(),
+        )
     } else {
-        (0, false)
+        (0, false, false)
     };
 
+    // Suppress Windows beep on Alt+key shortcuts we handle.
+    if message == WM_SYSCHAR {
+        return LRESULT(0);
+    }
+
     if message == WM_CHAR {
-        // Suppress system beep / control char box on Enter, Ctrl+Enter, Escape, Tab,
-        // Ctrl+P, Ctrl+K, and Ctrl+Shift+Backspace (0x7F DEL).
         let ch = wparam.0 as u32;
-        if matches!(ch, 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x1B | 0x7F) {
+        if menu_open {
+            if ch == 0x08 || (ch >= 0x20 && ch != 0x7F) {
+                let _ = SendMessageW(
+                    parent,
+                    WM_APP_MENU_CHAR,
+                    Some(WPARAM(ch as usize)),
+                    Some(LPARAM(0)),
+                );
+            }
+            return LRESULT(0);
+        }
+        // Suppress system beep / control char box on Enter, Ctrl+Enter, Escape, Tab,
+        // Ctrl+H/I/K/P/R, and Ctrl+Shift+Backspace (0x7F DEL).
+        if matches!(
+            ch,
+            0x08 if (GetKeyState(VK_CONTROL.0 as i32) as u16 & 0x8000) != 0
+        ) || matches!(ch, 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x12 | 0x1B | 0x7F)
+        {
             return LRESULT(0);
         }
     }
 
-    if message == WM_KEYDOWN {
+    if message == WM_KEYDOWN || message == WM_SYSKEYDOWN {
         let key = wparam.0 as u16;
         let ctrl_down = (GetKeyState(VK_CONTROL.0 as i32) as u16 & 0x8000) != 0;
         let shift_down = (GetKeyState(VK_SHIFT.0 as i32) as u16 & 0x8000) != 0;
+        let alt_down = (GetKeyState(VK_MENU.0 as i32) as u16 & 0x8000) != 0;
         let empty_text = GetWindowTextLengthW(hwnd) == 0;
 
-        let forwarded: Option<(u32, usize)> = if ctrl_down && key == VK_OEM_COMMA.0 {
+        // While the floating Action Panel is open, keep keystrokes scoped to it.
+        if menu_open {
+            let menu_fwd: Option<(u32, usize)> =
+                if (ctrl_down && key == VK_K.0) || key == VK_ESCAPE.0 {
+                    Some((WM_APP_ESCAPE, 0))
+                } else if key == VK_RETURN.0 {
+                    Some((WM_APP_RETURN, 0))
+                } else if key == VK_UP.0 || (alt_down && (key == VK_K.0 || key == VK_P.0)) {
+                    Some((WM_APP_UP, 0))
+                } else if key == VK_DOWN.0 || (alt_down && (key == VK_J.0 || key == VK_N.0)) {
+                    Some((WM_APP_DOWN, 0))
+                } else if key == VK_BACK.0 {
+                    Some((WM_APP_MENU_CHAR, 0x08))
+                } else {
+                    None
+                };
+            if let Some((custom, arg)) = menu_fwd {
+                let _ = SendMessageW(parent, custom, Some(WPARAM(arg)), Some(LPARAM(0)));
+                return LRESULT(0);
+            }
+            if !ctrl_down && !alt_down {
+                // Let WM_CHAR fire for printable characters without mutating the EDIT text.
+                return LRESULT(0);
+            }
+        }
+
+        let forwarded: Option<(u32, usize)> = if ctrl_down && !alt_down && key == VK_OEM_COMMA.0 {
             Some((WM_APP_SETTINGS, 0))
-        } else if ctrl_down && key == VK_RETURN.0 {
+        } else if ctrl_down && !alt_down && key == VK_RETURN.0 {
             Some((WM_APP_CTRL_RETURN, 0))
-        } else if ctrl_down && key == VK_P.0 {
+        } else if alt_down && !ctrl_down && key == VK_RETURN.0 {
+            Some((WM_APP_ALT_RETURN, 0))
+        } else if shift_down && !ctrl_down && !alt_down && key == VK_RETURN.0 {
+            Some((WM_APP_SHIFT_RETURN, 0))
+        } else if alt_down && !ctrl_down && key == VK_C.0 {
+            Some((WM_APP_COPY_CHORD, 0))
+        } else if ctrl_down
+            && !alt_down
+            && !shift_down
+            && (b'1' as u16..=b'9' as u16).contains(&key)
+        {
+            Some((WM_APP_QUICK_SELECT, (key - b'1' as u16) as usize))
+        } else if ctrl_down && !alt_down && key == VK_P.0 {
             Some((WM_APP_ACTION, ACTION_CTRL_P))
-        } else if ctrl_down && key == VK_K.0 {
+        } else if ctrl_down && !alt_down && key == VK_K.0 {
             Some((WM_APP_ACTION, ACTION_CTRL_K))
+        } else if ctrl_down && !alt_down && key == VK_I.0 {
+            Some((WM_APP_ACTION, ACTION_CTRL_I))
+        } else if ctrl_down && !alt_down && key == VK_H.0 {
+            Some((WM_APP_ACTION, ACTION_CTRL_H))
+        } else if ctrl_down && !alt_down && key == VK_R.0 {
+            Some((WM_APP_ACTION, ACTION_CTRL_R))
+        } else if (ctrl_down && !alt_down && key == VK_OEM_4.0)
+            || (alt_down && !ctrl_down && key == VK_LEFT.0)
+        {
+            Some((WM_APP_ACTION, ACTION_BACK))
         } else if ctrl_down && (key == VK_DELETE.0 || (shift_down && key == VK_BACK.0)) {
             Some((WM_APP_ACTION, ACTION_CTRL_DELETE))
-        } else if key == VK_TAB.0 && !ctrl_down {
-            Some((WM_APP_ACTION, ACTION_TAB))
+        } else if key == VK_TAB.0 && !ctrl_down && !alt_down {
+            if shift_down {
+                Some((WM_APP_ACTION, ACTION_SHIFT_TAB))
+            } else {
+                Some((WM_APP_ACTION, ACTION_TAB))
+            }
+        } else if alt_down && !ctrl_down && (key == VK_J.0 || key == VK_N.0) {
+            Some((WM_APP_DOWN, 0))
+        } else if alt_down && !ctrl_down && (key == VK_K.0 || key == VK_P.0) {
+            Some((WM_APP_UP, 0))
+        } else if alt_down && !ctrl_down && in_grid && (key == VK_H.0 || key == VK_B.0) {
+            Some((WM_APP_LEFT, 0))
+        } else if alt_down && !ctrl_down && in_grid && (key == VK_L.0 || key == VK_F.0) {
+            Some((WM_APP_RIGHT, 0))
         } else if in_grid && (empty_text || ctrl_down) && key == VK_LEFT.0 {
             Some((WM_APP_LEFT, 0))
         } else if in_grid && (empty_text || ctrl_down) && key == VK_RIGHT.0 {
             Some((WM_APP_RIGHT, 0))
-        } else {
+        } else if !alt_down {
             match key {
                 value if value == VK_UP.0 => Some((WM_APP_UP, 0)),
                 value if value == VK_DOWN.0 => Some((WM_APP_DOWN, 0)),
@@ -854,6 +1114,8 @@ unsafe extern "system" fn edit_procedure(
                 value if value == VK_RETURN.0 => Some((WM_APP_RETURN, 0)),
                 _ => None,
             }
+        } else {
+            None
         };
         if let Some((custom, arg)) = forwarded {
             let _ = SendMessageW(parent, custom, Some(WPARAM(arg)), Some(LPARAM(0)));
@@ -883,17 +1145,28 @@ unsafe fn handle_escape(state_ptr: *mut State) {
     }
 }
 
-unsafe fn clear_edit_silently(state_ptr: *mut State) {
+unsafe fn set_edit_text_silently(state_ptr: *mut State, text: &str) {
     let edit = (*state_ptr).edit;
     (*state_ptr).suppress_en_change = true;
-    let empty: [u16; 1] = [0];
+    let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
     let _ = SendMessageW(
         edit,
         WM_SETTEXT,
         Some(WPARAM(0)),
-        Some(LPARAM(empty.as_ptr() as isize)),
+        Some(LPARAM(wide.as_ptr() as isize)),
+    );
+    let end = text.encode_utf16().count();
+    let _ = SendMessageW(
+        edit,
+        EM_SETSEL,
+        Some(WPARAM(end)),
+        Some(LPARAM(end as isize)),
     );
     (*state_ptr).suppress_en_change = false;
+}
+
+unsafe fn clear_edit_silently(state_ptr: *mut State) {
+    set_edit_text_silently(state_ptr, "");
 }
 
 unsafe fn read_edit_text(edit: HWND) -> String {
@@ -1034,6 +1307,10 @@ unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
         PaletteReply::Update(model) => {
             apply_model_update(state_ptr, hwnd, edit, model);
         }
+        PaletteReply::UpdateWithEdit(text, model) => {
+            set_edit_text_silently(state_ptr, &text);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
         PaletteReply::Navigate(model) => {
             clear_edit_silently(state_ptr);
             apply_model_update(state_ptr, hwnd, edit, model);
@@ -1044,6 +1321,11 @@ unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
         }
         PaletteReply::Close => {
             let _ = ShowWindow(hwnd, SW_HIDE);
+        }
+        PaletteReply::CloseWithHud(message) => {
+            let dark = (*state_ptr).theme.appearance == Appearance::Dark;
+            let _ = ShowWindow(hwnd, SW_HIDE);
+            crate::hud::show_hud(message, dark);
         }
         PaletteReply::Quit => {
             let _ = DestroyWindow(hwnd);
@@ -1084,9 +1366,15 @@ unsafe fn dispatch_refresh(state_ptr: *mut State) {
 }
 
 unsafe fn apply_model_update(state_ptr: *mut State, hwnd: HWND, edit: HWND, mut model: Model) {
-    let (metrics, placeholder, has_badge, target_h) = {
+    let (metrics, placeholder, has_badge, inline_pill_w, target_h) = {
         let state = &mut *state_ptr;
         let metrics = state.theme.metrics;
+        if model.scroll_offset == 0.0
+            && model.query == state.model.query
+            && model.rows.len() == state.model.rows.len()
+        {
+            model.scroll_offset = state.model.scroll_offset;
+        }
         model.ensure_selected_visible(metrics);
         let placeholder = if model.placeholder.is_empty() {
             DEFAULT_PLACEHOLDER.to_string()
@@ -1094,15 +1382,16 @@ unsafe fn apply_model_update(state_ptr: *mut State, hwnd: HWND, edit: HWND, mut 
             model.placeholder.clone()
         };
         let has_badge = model.header_badge.is_some();
+        let inline_pill_w = inline_arg_pill_width(&model);
         let target_h = model.layout(metrics).window_height;
         state.model = model;
-        (metrics, placeholder, has_badge, target_h)
+        (metrics, placeholder, has_badge, inline_pill_w, target_h)
     };
     set_cue_banner(edit, &placeholder);
     resize_window_rect(hwnd, metrics, target_h);
     let dpi = GetDpiForWindow(hwnd).max(96) as f32;
     let width_px = (metrics.width * (dpi / 96.0)).round() as i32;
-    place_field_rect(hwnd, edit, metrics, width_px, has_badge);
+    place_field_rect(hwnd, edit, metrics, width_px, has_badge, inline_pill_w);
     let _ = InvalidateRect(Some(hwnd), None, false);
 }
 
@@ -1209,24 +1498,31 @@ fn resize_window_rect_for_dpi(hwnd: HWND, metrics: Metrics, window_height_dip: f
 }
 
 /// Vertically centers the single-line Win32 `EDIT` control cleanly inside the
-/// top search header bar.
+/// top search header bar, reserving space for an inline `Tab` argument pill if active.
 fn place_field_rect(
     hwnd: HWND,
     edit: HWND,
     metrics: Metrics,
     window_width_px: i32,
     has_badge: bool,
+    inline_pill_w: f32,
 ) {
     if edit.0.is_null() {
         return;
     }
     let dpi = unsafe { GetDpiForWindow(hwnd).max(96) } as f32;
     let scale = dpi / 96.0;
-    let left = (metrics.field_inset * scale).round() as i32;
-    let right_reserve = if has_badge { 112.0 } else { 18.0 };
+    let left_dip = metrics.field_inset
+        + if inline_pill_w > 0.0 {
+            inline_pill_w + 10.0
+        } else {
+            0.0
+        };
+    let left = (left_dip * scale).round() as i32;
+    let right_reserve = if has_badge { 132.0 } else { 18.0 };
     let width = (window_width_px - left - (right_reserve * scale).round() as i32).max(60);
-    // 13pt Segoe UI line box is ~22 DIPs tall; centering inside 54 DIPs puts the
-    // baseline dead-center with the magnifying glass icon.
+    // 13pt Segoe UI line box is ~22 DIPs tall; centering inside 52 DIPs puts the
+    // baseline dead-center with the magnifying glass / back button.
     let edit_h_dip = 24.0_f32;
     let top_dip = ((metrics.field_height - edit_h_dip) / 2.0).max(4.0);
     let top = (top_dip * scale).round() as i32;

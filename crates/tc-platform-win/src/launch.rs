@@ -7,8 +7,9 @@
 use windows::core::{w, PCWSTR};
 use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
 use windows::Win32::UI::Shell::{
-    SHFileOperationW, ShellExecuteW, FOF_ALLOWUNDO, FOF_NOCONFIRMATION, FOF_NOERRORUI, FOF_SILENT,
-    FO_DELETE, SHFILEOPSTRUCTW,
+    SHFileOperationW, ShellExecuteExW, ShellExecuteW, FOF_ALLOWUNDO, FOF_NOCONFIRMATION,
+    FOF_NOERRORUI, FOF_SILENT, FO_DELETE, SEE_MASK_INVOKEIDLIST, SHELLEXECUTEINFOW,
+    SHFILEOPSTRUCTW,
 };
 use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
@@ -54,6 +55,101 @@ pub fn reveal(target: &str) -> Result<(), String> {
     }
     if result.0 as isize <= 32 {
         return Err(format!("Windows could not show `{target}`"));
+    }
+    Ok(())
+}
+
+/// Launch an application or executable elevated (`runas` UAC prompt).
+pub fn run_as_admin(target: &str) -> Result<(), String> {
+    let wide = to_wide(target);
+    let com_ok = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }.is_ok();
+    let result = unsafe {
+        ShellExecuteW(
+            None,
+            w!("runas"),
+            PCWSTR(wide.as_ptr()),
+            PCWSTR::null(),
+            PCWSTR::null(),
+            SW_SHOWNORMAL,
+        )
+    };
+    if com_ok {
+        unsafe { CoUninitialize() };
+    }
+    if result.0 as isize <= 32 {
+        return Err(format!("Windows could not run `{target}` as administrator"));
+    }
+    Ok(())
+}
+
+/// Show the native Windows File/Folder Properties dialog (`properties` shell verb).
+pub fn show_properties(target: &str) -> Result<(), String> {
+    let wide = to_wide(target);
+    let com_ok = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }.is_ok();
+    let mut info = SHELLEXECUTEINFOW {
+        cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
+        fMask: SEE_MASK_INVOKEIDLIST,
+        lpVerb: w!("properties"),
+        lpFile: PCWSTR(wide.as_ptr()),
+        nShow: SW_SHOWNORMAL.0,
+        ..Default::default()
+    };
+    let ok = unsafe { ShellExecuteExW(&mut info) }.is_ok();
+    if com_ok {
+        unsafe { CoUninitialize() };
+    }
+    if !ok {
+        return Err(format!("Windows could not show properties for `{target}`"));
+    }
+    Ok(())
+}
+
+/// Open Windows Terminal (falling back to PowerShell) inside `dir_or_file`.
+pub fn open_in_terminal(dir_or_file: &str) -> Result<(), String> {
+    let p = std::path::Path::new(dir_or_file);
+    let dir = if p.is_dir() {
+        p.to_path_buf()
+    } else {
+        p.parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+            .map(std::path::Path::to_path_buf)
+            .unwrap_or_else(|| p.to_path_buf())
+    };
+    let dir_str = dir.to_string_lossy();
+    let wt_args = to_wide(&format!("-d \"{dir_str}\""));
+    let com_ok = unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED) }.is_ok();
+    let res = unsafe {
+        ShellExecuteW(
+            None,
+            w!("open"),
+            w!("wt.exe"),
+            PCWSTR(wt_args.as_ptr()),
+            PCWSTR::null(),
+            SW_SHOWNORMAL,
+        )
+    };
+    if res.0 as isize <= 32 {
+        let dir_wide = to_wide(&dir_str);
+        let fallback = unsafe {
+            ShellExecuteW(
+                None,
+                w!("open"),
+                w!("powershell.exe"),
+                w!("-NoExit"),
+                PCWSTR(dir_wide.as_ptr()),
+                SW_SHOWNORMAL,
+            )
+        };
+        if com_ok {
+            unsafe { CoUninitialize() };
+        }
+        if fallback.0 as isize <= 32 {
+            return Err(format!("could not open terminal in `{dir_str}`"));
+        }
+        return Ok(());
+    }
+    if com_ok {
+        unsafe { CoUninitialize() };
     }
     Ok(())
 }

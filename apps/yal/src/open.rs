@@ -19,6 +19,7 @@ use tc_platform::Clipboard;
 use tc_platform_win::window_control::WindowCommands;
 
 use crate::launcher::{LauncherState, CALCULATOR_PREFIX, FILE_PREFIX};
+use crate::win_settings::{self, WIN_SETTING_PREFIX};
 
 /// Runs the rows the user chooses.
 pub struct Runner {
@@ -91,6 +92,13 @@ impl Runner {
         if let Some(path) = id.strip_prefix(FILE_PREFIX) {
             tc_platform_win::open(path)?;
             return Ok(());
+        }
+        // A Windows Settings / Admin Tool item launches its ms-settings: URI or control applet.
+        if let Some(setting_id) = id.strip_prefix(WIN_SETTING_PREFIX) {
+            let Some(item) = win_settings::find_by_id(setting_id) else {
+                return Err(format!("`{id}` is not a known Windows setting"));
+            };
+            return win_settings::launch(item.target);
         }
         // A built-in command is run, not opened.
         if let Some(command) = LauncherState::command_of(id) {
