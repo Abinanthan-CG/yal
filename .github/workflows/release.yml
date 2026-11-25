@@ -62,24 +62,24 @@ jobs:
         if: ${{ matrix.arch == 'arm64' }}
         shell: pwsh
         run: |
-          $roots = @(
-            "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC",
-            "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC",
-            "$env:ProgramFiles\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC",
-            "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
-          )
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installs = @(& $vswhere -all -products * -property installationPath)
           $found = $false
-          foreach ($root in $roots) {
-            if (-not (Test-Path $root)) { continue }
-            $hit = Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue |
+          foreach ($inst in $installs) {
+            if (-not $inst) { continue }
+            $msvc = Join-Path $inst 'VC\Tools\MSVC'
+            if (-not (Test-Path $msvc)) { continue }
+            $hit = Get-ChildItem -Path $msvc -Directory -ErrorAction SilentlyContinue |
               Where-Object { Test-Path (Join-Path $_.FullName 'bin\Hostx64\arm64\link.exe') }
-            if ($hit) { $found = $true; break }
+            if ($hit) {
+              Write-Host "ARM64 build tools found at $($hit[0].FullName)"
+              $found = $true
+              break
+            }
           }
           if ($found) {
-            Write-Host "The ARM64 build tools are already installed."
             exit 0
           }
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $installPath = & $vswhere -latest -products * -property installationPath
           if (-not $installPath) { throw "no Visual Studio installation was found" }
           $setup = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"

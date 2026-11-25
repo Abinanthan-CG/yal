@@ -29,21 +29,53 @@ fn find_makensis() -> Option<String> {
     .map(|candidate| candidate.to_string())
 }
 
-/// Check that the Visual Studio ARM64 cross-compiler is installed.
+/// Check that a Visual Studio ARM64 cross-compiler (`Hostx64\arm64\link.exe`) is installed.
 ///
-/// The ARM64 build needs the `VC.Tools.ARM64` component of the Visual Studio
-/// Build Tools, which is not installed by default. Without it the link fails
-/// with "link.exe not found", which says nothing about what to do.
+/// Discovers all installed Visual Studio versions (VS 2022, VS 2026 / 18, Build Tools, etc.)
+/// via `vswhere.exe` plus standard installation directories so runner image upgrades never
+/// falsely reject a working toolchain.
 fn check_arm64_toolchain() -> Result<()> {
-    let roots = [
-        r"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC",
-        r"C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC",
-        r"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC",
-        r"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC",
-        r"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC",
-    ];
-    for root in roots {
-        let Ok(entries) = std::fs::read_dir(root) else {
+    let mut msvc_roots: Vec<PathBuf> = Vec::new();
+
+    // 1. Ask vswhere.exe for every Visual Studio installation (handles VS 2022, VS 2026 / 18, etc.).
+    let vswhere =
+        Path::new(r"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe");
+    if vswhere.is_file() {
+        if let Ok(output) = std::process::Command::new(vswhere)
+            .args(["-all", "-products", "*", "-property", "installationPath"])
+            .output()
+        {
+            if output.status.success() {
+                for line in String::from_utf8_lossy(&output.stdout).lines() {
+                    let trimmed = line.trim();
+                    if !trimmed.is_empty() {
+                        msvc_roots.push(PathBuf::from(trimmed).join(r"VC\Tools\MSVC"));
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Fallback: walk `<ProgramFiles>\Microsoft Visual Studio\<version>\<edition>\VC\Tools\MSVC`.
+    for base in [
+        r"C:\Program Files\Microsoft Visual Studio",
+        r"C:\Program Files (x86)\Microsoft Visual Studio",
+    ] {
+        let Ok(versions) = std::fs::read_dir(base) else {
+            continue;
+        };
+        for ver in versions.flatten() {
+            let Ok(editions) = std::fs::read_dir(ver.path()) else {
+                continue;
+            };
+            for ed in editions.flatten() {
+                msvc_roots.push(ed.path().join(r"VC\Tools\MSVC"));
+            }
+        }
+    }
+
+    for root in msvc_roots {
+        let Ok(entries) = std::fs::read_dir(&root) else {
             continue;
         };
         for entry in entries.flatten() {
@@ -56,8 +88,8 @@ fn check_arm64_toolchain() -> Result<()> {
     bail!(
         "the ARM64 cross-compiler is not installed.\n\
          \n\
-         The ARM64 build needs the 'MSVC v143 ARM64 build tools' component of the\n\
-         Visual Studio Build Tools. Install it with:\n\
+         The ARM64 build needs the 'MSVC ARM64 build tools' component of\n\
+         Visual Studio / Visual Studio Build Tools. Install it with:\n\
          \n\
            winget install --id Microsoft.VisualStudio.2022.BuildTools -e --force \\\n\
              --override \"--wait --passive --norestart --add Microsoft.VisualStudio.Component.VC.Tools.ARM64\"\n\
