@@ -274,6 +274,7 @@ struct Shown {
     show_detail: bool,
     show_hidden_files: bool,
     action_menu_open: bool,
+    compact_expanded: bool,
     last_dismissed_at: Option<Instant>,
     recording_hotkey: Option<RecordingTarget>,
     captured_hotkey: Arc<Mutex<Option<CapturedHotkeyEvent>>>,
@@ -312,6 +313,7 @@ impl Shown {
             show_detail: true,
             show_hidden_files: false,
             action_menu_open: false,
+            compact_expanded: false,
             last_dismissed_at: None,
             recording_hotkey: None,
             captured_hotkey: Arc::new(Mutex::new(None)),
@@ -1042,6 +1044,9 @@ fn build(
                 match shown.mode.clone() {
                     Mode::Launcher => {
                         let is_suggestions = query.trim().is_empty();
+                        if is_suggestions {
+                            shown.compact_expanded = false;
+                        }
                         let rows = if is_suggestions {
                             suggestions_with_favorites(
                                 &handler_launcher,
@@ -1271,6 +1276,7 @@ fn build(
                 let mut shown = lock_shown(&handler_shown);
                 shown.last_dismissed_at = Some(Instant::now());
                 shown.action_menu_open = false;
+                shown.compact_expanded = false;
                 if shown.recording_hotkey.take().is_some() {
                     if let Some(ctx) = handler_context.as_ref() {
                         ctx.hotkeys.cancel_capture();
@@ -1453,6 +1459,12 @@ fn handle_activate(
     shown.action_menu_open = false;
     match shown.mode.clone() {
         Mode::Launcher => {
+            if shown.query.trim().is_empty()
+                && !shown.compact_expanded
+                && is_compact_window_mode(ctx)
+            {
+                return PaletteReply::Keep;
+            }
             let Some(row) = shown.rows.get(index).cloned() else {
                 return PaletteReply::Keep;
             };
@@ -2346,8 +2358,34 @@ fn handle_action(
     let mut shown = lock_shown(shown_lock);
     shown.selected = selected;
 
+    // 0. `Down` while in Compact Mode: expand the single-bar palette into Suggestions.
+    if action == ActionKey::Expand {
+        if shown.mode == Mode::Launcher && !shown.compact_expanded {
+            shown.compact_expanded = true;
+            let q = shown.query.clone();
+            let rows = shown.rows.clone();
+            let is_suggestions = q.trim().is_empty();
+            return PaletteReply::Update(model_for_with_icons(
+                &q,
+                &rows,
+                is_suggestions,
+                0,
+                ctx,
+                &mut shown,
+            ));
+        }
+        return PaletteReply::Keep;
+    }
+
     // 1. Floating `Ctrl+K` Action Panel toggle across ALL screens.
     if action == ActionKey::CtrlK {
+        if shown.mode == Mode::Launcher
+            && shown.query.trim().is_empty()
+            && !shown.compact_expanded
+            && is_compact_window_mode(ctx)
+        {
+            return PaletteReply::Keep;
+        }
         if shown.action_menu_open {
             shown.action_menu_open = false;
             return match rebuild_current_model(ctx, &mut shown, None) {
@@ -3731,6 +3769,7 @@ fn enter_launcher(
     shown.query.clear();
     shown.selected = 0;
     shown.action_menu_open = false;
+    shown.compact_expanded = false;
     shown.rows = rows.clone();
     shown.settings_rows.clear();
     let model = model_for_with_icons("", &rows, true, 0, ctx, shown);
@@ -4390,6 +4429,15 @@ fn primary_action_for_row(row: Option<&ResultRow>) -> &'static str {
     }
 }
 
+fn is_compact_window_mode(ctx: Option<&NativeContext>) -> bool {
+    let Some(ctx) = ctx else {
+        return false;
+    };
+    !ctx.settings
+        .get(tc_palette::KEY_WINDOW_MODE)
+        .is_some_and(|v| v.trim().eq_ignore_ascii_case("expanded"))
+}
+
 fn model_for_with_icons(
     query: &str,
     rows: &[ResultRow],
@@ -4445,6 +4493,8 @@ fn model_for_with_icons(
         ("Ctrl+K".to_string(), "Actions".to_string()),
     ];
 
+    let compact = is_suggestions && !shown.compact_expanded && is_compact_window_mode(ctx);
+
     Model {
         query: query.to_string(),
         rows: ui_rows,
@@ -4459,6 +4509,7 @@ fn model_for_with_icons(
         grid: None,
         back_button: false,
         primary_action: Some(primary.to_string()),
+        compact,
         ..Model::default()
     }
 }
@@ -4541,7 +4592,7 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                 tc_palette::KEY_APPEARANCE => "Color theme",
                 tc_palette::KEY_ANIMATIONS => "Motion & transitions",
                 tc_palette::KEY_INTERFACE_SIZE => "Palette text scale",
-                tc_palette::KEY_WINDOW_MODE => "Compact or expanded list",
+                tc_palette::KEY_WINDOW_MODE => "Open as compact search bar or expanded list",
                 tc_palette::KEY_ESCAPE_BEHAVIOUR => "Action on Esc key",
                 tc_palette::KEY_POP_TO_ROOT => "Reset screen after hiding",
                 _ => "",

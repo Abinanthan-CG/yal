@@ -44,10 +44,10 @@ use windows::Win32::UI::WindowsAndMessaging::{
     IDC_ARROW, MINMAXINFO, MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOZORDER, SW_HIDE,
     SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_CHAR, WM_COMMAND,
     WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_GETMINMAXINFO,
-    WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCCALCSIZE, WM_NCCREATE,
-    WM_NCHITTEST, WM_PAINT, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR,
-    WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW,
-    WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_THICKFRAME, WS_VISIBLE,
+    WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCACTIVATE, WM_NCCALCSIZE,
+    WM_NCCREATE, WM_NCHITTEST, WM_NCPAINT, WM_PAINT, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE,
+    WM_SYSCHAR, WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS,
+    WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_VISIBLE,
 };
 
 use crate::event::{ActionKey, Handler, PaletteEvent, PaletteReply};
@@ -264,7 +264,7 @@ impl Palette {
                 WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
                 w!("YalPaletteWindow"),
                 w!("YAL"),
-                WS_POPUP | WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+                WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                 100,
                 100,
                 metrics.width as i32,
@@ -726,6 +726,8 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_NCCALCSIZE => LRESULT(0),
+        WM_NCACTIVATE => LRESULT(1),
+        WM_NCPAINT => LRESULT(0),
         WM_GETMINMAXINFO => {
             let info = &mut *(lparam.0 as *mut MINMAXINFO);
             info.ptMaxSize.x = i32::MAX;
@@ -733,7 +735,7 @@ unsafe extern "system" fn window_procedure(
             info.ptMaxPosition.x = 0;
             info.ptMaxPosition.y = 0;
             info.ptMinTrackSize.x = 320;
-            info.ptMinTrackSize.y = 140;
+            info.ptMinTrackSize.y = 48;
             LRESULT(0)
         }
         WM_KEYDOWN => {
@@ -768,6 +770,13 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_APP_DOWN => {
+            let is_compact = (*state_ptr).model.compact
+                && (*state_ptr).model.action_menu.is_none()
+                && (*state_ptr).model.grid.is_none();
+            if is_compact {
+                dispatch(state_ptr, PaletteEvent::Action(ActionKey::Expand, 0));
+                return LRESULT(0);
+            }
             let (notify_sel, new_sel) = {
                 let state = &mut *state_ptr;
                 if let Some(menu) = state.model.action_menu.as_mut() {
@@ -1450,6 +1459,9 @@ fn place_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
     let scale = monitor_dpi as f32 / 96.0;
     let width = (metrics.width * scale).round() as i32;
     let height = (window_height_dip * scale).round() as i32;
+    // Anchor top edge to the expanded palette height so Compact -> Expanded unfolds
+    // smoothly downward without the search bar ever jumping vertically.
+    let anchor_height = (metrics.height * scale).round() as i32;
 
     let mut info = MONITORINFO {
         cbSize: std::mem::size_of::<MONITORINFO>() as u32,
@@ -1458,7 +1470,7 @@ fn place_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
     let _ = unsafe { GetMonitorInfoW(monitor, &mut info) };
 
     let x = info.rcWork.left + (info.rcWork.right - info.rcWork.left - width) / 2;
-    let y = info.rcWork.top + (info.rcWork.bottom - info.rcWork.top - height) / 4;
+    let y = info.rcWork.top + (info.rcWork.bottom - info.rcWork.top - anchor_height) / 4;
 
     unsafe {
         let _ = SetWindowPos(

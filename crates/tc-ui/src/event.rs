@@ -24,6 +24,8 @@ pub enum ActionKey {
     Back,
     /// `Ctrl+Shift+Backspace` or `Ctrl+Delete` — remove/recycle selected item.
     CtrlDelete,
+    /// `Down` while in Compact Mode — expand the compact search bar to show Suggestions.
+    Expand,
 }
 
 /// Something the palette tells the app.

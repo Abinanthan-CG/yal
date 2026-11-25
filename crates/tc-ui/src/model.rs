@@ -422,6 +422,8 @@ pub struct Model {
     pub inline_arg: Option<InlineArgBanner>,
     /// Primary action verb shown in the right footer slot (e.g. "Open", "Paste", "Copy").
     pub primary_action: Option<String>,
+    /// Render as a single compact search bar (hiding list & footer until typing or expanding).
+    pub compact: bool,
 }
 
 /// Positioned section header in content-space DIPs (relative to `list_top`).
@@ -525,6 +527,21 @@ impl Model {
 
     /// Compute the shared DIP layout geometry used by both painting and hit-testing.
     pub fn layout(&self, metrics: Metrics) -> PaletteLayout {
+        if self.compact
+            && self.action_menu.is_none()
+            && self.detail.is_none()
+            && self.grid.is_none()
+        {
+            return PaletteLayout {
+                list_top: metrics.field_height,
+                list_bottom: metrics.field_height,
+                content_height: 0.0,
+                window_height: metrics.field_height,
+                sections: Vec::new(),
+                rows: Vec::new(),
+            };
+        }
+
         let list_top = metrics.field_height + 1.0 + metrics.list_gap;
 
         if let Some(grid) = self.grid.as_ref() {
@@ -816,5 +833,19 @@ mod tests {
         model.selected = 0;
         model.ensure_selected_visible(metrics);
         assert_eq!(model.scroll_offset, 0.0);
+    }
+
+    #[test]
+    fn compact_mode_collapses_window_to_header_height() {
+        let metrics = Metrics::default();
+        let model = Model {
+            rows: vec![Row::named("OpenCode").with_section("Suggestions")],
+            compact: true,
+            ..Model::default()
+        };
+        let layout = model.layout(metrics);
+        assert_eq!(layout.window_height, metrics.field_height);
+        assert!(layout.rows.is_empty());
+        assert!(layout.sections.is_empty());
     }
 }

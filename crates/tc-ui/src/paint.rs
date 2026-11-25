@@ -467,6 +467,18 @@ impl Renderer {
             }
         }
 
+        // Compact single-bar mode: render only the borderless search bar (no divider, list, or footer).
+        if model.compact
+            && model.action_menu.is_none()
+            && model.detail.is_none()
+            && model.grid.is_none()
+        {
+            unsafe {
+                let _ = self.target.EndDraw(None, None);
+            }
+            return;
+        }
+
         // Full-width subtle header divider hairline (inset 1px from native window border).
         self.fill_rect(
             1.0,
@@ -664,19 +676,9 @@ impl Renderer {
             self.draw_action_menu(menu, theme, width, height);
         }
 
-        // 4. Crisp 1px inner-edge highlight frame so the window pops cleanly on any wallpaper.
-        let frame_rect = D2D_RECT_F {
-            left: 0.5,
-            top: 0.5,
-            right: (width - 0.5).max(1.0),
-            bottom: (height - 0.5).max(1.0),
-        };
-        if let Some(border) = self.brush(theme.border) {
-            unsafe {
-                self.target.DrawRectangle(&frame_rect, &border, 1.0, None);
-            }
-        }
-
+        // Note: Windows 11 DWM (`DWMWCP_ROUND` + `DWMWA_BORDER_COLOR`) draws the
+        // hardware-antialiased rounded 1px outer frame cleanly; drawing a square
+        // Direct2D rectangle here would cause a double-border/corner artifact.
         unsafe {
             let _ = self.target.EndDraw(None, None);
         }
@@ -2216,57 +2218,38 @@ impl Renderer {
         }
     }
 
-    /// Subtle geometric monochrome prism emblem in the left header slot (matching
-    /// Raycast's 22px tertiary brand mark in `rgba(255,255,255,0.40)`).
+    /// Clean minimal magnifying glass icon in the left searchbar slot
+    /// (neutral tertiary stroke, optically centered with the 18px search input).
     fn draw_search_glyph(&mut self, theme: &Theme, left: f32, middle: f32) {
-        let cx = left + 10.5;
-        let cy = middle;
-        let r = 8.5_f32;
-        let top = Vector2 { X: cx, Y: cy - r };
-        let right = Vector2 { X: cx + r, Y: cy };
-        let bottom = Vector2 { X: cx, Y: cy + r };
-        let left_pt = Vector2 { X: cx - r, Y: cy };
+        let radius = 6.2_f32;
+        let center = Vector2 {
+            X: left + radius + 1.5,
+            Y: middle - 1.2,
+        };
+        let ellipse = D2D1_ELLIPSE {
+            point: center,
+            radiusX: radius,
+            radiusY: radius,
+        };
+        let diag = std::f32::consts::FRAC_1_SQRT_2;
+        let start = Vector2 {
+            X: center.X + radius * diag,
+            Y: center.Y + radius * diag,
+        };
+        let end = Vector2 {
+            X: start.X + 4.4,
+            Y: start.Y + 4.4,
+        };
         let col = match theme.appearance {
-            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x66),
-            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x5c),
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x70),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x66),
         };
         if let Some(brush) = self.brush(col) {
             unsafe {
                 self.target
-                    .DrawLine(top, right, &brush, 1.5, None::<&ID2D1StrokeStyle>);
+                    .DrawEllipse(&ellipse, &brush, 1.6, None::<&ID2D1StrokeStyle>);
                 self.target
-                    .DrawLine(right, bottom, &brush, 1.5, None::<&ID2D1StrokeStyle>);
-                self.target
-                    .DrawLine(bottom, left_pt, &brush, 1.5, None::<&ID2D1StrokeStyle>);
-                self.target
-                    .DrawLine(left_pt, top, &brush, 1.5, None::<&ID2D1StrokeStyle>);
-                // Inner geometric accent rays.
-                self.target.DrawLine(
-                    Vector2 {
-                        X: cx - 3.5,
-                        Y: cy - 3.5,
-                    },
-                    Vector2 {
-                        X: cx + 3.5,
-                        Y: cy + 3.5,
-                    },
-                    &brush,
-                    1.35,
-                    None::<&ID2D1StrokeStyle>,
-                );
-                self.target.DrawLine(
-                    Vector2 {
-                        X: cx - 3.5,
-                        Y: cy + 3.5,
-                    },
-                    Vector2 {
-                        X: cx + 0.5,
-                        Y: cy - 0.5,
-                    },
-                    &brush,
-                    1.35,
-                    None::<&ID2D1StrokeStyle>,
-                );
+                    .DrawLine(start, end, &brush, 1.6, None::<&ID2D1StrokeStyle>);
             }
         }
     }
