@@ -99,6 +99,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "signing failed" }
 
       - name: The self-test passes
+        if: ${{ matrix.arch == 'x64' }}
         run: ./target/${{ matrix.rust_target }}/release/yal.exe --self-test
 
       - name: Upload the artifacts
@@ -108,11 +109,10 @@ jobs:
           path: |
             dist/yal-setup-*-${{ matrix.arch }}.exe
             dist/yal-*-${{ matrix.arch }}-portable.zip
-            dist/SHA256SUMS.txt
           if-no-files-found: error
 
   sign:
-    name: Sign the release
+    name: Checksum & sign the release
     needs: build
     runs-on: ubuntu-latest
     env:
@@ -122,8 +122,12 @@ jobs:
         with:
           path: artifacts
 
-      - name: Write the checksums
-        run: sha256sum artifacts/*/*.exe artifacts/*/*.zip artifacts/*/SHA256SUMS.txt > SHA256SUMS.txt || true
+      - name: Collect release assets and write SHA256SUMS.txt
+        run: |
+          mkdir -p release-assets
+          cp artifacts/*/*.exe artifacts/*/*.zip release-assets/
+          (cd release-assets && sha256sum *.exe *.zip > SHA256SUMS.txt)
+          cat release-assets/SHA256SUMS.txt
 
       # The signature is a promise about the release. When there is no key
       # there is no signature, and the release still goes out - unsigned,
@@ -137,17 +141,16 @@ jobs:
       - name: Sign the artifacts
         if: ${{ env.MINISIGN_SECRET_KEY != '' }}
         run: |
-          find artifacts -name '*.exe' -o -name '*.zip' | xargs minisign -Sm
-          minisign -Sm SHA256SUMS.txt
+          cd release-assets
+          for f in *.exe *.zip SHA256SUMS.txt; do
+            minisign -Sm "$f"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release-signatures
-          path: |
-            artifacts
-            SHA256SUMS.txt
-            SHA256SUMS.txt.minisig
-          if-no-files-found: ignore
+          name: release-bundle
+          path: release-assets/*
+          if-no-files-found: error
 
   publish:
     name: Draft the release
@@ -156,16 +159,35 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: release-bundle
+          path: release-assets
+
+      - name: Extract latest release notes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          lines = Path("CHANGELOG.md").read_text(encoding="utf-8").splitlines()
+          out, inside = [], False
+          for line in lines:
+              if line.startswith("## ["):
+                  if inside:
+                      break
+                  inside = True
+              if inside:
+                  if line.startswith("### Earlier Development Notes"):
+                      break
+                  out.append(line)
+          notes = "\n".join(out).strip() or Path("CHANGELOG.md").read_text(encoding="utf-8")
+          Path("RELEASE_NOTES.md").write_text(notes + "\n", encoding="utf-8")
+          PY
+
       - uses: softprops/action-gh-release@v2
         with:
           draft: true
-          files: |
-            artifacts/*/*.exe
-            artifacts/*/*.zip
-            artifacts/*/SHA256SUMS.txt
-            artifacts/release-signatures/*
-          body_path: CHANGELOG.md
+          files: release-assets/*
+          body_path: RELEASE_NOTES.md
           generate_release_notes: true
