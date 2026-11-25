@@ -5,8 +5,9 @@
 
 use std::io::Read;
 use std::path::Path;
+use std::sync::Arc;
 
-use tc_clipboard::{ClipboardFilter, ClipboardItem, ItemKind, TextForm};
+use tc_clipboard::{ClipboardItem, ItemKind, TextForm};
 use tc_palette::FileType;
 use tc_platform_win::window_control::WindowInfo;
 use tc_snippets::StoredSnippet;
@@ -14,7 +15,7 @@ use tc_ui::{
     Color, DetailPane, GridCell, GridModel, Icon, IconBitmap, InlineArgBanner, Model, Row,
 };
 
-use crate::features::{CalcHistoryEntry, NoteItem, Quicklink};
+use crate::features::{CalcHistoryEntry, ClipboardViewFilter, NoteItem, Quicklink};
 use crate::launcher::{ResultRow, CALCULATOR_SECTION};
 
 /// Prefix for fallback web-search rows surfaced when root Launcher has no local matches.
@@ -96,30 +97,186 @@ impl SnippetDraft {
     }
 }
 
+/// Parse newline-separated file paths stored in a `ItemKind::File` clipboard entry.
+pub fn parse_clipboard_file_paths(item: &ClipboardItem) -> Vec<String> {
+    item.text
+        .as_deref()
+        .unwrap_or("")
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(ToString::to_string)
+        .collect()
+}
+
+/// Downsample straight RGBA8 pixels to fit within `(max_w, max_h)` while preserving
+/// aspect ratio, returning a premultiplied RGBA8 `IconBitmap` ready for Direct2D.
+pub fn downsample_rgba_premultiplied(
+    width: u32,
+    height: u32,
+    rgba: &[u8],
+    max_w: u32,
+    max_h: u32,
+) -> Option<IconBitmap> {
+    if width == 0 || height == 0 || max_w == 0 || max_h == 0 {
+        return None;
+    }
+    let expected = (width as usize)
+        .checked_mul(height as usize)?
+        .checked_mul(4)?;
+    if rgba.len() != expected {
+        return None;
+    }
+
+    let (dst_w, dst_h) = if width <= max_w && height <= max_h {
+        (width, height)
+    } else {
+        let scale_w = f64::from(max_w) / f64::from(width);
+        let scale_h = f64::from(max_h) / f64::from(height);
+        let scale = scale_w.min(scale_h);
+        let w = ((f64::from(width) * scale).round() as u32).clamp(1, max_w);
+        let h = ((f64::from(height) * scale).round() as u32).clamp(1, max_h);
+        (w, h)
+    };
+
+    let dst_len = (dst_w as usize)
+        .checked_mul(dst_h as usize)?
+        .checked_mul(4)?;
+    let mut premultiplied_rgba = Vec::with_capacity(dst_len);
+    let src_w = width as u64;
+    let src_h = height as u64;
+    let dw = dst_w as u64;
+    let dh = dst_h as u64;
+    let stride = width as usize * 4;
+
+    for dy in 0..dh {
+        let y0 = ((dy * src_h) / dh) as usize;
+        let y1 = ((((dy + 1) * src_h) / dh) as usize)
+            .max(y0 + 1)
+            .min(height as usize);
+        for dx in 0..dw {
+            let x0 = ((dx * src_w) / dw) as usize;
+            let x1 = ((((dx + 1) * src_w) / dw) as usize)
+                .max(x0 + 1)
+                .min(width as usize);
+            let mut sum_r: u64 = 0;
+            let mut sum_g: u64 = 0;
+            let mut sum_b: u64 = 0;
+            let mut sum_a: u64 = 0;
+            let mut count: u64 = 0;
+            for sy in y0..y1 {
+                let row_off = sy * stride;
+                for sx in x0..x1 {
+                    let off = row_off + sx * 4;
+                    sum_r += u64::from(rgba[off]);
+                    sum_g += u64::from(rgba[off + 1]);
+                    sum_b += u64::from(rgba[off + 2]);
+                    sum_a += u64::from(rgba[off + 3]);
+                    count += 1;
+                }
+            }
+            let count = count.max(1);
+            let r = (sum_r + count / 2) / count;
+            let g = (sum_g + count / 2) / count;
+            let b = (sum_b + count / 2) / count;
+            let a = (sum_a + count / 2) / count;
+            let pr = ((r * a + 127) / 255) as u8;
+            let pg = ((g * a + 127) / 255) as u8;
+            let pb = ((b * a + 127) / 255) as u8;
+            premultiplied_rgba.push(pr);
+            premultiplied_rgba.push(pg);
+            premultiplied_rgba.push(pb);
+            premultiplied_rgba.push(a as u8);
+        }
+    }
+
+    Some(IconBitmap {
+        width: dst_w,
+        height: dst_h,
+        premultiplied_rgba,
+    })
+}
+
 /// Build the native Clipboard History screen model with Master-Detail preview.
 pub fn clipboard_model(
     query: &str,
     items: &[ClipboardItem],
-    filter: ClipboardFilter,
+    filter: ClipboardViewFilter,
+    queue_len: usize,
     selected: usize,
     show_detail: bool,
+    mut image_lookup: impl FnMut(&ClipboardItem, bool) -> Option<(u32, u32, Arc<IconBitmap>)>,
 ) -> Model {
     let clamped_sel = selected.min(items.len().saturating_sub(1));
+    let mut selected_image_info: Option<(u32, u32, Arc<IconBitmap>)> = None;
+
     let rows: Vec<Row> = items
         .iter()
-        .map(|item| {
+        .enumerate()
+        .map(|(idx, item)| {
             let section = if item.is_pinned() {
                 "Pinned"
             } else {
                 "History"
             };
-            let title = clipboard_preview_title(item);
+            let is_selected = idx == clamped_sel;
             let mut detail_parts = Vec::new();
-            if let Some(src) = item.source_bundle_id.as_deref() {
-                let compact: String = src.chars().take(28).collect();
-                detail_parts.push(compact);
-            }
-            detail_parts.push(relative_time_ms(item.created_at));
+            let title = match item.kind {
+                ItemKind::Image => {
+                    if let Some(src) = item.source_bundle_id.as_deref() {
+                        let compact: String = src.chars().take(28).collect();
+                        if !compact.trim().is_empty() {
+                            detail_parts.push(compact);
+                        }
+                    }
+                    detail_parts.push(relative_time_ms(item.created_at));
+                    if let Some((w, h, bmp)) = image_lookup(item, is_selected) {
+                        if is_selected {
+                            selected_image_info = Some((w, h, bmp));
+                        }
+                        format!("Image · {w}×{h}")
+                    } else {
+                        "Captured Image".to_string()
+                    }
+                }
+                ItemKind::File => {
+                    let paths = parse_clipboard_file_paths(item);
+                    match paths.len() {
+                        0 => {
+                            if let Some(src) = item.source_bundle_id.as_deref() {
+                                let compact: String = src.chars().take(28).collect();
+                                if !compact.trim().is_empty() {
+                                    detail_parts.push(compact);
+                                }
+                            }
+                            detail_parts.push(relative_time_ms(item.created_at));
+                            "File".to_string()
+                        }
+                        1 => {
+                            let path = &paths[0];
+                            if let Some(dir) = shorten_parent_dir(path) {
+                                detail_parts.push(dir);
+                            }
+                            detail_parts.push(relative_time_ms(item.created_at));
+                            file_basename(path).to_string()
+                        }
+                        n => {
+                            let first = file_basename(&paths[0]);
+                            detail_parts.push(truncate_chars(first, 36));
+                            detail_parts.push(relative_time_ms(item.created_at));
+                            format!("{n} files")
+                        }
+                    }
+                }
+                ItemKind::Text => {
+                    if let Some(src) = item.source_bundle_id.as_deref() {
+                        let compact: String = src.chars().take(28).collect();
+                        detail_parts.push(compact);
+                    }
+                    detail_parts.push(relative_time_ms(item.created_at));
+                    clipboard_preview_title(item)
+                }
+            };
             let detail = detail_parts.join(" · ");
 
             let (letter, tint, swatch) = match item.kind {
@@ -155,14 +312,25 @@ pub fn clipboard_model(
         n => format!("{n} clips"),
     };
 
-    let badge = if filter == ClipboardFilter::All {
+    let mut badge = if filter == ClipboardViewFilter::All {
         "Clipboard".to_string()
     } else {
-        format!("Clipboard · {}", clipboard_filter_label(filter))
+        format!("Clipboard · {}", filter.label())
+    };
+    if queue_len > 0 {
+        badge.push_str(&format!(" · Queue ({queue_len})"));
+    }
+
+    let footer = if queue_len > 0 {
+        format!("{count_label} · Queue: {queue_len}")
+    } else {
+        count_label.clone()
     };
 
     let detail = if show_detail {
-        items.get(clamped_sel).map(clipboard_detail)
+        items
+            .get(clamped_sel)
+            .map(|item| clipboard_detail_with_image(item, selected_image_info))
     } else {
         None
     };
@@ -172,12 +340,13 @@ pub fn clipboard_model(
         rows,
         selected: clamped_sel,
         hovered: None,
-        footer: count_label.clone(),
+        footer,
         placeholder: "Search clipboard history…".to_string(),
         header_badge: Some(badge),
         result_count: Some(count_label),
         footer_hints: vec![
             ("↵".to_string(), "Paste".to_string()),
+            ("Tab".to_string(), "Filter".to_string()),
             ("Ctrl+K".to_string(), "Actions".to_string()),
             ("Ctrl+I".to_string(), "Preview".to_string()),
         ],
@@ -190,68 +359,153 @@ pub fn clipboard_model(
     }
 }
 
-/// Build the Master-Detail pane for a single Clipboard History entry.
-pub fn clipboard_detail(item: &ClipboardItem) -> DetailPane {
-    let (type_label, swatch) = match item.kind {
-        ItemKind::Image => ("Image", None),
-        ItemKind::File => ("File", None),
-        ItemKind::Text => match item.text_form() {
-            Some(TextForm::Color) => ("Color", item.color_value().map(color_value_to_rgba)),
-            Some(TextForm::Link) => ("Link", None),
-            Some(TextForm::Email) => ("Email", None),
-            _ => ("Text", None),
-        },
-    };
-
-    let raw_body = item.text.as_deref().unwrap_or("");
-    let body = if raw_body.is_empty() {
-        match item.kind {
-            ItemKind::Image => "Captured clipboard image".to_string(),
-            ItemKind::File => "Copied file reference".to_string(),
-            ItemKind::Text => "(Empty)".to_string(),
+/// Build the Master-Detail pane for a single Clipboard History entry with optional image preview.
+pub fn clipboard_detail_with_image(
+    item: &ClipboardItem,
+    image_info: Option<(u32, u32, Arc<IconBitmap>)>,
+) -> DetailPane {
+    let pinned_str = if item.is_pinned() { "Yes" } else { "No" };
+    let captured_str = relative_time_ms(item.created_at);
+    let push_source = |metadata: &mut Vec<(String, String)>| {
+        if let Some(src) = item.source_bundle_id.as_deref() {
+            if !src.trim().is_empty() {
+                metadata.push(("Source".to_string(), src.to_string()));
+            }
         }
-    } else {
-        truncate_chars(raw_body, MAX_DETAIL_BODY_CHARS)
     };
 
-    let chars = raw_body.chars().count();
-    let words = raw_body.split_whitespace().count();
-    let lines = if raw_body.is_empty() {
-        0
-    } else {
-        raw_body.lines().count().max(1)
-    };
+    match item.kind {
+        ItemKind::Image => {
+            if let Some((w, h, bmp)) = image_info {
+                let mut metadata = vec![
+                    ("Type".to_string(), "Image".to_string()),
+                    ("Dimensions".to_string(), format!("{w} × {h}")),
+                    ("Pinned".to_string(), pinned_str.to_string()),
+                    ("Captured".to_string(), captured_str),
+                ];
+                push_source(&mut metadata);
+                DetailPane {
+                    title: format!("Image · {w}×{h}"),
+                    body: format!("{w} × {h} px"),
+                    color_swatch: None,
+                    image: Some(bmp),
+                    image_key: Some(format!("clip-img-{}", item.id)),
+                    metadata,
+                }
+            } else {
+                let mut metadata = vec![
+                    ("Type".to_string(), "Image".to_string()),
+                    ("Pinned".to_string(), pinned_str.to_string()),
+                    ("Captured".to_string(), captured_str),
+                ];
+                push_source(&mut metadata);
+                DetailPane {
+                    title: "Image".to_string(),
+                    body: "Captured clipboard image".to_string(),
+                    color_swatch: None,
+                    image: None,
+                    image_key: None,
+                    metadata,
+                }
+            }
+        }
+        ItemKind::File => {
+            let paths = parse_clipboard_file_paths(item);
+            let title = match paths.len() {
+                0 => "File".to_string(),
+                1 => file_basename(&paths[0]).to_string(),
+                n => format!("{n} Files"),
+            };
+            let body = if paths.is_empty() {
+                "Copied file reference".to_string()
+            } else {
+                truncate_chars(&paths.join("\n"), MAX_DETAIL_BODY_CHARS)
+            };
+            let mut metadata = vec![
+                ("Type".to_string(), "Files".to_string()),
+                ("Count".to_string(), paths.len().to_string()),
+                ("Pinned".to_string(), pinned_str.to_string()),
+                ("Captured".to_string(), captured_str),
+            ];
+            push_source(&mut metadata);
+            DetailPane {
+                title,
+                body,
+                color_swatch: None,
+                image: None,
+                image_key: None,
+                metadata,
+            }
+        }
+        ItemKind::Text => {
+            let (type_label, swatch) = match item.text_form() {
+                Some(TextForm::Color) => ("Color", item.color_value().map(color_value_to_rgba)),
+                Some(TextForm::Link) => ("Link", None),
+                Some(TextForm::Email) => ("Email", None),
+                _ => ("Text", None),
+            };
 
-    let title = if swatch.is_some() {
-        format!("Color · {}", raw_body.trim())
-    } else {
-        type_label.to_string()
-    };
+            let raw_body = item.text.as_deref().unwrap_or("");
+            let body = if raw_body.is_empty() {
+                "(Empty)".to_string()
+            } else {
+                truncate_chars(raw_body, MAX_DETAIL_BODY_CHARS)
+            };
 
-    let mut metadata = vec![
-        ("Type".to_string(), type_label.to_string()),
-        ("Characters".to_string(), chars.to_string()),
-        ("Words".to_string(), words.to_string()),
-        ("Lines".to_string(), lines.to_string()),
-        (
-            "Pinned".to_string(),
-            if item.is_pinned() { "Yes" } else { "No" }.to_string(),
-        ),
-        ("Captured".to_string(), relative_time_ms(item.created_at)),
-    ];
-    if let Some(src) = item.source_bundle_id.as_deref() {
-        if !src.trim().is_empty() {
-            metadata.push(("Source".to_string(), src.to_string()));
+            let chars = raw_body.chars().count();
+            let words = raw_body.split_whitespace().count();
+            let lines = if raw_body.is_empty() {
+                0
+            } else {
+                raw_body.lines().count().max(1)
+            };
+
+            let title = if swatch.is_some() {
+                format!("Color · {}", raw_body.trim())
+            } else {
+                type_label.to_string()
+            };
+
+            let mut metadata = vec![
+                ("Type".to_string(), type_label.to_string()),
+                ("Characters".to_string(), chars.to_string()),
+                ("Words".to_string(), words.to_string()),
+                ("Lines".to_string(), lines.to_string()),
+                ("Pinned".to_string(), pinned_str.to_string()),
+                ("Captured".to_string(), captured_str),
+            ];
+            push_source(&mut metadata);
+
+            DetailPane {
+                title,
+                body,
+                color_swatch: swatch,
+                image: None,
+                image_key: None,
+                metadata,
+            }
         }
     }
+}
 
-    DetailPane {
-        title,
-        body,
-        color_swatch: swatch,
-        image: None,
-        image_key: None,
-        metadata,
+fn file_basename(path: &str) -> &str {
+    path.rsplit(['\\', '/'])
+        .next()
+        .filter(|s| !s.is_empty())
+        .unwrap_or("File")
+}
+
+fn shorten_parent_dir(path: &str) -> Option<String> {
+    let parent = Path::new(path).parent()?.to_str()?.trim();
+    if parent.is_empty() {
+        return None;
+    }
+    let count = parent.chars().count();
+    if count <= 36 {
+        Some(parent.to_string())
+    } else {
+        let tail: String = parent.chars().skip(count.saturating_sub(35)).collect();
+        Some(format!("…{tail}"))
     }
 }
 
@@ -262,27 +516,6 @@ fn color_value_to_rgba(c: tc_clipboard::color::ColorValue) -> [u8; 4] {
         (c.blue.clamp(0.0, 1.0) * 255.0).round() as u8,
         (c.alpha.clamp(0.0, 1.0) * 255.0).round() as u8,
     ]
-}
-
-/// Cycle the Clipboard filter cleanly.
-pub fn next_clipboard_filter(current: ClipboardFilter) -> ClipboardFilter {
-    let idx = ClipboardFilter::ALL
-        .iter()
-        .position(|&f| f == current)
-        .unwrap_or(0);
-    ClipboardFilter::ALL[(idx + 1) % ClipboardFilter::ALL.len()]
-}
-
-fn clipboard_filter_label(filter: ClipboardFilter) -> &'static str {
-    match filter {
-        ClipboardFilter::All => "All",
-        ClipboardFilter::Text => "Text",
-        ClipboardFilter::Image => "Images",
-        ClipboardFilter::File => "Files",
-        ClipboardFilter::Color => "Colors",
-        ClipboardFilter::Link => "Links",
-        ClipboardFilter::Email => "Email",
-    }
 }
 
 fn clipboard_preview_title(item: &ClipboardItem) -> String {
@@ -591,16 +824,20 @@ pub fn create_snippet_model(draft: &SnippetDraft, current_input: &str) -> Model 
 }
 
 /// Build the dedicated native File Search screen model with Master-Detail preview.
+#[allow(clippy::too_many_arguments)]
 pub fn files_model(
     query: &str,
     results: &[ResultRow],
     filter: FileType,
+    current_dir: Option<&Path>,
     indexing: bool,
     selected: usize,
     show_detail: bool,
-    mut icon_lookup: impl FnMut(&str) -> Option<std::sync::Arc<IconBitmap>>,
+    mut icon_lookup: impl FnMut(&str) -> Option<Arc<IconBitmap>>,
 ) -> Model {
-    let section = if query.trim().is_empty() {
+    let section = if current_dir.is_some() {
+        "Folder Contents"
+    } else if query.trim().is_empty() {
         "Recent Files"
     } else {
         "Matching Files"
@@ -639,17 +876,56 @@ pub fn files_model(
         }
     };
 
-    let badge = if filter == FileType::All {
-        "Files".to_string()
-    } else {
-        format!("Files · {}", filter.label())
-    };
-
     let clamped = selected.min(results.len().saturating_sub(1));
     let detail = if show_detail {
         results.get(clamped).map(file_detail)
     } else {
         None
+    };
+
+    let (badge, placeholder, footer_hints) = if let Some(dir) = current_dir {
+        let folder_name = dir
+            .file_name()
+            .and_then(|n| n.to_str())
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| dir.to_str().unwrap_or("Folder"));
+        let parent_name = dir
+            .parent()
+            .and_then(|p| p.file_name())
+            .and_then(|n| n.to_str())
+            .filter(|s| !s.is_empty());
+        let raw_breadcrumb = match parent_name {
+            Some(parent) => format!("{parent} / {folder_name}"),
+            None => folder_name.to_string(),
+        };
+        let breadcrumb = truncate_chars(&raw_breadcrumb, 36);
+        let badge = if filter == FileType::All {
+            format!("📁 {breadcrumb}")
+        } else {
+            format!("📁 {breadcrumb} · {}", filter.label())
+        };
+        let placeholder = format!("Filter inside {folder_name}…");
+        let hints = vec![
+            ("↵".to_string(), "Open".to_string()),
+            ("Tab".to_string(), "Open Folder".to_string()),
+            ("Shift+Tab".to_string(), "Up".to_string()),
+            ("Ctrl+K".to_string(), "Actions".to_string()),
+        ];
+        (badge, placeholder, hints)
+    } else {
+        let badge = if filter == FileType::All {
+            "Files".to_string()
+        } else {
+            format!("Files · {}", filter.label())
+        };
+        let selected_is_dir = results.get(clamped).and_then(|r| r.is_dir) == Some(true);
+        let mut hints = vec![("↵".to_string(), "Open".to_string())];
+        if selected_is_dir {
+            hints.push(("Tab".to_string(), "Browse Folder".to_string()));
+        }
+        hints.push(("Ctrl+K".to_string(), "Actions".to_string()));
+        hints.push(("Ctrl+I".to_string(), "Preview".to_string()));
+        (badge, "Search files & folders…".to_string(), hints)
     };
 
     Model {
@@ -658,14 +934,10 @@ pub fn files_model(
         selected: clamped,
         hovered: None,
         footer: status.clone(),
-        placeholder: "Search files & folders…".to_string(),
+        placeholder,
         header_badge: Some(badge),
         result_count: Some(status),
-        footer_hints: vec![
-            ("↵".to_string(), "Open".to_string()),
-            ("Ctrl+K".to_string(), "Actions".to_string()),
-            ("Ctrl+I".to_string(), "Preview".to_string()),
-        ],
+        footer_hints,
         scroll_offset: 0.0,
         grid: None,
         back_button: true,
@@ -1380,6 +1652,53 @@ pub fn run_shell_model(input: &str, last_result: Option<&str>) -> Model {
     }
 }
 
+/// Build the inline Set Alias entry prompt for a launcher item or snippet.
+pub fn set_alias_model(target_title: &str, current_alias: Option<&str>, input: &str) -> Model {
+    let trimmed = input.trim();
+    let current_clean = current_alias.map(str::trim).filter(|s| !s.is_empty());
+    let headline = if trimmed.is_empty() {
+        match current_clean {
+            Some(existing) => format!("Clear alias \"{existing}\" for {target_title}"),
+            None => format!("Type a short alias for {target_title}"),
+        }
+    } else {
+        format!("Save alias \"{trimmed}\" for {target_title}")
+    };
+    let detail = match current_clean {
+        Some(existing) => {
+            format!("Current alias: {existing} — leave empty and press Enter to clear")
+        }
+        None => "Type a short trigger word (e.g. gh, vs, notes) and press Enter".to_string(),
+    };
+
+    Model {
+        query: input.to_string(),
+        rows: vec![Row::detailed(headline, detail)
+            .with_section("Alias")
+            .with_shortcut("↵ Save")
+            .with_icon(Icon::new("⌘", Color::rgb(0x81, 0x8c, 0xf8)))],
+        selected: 0,
+        hovered: None,
+        footer: format!("Alias · {target_title}"),
+        placeholder: "Type short alias (empty to clear)…".to_string(),
+        header_badge: Some("Set Alias".to_string()),
+        result_count: Some("Press Enter to save".to_string()),
+        footer_hints: vec![
+            ("↵".to_string(), "Save Alias".to_string()),
+            ("Esc".to_string(), "Cancel".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+        back_button: true,
+        inline_arg: Some(InlineArgBanner {
+            command_name: format!("Set Alias: {target_title}"),
+            arg_label: "Alias".to_string(),
+        }),
+        primary_action: Some("Save Alias".to_string()),
+        ..Model::default()
+    }
+}
+
 /// Build the About YAL screen (or toast/status feedback view).
 pub fn status_screen_model(badge: &str, title: &str, detail: &str, extra_rows: Vec<Row>) -> Model {
     let mut rows = vec![Row::detailed(title, detail)
@@ -1488,10 +1807,20 @@ mod tests {
     fn clipboard_model_marks_pinned_color_swatches_and_detail_pane() {
         let mut color_item = ClipboardItem::text("#FF5733", Some("VS Code".to_string()));
         color_item.pinned_at = Some(1_700_000_000_000);
-        let model = clipboard_model("", &[color_item], ClipboardFilter::All, 0, true);
+        let model = clipboard_model(
+            "",
+            &[color_item],
+            ClipboardViewFilter::All,
+            2,
+            0,
+            true,
+            |_, _| None,
+        );
         assert_eq!(model.rows.len(), 1);
         assert_eq!(model.rows[0].section, "Pinned");
         assert_eq!(model.rows[0].color_swatch, Some([0xff, 0x57, 0x33, 0xff]));
+        assert_eq!(model.header_badge.as_deref(), Some("Clipboard · Queue (2)"));
+        assert!(model.footer.contains("Queue: 2"));
         let detail = model.detail.expect("detail pane");
         assert_eq!(detail.color_swatch, Some([0xff, 0x57, 0x33, 0xff]));
         assert!(detail
@@ -1503,11 +1832,129 @@ mod tests {
         let hidden = clipboard_model(
             "",
             &[ClipboardItem::text("hello", None)],
-            ClipboardFilter::All,
+            ClipboardViewFilter::All,
+            0,
             0,
             false,
+            |_, _| None,
         );
         assert!(hidden.detail.is_none());
+    }
+
+    #[test]
+    fn downsample_rgba_premultiplied_handles_aspect_premul_invalid_and_passthrough() {
+        // Invalid dimensions or byte lengths return None.
+        assert!(downsample_rgba_premultiplied(0, 4, &[], 10, 10).is_none());
+        assert!(downsample_rgba_premultiplied(4, 0, &[], 10, 10).is_none());
+        assert!(downsample_rgba_premultiplied(2, 2, &[0u8; 4], 10, 10).is_none());
+        assert!(downsample_rgba_premultiplied(2, 2, &[0u8; 16], 0, 10).is_none());
+
+        // Small image passthrough preserves size and premultiplies RGB by alpha.
+        // Straight pixel (200, 100, 50, 128) -> pr = (200*128+127)/255 = 100, pg = 50, pb = 25, a = 128.
+        let small = vec![200, 100, 50, 128, 255, 0, 0, 255];
+        let bmp = downsample_rgba_premultiplied(2, 1, &small, 16, 16).expect("passthrough");
+        assert_eq!(bmp.width, 2);
+        assert_eq!(bmp.height, 1);
+        assert_eq!(
+            bmp.premultiplied_rgba,
+            vec![100, 50, 25, 128, 255, 0, 0, 255]
+        );
+
+        // Large 8x4 image constrained to 4x4 preserves 2:1 aspect ratio -> 4x2.
+        let mut wide = Vec::with_capacity(8 * 4 * 4);
+        for _ in 0..(8 * 4) {
+            wide.extend_from_slice(&[200, 100, 50, 255]);
+        }
+        let scaled = downsample_rgba_premultiplied(8, 4, &wide, 4, 4).expect("scaled");
+        assert_eq!(scaled.width, 4);
+        assert_eq!(scaled.height, 2);
+        assert_eq!(scaled.premultiplied_rgba.len(), 4 * 2 * 4);
+        assert_eq!(&scaled.premultiplied_rgba[0..4], &[200, 100, 50, 255]);
+    }
+
+    #[test]
+    fn clipboard_detail_with_image_and_files_populates_fields() {
+        let img_item = ClipboardItem::image("C:\\clip\\shot.png", Some("SnippingTool".to_string()));
+        let bmp = Arc::new(IconBitmap {
+            width: 2,
+            height: 2,
+            premultiplied_rgba: vec![255; 16],
+        });
+        let img_detail =
+            clipboard_detail_with_image(&img_item, Some((1920, 1080, Arc::clone(&bmp))));
+        assert_eq!(img_detail.title, "Image · 1920×1080");
+        assert_eq!(img_detail.body, "1920 × 1080 px");
+        assert_eq!(img_detail.image, Some(bmp));
+        assert_eq!(
+            img_detail.image_key,
+            Some(format!("clip-img-{}", img_item.id))
+        );
+        assert!(img_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Dimensions" && v == "1920 × 1080"));
+        assert!(img_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Type" && v == "Image"));
+
+        let files_item =
+            ClipboardItem::file("C:\\Users\\dabin\\a.txt\nC:\\Users\\dabin\\b.pdf\n", None);
+        let files_detail = clipboard_detail_with_image(&files_item, None);
+        assert_eq!(files_detail.title, "2 Files");
+        assert!(files_detail.body.contains("a.txt"));
+        assert!(files_detail.body.contains("b.pdf"));
+        assert!(files_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Count" && v == "2"));
+        assert!(files_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Type" && v == "Files"));
+    }
+
+    #[test]
+    fn files_model_with_current_dir_sets_breadcrumb_and_placeholder() {
+        let dir = Path::new("C:\\Users\\dabin\\Projects");
+        let row = ResultRow {
+            name: "main.rs".to_string(),
+            detail: "C:\\Users\\dabin\\Projects\\main.rs".to_string(),
+            target: "C:\\Users\\dabin\\Projects\\main.rs".to_string(),
+            is_dir: Some(false),
+            ..ResultRow::default()
+        };
+        let model = files_model(
+            "",
+            &[row],
+            FileType::All,
+            Some(dir),
+            false,
+            0,
+            false,
+            |_| None,
+        );
+        assert_eq!(model.header_badge.as_deref(), Some("📁 dabin / Projects"));
+        assert_eq!(model.placeholder, "Filter inside Projects…");
+        assert_eq!(model.rows[0].section, "Folder Contents");
+        assert!(model
+            .footer_hints
+            .iter()
+            .any(|(k, v)| k == "Shift+Tab" && v == "Up"));
+    }
+
+    #[test]
+    fn set_alias_model_sets_inline_arg_banner_and_existing_alias_hint() {
+        let model = set_alias_model("Visual Studio Code", Some("vsc"), "code");
+        let banner = model.inline_arg.expect("inline arg banner");
+        assert_eq!(banner.command_name, "Set Alias: Visual Studio Code");
+        assert_eq!(banner.arg_label, "Alias");
+        assert_eq!(model.header_badge.as_deref(), Some("Set Alias"));
+        assert_eq!(model.placeholder, "Type short alias (empty to clear)…");
+        assert_eq!(model.primary_action.as_deref(), Some("Save Alias"));
+        assert!(model.back_button);
+        assert!(model.rows[0].name.contains("code"));
+        assert!(model.rows[0].detail.contains("vsc"));
     }
 
     #[test]

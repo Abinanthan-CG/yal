@@ -580,10 +580,28 @@ pub fn toggle_fullscreen(
 /// remembered instead, and that is the one the commands move.
 static LAST_WINDOW: std::sync::Mutex<Option<WindowHandle>> = std::sync::Mutex::new(None);
 
+/// Whether the current Windows foreground window belongs to this process.
+pub fn is_foreground_current_process() -> bool {
+    let Some(handle) = foreground_window() else {
+        return false;
+    };
+    let mut pid = 0u32;
+    // SAFETY: `hwnd_of(handle)` is a non-null HWND returned by `GetForegroundWindow`.
+    unsafe {
+        GetWindowThreadProcessId(hwnd_of(handle), Some(&mut pid));
+    }
+    pid != 0 && pid == std::process::id()
+}
+
 /// Remember the window that is in front right now.
 ///
-/// The shell calls this before the palette is shown.
+/// The shell calls this before the palette is shown. Ignores windows belonging
+/// to YAL itself so global hotkeys invoked while the palette is open do not
+/// overwrite the user's previous target window.
 pub fn remember_foreground() {
+    if is_foreground_current_process() {
+        return;
+    }
     let Some(handle) = foreground_window() else {
         return;
     };

@@ -6,7 +6,7 @@
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
@@ -70,8 +70,9 @@ pub const FILE_PREFIX: &str = "file:";
 ///
 /// The catalogue holds every built-in command; the launcher offers only the
 /// ones whose feature is in the build, so a row is never a dead end.
-const AVAILABLE_COMMANDS: [CommandId; 20] = [
+const AVAILABLE_COMMANDS: [CommandId; 21] = [
     CommandId::ClipboardHistory,
+    CommandId::PasteSequentially,
     CommandId::SearchEmoji,
     CommandId::SearchSnippets,
     CommandId::CreateSnippet,
@@ -92,6 +93,12 @@ const AVAILABLE_COMMANDS: [CommandId; 20] = [
     CommandId::Support,
     CommandId::Quit,
 ];
+
+fn lock_or_recover<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+    mutex
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 /// One value a command asks for before it runs.
 #[derive(Debug, Clone, Serialize)]
@@ -171,7 +178,7 @@ impl FileSearch {
 
     /// The whole index, read into memory.
     fn entries(&self) -> Vec<FileEntry> {
-        let store = self.store.lock().expect("the file index lock");
+        let store = lock_or_recover(&self.store);
         store.entries().unwrap_or_default()
     }
 }
@@ -256,38 +263,28 @@ impl LauncherState {
 
     /// Re-read the persisted learned ranking file from disk (e.g. after restoring a backup).
     pub fn reload_ranking(&self, ranking_file: PathBuf) {
-        if let Ok(mut guard) = self.ranking.lock() {
-            *guard = LauncherRankingStore::open(ranking_file, now_seconds());
-        }
+        let loaded = LauncherRankingStore::open(ranking_file, now_seconds());
+        *lock_or_recover(&self.ranking) = loaded;
     }
 
     /// Replace the live currency & crypto exchange-rate snapshot (safe from any thread).
     pub fn set_rates(&self, rates: Arc<ExchangeRates>) {
-        if let Ok(mut guard) = self.rates.lock() {
-            *guard = rates;
-        }
+        *lock_or_recover(&self.rates) = rates;
     }
 
     /// Store the latest copied/committed numeric calculator answer for `ans` chaining.
     pub fn set_last_calc_answer(&self, value: Option<f64>) {
-        if let Ok(mut guard) = self.last_calc_answer.lock() {
-            *guard = value.filter(|v| v.is_finite());
-        }
+        *lock_or_recover(&self.last_calc_answer) = value.filter(|v| v.is_finite());
     }
 
     /// Read the latest copied/committed numeric calculator answer for `ans` chaining.
     pub fn last_calc_answer(&self) -> Option<f64> {
-        self.last_calc_answer.lock().ok().and_then(|guard| *guard)
+        *lock_or_recover(&self.last_calc_answer)
     }
 
     /// Evaluate a calculator query using the live exchange rates, `rem` base, and `ans`.
     pub fn evaluate_calc(&self, query: &str) -> Option<ResultRow> {
-        let rates = self
-            .rates
-            .lock()
-            .ok()
-            .map(|guard| Arc::clone(&*guard))
-            .unwrap_or_else(|| Arc::new(ExchangeRates::bundled()));
+        let rates = Arc::clone(&*lock_or_recover(&self.rates));
         let calc_ctx = CalcContext::live()
             .with_rates(Some(rates))
             .with_rem_px(self.rem_px)
@@ -324,14 +321,12 @@ impl LauncherState {
 
     /// Turn the file search on, with its index (safe to attach live after background walk).
     pub fn set_file_search(&self, files: FileSearch) {
-        if let Ok(mut guard) = self.files.lock() {
-            *guard = Some(files);
-        }
+        *lock_or_recover(&self.files) = Some(files);
     }
 
     /// Whether a file index store is currently attached.
     pub fn has_file_search(&self) -> bool {
-        self.files.lock().ok().is_some_and(|g| g.is_some())
+        lock_or_recover(&self.files).is_some()
     }
 
     /// The rows of the file-search screen.
@@ -339,14 +334,17 @@ impl LauncherState {
     /// With nothing typed the list is the recent files; with something typed
     /// it is the results. The filter narrows the search as it runs.
     pub fn file_screen_rows(&self, query: &str, filter: FileType) -> Vec<ResultRow> {
-        let guard = self.files.lock().expect("the file search lock");
-        let Some(files) = guard.as_ref() else {
-            return Vec::new();
+        let (entries, home) = {
+            let guard = lock_or_recover(&self.files);
+            let Some(files) = guard.as_ref() else {
+                return Vec::new();
+            };
+            (files.entries(), files.home.clone())
         };
         tc_palette::screen_rows(
-            &files.entries(),
+            &entries,
             query,
-            &files.home,
+            &home,
             filter,
             tc_files::search::RESULT_LIMIT,
         )
@@ -360,11 +358,14 @@ impl LauncherState {
     /// "When your search has three or more characters, a Files section lists
     /// up to five matches."
     pub fn launcher_file_rows(&self, query: &str) -> Vec<ResultRow> {
-        let guard = self.files.lock().expect("the file search lock");
-        let Some(files) = guard.as_ref() else {
-            return Vec::new();
+        let (entries, home, favorites) = {
+            let guard = lock_or_recover(&self.files);
+            let Some(files) = guard.as_ref() else {
+                return Vec::new();
+            };
+            (files.entries(), files.home.clone(), files.favorites.clone())
         };
-        tc_palette::launcher_rows(&files.entries(), query, &files.home, &files.favorites)
+        tc_palette::launcher_rows(&entries, query, &home, &favorites)
             .into_iter()
             .map(file_row)
             .collect()
@@ -460,7 +461,7 @@ impl LauncherState {
 
     /// The rows that match the query, best first.
     pub fn search(&self, query: &str) -> Vec<ResultRow> {
-        let ranking = self.ranking.lock().expect("the ranking lock");
+        let ranking = lock_or_recover(&self.ranking);
         let at = now_seconds();
         // The usage is read once for the whole pass, so every row is compared
         // against the same moment.
@@ -590,6 +591,101 @@ impl LauncherState {
         SystemActionId::parse(rest)
     }
 
+    /// Resolve a launcher row by its canonical entry id (applications,
+    /// built-in commands, custom commands, system actions, window commands,
+    /// and Windows Settings items). Used for alias-matched entries.
+    pub fn row_for_entry_id(&self, id: &str) -> Option<ResultRow> {
+        if let Some(entry) = self.entries.iter().find(|entry| entry.program.id == id) {
+            return Some(ResultRow {
+                id: entry.program.id.clone(),
+                name: entry.program.name.clone(),
+                detail: entry
+                    .program
+                    .publisher
+                    .clone()
+                    .unwrap_or_else(|| entry.program.source.label().to_string()),
+                kind: "Applications".to_string(),
+                target: entry.program.target.clone(),
+                needs_confirm: false,
+                is_dir: None,
+                arguments: Vec::new(),
+                ..ResultRow::default()
+            });
+        }
+        if let Some(action) = Self::system_action_of(id) {
+            return Some(ResultRow {
+                id: format!("{SYSTEM_ACTION_PREFIX}{}", action.as_str()),
+                name: action.english_name().to_string(),
+                detail: action.category().label().to_string(),
+                kind: SYSTEM_ACTION_SECTION.to_string(),
+                target: action.as_str().to_string(),
+                needs_confirm: action.confirmation() != tc_core::SystemActionConfirmation::None,
+                is_dir: None,
+                arguments: Vec::new(),
+                ..ResultRow::default()
+            });
+        }
+        if let Some(command_id) = Self::window_command_of(id) {
+            let command = tc_windows::command::WindowCommandCatalog::command(command_id);
+            return Some(ResultRow {
+                id: format!("{WINDOW_COMMAND_PREFIX}{}", command.id.as_str()),
+                name: command.name.to_string(),
+                detail: command.group.label().to_string(),
+                kind: WINDOW_COMMAND_SECTION.to_string(),
+                target: command.id.as_str().to_string(),
+                needs_confirm: false,
+                is_dir: None,
+                arguments: Vec::new(),
+                ..ResultRow::default()
+            });
+        }
+        if let Some(command) = Self::command_of(id) {
+            if AVAILABLE_COMMANDS.contains(&command) && self.commands.switches.is_listed(command) {
+                return Some(ResultRow {
+                    id: command.entry_id().to_string(),
+                    name: self.commands.name(command),
+                    detail: pane_of(command)
+                        .map(|pane| pane.label().to_string())
+                        .unwrap_or_else(|| COMMAND_SECTION.to_string()),
+                    kind: COMMAND_SECTION.to_string(),
+                    target: command.entry_id().to_string(),
+                    needs_confirm: false,
+                    is_dir: None,
+                    arguments: Vec::new(),
+                    ..ResultRow::default()
+                });
+            }
+        }
+        if let Some(command) = self.custom_command_of(id) {
+            if command.is_enabled {
+                return Some(ResultRow {
+                    id: command.entry_id(),
+                    name: command.name.clone(),
+                    detail: command.command.clone(),
+                    kind: CUSTOM_COMMAND_SECTION.to_string(),
+                    target: command.entry_id(),
+                    needs_confirm: command.requires_confirmation,
+                    is_dir: None,
+                    arguments: command
+                        .arguments
+                        .iter()
+                        .map(|argument| CommandArgument {
+                            name: argument.name.clone(),
+                            is_optional: argument.is_optional,
+                        })
+                        .collect(),
+                    ..ResultRow::default()
+                });
+            }
+        }
+        if let Some(setting_id) = id.strip_prefix(crate::win_settings::WIN_SETTING_PREFIX) {
+            if let Some(item) = crate::win_settings::find_by_id(setting_id) {
+                return Some(crate::win_settings::to_result_row(item));
+            }
+        }
+        None
+    }
+
     /// The row's target, and the key the ranking learns under.
     pub fn target_of(&self, id: &str) -> Option<(String, String)> {
         self.entries
@@ -600,14 +696,14 @@ impl LauncherState {
 
     /// Learn that the user opened an entry by a query.
     pub fn remember(&self, id: &str, query: &str) {
-        let mut ranking = self.ranking.lock().expect("the ranking lock");
+        let mut ranking = lock_or_recover(&self.ranking);
         ranking.visit(id, Some(query), now_seconds());
         let _ = ranking.save();
     }
 
     /// The rows with nothing typed: what the user opens most, then the rest.
     pub fn suggestions(&self) -> Vec<ResultRow> {
-        let ranking = self.ranking.lock().expect("the ranking lock");
+        let ranking = lock_or_recover(&self.ranking);
         let at = now_seconds();
         let entries: Vec<Entry> = self
             .entries
@@ -640,6 +736,35 @@ impl LauncherState {
             })
             .collect()
     }
+}
+
+/// Filter pre-loaded directory entries in memory by `filter` and multi-word `query`.
+pub fn filter_directory_entries(
+    entries: &[FileEntry],
+    query: &str,
+    filter: FileType,
+) -> Vec<ResultRow> {
+    let words = tc_files::query_words(query);
+    entries
+        .iter()
+        .filter(|entry| tc_palette::matches(entry, filter))
+        .filter(|entry| words.is_empty() || tc_files::matches_words(&entry.name, &words))
+        .cloned()
+        .map(file_row)
+        .collect()
+}
+
+/// List immediate children of `dir` for directory drill-down navigation,
+/// filtered by `filter` and optional multi-word `query`.
+#[cfg(test)]
+pub fn list_directory_rows(
+    dir: &std::path::Path,
+    query: &str,
+    filter: FileType,
+    include_hidden: bool,
+) -> Vec<ResultRow> {
+    let entries = tc_files::list_directory(dir, include_hidden);
+    filter_directory_entries(&entries, query, filter)
 }
 
 /// A file, as a row.
@@ -1175,5 +1300,89 @@ mod tests {
         assert_eq!(parse_numeric_answer("8,440.50 INR"), Some(8440.5));
         assert_eq!(parse_numeric_answer("10000 m"), Some(10000.0));
         assert_eq!(parse_numeric_answer("#ff5733"), None);
+    }
+
+    #[test]
+    fn paste_sequentially_command_is_listed_and_resolvable() {
+        let launcher = launcher(vec![]);
+        let rows = launcher.search("paste sequentially");
+        assert!(rows
+            .iter()
+            .any(|row| row.id == CommandId::PasteSequentially.entry_id()));
+        let resolved = launcher
+            .row_for_entry_id(CommandId::PasteSequentially.entry_id())
+            .expect("resolve PasteSequentially by entry_id");
+        assert_eq!(resolved.name, "Paste Sequentially");
+        assert_eq!(resolved.kind, COMMAND_SECTION);
+    }
+
+    #[test]
+    fn row_for_entry_id_resolves_apps_actions_window_commands_custom_and_settings() {
+        let mut launcher = launcher(vec![program("Visual Studio Code")]);
+        let custom = CustomCommand::new("Deploy", "echo deploy");
+        let custom_id = custom.entry_id();
+        launcher.set_custom_commands(vec![custom]);
+
+        let app_id = launcher.entries[0].program.id.clone();
+        let app_row = launcher.row_for_entry_id(&app_id).expect("app row");
+        assert_eq!(app_row.name, "Visual Studio Code");
+        assert_eq!(app_row.kind, "Applications");
+
+        let sys_row = launcher
+            .row_for_entry_id("system-action:lock-screen")
+            .expect("system action row");
+        assert_eq!(sys_row.kind, SYSTEM_ACTION_SECTION);
+
+        let win_row = launcher
+            .row_for_entry_id("window-command:always-on-top")
+            .expect("window command row");
+        assert_eq!(win_row.kind, WINDOW_COMMAND_SECTION);
+
+        let custom_row = launcher
+            .row_for_entry_id(&custom_id)
+            .expect("custom command row");
+        assert_eq!(custom_row.name, "Deploy");
+        assert_eq!(custom_row.kind, CUSTOM_COMMAND_SECTION);
+
+        let setting_row = launcher
+            .row_for_entry_id("win-setting:display")
+            .expect("windows setting row");
+        assert_eq!(setting_row.name, "Display");
+
+        assert!(launcher.row_for_entry_id("unknown:entry").is_none());
+    }
+
+    #[test]
+    fn list_directory_rows_filters_by_query_type_and_hidden_flag() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-list-dir-rows-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(dir.join("SubFolder")).expect("create subdir");
+        std::fs::write(dir.join("notes.md"), "hello").expect("create md");
+        std::fs::write(dir.join("photo.png"), "png").expect("create png");
+        std::fs::write(dir.join(".hidden.txt"), "secret").expect("create hidden");
+
+        let visible = list_directory_rows(&dir, "", FileType::All, false);
+        assert_eq!(visible.len(), 3);
+        // Directories come first.
+        assert_eq!(visible[0].name, "SubFolder");
+        assert_eq!(visible[0].is_dir, Some(true));
+
+        let with_hidden = list_directory_rows(&dir, "", FileType::All, true);
+        assert!(with_hidden.iter().any(|r| r.name == ".hidden.txt"));
+
+        let images_only = list_directory_rows(&dir, "", FileType::Images, false);
+        assert_eq!(images_only.len(), 1);
+        assert_eq!(images_only[0].name, "photo.png");
+
+        let query_match = list_directory_rows(&dir, "notes", FileType::Documents, false);
+        assert_eq!(query_match.len(), 1);
+        assert_eq!(query_match[0].name, "notes.md");
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

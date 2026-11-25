@@ -38,7 +38,9 @@ pub use hotkey::{
 pub use http::https_get;
 pub use icons::{application_icon, extract_icon, shell_item_icon, IconImage};
 pub use launch::{open, open_in_terminal, recycle, reveal, run_as_admin, show_properties};
-pub use paste::{copy_and_paste_async, erase_and_paste_async, paste_image_async};
+pub use paste::{
+    copy_and_paste_async, erase_and_paste_async, paste_files_async, paste_image_async,
+};
 pub use paths::is_portable;
 pub use paths::windows_paths;
 pub use programs::programs;
@@ -49,9 +51,10 @@ pub use system_actions::{
 };
 pub use tray::{TrayAction, WindowsTray};
 pub use window_control::{
-    apply_command, foreground_window, is_minimized, is_visible, list_windows, move_window, screens,
-    set_window_rect, switch_virtual_desktop, toggle_always_on_top, toggle_fullscreen, window_rect,
-    ControlError, Outcome, WindowHandle, WindowInfo,
+    apply_command, foreground_window, is_foreground_current_process, is_minimized, is_visible,
+    list_windows, move_window, screens, set_window_rect, switch_virtual_desktop,
+    toggle_always_on_top, toggle_fullscreen, window_rect, ControlError, Outcome, WindowHandle,
+    WindowInfo,
 };
 pub use windows::{extended_frame_bounds, own_integrity_level, WindowsWindows};
 

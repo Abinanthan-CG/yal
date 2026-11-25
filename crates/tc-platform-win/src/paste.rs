@@ -126,6 +126,40 @@ pub fn paste_image_async(width: u32, height: u32, rgba: Vec<u8>) -> Result<(), S
     Ok(())
 }
 
+/// Write a list of file paths to the Windows clipboard as `CF_HDROP` immediately,
+/// then asynchronously restore focus to the previous foreground window and paste
+/// with `Ctrl+V`.
+pub fn paste_files_async(paths: Vec<String>) -> Result<(), String> {
+    WindowsClipboard::new().write_files(&paths)?;
+    let Some(handle) = window_control::last_foreground() else {
+        return Ok(());
+    };
+
+    std::thread::spawn(move || {
+        // Give YAL a brief moment to hide before restoring focus to the target app.
+        std::thread::sleep(Duration::from_millis(45));
+        let hwnd = HWND(handle as *mut c_void);
+        if hwnd.0.is_null() {
+            return;
+        }
+        // SAFETY: `hwnd` is non-null and validated with `IsWindow` before calling `SetForegroundWindow`.
+        unsafe {
+            if !IsWindow(Some(hwnd)).as_bool() {
+                return;
+            }
+            let _ = SetForegroundWindow(hwnd);
+        }
+        std::thread::sleep(Duration::from_millis(35));
+        // SAFETY: `hwnd` is re-validated with `IsWindow` and verified as the active foreground window.
+        unsafe {
+            if IsWindow(Some(hwnd)).as_bool() && GetForegroundWindow() == hwnd {
+                send_paste(false);
+            }
+        }
+    });
+    Ok(())
+}
+
 /// Detect common Windows terminal emulators that expect `Ctrl+Shift+V`.
 unsafe fn is_terminal_window(hwnd: HWND) -> bool {
     let mut buf = [0u16; 128];

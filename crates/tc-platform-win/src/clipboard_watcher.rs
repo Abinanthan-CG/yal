@@ -63,7 +63,7 @@ pub fn is_password_manager_title(title: &str) -> bool {
 }
 
 type OnCopy = Box<dyn Fn(String, Option<String>) + Send>;
-type OnRichUpdate = Box<dyn Fn(ClipboardUpdate) + Send>;
+type OnRichUpdate = Box<dyn Fn(ClipboardUpdate) -> bool + Send>;
 
 enum WatcherState {
     Text {
@@ -104,7 +104,14 @@ impl ClipboardWatcher {
     ///
     /// Skips sensitive clipboard payloads and password manager foreground windows,
     /// and deduplicates consecutive identical items by 64-bit FNV-1a fingerprint.
-    pub fn spawn_rich(on_update: impl Fn(ClipboardUpdate) + Send + 'static) -> Option<Self> {
+    ///
+    /// `on_update` returns `true` if the payload was accepted (recorded), or `false`
+    /// if it was suppressed (for example during YAL's own paste), in which case the
+    /// deduplication fingerprint is NOT updated so a subsequent user copy of the
+    /// same content is still captured.
+    pub fn spawn_rich(
+        on_update: impl Fn(ClipboardUpdate) -> bool + Send + 'static,
+    ) -> Option<Self> {
         let last_hash = if is_sensitive_clipboard() {
             None
         } else {
@@ -372,9 +379,8 @@ fn handle_clipboard_update(state: &mut WatcherState) {
         } => {
             if let Some(update) = read_rich_clipboard() {
                 let hash = fingerprint_update(&update);
-                if *last_hash != Some(hash) {
+                if *last_hash != Some(hash) && on_update(update) {
                     *last_hash = Some(hash);
-                    on_update(update);
                 }
             }
         }
@@ -454,7 +460,7 @@ mod tests {
     #[test]
     fn rich_clipboard_watcher_spawns_and_stops_cleanly() {
         let mut watcher =
-            ClipboardWatcher::spawn_rich(|_| {}).expect("rich clipboard watcher should spawn");
+            ClipboardWatcher::spawn_rich(|_| true).expect("rich clipboard watcher should spawn");
         watcher.stop();
     }
 

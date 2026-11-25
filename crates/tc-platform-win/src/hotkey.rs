@@ -1272,7 +1272,10 @@ unsafe fn suppress_modifier_menu_activation() {
 
 enum DispatchEvent {
     Hotkey(String),
-    Captured(HotkeyTrigger, Box<dyn FnOnce(HotkeyTrigger) + Send>),
+    Captured(
+        Option<HotkeyTrigger>,
+        Box<dyn FnOnce(Option<HotkeyTrigger>) + Send>,
+    ),
     Snippet {
         keyword: String,
         erase_len: usize,
@@ -1282,7 +1285,7 @@ enum DispatchEvent {
 
 struct ActiveCapture {
     state: HotkeyCapture,
-    on_captured: Box<dyn FnOnce(HotkeyTrigger) + Send>,
+    on_captured: Box<dyn FnOnce(Option<HotkeyTrigger>) + Send>,
 }
 
 #[derive(Default)]
@@ -1462,7 +1465,10 @@ impl GlobalHotkeyService {
     }
 
     /// Enter live hotkey capture mode until a valid trigger is captured or cancelled.
-    pub fn begin_capture(&self, on_captured: impl FnOnce(HotkeyTrigger) + Send + 'static) {
+    ///
+    /// Calls `on_captured(Some(trigger))` when a shortcut is recorded, or
+    /// `on_captured(None)` when the user cancels capture with `Esc`.
+    pub fn begin_capture(&self, on_captured: impl FnOnce(Option<HotkeyTrigger>) + Send + 'static) {
         let hyperkey_enabled = lock_or_recover(&self.matcher).is_hyperkey_enabled();
         lock_or_recover(&self.snippets).expander.clear();
         let mut guard = lock_or_recover(&self.capture);
@@ -1576,7 +1582,7 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                         );
                                         if let Some(finished) = capture_guard.take() {
                                             let _ = active.tx.send(DispatchEvent::Captured(
-                                                trigger,
+                                                Some(trigger),
                                                 finished.on_captured,
                                             ));
                                         }
@@ -1596,7 +1602,12 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                             mods,
                                             hyper_down,
                                         );
-                                        let _ = capture_guard.take();
+                                        if let Some(finished) = capture_guard.take() {
+                                            let _ = active.tx.send(DispatchEvent::Captured(
+                                                None,
+                                                finished.on_captured,
+                                            ));
+                                        }
                                         capture_action = HookAction::Swallow { mask_menu: false };
                                     }
                                 }

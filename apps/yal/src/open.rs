@@ -17,6 +17,7 @@ use tc_commands::runner::{is_command_not_found, ShellRunner};
 use tc_core::CommandId;
 use tc_platform::Clipboard;
 use tc_platform_win::window_control::WindowCommands;
+use tc_windows::command::WindowCommandId;
 
 use crate::launcher::{LauncherState, CALCULATOR_PREFIX, FILE_PREFIX};
 use crate::win_settings::{self, WIN_SETTING_PREFIX};
@@ -53,12 +54,18 @@ impl Runner {
         self
     }
 
-    /// Opens the row with this id, and learns the query that reached it.
+    /// Opens the row with this id and returns optional user-visible feedback
+    /// (for example window-management confirmation text).
     ///
     /// `confirmed` says the user has already answered the "are you sure"
     /// question. A row that needs the answer and has not been given it is
     /// refused, so the palette can ask.
-    pub fn open(&self, id: &str, query: &str, confirmed: bool) -> Result<(), String> {
+    pub fn open_with_feedback(
+        &self,
+        id: &str,
+        query: &str,
+        confirmed: bool,
+    ) -> Result<Option<String>, String> {
         // A system action is run, not opened, and the ones that end the
         // session or empty the bin have to be asked for first.
         if let Some(action) = LauncherState::system_action_of(id) {
@@ -67,49 +74,77 @@ impl Runner {
                 return Err(format!("`{}` has to be confirmed", action.english_name()));
             }
             tc_platform_win::run(action)?;
-            return Ok(());
+            return Ok(None);
         }
-        // A window command is not opened either; it moves the window the
-        // user was last using.
+        // A window command is not opened either; it moves or controls the window
+        // the user was last using (or switches virtual desktops).
         if let Some(command) = LauncherState::window_command_of(id) {
-            let Some(commands) = self.windows.as_ref() else {
-                return Err("window management is not on".to_string());
+            return match command {
+                WindowCommandId::AlwaysOnTop => {
+                    let Some(handle) = tc_platform_win::window_control::last_foreground() else {
+                        return Err("there is no window to move".to_string());
+                    };
+                    let on_top = tc_platform_win::toggle_always_on_top(handle)
+                        .map_err(|error| error.to_string())?;
+                    Ok(Some(if on_top {
+                        "Always on Top: ON".to_string()
+                    } else {
+                        "Always on Top: OFF".to_string()
+                    }))
+                }
+                WindowCommandId::PreviousSpace => {
+                    tc_platform_win::switch_virtual_desktop(false)
+                        .map_err(|error| error.to_string())?;
+                    Ok(Some("Previous Desktop".to_string()))
+                }
+                WindowCommandId::NextSpace => {
+                    tc_platform_win::switch_virtual_desktop(true)
+                        .map_err(|error| error.to_string())?;
+                    Ok(Some("Next Desktop".to_string()))
+                }
+                _ => {
+                    let Some(commands) = self.windows.as_ref() else {
+                        return Err("window management is not on".to_string());
+                    };
+                    let Some(handle) = tc_platform_win::window_control::last_foreground() else {
+                        return Err("there is no window to move".to_string());
+                    };
+                    commands
+                        .run(handle, command)
+                        .map_err(|error| error.to_string())?;
+                    Ok(Some(command.english_name().to_string()))
+                }
             };
-            let Some(handle) = tc_platform_win::window_control::last_foreground() else {
-                return Err("there is no window to move".to_string());
-            };
-            commands
-                .run(handle, command)
-                .map_err(|error| error.to_string())?;
-            return Ok(());
         }
         // A calculator row is not opened; its answer is copied.
         if let Some(text) = id.strip_prefix(CALCULATOR_PREFIX) {
             tc_platform_win::clipboard().write_text(text)?;
-            return Ok(());
+            return Ok(None);
         }
         // A file row is opened, not run: the target is the path itself.
         if let Some(path) = id.strip_prefix(FILE_PREFIX) {
             tc_platform_win::open(path)?;
-            return Ok(());
+            return Ok(None);
         }
         // A Windows Settings / Admin Tool item launches its ms-settings: URI or control applet.
         if let Some(setting_id) = id.strip_prefix(WIN_SETTING_PREFIX) {
             let Some(item) = win_settings::find_by_id(setting_id) else {
                 return Err(format!("`{id}` is not a known Windows setting"));
             };
-            return win_settings::launch(item.target);
+            win_settings::launch(item.target)?;
+            return Ok(None);
         }
         // A built-in command is run, not opened.
         if let Some(command) = LauncherState::command_of(id) {
-            return self.run_built_in(command);
+            self.run_built_in(command)?;
+            return Ok(None);
         }
         // One of the user's own commands is run as well, but the palette asks
         // for its values first, so the values come with the request.
         if let Some(command) = self.launcher.custom_command_of(id) {
             let command = command.clone();
             run_custom(&command, &[])?;
-            return Ok(());
+            return Ok(None);
         }
         let Some((target, _)) = self.launcher.target_of(id) else {
             return Err(format!("`{id}` is not a result the launcher knows"));
@@ -117,7 +152,7 @@ impl Runner {
         tc_platform_win::open(&target)?;
         // The ranking learns the query only when the thing really opened.
         self.launcher.remember(id, query);
-        Ok(())
+        Ok(None)
     }
 
     /// Runs one of the built-in commands.

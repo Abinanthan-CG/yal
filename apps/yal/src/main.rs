@@ -8,6 +8,7 @@
 
 mod actions;
 mod features;
+mod hotkeys;
 mod launcher;
 mod native;
 mod open;

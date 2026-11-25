@@ -9,37 +9,45 @@
 //! Master-Detail preview panes, Pop-to-Root timer, and live-themed Settings.
 
 use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use tc_clipboard::{ClipboardFilter, ClipboardItem};
+use tc_clipboard::{ClipboardItem, ItemKind};
 use tc_core::CommandId;
 use tc_palette::FileType;
 use tc_platform::{Clipboard, FileSystem, Settings};
 use tc_platform_win::window_control::WindowInfo;
-use tc_platform_win::{HotkeyTrigger, WindowsSettings};
+use tc_platform_win::{HotkeyTrigger, WindowsClipboard, WindowsSettings};
 use tc_snippets::StoredSnippet;
 use tc_ui::{
     ActionKey, ActionMenuModel, Color, GridCell, Icon, IconBitmap, Model, Palette, PaletteEvent,
     PaletteHandle, PaletteReply, Row, Theme, ToastKind, ToastModel, Tokens,
 };
 
-use crate::actions;
-use crate::features::{CalcHistoryEntry, FeatureStores, NoteItem, Quicklink};
+use crate::actions::{self, LauncherActionMeta};
+use crate::features::{
+    CalcHistoryEntry, ClipboardViewFilter, FeatureStores, NoteItem, PasteNext, Quicklink,
+};
+use crate::hotkeys::{
+    self, HotkeyController, BINDING_LAUNCHER_TOGGLE, KEY_HOTKEY_HYPERKEY, KEY_HOTKEY_LAUNCHER,
+    KEY_SNIPPETS_AUTO_EXPAND,
+};
 use crate::launcher::{
-    parse_numeric_answer, LauncherState, ResultRow, CALCULATOR_PREFIX, CALCULATOR_SECTION,
-    COMMAND_SECTION, CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION, RANKING_FILE,
-    SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
+    filter_directory_entries, parse_numeric_answer, LauncherState, ResultRow, CALCULATOR_PREFIX,
+    CALCULATOR_SECTION, COMMAND_SECTION, CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION,
+    RANKING_FILE, SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
 };
 use crate::open::Runner;
 use crate::palette::{PaletteState, SettingRow};
 use crate::screens::{
     calc_history_model, clipboard_model, create_note_model, create_quicklink_model,
-    create_snippet_model, emoji_model, fallback_search_rows, files_model, next_clipboard_filter,
-    notes_model, quicklink_arg_model, quicklinks_model, run_shell_model, shows_create_note_row,
-    shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
-    windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
-    SnippetDraftStep, FALLBACK_URL_PREFIX,
+    create_snippet_model, downsample_rgba_premultiplied, emoji_model, fallback_search_rows,
+    files_model, notes_model, parse_clipboard_file_paths, quicklink_arg_model, quicklinks_model,
+    run_shell_model, set_alias_model, shows_create_note_row, shows_create_quicklink_row,
+    shows_create_snippet_row, snippets_model, status_screen_model, windows_model, NoteDraft,
+    NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft, SnippetDraftStep,
+    FALLBACK_URL_PREFIX,
 };
 use crate::shell::{spawn_rates_refresh, FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW, RATES_FILE};
 use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
@@ -48,20 +56,32 @@ use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
 pub const COMMAND_OPEN_SETTINGS: u32 = 1;
 /// Cross-thread command code asking the palette to re-show with a pending status banner.
 const COMMAND_SHOW_STATUS: u32 = 2;
+/// Cross-thread command code fired when live hotkey capture finishes.
+pub const COMMAND_HOTKEY_CAPTURED: u32 = 3;
+/// Cross-thread command code fired when a per-command global hotkey opens a palette screen.
+pub const COMMAND_DISPATCH_HOTKEY: u32 = 4;
 
-/// Setting key storing the launcher's global hotkey in `settings.json`.
-pub const KEY_LAUNCHER_HOTKEY: &str = "launcher.hotkey";
+/// Setting key storing the launcher's legacy global hotkey in `settings.json`.
+pub const KEY_LAUNCHER_HOTKEY: &str = hotkeys::KEY_LEGACY_LAUNCHER_HOTKEY;
+/// Virtual action key in Settings for launching live hotkey recording.
+const KEY_RECORD_LAUNCHER_HOTKEY: &str = "hotkey.launcher.record";
 /// Setting key toggling Window Management commands in the launcher (default: ON).
 pub const KEY_WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
 /// Setting key storing the Pop-to-Root timer policy (`0`, `30`, `60`, `300`, `never`).
 pub const KEY_POP_TO_ROOT_SECS: &str = "palette.popToRootSecs";
 
+/// Header badge displayed while recording a global hotkey.
+const RECORDING_HOTKEY_BADGE: &str = "Recording Hotkey… (Esc to cancel)";
+
+/// Maximum number of decoded clipboard image thumbnails cached in memory.
+const CLIPBOARD_THUMB_CACHE_CAPACITY: usize = 16;
+
 /// Prefix for an inline or root-search snippet row.
-const INLINE_SNIPPET_PREFIX: &str = "snippet-inline:";
+pub const INLINE_SNIPPET_PREFIX: &str = "snippet-inline:";
 const SNIPPET_SECTION: &str = "Snippets";
 
 /// Prefix for a root-search quicklink row.
-const ROOT_QUICKLINK_PREFIX: &str = "quicklink:";
+pub const ROOT_QUICKLINK_PREFIX: &str = "quicklink:";
 const QUICKLINK_SECTION: &str = "Quicklinks";
 
 /// Built-in hotkey presets cycled in the native Settings pane.
@@ -69,9 +89,6 @@ const HOTKEY_PRESETS: [&str; 4] = ["Alt+Space", "Ctrl+Space", "Double Ctrl", "Do
 
 /// The section an application belongs to.
 const APPLICATIONS: &str = "Applications";
-
-/// Callback invoked when the user changes the launcher hotkey in Settings.
-pub type HotkeyChangedCallback = Arc<dyn Fn(HotkeyTrigger) + Send + Sync>;
 
 /// Pop-to-Root reset timeout policy cycled in Settings.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -163,7 +180,8 @@ pub struct NativeContext {
     pub palette: Arc<PaletteState>,
     pub settings: Arc<WindowsSettings>,
     pub features: Arc<FeatureStores>,
-    pub on_hotkey_changed: Option<HotkeyChangedCallback>,
+    pub hotkeys: Arc<HotkeyController>,
+    pub pending_hotkey_command: Arc<Mutex<Option<String>>>,
 }
 
 /// The native palette window.
@@ -206,6 +224,18 @@ impl NativePalette {
     }
 }
 
+#[derive(Clone, PartialEq, Eq)]
+enum RecordingTarget {
+    Launcher,
+    Command { entry_id: String, title: String },
+}
+
+#[derive(Clone, PartialEq, Eq)]
+enum CapturedHotkeyEvent {
+    Trigger(HotkeyTrigger),
+    Cancelled,
+}
+
 #[derive(Default, PartialEq, Eq, Clone)]
 enum Mode {
     #[default]
@@ -220,6 +250,12 @@ enum Mode {
     QuicklinkArg {
         link: Quicklink,
         from_launcher: bool,
+        previous_query: String,
+    },
+    SetAlias {
+        entry_id: String,
+        title: String,
+        current_alias: Option<String>,
         previous_query: String,
     },
     CreateQuicklink(QuicklinkDraft),
@@ -239,9 +275,12 @@ struct Shown {
     show_hidden_files: bool,
     action_menu_open: bool,
     last_dismissed_at: Option<Instant>,
+    recording_hotkey: Option<RecordingTarget>,
+    captured_hotkey: Arc<Mutex<Option<CapturedHotkeyEvent>>>,
     rows: Vec<ResultRow>,
     clipboard_items: Vec<ClipboardItem>,
-    clipboard_filter: ClipboardFilter,
+    clipboard_filter: ClipboardViewFilter,
+    clipboard_thumbs: HashMap<String, (u32, u32, Arc<IconBitmap>)>,
     emoji_cells: Vec<GridCell>,
     snippets: Vec<StoredSnippet>,
     notes: Vec<NoteItem>,
@@ -250,6 +289,8 @@ struct Shown {
     pending_status: Option<(String, String, String, bool)>,
     file_rows: Vec<ResultRow>,
     file_filter: FileType,
+    file_dir: Option<PathBuf>,
+    file_dir_cache: Option<(PathBuf, bool, Instant, Vec<tc_files::index::Entry>)>,
     windows: Vec<WindowInfo>,
     calc_live: Option<ResultRow>,
     calc_entries: Vec<CalcHistoryEntry>,
@@ -272,9 +313,12 @@ impl Shown {
             show_hidden_files: false,
             action_menu_open: false,
             last_dismissed_at: None,
+            recording_hotkey: None,
+            captured_hotkey: Arc::new(Mutex::new(None)),
             rows: Vec::new(),
             clipboard_items: Vec::new(),
-            clipboard_filter: ClipboardFilter::All,
+            clipboard_filter: ClipboardViewFilter::All,
+            clipboard_thumbs: HashMap::new(),
             emoji_cells: Vec::new(),
             snippets: Vec::new(),
             notes: Vec::new(),
@@ -283,6 +327,8 @@ impl Shown {
             pending_status: None,
             file_rows: Vec::new(),
             file_filter: FileType::All,
+            file_dir: None,
+            file_dir_cache: None,
             windows: Vec::new(),
             calc_live: None,
             calc_entries: Vec::new(),
@@ -290,6 +336,75 @@ impl Shown {
             icons,
             queued: HashSet::new(),
             icon_tx: Some(icon_tx),
+        }
+    }
+
+    /// Bounded O(1) cache lookup for decoded & downsampled clipboard image thumbnails.
+    fn lookup_clipboard_thumb(
+        &mut self,
+        features: &FeatureStores,
+        item: &ClipboardItem,
+        load_if_missing: bool,
+    ) -> Option<(u32, u32, Arc<IconBitmap>)> {
+        if item.kind != ItemKind::Image {
+            return None;
+        }
+        if let Some(cached) = self.clipboard_thumbs.get(&item.id) {
+            return Some(cached.clone());
+        }
+        if !load_if_missing {
+            return None;
+        }
+        let (width, height, rgba) = features.load_clipboard_image_rgba(item)?;
+        let bitmap = Arc::new(downsample_rgba_premultiplied(
+            width, height, &rgba, 440, 260,
+        )?);
+        if self.clipboard_thumbs.len() >= CLIPBOARD_THUMB_CACHE_CAPACITY {
+            self.clipboard_thumbs.clear();
+        }
+        let entry = (width, height, bitmap);
+        self.clipboard_thumbs.insert(item.id.clone(), entry.clone());
+        Some(entry)
+    }
+
+    /// Filter the active File Search view (indexed search or drilled folder)
+    /// without re-reading `std::fs::read_dir` on every keystroke.
+    fn filtered_file_rows(&mut self, launcher: &LauncherState, query: &str) -> Vec<ResultRow> {
+        let filter = self.file_filter;
+        let show_hidden = self.show_hidden_files;
+        if let Some(dir) = self.file_dir.as_deref() {
+            let cache_hit =
+                self.file_dir_cache
+                    .as_ref()
+                    .is_some_and(|(cached_dir, cached_hidden, _, _)| {
+                        cached_dir == dir && *cached_hidden == show_hidden
+                    });
+            if !cache_hit {
+                let entries = tc_files::list_directory(dir, show_hidden);
+                self.file_dir_cache =
+                    Some((dir.to_path_buf(), show_hidden, Instant::now(), entries));
+            }
+            let entries = self
+                .file_dir_cache
+                .as_ref()
+                .map(|(_, _, _, e)| e.as_slice())
+                .unwrap_or(&[]);
+            return filter_directory_entries(entries, query, filter);
+        }
+        let mut rows = launcher.file_screen_rows(query, filter);
+        if !show_hidden {
+            rows.retain(|r| !r.name.starts_with('.'));
+        }
+        rows
+    }
+
+    /// Drop the cached directory listing if it is older than `ttl`, avoiding
+    /// repeated `read_dir` calls when background icon loads trigger `Refresh`.
+    fn invalidate_file_dir_cache_if_stale(&mut self, ttl: Duration) {
+        if let Some((_, _, loaded_at, _)) = self.file_dir_cache.as_ref() {
+            if loaded_at.elapsed() >= ttl {
+                self.file_dir_cache = None;
+            }
         }
     }
 
@@ -311,6 +426,179 @@ impl Shown {
         }
         None
     }
+}
+
+fn lock_or_recover<T>(lock: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+    lock.lock().unwrap_or_else(|err| err.into_inner())
+}
+
+fn apply_recording_overlay(model: &mut Model, shown: &Shown) {
+    if shown.recording_hotkey.is_some() {
+        model.header_badge = Some(RECORDING_HOTKEY_BADGE.to_string());
+    }
+}
+
+fn build_clipboard_screen_model(
+    ctx: &NativeContext,
+    shown: &mut Shown,
+    query: &str,
+    items: &[ClipboardItem],
+    selected: usize,
+) -> Model {
+    let filter = shown.clipboard_filter;
+    let queue_len = ctx.features.paste_queue_len();
+    let show_detail = shown.show_detail;
+    let features = &ctx.features;
+    clipboard_model(
+        query,
+        items,
+        filter,
+        queue_len,
+        selected,
+        show_detail,
+        |item, load| shown.lookup_clipboard_thumb(features, item, load),
+    )
+}
+
+fn start_hotkey_capture(
+    ctx: &NativeContext,
+    handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
+    shown: &mut Shown,
+    target: RecordingTarget,
+) -> PaletteReply {
+    let label = match &target {
+        RecordingTarget::Launcher => "Launcher Hotkey".to_string(),
+        RecordingTarget::Command { title, .. } => title.clone(),
+    };
+    let slot = Arc::clone(&shown.captured_hotkey);
+    let h_slot = Arc::clone(handle_slot);
+    let started = ctx.hotkeys.begin_capture(move |result| {
+        let event = match result {
+            Some(trigger) => CapturedHotkeyEvent::Trigger(trigger),
+            None => CapturedHotkeyEvent::Cancelled,
+        };
+        *lock_or_recover(&slot) = Some(event);
+        if let Some(handle) = *lock_or_recover(&h_slot) {
+            tc_ui::post_command(handle, COMMAND_HOTKEY_CAPTURED);
+        }
+    });
+    if !started {
+        let toast = ToastModel {
+            kind: ToastKind::Error,
+            message: "Global hotkey hook is not active".to_string(),
+        };
+        return match rebuild_current_model(Some(ctx), shown, Some(toast)) {
+            Some(model) => PaletteReply::Update(model),
+            None => PaletteReply::Keep,
+        };
+    }
+    shown.recording_hotkey = Some(target);
+    let toast = ToastModel {
+        kind: ToastKind::Info,
+        message: format!("Press shortcut for {label} (Esc to cancel)"),
+    };
+    match rebuild_current_model(Some(ctx), shown, Some(toast)) {
+        Some(model) => PaletteReply::Update(model),
+        None => PaletteReply::Keep,
+    }
+}
+
+fn execute_clipboard_item(
+    ctx: &NativeContext,
+    item: &ClipboardItem,
+    paste: bool,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
+) -> PaletteReply {
+    ctx.features.promote_clipboard_item(item);
+    match item.kind {
+        ItemKind::Image => {
+            let Some((w, h, rgba)) = ctx.features.load_clipboard_image_rgba(item) else {
+                return close_with_hud("Image unavailable".to_string());
+            };
+            ctx.hotkeys.suppress_clipboard_for_ms(700);
+            if paste {
+                let _ = tc_platform_win::paste_image_async(w, h, rgba);
+                close_with_hud("Pasted Image".to_string())
+            } else {
+                let _ = WindowsClipboard::new().write_dib_rgba(w, h, &rgba);
+                close_with_hud("Copied Image".to_string())
+            }
+        }
+        ItemKind::File => {
+            let paths = parse_clipboard_file_paths(item);
+            if paths.is_empty() {
+                return close_with_hud("No files in entry".to_string());
+            }
+            let count = paths.len();
+            ctx.hotkeys.suppress_clipboard_for_ms(700);
+            if paste {
+                let _ = tc_platform_win::paste_files_async(paths);
+                if count == 1 {
+                    close_with_hud("Pasted File".to_string())
+                } else {
+                    close_with_hud(format!("Pasted {count} Files"))
+                }
+            } else {
+                let _ = WindowsClipboard::new().write_files(&paths);
+                if count == 1 {
+                    close_with_hud("Copied File".to_string())
+                } else {
+                    close_with_hud(format!("Copied {count} Files"))
+                }
+            }
+        }
+        ItemKind::Text => {
+            let Some(text) = item.text.clone() else {
+                return PaletteReply::Keep;
+            };
+            ctx.hotkeys.suppress_clipboard_for_ms(700);
+            if paste {
+                let _ = tc_platform_win::copy_and_paste_async(text);
+                close_with_hud("Pasted".to_string())
+            } else {
+                let _ = tc_platform_win::clipboard().write_text(&text);
+                close_with_hud("Copied to Clipboard".to_string())
+            }
+        }
+    }
+}
+
+fn paste_next_from_queue(
+    ctx: &NativeContext,
+    close_with_hud: &dyn Fn(String) -> PaletteReply,
+) -> PaletteReply {
+    let (item, remaining) = match ctx.features.paste_queue_pop_next() {
+        PasteNext::Item { item, remaining } => (item, remaining),
+        PasteNext::Settling => return PaletteReply::Keep,
+        PasteNext::Empty => return close_with_hud("Paste Queue Empty".to_string()),
+    };
+    let hud = if remaining == 0 {
+        "Paste Queue Complete".to_string()
+    } else {
+        format!("Pasted from Queue ({remaining} left)")
+    };
+    match item.kind {
+        ItemKind::Image => {
+            if let Some((w, h, rgba)) = ctx.features.load_clipboard_image_rgba(&item) {
+                ctx.hotkeys.suppress_clipboard_for_ms(700);
+                let _ = tc_platform_win::paste_image_async(w, h, rgba);
+            }
+        }
+        ItemKind::File => {
+            let paths = parse_clipboard_file_paths(&item);
+            if !paths.is_empty() {
+                ctx.hotkeys.suppress_clipboard_for_ms(700);
+                let _ = tc_platform_win::paste_files_async(paths);
+            }
+        }
+        ItemKind::Text => {
+            if let Some(text) = item.text.clone() {
+                ctx.hotkeys.suppress_clipboard_for_ms(700);
+                let _ = tc_platform_win::copy_and_paste_async(text);
+            }
+        }
+    }
+    close_with_hud(hud)
 }
 
 fn lock_shown(lock: &Arc<Mutex<Shown>>) -> std::sync::MutexGuard<'_, Shown> {
@@ -487,14 +775,11 @@ fn build(
                         ))
                     }
                     Mode::Files => {
+                        shown.invalidate_file_dir_cache_if_stale(Duration::from_millis(1500));
                         let query = shown.query.clone();
                         let filter = shown.file_filter;
-                        let rows = filtered_file_rows(
-                            &handler_launcher,
-                            &query,
-                            filter,
-                            shown.show_hidden_files,
-                        );
+                        let current_dir = shown.file_dir.clone();
+                        let rows = shown.filtered_file_rows(&handler_launcher, &query);
                         let indexing = handler_context
                             .as_ref()
                             .is_some_and(|c| c.features.is_file_indexing());
@@ -506,11 +791,27 @@ fn build(
                             &query,
                             &rows,
                             filter,
+                            current_dir.as_deref(),
                             indexing,
                             sel,
                             show_detail,
                             |target| shown.lookup_or_queue_icon(target),
                         ))
+                    }
+                    Mode::Clipboard => {
+                        let Some(ctx) = handler_context.as_ref() else {
+                            return PaletteReply::Keep;
+                        };
+                        let query = shown.query.clone();
+                        let filter = shown.clipboard_filter;
+                        let items = ctx.features.search_clipboard_view(&query, filter);
+                        let sel = shown.selected.min(items.len().saturating_sub(1));
+                        shown.clipboard_items = items.clone();
+                        shown.selected = sel;
+                        let mut model =
+                            build_clipboard_screen_model(ctx, &mut shown, &query, &items, sel);
+                        apply_recording_overlay(&mut model, &shown);
+                        PaletteReply::Update(model)
                     }
                     Mode::RunShell => {
                         let query = shown.query.clone();
@@ -559,6 +860,168 @@ fn build(
                 }
                 PaletteReply::Navigate(model)
             }
+            PaletteEvent::Command(COMMAND_HOTKEY_CAPTURED) => {
+                let Some(ctx) = handler_context.as_ref() else {
+                    return PaletteReply::Keep;
+                };
+                let mut shown = lock_shown(&handler_shown);
+                let Some(event) = lock_or_recover(&shown.captured_hotkey).take() else {
+                    shown.recording_hotkey = None;
+                    return PaletteReply::Keep;
+                };
+                let trigger = match event {
+                    CapturedHotkeyEvent::Trigger(t) => t,
+                    CapturedHotkeyEvent::Cancelled => {
+                        shown.recording_hotkey = None;
+                        let toast = ToastModel {
+                            kind: ToastKind::Info,
+                            message: "Hotkey recording cancelled".to_string(),
+                        };
+                        return match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                            Some(model) => PaletteReply::Update(model),
+                            None => PaletteReply::Keep,
+                        };
+                    }
+                };
+                let Some(target) = shown.recording_hotkey.take() else {
+                    return PaletteReply::Keep;
+                };
+                let formatted = trigger.format();
+                let toast = match target {
+                    RecordingTarget::Launcher => {
+                        if let Some(conflict) = hotkeys::check_hotkey_conflict(
+                            &*ctx.settings,
+                            trigger,
+                            Some(BINDING_LAUNCHER_TOGGLE),
+                        ) {
+                            ToastModel {
+                                kind: ToastKind::Error,
+                                message: hotkeys::conflict_message(conflict),
+                            }
+                        } else {
+                            let _ = hotkeys::save_launcher_hotkey(&*ctx.settings, trigger);
+                            ctx.hotkeys.reload_bindings(&ctx.settings);
+                            if shown.mode == Mode::Settings {
+                                let q = shown.query.clone();
+                                shown.settings_rows = collect_settings_rows(ctx, &q);
+                            }
+                            ToastModel {
+                                kind: ToastKind::Success,
+                                message: format!("Launcher hotkey set to {formatted}"),
+                            }
+                        }
+                    }
+                    RecordingTarget::Command { entry_id, title } => {
+                        let binding_id = hotkeys::command_binding_id(&entry_id);
+                        if let Some(conflict) = hotkeys::check_hotkey_conflict(
+                            &*ctx.settings,
+                            trigger,
+                            Some(&binding_id),
+                        ) {
+                            ToastModel {
+                                kind: ToastKind::Error,
+                                message: hotkeys::conflict_message(conflict),
+                            }
+                        } else {
+                            let _ = hotkeys::set_command_hotkey(
+                                &*ctx.settings,
+                                &entry_id,
+                                Some(trigger),
+                            );
+                            ctx.hotkeys.reload_bindings(&ctx.settings);
+                            ToastModel {
+                                kind: ToastKind::Success,
+                                message: format!("Hotkey {formatted} bound to {title}"),
+                            }
+                        }
+                    }
+                };
+                match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                    Some(model) => PaletteReply::Update(model),
+                    None => PaletteReply::Keep,
+                }
+            }
+            PaletteEvent::Command(COMMAND_DISPATCH_HOTKEY) => {
+                let Some(ctx) = handler_context.as_ref() else {
+                    return PaletteReply::Keep;
+                };
+                let Some(entry_id) = lock_or_recover(&ctx.pending_hotkey_command).take() else {
+                    return PaletteReply::Keep;
+                };
+                let mut shown = lock_shown(&handler_shown);
+                if let Some(ql_name) = entry_id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
+                    if let Some(link) = ctx
+                        .features
+                        .search_quicklinks("")
+                        .into_iter()
+                        .find(|l| l.name.eq_ignore_ascii_case(ql_name))
+                    {
+                        return enter_quicklink_arg(link, true, String::new(), &mut shown);
+                    }
+                    return PaletteReply::Keep;
+                }
+                if let Some(cmd) = LauncherState::command_of(&entry_id) {
+                    return match cmd {
+                        CommandId::ClipboardHistory => enter_clipboard(ctx, &mut shown),
+                        CommandId::PasteSequentially => {
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            paste_next_from_queue(ctx, &close_with_hud)
+                        }
+                        CommandId::SearchEmoji => enter_emoji(ctx, &mut shown),
+                        CommandId::SearchSnippets => enter_snippets(ctx, &mut shown),
+                        CommandId::CreateSnippet => enter_create_snippet(&mut shown),
+                        CommandId::ShowNotes | CommandId::SearchNotes => {
+                            enter_notes(ctx, &mut shown)
+                        }
+                        CommandId::CreateNote => enter_create_note(&mut shown),
+                        CommandId::SearchQuicklinks => enter_quicklinks(ctx, &mut shown),
+                        CommandId::CreateQuicklink => enter_create_quicklink(&mut shown),
+                        CommandId::RunShellCommand => enter_run_shell(&mut shown),
+                        CommandId::ExportSettings => {
+                            shown.mode = Mode::Status;
+                            shown.query.clear();
+                            shown.selected = 0;
+                            shown.action_menu_open = false;
+                            drop(shown);
+                            run_export_backup(ctx)
+                        }
+                        CommandId::ImportSettings => {
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            spawn_import_backup_dialog(
+                                Arc::clone(ctx),
+                                Arc::clone(&handler_launcher),
+                                Arc::clone(&handler_shown),
+                                Arc::clone(&handler_handle),
+                            );
+                            close_reply()
+                        }
+                        CommandId::ImportFromRaycast => {
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            spawn_import_raycast_dialog(
+                                Arc::clone(ctx),
+                                Arc::clone(&handler_shown),
+                                Arc::clone(&handler_handle),
+                            );
+                            close_reply()
+                        }
+                        CommandId::SearchFiles => {
+                            enter_files(&handler_launcher, ctx, &handler_handle, &mut shown)
+                        }
+                        CommandId::SwitchWindows => enter_switch_windows(&mut shown),
+                        CommandId::CalculatorHistory => {
+                            enter_calc_history(ctx, &handler_launcher, &mut shown)
+                        }
+                        CommandId::Settings => enter_settings(ctx, &mut shown),
+                        CommandId::About => enter_about(&handler_launcher, &mut shown),
+                        CommandId::Quit => PaletteReply::Quit,
+                        _ => enter_launcher(&handler_launcher, Some(ctx), &mut shown, true),
+                    };
+                }
+                PaletteReply::Keep
+            }
             PaletteEvent::Command(_) => PaletteReply::Keep,
             PaletteEvent::QueryChanged(query) => {
                 let mut shown = lock_shown(&handler_shown);
@@ -595,14 +1058,10 @@ fn build(
                             return PaletteReply::Keep;
                         };
                         let filter = shown.clipboard_filter;
-                        let items = ctx.features.search_clipboard(&query, filter);
+                        let items = ctx.features.search_clipboard_view(&query, filter);
                         shown.clipboard_items = items.clone();
-                        PaletteReply::Update(clipboard_model(
-                            &query,
-                            &items,
-                            filter,
-                            0,
-                            shown.show_detail,
+                        PaletteReply::Update(build_clipboard_screen_model(
+                            ctx, &mut shown, &query, &items, 0,
                         ))
                     }
                     Mode::Emoji => {
@@ -652,6 +1111,15 @@ fn build(
                     Mode::QuicklinkArg { link, .. } => {
                         PaletteReply::Update(quicklink_arg_model(&link, &query))
                     }
+                    Mode::SetAlias {
+                        title,
+                        current_alias,
+                        ..
+                    } => PaletteReply::Update(set_alias_model(
+                        &title,
+                        current_alias.as_deref(),
+                        &query,
+                    )),
                     Mode::CreateQuicklink(draft) => {
                         PaletteReply::Update(create_quicklink_model(&draft, &query))
                     }
@@ -662,12 +1130,8 @@ fn build(
                     Mode::Status => PaletteReply::Keep,
                     Mode::Files => {
                         let filter = shown.file_filter;
-                        let rows = filtered_file_rows(
-                            &handler_launcher,
-                            &query,
-                            filter,
-                            shown.show_hidden_files,
-                        );
+                        let current_dir = shown.file_dir.clone();
+                        let rows = shown.filtered_file_rows(&handler_launcher, &query);
                         let indexing = handler_context
                             .as_ref()
                             .is_some_and(|c| c.features.is_file_indexing());
@@ -677,6 +1141,7 @@ fn build(
                             &query,
                             &rows,
                             filter,
+                            current_dir.as_deref(),
                             indexing,
                             0,
                             show_detail,
@@ -795,6 +1260,11 @@ fn build(
                 let mut shown = lock_shown(&handler_shown);
                 shown.last_dismissed_at = Some(Instant::now());
                 shown.action_menu_open = false;
+                if shown.recording_hotkey.take().is_some() {
+                    if let Some(ctx) = handler_context.as_ref() {
+                        ctx.hotkeys.cancel_capture();
+                    }
+                }
                 if quit_on_close {
                     PaletteReply::Quit
                 } else {
@@ -825,19 +1295,6 @@ fn pop_to_root_policy(settings: &WindowsSettings) -> PopToRootPolicy {
     PopToRootPolicy::parse(raw.as_deref())
 }
 
-fn filtered_file_rows(
-    launcher: &LauncherState,
-    query: &str,
-    filter: FileType,
-    show_hidden: bool,
-) -> Vec<ResultRow> {
-    let mut rows = launcher.file_screen_rows(query, filter);
-    if !show_hidden {
-        rows.retain(|r| !r.name.starts_with('.'));
-    }
-    rows
-}
-
 fn handle_escape_or_back(
     shown_lock: &Arc<Mutex<Shown>>,
     launcher: &Arc<LauncherState>,
@@ -847,6 +1304,19 @@ fn handle_escape_or_back(
 ) -> PaletteReply {
     let mut shown = lock_shown(shown_lock);
     shown.action_menu_open = false;
+    if shown.recording_hotkey.take().is_some() {
+        if let Some(ctx) = ctx {
+            ctx.hotkeys.cancel_capture();
+        }
+        let toast = ToastModel {
+            kind: ToastKind::Info,
+            message: "Hotkey recording cancelled".to_string(),
+        };
+        return match rebuild_current_model(ctx, &mut shown, Some(toast)) {
+            Some(model) => PaletteReply::Update(model),
+            None => PaletteReply::Keep,
+        };
+    }
     match shown.mode.clone() {
         Mode::Launcher => {
             if close_at_root {
@@ -855,6 +1325,41 @@ fn handle_escape_or_back(
             } else {
                 PaletteReply::Keep
             }
+        }
+        Mode::Files => {
+            if let Some(dir) = shown.file_dir.clone() {
+                let next_dir = dir
+                    .parent()
+                    .filter(|p| !p.as_os_str().is_empty())
+                    .map(Path::to_path_buf);
+                shown.file_dir = next_dir.clone();
+                shown.file_dir_cache = None;
+                shown.query.clear();
+                shown.selected = 0;
+                let filter = shown.file_filter;
+                let rows = shown.filtered_file_rows(launcher, "");
+                let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
+                let show_detail = shown.show_detail;
+                shown.file_rows = rows.clone();
+                let model = files_model(
+                    "",
+                    &rows,
+                    filter,
+                    next_dir.as_deref(),
+                    indexing,
+                    0,
+                    show_detail,
+                    |target| shown.lookup_or_queue_icon(target),
+                );
+                return PaletteReply::UpdateWithEdit(String::new(), model);
+            }
+            if let Some(ctx) = ctx {
+                ctx.palette.back_to_root();
+            }
+            enter_launcher(launcher, ctx, &mut shown, true)
+        }
+        Mode::SetAlias { previous_query, .. } => {
+            restore_launcher_query(launcher, ctx, &mut shown, previous_query)
         }
         Mode::CreateSnippet(_) => {
             if let Some(ctx) = ctx {
@@ -1029,6 +1534,11 @@ fn handle_activate(
                 if let Some(ctx) = ctx {
                     match cmd {
                         CommandId::ClipboardHistory => return enter_clipboard(ctx, &mut shown),
+                        CommandId::PasteSequentially => {
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            return paste_next_from_queue(ctx, close_with_hud);
+                        }
                         CommandId::SearchEmoji => return enter_emoji(ctx, &mut shown),
                         CommandId::SearchSnippets => return enter_snippets(ctx, &mut shown),
                         CommandId::CreateSnippet => return enter_create_snippet(&mut shown),
@@ -1130,11 +1640,10 @@ fn handle_activate(
             let query = shown.query.clone();
             shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
-            let _ = runner.open(&id, &query, false);
-            if is_window_cmd {
-                close_with_hud(format!("Applied {name}"))
-            } else {
-                close_reply()
+            match runner.open_with_feedback(&id, &query, false) {
+                Ok(Some(feedback)) => close_with_hud(feedback),
+                Ok(None) if is_window_cmd => close_with_hud(format!("Applied {name}")),
+                _ => close_reply(),
             }
         }
         Mode::Clipboard => {
@@ -1144,19 +1653,9 @@ fn handle_activate(
             let Some(item) = shown.clipboard_items.get(index).cloned() else {
                 return PaletteReply::Keep;
             };
-            let Some(text) = item.text.clone() else {
-                return PaletteReply::Keep;
-            };
-            ctx.features.promote_clipboard_item(&item);
             shown.last_dismissed_at = Some(Instant::now());
             drop(shown);
-            if secondary {
-                let _ = tc_platform_win::clipboard().write_text(&text);
-                close_with_hud("Copied to Clipboard".to_string())
-            } else {
-                let _ = tc_platform_win::copy_and_paste_async(text);
-                close_with_hud("Pasted".to_string())
-            }
+            execute_clipboard_item(ctx, &item, !secondary, close_with_hud)
         }
         Mode::Emoji => {
             let Some(ctx) = ctx else {
@@ -1239,6 +1738,8 @@ fn handle_activate(
                         Some(next_draft.keyword.clone())
                     };
                     let _ = ctx.features.create_snippet(next_draft.name, kw, body);
+                    ctx.hotkeys
+                        .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
                     enter_snippets(ctx, &mut shown)
                 }
             }
@@ -1316,6 +1817,36 @@ fn handle_activate(
             drop(shown);
             let _ = tc_platform_win::open(&url);
             close_with_hud(format!("Opened {name}"))
+        }
+        Mode::SetAlias {
+            entry_id,
+            title,
+            previous_query,
+            ..
+        } => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let trimmed = shown.query.trim().to_string();
+            let value = if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.as_str())
+            };
+            let _ = hotkeys::set_alias(&*ctx.settings, &entry_id, value);
+            let reply = restore_launcher_query(launcher, Some(ctx), &mut shown, previous_query);
+            if let PaletteReply::UpdateWithEdit(q, mut model) = reply {
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Success,
+                    message: if trimmed.is_empty() {
+                        format!("Cleared alias for {title}")
+                    } else {
+                        format!("Alias `{trimmed}` set for {title}")
+                    },
+                });
+                return PaletteReply::UpdateWithEdit(q, model);
+            }
+            reply
         }
         Mode::CreateQuicklink(draft) => {
             let Some(ctx) = ctx else {
@@ -1455,6 +1986,14 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             let key = setting.key.clone();
+            if key == KEY_RECORD_LAUNCHER_HOTKEY {
+                return start_hotkey_capture(
+                    ctx,
+                    handle_slot,
+                    &mut shown,
+                    RecordingTarget::Launcher,
+                );
+            }
             let query = shown.query.clone();
             advance_native_setting(ctx, launcher, handle_slot, &key);
             let updated = collect_settings_rows(ctx, &query);
@@ -1772,27 +2311,60 @@ fn handle_action(
         };
     }
 
-    // 3. `Shift+Tab`: step cleanly out of Quicklink inline argument mode.
+    // 3. `Shift+Tab`: step out of Quicklink inline argument mode, alias edit, or drilled folder.
     if action == ActionKey::ShiftTab {
-        if let Mode::QuicklinkArg {
-            from_launcher,
-            previous_query,
-            ..
-        } = shown.mode.clone()
-        {
-            if from_launcher {
+        match shown.mode.clone() {
+            Mode::QuicklinkArg {
+                from_launcher,
+                previous_query,
+                ..
+            } => {
+                if from_launcher {
+                    return restore_launcher_query(launcher, ctx, &mut shown, previous_query);
+                }
+                if let Some(ctx) = ctx {
+                    return enter_quicklinks(ctx, &mut shown);
+                }
+                return enter_launcher(launcher, ctx, &mut shown, true);
+            }
+            Mode::SetAlias { previous_query, .. } => {
                 return restore_launcher_query(launcher, ctx, &mut shown, previous_query);
             }
-            if let Some(ctx) = ctx {
-                return enter_quicklinks(ctx, &mut shown);
+            Mode::Files => {
+                if let Some(dir) = shown.file_dir.clone() {
+                    let next_dir = dir
+                        .parent()
+                        .filter(|p| !p.as_os_str().is_empty())
+                        .map(Path::to_path_buf);
+                    shown.file_dir = next_dir.clone();
+                    shown.file_dir_cache = None;
+                    shown.query.clear();
+                    shown.selected = 0;
+                    let filter = shown.file_filter;
+                    let rows = shown.filtered_file_rows(launcher, "");
+                    let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
+                    let show_detail = shown.show_detail;
+                    shown.file_rows = rows.clone();
+                    let model = files_model(
+                        "",
+                        &rows,
+                        filter,
+                        next_dir.as_deref(),
+                        indexing,
+                        0,
+                        show_detail,
+                        |target| shown.lookup_or_queue_icon(target),
+                    );
+                    return PaletteReply::UpdateWithEdit(String::new(), model);
+                }
+                return PaletteReply::Keep;
             }
-            return enter_launcher(launcher, ctx, &mut shown, true);
+            _ => return PaletteReply::Keep,
         }
-        return PaletteReply::Keep;
     }
 
     // 4. `Tab`: Calculator answer into search bar, Quicklink inline argument pill,
-    //    or empty-root flip to Clipboard History.
+    //    File Search folder drilling, Clipboard filter cycling, or empty-root flip to Clipboard.
     if action == ActionKey::Tab {
         match shown.mode.clone() {
             Mode::Launcher => {
@@ -1824,6 +2396,34 @@ fn handle_action(
                 if shown.query.trim().is_empty() {
                     if let Some(ctx) = ctx {
                         return enter_clipboard(ctx, &mut shown);
+                    }
+                }
+                return PaletteReply::Keep;
+            }
+            Mode::Files => {
+                if let Some(row) = shown.file_rows.get(selected).cloned() {
+                    if row.is_dir == Some(true) {
+                        let next_dir = PathBuf::from(&row.target);
+                        shown.file_dir = Some(next_dir.clone());
+                        shown.file_dir_cache = None;
+                        shown.query.clear();
+                        shown.selected = 0;
+                        let filter = shown.file_filter;
+                        let rows = shown.filtered_file_rows(launcher, "");
+                        let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
+                        let show_detail = shown.show_detail;
+                        shown.file_rows = rows.clone();
+                        let model = files_model(
+                            "",
+                            &rows,
+                            filter,
+                            Some(&next_dir),
+                            indexing,
+                            0,
+                            show_detail,
+                            |target| shown.lookup_or_queue_icon(target),
+                        );
+                        return PaletteReply::UpdateWithEdit(String::new(), model);
                     }
                 }
                 return PaletteReply::Keep;
@@ -1860,7 +2460,20 @@ fn handle_action(
                 }
                 return PaletteReply::Keep;
             }
-            Mode::Clipboard => return enter_launcher(launcher, ctx, &mut shown, true),
+            Mode::Clipboard => {
+                let Some(ctx) = ctx else {
+                    return PaletteReply::Keep;
+                };
+                shown.clipboard_filter = shown.clipboard_filter.next();
+                let q = shown.query.clone();
+                let filter = shown.clipboard_filter;
+                let items = ctx.features.search_clipboard_view(&q, filter);
+                shown.clipboard_items = items.clone();
+                shown.selected = 0;
+                return PaletteReply::Update(build_clipboard_screen_model(
+                    ctx, &mut shown, &q, &items, 0,
+                ));
+            }
             _ => return PaletteReply::Keep,
         }
     }
@@ -1868,16 +2481,25 @@ fn handle_action(
     // 5. `Ctrl+H`: toggle hidden (dot-prefixed) files in File Search.
     if action == ActionKey::CtrlH && shown.mode == Mode::Files {
         shown.show_hidden_files = !shown.show_hidden_files;
+        shown.file_dir_cache = None;
         let query = shown.query.clone();
         let filter = shown.file_filter;
-        let rows = filtered_file_rows(launcher, &query, filter, shown.show_hidden_files);
+        let current_dir = shown.file_dir.clone();
+        let rows = shown.filtered_file_rows(launcher, &query);
         let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
         let show_detail = shown.show_detail;
         shown.file_rows = rows.clone();
         shown.selected = 0;
-        let mut model = files_model(&query, &rows, filter, indexing, 0, show_detail, |target| {
-            shown.lookup_or_queue_icon(target)
-        });
+        let mut model = files_model(
+            &query,
+            &rows,
+            filter,
+            current_dir.as_deref(),
+            indexing,
+            0,
+            show_detail,
+            |target| shown.lookup_or_queue_icon(target),
+        );
         model.toast = Some(ToastModel {
             kind: ToastKind::Info,
             message: if shown.show_hidden_files {
@@ -1968,6 +2590,8 @@ fn handle_action(
                 }
                 if let Some(sid) = row.id.strip_prefix(INLINE_SNIPPET_PREFIX) {
                     ctx.features.delete_snippet(sid);
+                    ctx.hotkeys
+                        .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
                     let q = shown.query.clone();
                     let rows = build_root_search_rows(launcher, Some(ctx), &q);
                     shown.rows = rows.clone();
@@ -2044,16 +2668,12 @@ fn handle_action(
                 ctx.features.toggle_clipboard_pin(&item);
                 let q = shown.query.clone();
                 let filter = shown.clipboard_filter;
-                let items = ctx.features.search_clipboard(&q, filter);
+                let items = ctx.features.search_clipboard_view(&q, filter);
                 let next_sel = selected.min(items.len().saturating_sub(1));
                 shown.clipboard_items = items.clone();
                 shown.selected = next_sel;
-                return PaletteReply::Update(clipboard_model(
-                    &q,
-                    &items,
-                    filter,
-                    next_sel,
-                    shown.show_detail,
+                return PaletteReply::Update(build_clipboard_screen_model(
+                    ctx, &mut shown, &q, &items, next_sel,
                 ));
             }
             PaletteReply::Keep
@@ -2061,13 +2681,14 @@ fn handle_action(
         (Mode::Clipboard, ActionKey::CtrlDelete) => {
             if let Some(item) = shown.clipboard_items.get(selected).cloned() {
                 ctx.features.remove_clipboard_item(&item);
+                shown.clipboard_thumbs.remove(&item.id);
                 let q = shown.query.clone();
                 let filter = shown.clipboard_filter;
-                let items = ctx.features.search_clipboard(&q, filter);
+                let items = ctx.features.search_clipboard_view(&q, filter);
                 let next_sel = selected.min(items.len().saturating_sub(1));
                 shown.clipboard_items = items.clone();
                 shown.selected = next_sel;
-                let mut model = clipboard_model(&q, &items, filter, next_sel, shown.show_detail);
+                let mut model = build_clipboard_screen_model(ctx, &mut shown, &q, &items, next_sel);
                 model.toast = Some(ToastModel {
                     kind: ToastKind::Info,
                     message: "Deleted Entry".to_string(),
@@ -2095,6 +2716,8 @@ fn handle_action(
         (Mode::Snippets, ActionKey::CtrlDelete) => {
             if let Some(rec) = shown.snippets.get(selected).cloned() {
                 ctx.features.delete_snippet(&rec.id());
+                ctx.hotkeys
+                    .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
                 let q = shown.query.clone();
                 let list = ctx.features.search_snippets(&q);
                 let next_sel = selected.min(list.len().saturating_sub(1));
@@ -2117,7 +2740,8 @@ fn handle_action(
             shown.file_filter = shown.file_filter.next();
             let q = shown.query.clone();
             let filter = shown.file_filter;
-            let rows = filtered_file_rows(launcher, &q, filter, shown.show_hidden_files);
+            let current_dir = shown.file_dir.clone();
+            let rows = shown.filtered_file_rows(launcher, &q);
             let indexing = ctx.features.is_file_indexing();
             let show_detail = shown.show_detail;
             shown.file_rows = rows.clone();
@@ -2126,6 +2750,7 @@ fn handle_action(
                 &q,
                 &rows,
                 filter,
+                current_dir.as_deref(),
                 indexing,
                 0,
                 show_detail,
@@ -2134,6 +2759,7 @@ fn handle_action(
         }
         (Mode::Files, ActionKey::CtrlDelete) => {
             if let Some(row) = shown.file_rows.get(selected).cloned() {
+                shown.file_dir_cache = None;
                 shown.last_dismissed_at = Some(Instant::now());
                 drop(shown);
                 let _ = tc_platform_win::recycle(&row.target);
@@ -2185,35 +2811,50 @@ fn build_action_menu_for_current(
     match &shown.mode {
         Mode::Launcher => {
             let row = shown.rows.get(selected)?;
-            let is_fav =
+            let is_favorite =
                 row.kind == APPLICATIONS && ctx.is_some_and(|c| c.features.is_favorite(&row.id));
-            let ql_needs_args = row
-                .id
-                .strip_prefix(ROOT_QUICKLINK_PREFIX)
-                .is_some_and(|name| {
-                    ctx.is_some_and(|c| {
-                        c.features
-                            .search_quicklinks("")
-                            .into_iter()
-                            .any(|l| l.name == name && l.needs_query())
-                    })
-                });
+            let quicklink_needs_args =
+                row.id
+                    .strip_prefix(ROOT_QUICKLINK_PREFIX)
+                    .is_some_and(|name| {
+                        ctx.is_some_and(|c| {
+                            c.features
+                                .search_quicklinks("")
+                                .into_iter()
+                                .any(|l| l.name == name && l.needs_query())
+                        })
+                    });
+            let has_hotkey =
+                ctx.is_some_and(|c| hotkeys::get_command_hotkey(&*c.settings, &row.id).is_some());
+            let has_alias =
+                ctx.is_some_and(|c| hotkeys::get_alias(&*c.settings, &row.id).is_some());
             Some(actions::for_launcher_row(
                 row,
                 &shown.query,
-                is_fav,
-                ql_needs_args,
+                LauncherActionMeta {
+                    is_favorite,
+                    quicklink_needs_args,
+                    has_hotkey,
+                    has_alias,
+                },
             ))
         }
         Mode::Files => shown.file_rows.get(selected).map(actions::for_file_row),
-        Mode::Clipboard => shown
-            .clipboard_items
-            .get(selected)
-            .map(actions::for_clipboard_item),
-        Mode::Snippets => shown
-            .snippets
-            .get(selected)
-            .map(|rec| actions::for_snippet(rec, true)),
+        Mode::Clipboard => {
+            let queue_len = ctx.map_or(0, |c| c.features.paste_queue_len());
+            shown
+                .clipboard_items
+                .get(selected)
+                .map(|item| actions::for_clipboard_item(item, queue_len))
+        }
+        Mode::Snippets => shown.snippets.get(selected).map(|rec| {
+            let entry_id = format!("{INLINE_SNIPPET_PREFIX}{}", rec.id());
+            let has_hotkey =
+                ctx.is_some_and(|c| hotkeys::get_command_hotkey(&*c.settings, &entry_id).is_some());
+            let has_alias =
+                ctx.is_some_and(|c| hotkeys::get_alias(&*c.settings, &entry_id).is_some());
+            actions::for_snippet(rec, true, has_hotkey, has_alias)
+        }),
         Mode::Quicklinks => shown
             .quicklinks
             .get(selected)
@@ -2222,10 +2863,9 @@ fn build_action_menu_for_current(
         Mode::CalcHistory => {
             let idx = if shown.calc_live.is_some() {
                 if selected == 0 {
-                    return shown
-                        .calc_live
-                        .as_ref()
-                        .map(|r| actions::for_launcher_row(r, &shown.query, false, false));
+                    return shown.calc_live.as_ref().map(|r| {
+                        actions::for_launcher_row(r, &shown.query, LauncherActionMeta::default())
+                    });
                 }
                 selected - 1
             } else {
@@ -2241,6 +2881,22 @@ fn build_action_menu_for_current(
             .emoji_cells
             .get(selected)
             .map(|c| actions::for_emoji(&c.glyph, &c.name, c.pinned)),
+        _ => None,
+    }
+}
+
+fn shortcut_target_for_current(shown: &Shown, selected: usize) -> Option<(String, String)> {
+    match &shown.mode {
+        Mode::Launcher => shown
+            .rows
+            .get(selected)
+            .map(|r| (r.id.clone(), r.name.clone())),
+        Mode::Snippets => shown.snippets.get(selected).map(|rec| {
+            (
+                format!("{INLINE_SNIPPET_PREFIX}{}", rec.id()),
+                rec.snippet.name.clone(),
+            )
+        }),
         _ => None,
     }
 }
@@ -2492,18 +3148,138 @@ fn handle_action_menu_choice(
                 close_with_hud,
             )
         }
+        actions::id::SET_HOTKEY => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            let Some((entry_id, title)) = shortcut_target_for_current(&shown, selected) else {
+                return PaletteReply::Keep;
+            };
+            start_hotkey_capture(
+                ctx,
+                handle_slot,
+                &mut shown,
+                RecordingTarget::Command { entry_id, title },
+            )
+        }
+        actions::id::CLEAR_HOTKEY => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            let Some((entry_id, title)) = shortcut_target_for_current(&shown, selected) else {
+                return PaletteReply::Keep;
+            };
+            let _ = hotkeys::set_command_hotkey(&*ctx.settings, &entry_id, None);
+            ctx.hotkeys.reload_bindings(&ctx.settings);
+            let toast = ToastModel {
+                kind: ToastKind::Info,
+                message: format!("Cleared hotkey for {title}"),
+            };
+            match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                Some(model) => PaletteReply::Update(model),
+                None => PaletteReply::Keep,
+            }
+        }
+        actions::id::SET_ALIAS => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            let Some((entry_id, title)) = shortcut_target_for_current(&shown, selected) else {
+                return PaletteReply::Keep;
+            };
+            let current_alias = hotkeys::get_alias(&*ctx.settings, &entry_id);
+            let initial_edit = current_alias.clone().unwrap_or_default();
+            let previous_query = shown.query.clone();
+            shown.mode = Mode::SetAlias {
+                entry_id,
+                title: title.clone(),
+                current_alias: current_alias.clone(),
+                previous_query,
+            };
+            shown.query = initial_edit.clone();
+            shown.selected = 0;
+            shown.action_menu_open = false;
+            PaletteReply::UpdateWithEdit(
+                initial_edit.clone(),
+                set_alias_model(&title, current_alias.as_deref(), &initial_edit),
+            )
+        }
+        actions::id::CLEAR_ALIAS => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            let Some((entry_id, title)) = shortcut_target_for_current(&shown, selected) else {
+                return PaletteReply::Keep;
+            };
+            let _ = hotkeys::set_alias(&*ctx.settings, &entry_id, None);
+            let toast = ToastModel {
+                kind: ToastKind::Info,
+                message: format!("Cleared alias for {title}"),
+            };
+            match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                Some(model) => PaletteReply::Update(model),
+                None => PaletteReply::Keep,
+            }
+        }
         actions::id::CLIP_CYCLE_FILTER => {
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
             };
             let mut shown = lock_shown(shown_lock);
-            shown.clipboard_filter = next_clipboard_filter(shown.clipboard_filter);
+            shown.clipboard_filter = shown.clipboard_filter.next();
             let q = shown.query.clone();
             let filter = shown.clipboard_filter;
-            let items = ctx.features.search_clipboard(&q, filter);
+            let items = ctx.features.search_clipboard_view(&q, filter);
             shown.clipboard_items = items.clone();
             shown.selected = 0;
-            PaletteReply::Update(clipboard_model(&q, &items, filter, 0, shown.show_detail))
+            PaletteReply::Update(build_clipboard_screen_model(ctx, &mut shown, &q, &items, 0))
+        }
+        actions::id::CLIP_QUEUE_ADD => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let mut shown = lock_shown(shown_lock);
+            let Some(item) = shown.clipboard_items.get(selected).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let len = ctx.features.paste_queue_add(item);
+            let q = shown.query.clone();
+            let items = shown.clipboard_items.clone();
+            let mut model = build_clipboard_screen_model(ctx, &mut shown, &q, &items, selected);
+            model.toast = Some(ToastModel {
+                kind: ToastKind::Success,
+                message: format!("Added to Paste Queue ({len} queued)"),
+            });
+            PaletteReply::Update(model)
+        }
+        actions::id::CLIP_QUEUE_PASTE_NEXT => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            {
+                let mut shown = lock_shown(shown_lock);
+                shown.last_dismissed_at = Some(Instant::now());
+            }
+            paste_next_from_queue(ctx, close_with_hud)
+        }
+        actions::id::CLIP_QUEUE_CLEAR => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let cleared = ctx.features.paste_queue_clear();
+            let mut shown = lock_shown(shown_lock);
+            let q = shown.query.clone();
+            let items = shown.clipboard_items.clone();
+            let mut model = build_clipboard_screen_model(ctx, &mut shown, &q, &items, selected);
+            model.toast = Some(ToastModel {
+                kind: ToastKind::Info,
+                message: format!("Cleared Paste Queue ({cleared} items)"),
+            });
+            PaletteReply::Update(model)
         }
         actions::id::CLIP_CLEAR_UNPINNED => {
             let Some(ctx) = ctx else {
@@ -2511,12 +3287,13 @@ fn handle_action_menu_choice(
             };
             let removed = ctx.features.clear_unpinned_clipboard();
             let mut shown = lock_shown(shown_lock);
+            shown.clipboard_thumbs.clear();
             let q = shown.query.clone();
             let filter = shown.clipboard_filter;
-            let items = ctx.features.search_clipboard(&q, filter);
+            let items = ctx.features.search_clipboard_view(&q, filter);
             shown.clipboard_items = items.clone();
             shown.selected = 0;
-            let mut model = clipboard_model(&q, &items, filter, 0, shown.show_detail);
+            let mut model = build_clipboard_screen_model(ctx, &mut shown, &q, &items, 0);
             model.toast = Some(ToastModel {
                 kind: ToastKind::Info,
                 message: format!("Cleared {removed} unpinned clips"),
@@ -2634,13 +3411,11 @@ fn rebuild_current_model(
             let is_suggestions = query.trim().is_empty();
             model_for_with_icons(&query, &rows, is_suggestions, sel, ctx, shown)
         }
-        Mode::Clipboard => clipboard_model(
-            &query,
-            &shown.clipboard_items,
-            shown.clipboard_filter,
-            sel,
-            show_detail,
-        ),
+        Mode::Clipboard => {
+            let ctx = ctx?;
+            let items = shown.clipboard_items.clone();
+            build_clipboard_screen_model(ctx, shown, &query, &items, sel)
+        }
         Mode::Emoji => emoji_model(&query, shown.emoji_cells.clone(), sel),
         Mode::Snippets => {
             let ctx = ctx?;
@@ -2653,16 +3428,23 @@ fn rebuild_current_model(
         Mode::CreateNote(draft) => create_note_model(&draft, &query),
         Mode::Quicklinks => quicklinks_model(&query, &shown.quicklinks, sel, show_detail),
         Mode::QuicklinkArg { link, .. } => quicklink_arg_model(&link, &query),
+        Mode::SetAlias {
+            title,
+            current_alias,
+            ..
+        } => set_alias_model(&title, current_alias.as_deref(), &query),
         Mode::CreateQuicklink(draft) => create_quicklink_model(&draft, &query),
         Mode::RunShell => run_shell_model(&query, shown.last_shell_output.as_deref()),
         Mode::Files => {
             let rows = shown.file_rows.clone();
             let filter = shown.file_filter;
+            let current_dir = shown.file_dir.clone();
             let indexing = ctx.is_some_and(|c| c.features.is_file_indexing());
             files_model(
                 &query,
                 &rows,
                 filter,
+                current_dir.as_deref(),
                 indexing,
                 sel,
                 show_detail,
@@ -2680,15 +3462,44 @@ fn rebuild_current_model(
         Mode::Settings => settings_model_for(&query, &shown.settings_rows, sel),
         Mode::Status => return None,
     };
+    apply_recording_overlay(&mut model, shown);
     if toast.is_some() {
         model.toast = toast;
     }
     Some(model)
 }
 
+fn resolve_alias_row(
+    launcher: &LauncherState,
+    ctx: &NativeContext,
+    entry_id: &str,
+) -> Option<ResultRow> {
+    if let Some(row) = launcher.row_for_entry_id(entry_id) {
+        return Some(row);
+    }
+    if let Some(sid) = entry_id.strip_prefix(INLINE_SNIPPET_PREFIX) {
+        return ctx
+            .features
+            .search_snippets("")
+            .into_iter()
+            .find(|s| s.id() == sid)
+            .map(|s| inline_snippet_row(&s));
+    }
+    if let Some(ql_name) = entry_id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
+        return ctx
+            .features
+            .search_quicklinks("")
+            .into_iter()
+            .find(|l| l.name.eq_ignore_ascii_case(ql_name))
+            .map(|l| root_quicklink_row(&l));
+    }
+    None
+}
+
 /// Compose Root Search results in Raycast priority order:
-/// Calculator hero card → Installed Applications → Quicklinks & Snippets →
-/// Windows Settings → Commands & Window/System Actions → Indexed Files → Fallback Web Search.
+/// Calculator hero card → Exact Alias Match → Installed Applications →
+/// Quicklinks & Snippets → Windows Settings → Commands & Window/System Actions →
+/// Indexed Files → Fallback Web Search.
 fn build_root_search_rows(
     launcher: &LauncherState,
     ctx: Option<&NativeContext>,
@@ -2709,12 +3520,26 @@ fn build_root_search_rows(
         }
     }
 
+    let mut exact_alias_rows = Vec::new();
+    let mut prefix_alias_rows = Vec::new();
     let mut exact_snippet: Option<ResultRow> = None;
     let mut exact_snippet_id: Option<String> = None;
     let mut snippet_rows = Vec::new();
     let mut quicklink_rows = Vec::new();
 
     if let Some(ctx) = ctx {
+        let (exact_ids, prefix_ids) = hotkeys::find_alias_matches(&*ctx.settings, query);
+        for id in exact_ids {
+            if let Some(row) = resolve_alias_row(launcher, ctx, &id) {
+                exact_alias_rows.push(row);
+            }
+        }
+        for id in prefix_ids {
+            if let Some(row) = resolve_alias_row(launcher, ctx, &id) {
+                prefix_alias_rows.push(row);
+            }
+        }
+
         if let Some(snippet) = ctx.features.find_snippet_by_keyword(query) {
             exact_snippet_id = Some(snippet.id());
             exact_snippet = Some(inline_snippet_row(&snippet));
@@ -2738,8 +3563,11 @@ fn build_root_search_rows(
         .map(win_settings::to_result_row)
         .collect();
 
+    let mut seen: HashSet<String> = HashSet::new();
     let mut out = Vec::with_capacity(
         calc_rows.len()
+            + exact_alias_rows.len()
+            + prefix_alias_rows.len()
             + app_rows.len()
             + quicklink_rows.len()
             + snippet_rows.len()
@@ -2749,22 +3577,48 @@ fn build_root_search_rows(
             + 1,
     );
 
-    out.extend(calc_rows);
+    let mut push_unique = |row: ResultRow| {
+        if row.kind == CALCULATOR_SECTION || seen.insert(row.id.clone()) {
+            out.push(row);
+        }
+    };
+
+    for row in calc_rows {
+        push_unique(row);
+    }
+    for row in exact_alias_rows {
+        push_unique(row);
+    }
     let bang_snippet = query.trim_start().starts_with('!');
     if bang_snippet {
         if let Some(s) = exact_snippet.take() {
-            out.push(s);
+            push_unique(s);
         }
     }
-    out.extend(app_rows);
-    if let Some(s) = exact_snippet {
-        out.push(s);
+    for row in prefix_alias_rows {
+        push_unique(row);
     }
-    out.extend(quicklink_rows);
-    out.extend(snippet_rows);
-    out.extend(win_setting_rows);
-    out.extend(other_rows);
-    out.extend(file_rows);
+    for row in app_rows {
+        push_unique(row);
+    }
+    if let Some(s) = exact_snippet {
+        push_unique(s);
+    }
+    for row in quicklink_rows {
+        push_unique(row);
+    }
+    for row in snippet_rows {
+        push_unique(row);
+    }
+    for row in win_setting_rows {
+        push_unique(row);
+    }
+    for row in other_rows {
+        push_unique(row);
+    }
+    for row in file_rows {
+        push_unique(row);
+    }
 
     if out.is_empty() {
         if let Some(ctx) = ctx {
@@ -2937,6 +3791,11 @@ fn spawn_import_backup_dialog(
                         launcher.set_show_window_commands(wm_on);
                         let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
                         launcher.set_show_files(fs_show);
+                        ctx.hotkeys.reload_bindings(&ctx.settings);
+                        ctx.hotkeys
+                            .set_hyperkey_enabled(hotkeys::hyperkey_enabled(&*ctx.settings));
+                        ctx.hotkeys
+                            .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
                         (
                             "Backup Restored".to_string(),
                             format!("Verified SHA-256 & restored {count} files"),
@@ -2985,12 +3844,16 @@ fn spawn_import_raycast_dialog(
                     false,
                 ),
                 Some(path) => match ctx.features.import_raycast_snippets_from(&path) {
-                    Ok(count) => (
-                        "Raycast Import".to_string(),
-                        format!("Imported {count} Raycast snippets"),
-                        "Open Search Snippets to browse & expand them".to_string(),
-                        false,
-                    ),
+                    Ok(count) => {
+                        ctx.hotkeys
+                            .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
+                        (
+                            "Raycast Import".to_string(),
+                            format!("Imported {count} Raycast snippets"),
+                            "Open Search Snippets to browse & expand them".to_string(),
+                            false,
+                        )
+                    }
                     Err(err) => (
                         "Import Failed".to_string(),
                         "Could not import Raycast snippets".to_string(),
@@ -3052,16 +3915,12 @@ fn enter_clipboard(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     shown.query.clear();
     shown.selected = 0;
     shown.action_menu_open = false;
-    shown.clipboard_filter = ClipboardFilter::All;
-    let items = ctx.features.search_clipboard("", ClipboardFilter::All);
+    shown.clipboard_filter = ClipboardViewFilter::All;
+    let items = ctx
+        .features
+        .search_clipboard_view("", ClipboardViewFilter::All);
     shown.clipboard_items = items.clone();
-    PaletteReply::Navigate(clipboard_model(
-        "",
-        &items,
-        ClipboardFilter::All,
-        0,
-        shown.show_detail,
-    ))
+    PaletteReply::Navigate(build_clipboard_screen_model(ctx, shown, "", &items, 0))
 }
 
 fn enter_emoji(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
@@ -3109,12 +3968,14 @@ fn enter_files(
     shown.selected = 0;
     shown.action_menu_open = false;
     shown.file_filter = FileType::All;
+    shown.file_dir = None;
+    shown.file_dir_cache = None;
     if !launcher.has_file_search() {
         let _ = ctx.settings.set(FILE_SEARCH_ENABLED, "true");
         ctx.features
             .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
     }
-    let rows = filtered_file_rows(launcher, "", FileType::All, shown.show_hidden_files);
+    let rows = shown.filtered_file_rows(launcher, "");
     let indexing = ctx.features.is_file_indexing();
     let show_detail = shown.show_detail;
     shown.file_rows = rows.clone();
@@ -3122,6 +3983,7 @@ fn enter_files(
         "",
         &rows,
         FileType::All,
+        None,
         indexing,
         0,
         show_detail,
@@ -3254,21 +4116,38 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
         .filter(|r| r.key != tc_palette::KEY_POP_TO_ROOT)
         .collect();
 
-    let current_hotkey = ctx
-        .settings
-        .get(KEY_LAUNCHER_HOTKEY)
-        .unwrap_or_else(|| HotkeyTrigger::default_launcher().format());
+    let current_hotkey = hotkeys::configured_launcher_hotkey(&*ctx.settings).format();
+    let hyperkey_on = hotkeys::hyperkey_enabled(&*ctx.settings);
+    let snippets_expand_on = hotkeys::snippets_auto_expand_enabled(&*ctx.settings);
     let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("false");
-    let fs_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true");
+    let fs_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("false");
     let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
     let pop_policy = pop_to_root_policy(&ctx.settings);
 
     let extra = vec![
         SettingRow {
-            key: KEY_LAUNCHER_HOTKEY.to_string(),
-            label: "Launcher Hotkey".to_string(),
+            key: KEY_RECORD_LAUNCHER_HOTKEY.to_string(),
+            label: "Record Launcher Hotkey".to_string(),
+            value: current_hotkey.clone(),
+            options: Vec::new(),
+        },
+        SettingRow {
+            key: KEY_HOTKEY_LAUNCHER.to_string(),
+            label: "Launcher Hotkey Preset".to_string(),
             value: current_hotkey,
             options: HOTKEY_PRESETS.iter().map(|s| (*s).to_string()).collect(),
+        },
+        SettingRow {
+            key: KEY_HOTKEY_HYPERKEY.to_string(),
+            label: "CapsLock Hyperkey".to_string(),
+            value: if hyperkey_on { "true" } else { "false" }.to_string(),
+            options: vec!["true".to_string(), "false".to_string()],
+        },
+        SettingRow {
+            key: KEY_SNIPPETS_AUTO_EXPAND.to_string(),
+            label: "Auto-Expand Snippets".to_string(),
+            value: if snippets_expand_on { "true" } else { "false" }.to_string(),
+            options: vec!["true".to_string(), "false".to_string()],
         },
         SettingRow {
             key: KEY_WINDOW_MANAGEMENT_ENABLED.to_string(),
@@ -3325,21 +4204,33 @@ fn advance_native_setting(
     handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
     key: &str,
 ) {
-    if key == KEY_LAUNCHER_HOTKEY {
-        let current = ctx
-            .settings
-            .get(KEY_LAUNCHER_HOTKEY)
-            .unwrap_or_else(|| HOTKEY_PRESETS[0].to_string());
+    if key == KEY_HOTKEY_LAUNCHER || key == KEY_LAUNCHER_HOTKEY {
+        let current = hotkeys::configured_launcher_hotkey(&*ctx.settings).format();
         let pos = HOTKEY_PRESETS
             .iter()
             .position(|preset| preset.eq_ignore_ascii_case(&current))
             .map(|i| (i + 1) % HOTKEY_PRESETS.len())
             .unwrap_or(0);
         let next = HOTKEY_PRESETS[pos];
-        let _ = ctx.settings.set(KEY_LAUNCHER_HOTKEY, next);
-        if let (Some(cb), Some(trigger)) = (&ctx.on_hotkey_changed, HotkeyTrigger::parse(next)) {
-            cb(trigger);
+        if let Some(trigger) = HotkeyTrigger::parse(next) {
+            let _ = hotkeys::save_launcher_hotkey(&*ctx.settings, trigger);
+            ctx.hotkeys.reload_bindings(&ctx.settings);
         }
+        return;
+    }
+
+    if key == KEY_HOTKEY_HYPERKEY {
+        let now_on = !hotkeys::hyperkey_enabled(&*ctx.settings);
+        let _ = hotkeys::set_hyperkey_enabled_setting(&*ctx.settings, now_on);
+        ctx.hotkeys.set_hyperkey_enabled(now_on);
+        return;
+    }
+
+    if key == KEY_SNIPPETS_AUTO_EXPAND {
+        let now_on = !hotkeys::snippets_auto_expand_enabled(&*ctx.settings);
+        let _ = hotkeys::set_snippets_auto_expand_setting(&*ctx.settings, now_on);
+        ctx.hotkeys
+            .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
         return;
     }
 
@@ -3362,7 +4253,8 @@ fn advance_native_setting(
     }
 
     if key == FILE_SEARCH_ENABLED {
-        let now_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("true");
+        let currently_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("false");
+        let now_on = !currently_on;
         let _ = ctx
             .settings
             .set(FILE_SEARCH_ENABLED, if now_on { "true" } else { "false" });
@@ -3427,6 +4319,18 @@ fn model_for_with_icons(
                     row.section = "Favorites".to_string();
                 }
                 row.shortcut = "★".to_string();
+            }
+            if let Some(ctx) = ctx {
+                if let Some(alias) = hotkeys::get_alias(&*ctx.settings, &result.id) {
+                    if row.detail.is_empty() {
+                        row.detail = format!("alias: {alias}");
+                    } else {
+                        row.detail = format!("{} · alias: {alias}", row.detail);
+                    }
+                }
+                if let Some(hk) = hotkeys::get_command_hotkey(&*ctx.settings, &result.id) {
+                    row.shortcut = hk.format();
+                }
             }
             if idx < 30 && matches!(result.kind.as_str(), APPLICATIONS | FILE_SECTION) {
                 if let Some(bitmap) = shown.lookup_or_queue_icon(&result.target) {
@@ -3515,14 +4419,21 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
         .iter()
         .map(|row| {
             let section = match row.key.as_str() {
-                KEY_LAUNCHER_HOTKEY => "Hotkeys",
-                KEY_WINDOW_MANAGEMENT_ENABLED | FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => {
-                    "Features"
-                }
+                KEY_RECORD_LAUNCHER_HOTKEY
+                | KEY_HOTKEY_LAUNCHER
+                | KEY_LAUNCHER_HOTKEY
+                | KEY_HOTKEY_HYPERKEY => "Hotkeys",
+                KEY_SNIPPETS_AUTO_EXPAND
+                | KEY_WINDOW_MANAGEMENT_ENABLED
+                | FILE_SEARCH_ENABLED
+                | FILE_SEARCH_SHOW => "Features",
                 _ => "General",
             };
             let glyph = match row.key.as_str() {
-                KEY_LAUNCHER_HOTKEY => "⌘",
+                KEY_RECORD_LAUNCHER_HOTKEY => "⏺",
+                KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => "⌘",
+                KEY_HOTKEY_HYPERKEY => "✦",
+                KEY_SNIPPETS_AUTO_EXPAND => "✂",
                 KEY_WINDOW_MANAGEMENT_ENABLED => "⊞",
                 FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => "F",
                 KEY_POP_TO_ROOT_SECS => "◷",
@@ -3534,11 +4445,16 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                 _ => row.value.clone(),
             };
             let description = match row.key.as_str() {
-                KEY_LAUNCHER_HOTKEY => "Global shortcut to summon YAL",
-                KEY_WINDOW_MANAGEMENT_ENABLED => {
-                    "Snap windows with Left/Right Half, Maximize, Center"
+                KEY_RECORD_LAUNCHER_HOTKEY => "Press Enter, then press any chord or double-tap",
+                KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => {
+                    "Cycle built-in global shortcut presets"
                 }
-                FILE_SEARCH_ENABLED => "Index Desktop, Documents, Downloads in background",
+                KEY_HOTKEY_HYPERKEY => "Hold CapsLock as Ctrl+Alt+Shift+Win Hyperkey",
+                KEY_SNIPPETS_AUTO_EXPAND => "Auto-expand snippet keywords globally as you type",
+                KEY_WINDOW_MANAGEMENT_ENABLED => {
+                    "Snap windows with Left/Right Half, Maximize, Always on Top"
+                }
+                FILE_SEARCH_ENABLED => "Index Desktop, Documents, Downloads live in background",
                 FILE_SEARCH_SHOW => "Include indexed files inside root Launcher results",
                 KEY_POP_TO_ROOT_SECS => {
                     "Automatically reset sub-screens to Root Search after hiding"

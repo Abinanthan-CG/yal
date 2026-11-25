@@ -151,7 +151,7 @@ impl WindowsClipboard {
         write_clipboard_files(paths)
     }
 
-    /// Read a `CF_DIB` bitmap from the clipboard as top-down premultiplied RGBA.
+    /// Read a `CF_DIB` bitmap from the clipboard as straight (unassociated) top-down RGBA.
     pub fn read_dib_rgba(&self) -> Option<(u32, u32, Vec<u8>)> {
         let _clip = ClipboardGuard::open().ok()?;
         // SAFETY: Clipboard is open via `_clip`; `GetClipboardData` returns a
@@ -169,7 +169,7 @@ impl WindowsClipboard {
         parse_dib_rgba(bytes)
     }
 
-    /// Write top-down premultiplied RGBA pixels to the clipboard as a 32-bit `CF_DIB`.
+    /// Write straight (unassociated) top-down RGBA pixels to the clipboard as a 32-bit `CF_DIB`.
     pub fn write_dib_rgba(&self, width: u32, height: u32, rgba: &[u8]) -> Result<(), String> {
         let dib = encode_dib_rgba(width, height, rgba)?;
         let _clip = ClipboardGuard::open()?;
@@ -267,7 +267,7 @@ pub fn is_sensitive_clipboard() -> bool {
     false
 }
 
-/// Parse a Windows `CF_DIB` byte buffer into top-down premultiplied RGBA pixels.
+/// Parse a Windows `CF_DIB` byte buffer into straight (unassociated) top-down RGBA pixels.
 pub fn parse_dib_rgba(bytes: &[u8]) -> Option<(u32, u32, Vec<u8>)> {
     if bytes.len() < BITMAPINFOHEADER_SIZE {
         return None;
@@ -394,11 +394,10 @@ pub fn parse_dib_rgba(bytes: &[u8]) -> Option<(u32, u32, Vec<u8>)> {
                         out[d + 2] = b;
                         out[d + 3] = 255;
                     } else {
-                        let a = bytes[s + 3];
-                        out[d] = premultiply_channel(r, a);
-                        out[d + 1] = premultiply_channel(g, a);
-                        out[d + 2] = premultiply_channel(b, a);
-                        out[d + 3] = a;
+                        out[d] = r;
+                        out[d + 1] = g;
+                        out[d + 2] = b;
+                        out[d + 3] = bytes[s + 3];
                     }
                 }
             }
@@ -445,11 +444,10 @@ pub fn parse_dib_rgba(bytes: &[u8]) -> Option<(u32, u32, Vec<u8>)> {
                         out[d + 2] = b;
                         out[d + 3] = 255;
                     } else {
-                        let a = extract_masked_channel(pixel, a_mask);
-                        out[d] = premultiply_channel(r, a);
-                        out[d + 1] = premultiply_channel(g, a);
-                        out[d + 2] = premultiply_channel(b, a);
-                        out[d + 3] = a;
+                        out[d] = r;
+                        out[d + 1] = g;
+                        out[d + 2] = b;
+                        out[d + 3] = extract_masked_channel(pixel, a_mask);
                     }
                 }
             }
@@ -460,7 +458,7 @@ pub fn parse_dib_rgba(bytes: &[u8]) -> Option<(u32, u32, Vec<u8>)> {
     Some((width, height, out))
 }
 
-/// Encode top-down premultiplied RGBA pixels into a 32-bit top-down `CF_DIB` payload.
+/// Encode straight (unassociated) top-down RGBA pixels into a 32-bit top-down `CF_DIB` payload.
 pub fn encode_dib_rgba(width: u32, height: u32, rgba: &[u8]) -> Result<Vec<u8>, String> {
     if width == 0 || height == 0 || width > MAX_DIB_DIMENSION || height > MAX_DIB_DIMENSION {
         return Err(format!("invalid DIB dimensions: {width}x{height}"));
@@ -507,17 +505,7 @@ pub fn encode_dib_rgba(width: u32, height: u32, rgba: &[u8]) -> Result<Vec<u8>, 
         let g = px[1];
         let b = px[2];
         let a = px[3];
-        let (sr, sg, sb, sa) = match a {
-            0 => (0, 0, 0, 0),
-            255 => (r, g, b, 255),
-            _ => (
-                unpremultiply_channel(r, a),
-                unpremultiply_channel(g, a),
-                unpremultiply_channel(b, a),
-                a,
-            ),
-        };
-        out.extend_from_slice(&[sb, sg, sr, sa]);
+        out.extend_from_slice(&[b, g, r, a]);
     }
 
     Ok(out)
@@ -542,16 +530,6 @@ fn read_i32_le(bytes: &[u8], offset: usize) -> Option<i32> {
     let end = offset.checked_add(4)?;
     let slice = bytes.get(offset..end)?;
     Some(i32::from_le_bytes([slice[0], slice[1], slice[2], slice[3]]))
-}
-
-#[inline]
-fn premultiply_channel(c: u8, a: u8) -> u8 {
-    ((u16::from(c) * u16::from(a) + 127) / 255) as u8
-}
-
-#[inline]
-fn unpremultiply_channel(c: u8, a: u8) -> u8 {
-    ((u32::from(c) * 255 + u32::from(a) / 2) / u32::from(a)).min(255) as u8
 }
 
 #[inline]
@@ -765,7 +743,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_32bit_top_down_with_alpha_premultiplies() {
+    fn parse_32bit_top_down_preserves_straight_alpha() {
         // 2x1 top-down (height = -1), BI_RGB 32-bit with real alpha.
         let mut dib = make_header(40, 2, -1, 1, 32, BI_RGB, 0);
         // Pixel 0: straight RGBA (200, 100, 50, 128) -> BGRA [50, 100, 200, 128]
@@ -775,19 +753,7 @@ mod tests {
 
         let (w, h, rgba) = parse_dib_rgba(&dib).expect("valid 32-bit top-down DIB");
         assert_eq!((w, h), (2, 1));
-        assert_eq!(
-            rgba,
-            vec![
-                premultiply_channel(200, 128),
-                premultiply_channel(100, 128),
-                premultiply_channel(50, 128),
-                128,
-                0,
-                0,
-                0,
-                0,
-            ]
-        );
+        assert_eq!(rgba, vec![200, 100, 50, 128, 255, 255, 255, 0]);
     }
 
     #[test]
@@ -826,15 +792,7 @@ mod tests {
 
         let (w2, h2, rgba2) = parse_dib_rgba(&v4).expect("valid 56-byte BI_BITFIELDS DIB");
         assert_eq!((w2, h2), (1, 1));
-        assert_eq!(
-            rgba2,
-            vec![
-                premultiply_channel(200, 128),
-                premultiply_channel(100, 128),
-                premultiply_channel(50, 128),
-                128,
-            ]
-        );
+        assert_eq!(rgba2, vec![200, 100, 50, 128]);
     }
 
     #[test]
@@ -863,11 +821,8 @@ mod tests {
 
     #[test]
     fn encode_and_parse_dib_round_trip() {
-        // Premultiplied RGBA: opaque red, 50% green, transparent, opaque blue.
-        let p_green = premultiply_channel(200, 128);
-        let original = vec![
-            255, 0, 0, 255, 0, p_green, 0, 128, 0, 0, 0, 0, 0, 0, 255, 255,
-        ];
+        // Straight RGBA: opaque red, 50% green, transparent, opaque blue.
+        let original = vec![255, 0, 0, 255, 0, 200, 0, 128, 0, 0, 0, 0, 0, 0, 255, 255];
         let encoded = encode_dib_rgba(2, 2, &original).expect("encode should succeed");
         assert_eq!(encoded.len(), 40 + 16);
 

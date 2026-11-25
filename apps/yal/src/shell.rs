@@ -11,14 +11,18 @@ use tc_commands::COMMANDS_FILE;
 use tc_core::CommandId;
 use tc_platform::{FileSystem, Settings, SingleInstance};
 use tc_platform_win::{
-    ClipboardWatcher, GlobalHotkeyService, HotkeyBinding, HotkeyTrigger, QuitWatcher, ShowWatcher,
+    ClipboardUpdate, ClipboardWatcher, FileWatcher, GlobalHotkeyService, QuitWatcher, ShowWatcher,
     TrayAction, WindowsSettings, WindowsSingleInstance, WindowsTray,
 };
 use tc_ui::{PaletteHandle, Theme, Tokens};
 
-use crate::features::FeatureStores;
+use crate::features::{default_index_roots, FeatureStores};
+use crate::hotkeys::{self, HotkeyController, BINDING_LAUNCHER_TOGGLE};
 use crate::launcher::{FileSearch, LauncherState, RANKING_FILE};
-use crate::native::{NativeContext, NativePalette, COMMAND_OPEN_SETTINGS, KEY_LAUNCHER_HOTKEY};
+use crate::native::{
+    NativeContext, NativePalette, COMMAND_DISPATCH_HOTKEY, COMMAND_OPEN_SETTINGS,
+    INLINE_SNIPPET_PREFIX,
+};
 use crate::open::Runner;
 use crate::palette::PaletteState;
 
@@ -52,8 +56,11 @@ pub const RATES_FILE: &str = "currency-rates.json";
 /// Setting key for CSS `1rem`/`1em` pixel base in Calculator (default `16`).
 const KEY_CALCULATOR_REM_PX: &str = "calculator.remPx";
 
-/// Hotkey binding ID for toggling the launcher palette.
-const BINDING_LAUNCHER_TOGGLE: &str = "launcher.toggle";
+fn lock_or_recover<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+    mutex
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 /// The text `yal.exe --help` prints.
 pub fn usage() -> String {
@@ -94,7 +101,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     // can ever race startup.
     let show_slot = Arc::clone(&handle_slot);
     let show_watcher = ShowWatcher::spawn(move || {
-        if let Some(handle) = *show_slot.lock().expect("handle slot") {
+        if let Some(handle) = *lock_or_recover(&show_slot) {
             toggle_palette(handle);
         }
     })
@@ -102,7 +109,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 
     let quit_watcher_slot = Arc::clone(&handle_slot);
     let quit_watcher = QuitWatcher::spawn(move || {
-        if let Some(handle) = *quit_watcher_slot.lock().expect("handle slot") {
+        if let Some(handle) = *lock_or_recover(&quit_watcher_slot) {
             tc_ui::post_quit(handle);
         }
     })
@@ -127,19 +134,62 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         paths.data_dir.join(RATES_FILE),
         false,
     );
-    if settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true") {
+
+    let hotkeys = Arc::new(HotkeyController::new());
+    let pending_hotkey_command: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+
+    let file_search_enabled = settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("false");
+    let file_watcher = if file_search_enabled {
         features.trigger_file_index(Arc::clone(&launcher), Some(Arc::clone(&handle_slot)));
-    }
-    let clip_features = Arc::clone(&features);
-    let clipboard_watcher = match ClipboardWatcher::spawn(move |text, source| {
-        clip_features.record_clipboard_text(&text, source.as_deref());
-    }) {
-        Ok(watcher) => Some(watcher),
-        Err(error) => {
-            eprintln!("yal: clipboard watcher unavailable: {error}");
-            None
+        let roots = default_index_roots(&paths.home_dir);
+        let fw_features = Arc::clone(&features);
+        let fw_launcher = Arc::clone(&launcher);
+        let fw_handle_slot = Arc::clone(&handle_slot);
+        match FileWatcher::start(roots, move || {
+            fw_features
+                .trigger_file_index(Arc::clone(&fw_launcher), Some(Arc::clone(&fw_handle_slot)));
+        }) {
+            Ok(watcher) => Some(watcher),
+            Err(error) => {
+                eprintln!("yal: file watcher unavailable: {error}");
+                None
+            }
         }
+    } else {
+        None
     };
+
+    let clip_features = Arc::clone(&features);
+    let clip_hotkeys = Arc::clone(&hotkeys);
+    let clip_handle_slot = Arc::clone(&handle_slot);
+    let clipboard_watcher = ClipboardWatcher::spawn_rich(move |update| {
+        if clip_hotkeys.should_suppress_clipboard() {
+            return false;
+        }
+        match update {
+            ClipboardUpdate::Text(text) => {
+                clip_features.record_clipboard_text(&text, None);
+            }
+            ClipboardUpdate::Files(paths) => {
+                clip_features.record_clipboard_files(&paths, None);
+            }
+            ClipboardUpdate::Image {
+                width,
+                height,
+                rgba,
+            } => {
+                clip_features.record_clipboard_image(width, height, &rgba, None);
+            }
+        }
+        if let Some(handle) = *lock_or_recover(&clip_handle_slot) {
+            tc_ui::post_refresh(handle);
+        }
+        true
+    });
+    if clipboard_watcher.is_none() {
+        eprintln!("yal: clipboard watcher unavailable");
+    }
+
     let palette_state = Arc::new(build_palette_state(&settings));
     let window_commands = Arc::new(build_window_commands(&settings));
 
@@ -148,15 +198,11 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         Runner::new(Arc::clone(&launcher))
             .with_windows(window_commands)
             .with_quit(Arc::new(move || {
-                if let Some(handle) = *quit_slot.lock().expect("handle slot") {
+                if let Some(handle) = *lock_or_recover(&quit_slot) {
                     tc_ui::post_quit(handle);
                 }
             })),
     );
-
-    // Slot for live-updating the global hotkey when changed in Settings.
-    let hotkey_slot: Arc<Mutex<Option<GlobalHotkeyService>>> = Arc::new(Mutex::new(None));
-    let hotkey_updater = Arc::clone(&hotkey_slot);
 
     let theme = resolve_theme(arguments, &settings)?;
     let native = NativePalette::open_with_context(
@@ -166,35 +212,44 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             palette: Arc::clone(&palette_state),
             settings: Arc::clone(&settings),
             features: Arc::clone(&features),
-            on_hotkey_changed: Some(Arc::new(move |trigger| {
-                if let Ok(guard) = hotkey_updater.lock() {
-                    if let Some(service) = guard.as_ref() {
-                        service.set_bindings(vec![HotkeyBinding::new(
-                            BINDING_LAUNCHER_TOGGLE,
-                            trigger,
-                        )]);
-                    }
-                }
-            })),
+            hotkeys: Arc::clone(&hotkeys),
+            pending_hotkey_command: Arc::clone(&pending_hotkey_command),
         },
         theme,
     )?;
 
     let handle = native.handle();
-    *handle_slot.lock().expect("handle slot") = Some(handle);
+    *lock_or_recover(&handle_slot) = Some(handle);
 
-    // Start the global hotkey service (defaults to Alt+Space, configurable in settings.json).
-    let trigger = configured_launcher_hotkey(&settings);
-    match GlobalHotkeyService::spawn(
-        vec![HotkeyBinding::new(BINDING_LAUNCHER_TOGGLE, trigger)],
-        move |binding_id| {
-            if binding_id == BINDING_LAUNCHER_TOGGLE {
-                toggle_palette(handle);
-            }
-        },
-    ) {
+    // Start the global hotkey service with launcher + per-command bindings,
+    // optional CapsLock Hyperkey, and background auto-expanding snippets.
+    let initial_bindings = hotkeys::build_all_bindings(&*settings);
+    let hk_pending = Arc::clone(&pending_hotkey_command);
+    let hk_runner = Arc::clone(&runner);
+    let hk_features = Arc::clone(&features);
+    let hk_controller = Arc::clone(&hotkeys);
+    let hk_settings = Arc::clone(&settings);
+    match GlobalHotkeyService::spawn(initial_bindings, move |binding_id| {
+        if binding_id == BINDING_LAUNCHER_TOGGLE {
+            toggle_palette(handle);
+            return;
+        }
+        if let Some(entry_id) = hotkeys::command_entry_from_binding(&binding_id) {
+            dispatch_global_command_hotkey(
+                entry_id,
+                handle,
+                &hk_pending,
+                &hk_runner,
+                &hk_features,
+                &hk_controller,
+                &hk_settings,
+            );
+        }
+    }) {
         Ok(service) => {
-            *hotkey_slot.lock().expect("hotkey slot") = Some(service);
+            hotkeys.attach(Arc::new(service));
+            hotkeys.set_hyperkey_enabled(hotkeys::hyperkey_enabled(&*settings));
+            hotkeys.sync_snippet_keywords(&settings, Arc::clone(&features));
         }
         Err(error) => {
             eprintln!("yal: global hotkey unavailable: {error}");
@@ -233,17 +288,138 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     native.run();
 
     // Explicit ordered teardown before releasing the single-instance lock.
+    drop(file_watcher);
     drop(clipboard_watcher);
     drop(show_watcher);
     drop(quit_watcher);
     drop(tray);
-    if let Ok(mut guard) = hotkey_slot.lock() {
-        if let Some(mut svc) = guard.take() {
-            svc.stop();
-        }
-    }
+    drop(hotkeys.detach());
     single_instance.release();
     Ok(())
+}
+
+fn dispatch_global_command_hotkey(
+    entry_id: &str,
+    handle: PaletteHandle,
+    pending_command: &Arc<Mutex<Option<String>>>,
+    runner: &Arc<Runner>,
+    features: &Arc<FeatureStores>,
+    hotkeys: &Arc<HotkeyController>,
+    settings: &WindowsSettings,
+) {
+    tc_platform_win::window_control::remember_foreground();
+    let dark_hud = settings_prefers_dark(settings);
+
+    if entry_id == CommandId::Quit.entry_id() {
+        tc_ui::post_quit(handle);
+        return;
+    }
+
+    if entry_id == CommandId::PasteSequentially.entry_id() {
+        let (item, remaining) = match features.paste_queue_pop_next() {
+            crate::features::PasteNext::Item { item, remaining } => (item, remaining),
+            crate::features::PasteNext::Settling => return,
+            crate::features::PasteNext::Empty => {
+                tc_ui::show_hud("Paste Queue Empty", dark_hud);
+                return;
+            }
+        };
+        let hud = if remaining == 0 {
+            "Paste Queue Complete".to_string()
+        } else {
+            format!("Pasted from Queue ({remaining} left)")
+        };
+        match item.kind {
+            tc_clipboard::ItemKind::Image => {
+                if let Some((w, h, rgba)) = features.load_clipboard_image_rgba(&item) {
+                    hotkeys.suppress_clipboard_for_ms(700);
+                    let _ = tc_platform_win::paste_image_async(w, h, rgba);
+                }
+            }
+            tc_clipboard::ItemKind::File => {
+                let paths = crate::screens::parse_clipboard_file_paths(&item);
+                if !paths.is_empty() {
+                    hotkeys.suppress_clipboard_for_ms(700);
+                    let _ = tc_platform_win::paste_files_async(paths);
+                }
+            }
+            tc_clipboard::ItemKind::Text => {
+                if let Some(text) = item.text.clone() {
+                    hotkeys.suppress_clipboard_for_ms(700);
+                    let _ = tc_platform_win::copy_and_paste_async(text);
+                }
+            }
+        }
+        tc_ui::show_hud(hud, dark_hud);
+        return;
+    }
+
+    if entry_id.starts_with("command:") {
+        *lock_or_recover(pending_command) = Some(entry_id.to_string());
+        tc_ui::post_command(handle, COMMAND_DISPATCH_HOTKEY);
+        return;
+    }
+
+    if let Some(snippet_id) = entry_id
+        .strip_prefix(INLINE_SNIPPET_PREFIX)
+        .or_else(|| entry_id.strip_prefix("snippet:"))
+    {
+        if let Some(snippet) = features
+            .search_snippets("")
+            .into_iter()
+            .find(|s| s.id() == snippet_id)
+        {
+            let expanded = features.expand_snippet(&snippet);
+            hotkeys.suppress_clipboard_for_ms(700);
+            if tc_platform_win::copy_and_paste_async(expanded).is_ok() {
+                tc_ui::show_hud(format!("Pasted {}", snippet.snippet.name), dark_hud);
+            }
+        }
+        return;
+    }
+
+    if let Some(ql_name) = entry_id.strip_prefix(crate::native::ROOT_QUICKLINK_PREFIX) {
+        if let Some(link) = features
+            .search_quicklinks("")
+            .into_iter()
+            .find(|l| l.name.eq_ignore_ascii_case(ql_name))
+        {
+            if link.needs_query() {
+                *lock_or_recover(pending_command) = Some(entry_id.to_string());
+                tc_ui::post_command(handle, COMMAND_DISPATCH_HOTKEY);
+            } else {
+                let url = link.expand_url("");
+                let name = link.name.clone();
+                std::thread::spawn(move || {
+                    if tc_platform_win::open(&url).is_ok() {
+                        tc_ui::show_hud(format!("Opened {name}"), dark_hud);
+                    }
+                });
+            }
+        }
+        return;
+    }
+
+    let runner = Arc::clone(runner);
+    let entry_id = entry_id.to_string();
+    std::thread::spawn(
+        move || match runner.open_with_feedback(&entry_id, "", false) {
+            Ok(Some(feedback)) => tc_ui::show_hud(feedback, dark_hud),
+            Ok(None) => {}
+            Err(error) => eprintln!("yal: global command hotkey `{entry_id}` failed: {error}"),
+        },
+    );
+}
+
+fn settings_prefers_dark(settings: &WindowsSettings) -> bool {
+    let appearance = settings
+        .get(tc_palette::KEY_APPEARANCE)
+        .unwrap_or_else(|| "System".to_string());
+    match appearance.trim().to_ascii_lowercase().as_str() {
+        "light" => false,
+        "dark" => true,
+        _ => tc_platform_win::apps_use_dark_theme(),
+    }
 }
 
 fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> LauncherState {
@@ -283,7 +459,7 @@ fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> Lau
         .unwrap_or_else(|_| CustomCommandStore::in_memory());
     launcher.set_custom_commands(store.commands().to_vec());
 
-    if settings.get(FILE_SEARCH_ENABLED).as_deref() == Some("true") {
+    if settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("false") {
         let index = paths.data_dir.join(INDEX_FILE);
         if let Ok(store) = tc_files::store::IndexStore::open(&index) {
             launcher.set_file_search(FileSearch::new(store, paths.home_dir.clone(), Vec::new()));
@@ -389,13 +565,6 @@ fn build_window_commands(
         .and_then(|value| tc_windows::geometry::WindowCycle::parse(&value))
         .unwrap_or(tc_windows::geometry::WindowCycle::Off);
     tc_platform_win::window_control::WindowCommands::new(gap, cycle)
-}
-
-fn configured_launcher_hotkey(settings: &WindowsSettings) -> HotkeyTrigger {
-    settings
-        .get(KEY_LAUNCHER_HOTKEY)
-        .and_then(|value| HotkeyTrigger::parse(&value))
-        .unwrap_or_else(HotkeyTrigger::default_launcher)
 }
 
 fn toggle_palette(handle: PaletteHandle) {
