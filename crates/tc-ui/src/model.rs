@@ -6,10 +6,10 @@ use std::sync::Arc;
 use crate::theme::{Color, Metrics};
 
 /// Height of a section divider header in DIPs.
-pub const SECTION_HEADER_HEIGHT: f32 = 26.0;
+pub const SECTION_HEADER_HEIGHT: f32 = 24.0;
 
-/// Height of a Calculator hero card in DIPs.
-pub const CALC_HERO_HEIGHT: f32 = 100.0;
+/// Height of a Calculator hero card in DIPs (exact Raycast split-card height).
+pub const CALC_HERO_HEIGHT: f32 = 124.0;
 
 /// Height of one cell row in 2D Emoji Grid mode (in DIPs).
 pub const GRID_CELL_HEIGHT: f32 = 62.0;
@@ -305,8 +305,10 @@ impl Icon {
 pub struct Row {
     /// The row's headline (or calculated answer for a calculator hero card).
     pub name: String,
-    /// Secondary subtitle (or input expression for a calculator hero card).
+    /// Secondary inline subtitle (or input expression for a calculator hero card).
     pub detail: String,
+    /// Optional right-aligned muted type/category accessory (e.g. "Command", "Application", "File").
+    pub accessory: String,
     /// Right-aligned pill badge (shortcut keycap or current setting value).
     pub shortcut: String,
     /// Fallback tinted glyph badge when no real app icon bitmap is available.
@@ -360,6 +362,12 @@ impl Row {
     /// Attach a right-aligned shortcut or value pill.
     pub fn with_shortcut(mut self, shortcut: impl Into<String>) -> Self {
         self.shortcut = shortcut.into();
+        self
+    }
+
+    /// Attach a right-aligned muted type/category accessory (e.g. "Command", "File").
+    pub fn with_accessory(mut self, accessory: impl Into<String>) -> Self {
+        self.accessory = accessory.into();
         self
     }
 
@@ -549,7 +557,7 @@ impl Model {
         for (index, row) in self.rows.iter().enumerate() {
             if !row.section.is_empty() && last_section != Some(row.section.as_str()) {
                 if index > 0 {
-                    cursor_y += 4.0;
+                    cursor_y += 10.0;
                 }
                 sections.push(SectionLayout {
                     y: cursor_y,
@@ -573,7 +581,7 @@ impl Model {
             });
             cursor_y += h;
             if row.is_calculator {
-                cursor_y += 6.0;
+                cursor_y += 2.0;
             }
         }
 
@@ -584,7 +592,13 @@ impl Model {
             cursor_y + 4.0
         };
 
-        let max_list_height = metrics.max_rows as f32 * metrics.row_height + SECTION_HEADER_HEIGHT;
+        let expanded_viewport = (metrics.height
+            - metrics.field_height
+            - 1.0
+            - metrics.list_gap * 2.0
+            - metrics.footer_height)
+            .max(metrics.max_rows as f32 * metrics.row_height);
+        let max_list_height = expanded_viewport;
         let visible_list_height = if self.detail.is_some() {
             SPLIT_VIEW_MIN_HEIGHT.max(content_height.min(max_list_height))
         } else {

@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::ffi::c_void;
 
-use windows::core::PCWSTR;
+use windows::core::{IUnknown, Interface, PCWSTR};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Direct2D::{
     Common::{
@@ -20,10 +20,10 @@ use windows::Win32::Graphics::Direct2D::{
 use windows::Win32::Graphics::DirectWrite::{
     DWriteCreateFactory, IDWriteFactory, IDWriteTextFormat, IDWriteTextLayout,
     DWRITE_FACTORY_TYPE_SHARED, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL,
-    DWRITE_FONT_WEIGHT, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_WEIGHT_MEDIUM,
-    DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_TEXT_ALIGNMENT,
-    DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING,
-    DWRITE_TEXT_METRICS, DWRITE_TRIMMING, DWRITE_TRIMMING_GRANULARITY_CHARACTER,
+    DWRITE_FONT_WEIGHT, DWRITE_FONT_WEIGHT_MEDIUM, DWRITE_FONT_WEIGHT_NORMAL,
+    DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_TEXT_ALIGNMENT, DWRITE_TEXT_ALIGNMENT_CENTER,
+    DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_TEXT_METRICS,
+    DWRITE_TEXT_RANGE, DWRITE_TRIMMING, DWRITE_TRIMMING_GRANULARITY_CHARACTER,
     DWRITE_WORD_WRAPPING_NO_WRAP, DWRITE_WORD_WRAPPING_WRAP,
 };
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -51,12 +51,15 @@ pub struct Renderer {
     dwrite: IDWriteFactory,
     name_format: IDWriteTextFormat,
     detail_format: IDWriteTextFormat,
+    accessory_format: IDWriteTextFormat,
     section_format: IDWriteTextFormat,
     pill_format: IDWriteTextFormat,
     footer_format: IDWriteTextFormat,
+    footer_primary_format: IDWriteTextFormat,
     keycap_format: IDWriteTextFormat,
     icon_format: IDWriteTextFormat,
     calc_expr_format: IDWriteTextFormat,
+    calc_expr_med_format: IDWriteTextFormat,
     calc_expr_sm_format: IDWriteTextFormat,
     calc_answer_format: IDWriteTextFormat,
     calc_answer_med_format: IDWriteTextFormat,
@@ -113,92 +116,113 @@ impl Renderer {
         let name_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_MEDIUM,
-            14.0,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            13.5,
             DWRITE_TEXT_ALIGNMENT_LEADING,
         )?;
         let detail_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_NORMAL,
-            12.0,
+            13.0,
+            DWRITE_TEXT_ALIGNMENT_LEADING,
+        )?;
+        let accessory_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            13.0,
             DWRITE_TEXT_ALIGNMENT_TRAILING,
         )?;
         let section_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            11.0,
+            DWRITE_FONT_WEIGHT_MEDIUM,
+            11.5,
             DWRITE_TEXT_ALIGNMENT_LEADING,
         )?;
         let pill_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            11.5,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            11.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let footer_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_NORMAL,
-            11.5,
+            12.0,
+            DWRITE_TEXT_ALIGNMENT_LEADING,
+        )?;
+        let footer_primary_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_MEDIUM,
+            12.0,
             DWRITE_TEXT_ALIGNMENT_LEADING,
         )?;
         let keycap_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            10.5,
+            DWRITE_FONT_WEIGHT_MEDIUM,
+            10.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let icon_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            12.5,
+            12.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_expr_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            20.0,
+            24.0,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+        )?;
+        let calc_expr_med_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            19.5,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_expr_sm_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            14.5,
+            15.5,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_answer_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_BOLD,
-            26.0,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            24.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_answer_med_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_BOLD,
-            20.5,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            19.5,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_answer_sm_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_SEMI_BOLD,
-            16.5,
+            16.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let calc_arrow_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
             DWRITE_FONT_WEIGHT_NORMAL,
-            15.0,
+            16.0,
             DWRITE_TEXT_ALIGNMENT_CENTER,
         )?;
         let emoji_glyph_format = dwrite_format(
@@ -239,7 +263,7 @@ impl Renderer {
         let action_title_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
-            DWRITE_FONT_WEIGHT_MEDIUM,
+            DWRITE_FONT_WEIGHT_NORMAL,
             13.0,
             DWRITE_TEXT_ALIGNMENT_LEADING,
         )?;
@@ -249,12 +273,15 @@ impl Renderer {
             dwrite,
             name_format,
             detail_format,
+            accessory_format,
             section_format,
             pill_format,
             footer_format,
+            footer_primary_format,
             keycap_format,
             icon_format,
             calc_expr_format,
+            calc_expr_med_format,
             calc_expr_sm_format,
             calc_answer_format,
             calc_answer_med_format,
@@ -282,9 +309,12 @@ impl Renderer {
         for format in [
             &self.name_format,
             &self.detail_format,
+            &self.accessory_format,
             &self.section_format,
             &self.footer_format,
+            &self.footer_primary_format,
             &self.calc_expr_format,
+            &self.calc_expr_med_format,
             &self.calc_expr_sm_format,
             &self.calc_answer_format,
             &self.calc_answer_med_format,
@@ -422,22 +452,26 @@ impl Renderer {
         // Optional header mode/filter pill on the right (e.g., "Settings", "Files · Images").
         if let Some(badge) = model.header_badge.as_deref() {
             if !badge.is_empty() {
+                let badge_bg = match theme.appearance {
+                    Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x16),
+                    Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x10),
+                };
                 self.draw_pill_right(
                     badge,
-                    width - 14.0,
+                    width - 16.0,
                     metrics.field_height / 2.0,
-                    theme.accent.with_alpha(0.16),
-                    theme.accent.with_alpha(0.40),
-                    theme.accent,
+                    badge_bg,
+                    Color::rgba(0, 0, 0, 0),
+                    theme.text,
                 );
             }
         }
 
-        // Full-width subtle header divider hairline.
+        // Full-width subtle header divider hairline (inset 1px from native window border).
         self.fill_rect(
-            0.0,
+            1.0,
             metrics.field_height,
-            width,
+            (width - 1.0).max(1.0),
             metrics.field_height + 1.0,
             theme.border,
         );
@@ -525,7 +559,7 @@ impl Renderer {
         } else {
             let scroll = model.scroll_offset;
 
-            // Section headers.
+            // Section headers (16px left inset matching list_padding_x + item_padding_x).
             for section in &layout.sections {
                 let top = layout.list_top + section.y - scroll;
                 if top + section.height < layout.list_top || top > layout.list_bottom {
@@ -537,12 +571,12 @@ impl Renderer {
                     (split_x - pad * 2.0 - 16.0).max(40.0),
                     section.height,
                 ) {
-                    if let Some(brush) = self.brush(theme.text_dim.with_alpha(0.85)) {
+                    if let Some(brush) = self.brush(theme.text_dim) {
                         unsafe {
                             self.target.DrawTextLayout(
                                 Vector2 {
-                                    X: pad + 10.0,
-                                    Y: top + 6.0,
+                                    X: pad + 8.0,
+                                    Y: top + 4.0,
                                 },
                                 &text_layout,
                                 &brush,
@@ -613,10 +647,16 @@ impl Renderer {
             }
         }
 
-        // 3. Recessed Footer Bar with Toast / YAL emblem + Primary Action + Actions keycap.
+        // 3. Seamless Footer Bar with minimal brand mark + Primary Action [↵] | Actions [Ctrl] [K].
         let footer_top = height - metrics.footer_height;
         self.fill_rect(0.0, footer_top, width, height, theme.background_secondary);
-        self.fill_rect(0.0, footer_top, width, footer_top + 1.0, theme.border);
+        self.fill_rect(
+            1.0,
+            footer_top,
+            (width - 1.0).max(1.0),
+            footer_top + 1.0,
+            theme.border,
+        );
         self.draw_footer(model, theme, footer_top, width, metrics.footer_height);
 
         // 3b. Floating bottom-right `Ctrl+K` Action Panel Popover overlay.
@@ -663,39 +703,15 @@ impl Renderer {
                 right,
                 bottom: top + row_height - 1.0,
             },
-            radiusX: 8.0,
-            radiusY: 8.0,
+            radiusX: metrics.radius,
+            radiusY: metrics.radius,
         };
 
+        // Pure borderless neutral fill (Raycast Windows 2.13: no outline, no accent bar).
         if is_selected {
             if let Some(sel) = self.brush(theme.selection) {
                 unsafe {
                     self.target.FillRoundedRectangle(&row_rect, &sel);
-                }
-            }
-            let rim_color = match theme.appearance {
-                Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x16),
-                Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x14),
-            };
-            if let Some(rim) = self.brush(rim_color) {
-                unsafe {
-                    self.target.DrawRoundedRectangle(&row_rect, &rim, 1.0, None);
-                }
-            }
-            // Sleek vertical accent pill on the left edge of the selected row.
-            let bar = D2D1_ROUNDED_RECT {
-                rect: D2D_RECT_F {
-                    left: left + 3.0,
-                    top: top + 10.0,
-                    right: left + 6.0,
-                    bottom: top + row_height - 10.0,
-                },
-                radiusX: 1.5,
-                radiusY: 1.5,
-            };
-            if let Some(accent) = self.brush(theme.accent) {
-                unsafe {
-                    self.target.FillRoundedRectangle(&bar, &accent);
                 }
             }
         } else if is_hovered {
@@ -707,9 +723,9 @@ impl Renderer {
         }
 
         // Row Icon: color swatch (for clipboard colors), real Windows GPU-cached bitmap,
-        // or soft-tinted squircle badge.
+        // or calm rounded-square glyph badge.
         let icon_size = metrics.icon_size;
-        let icon_left = left + 13.0;
+        let icon_left = left + 8.0;
         let icon_top = top + (row_height - icon_size) / 2.0;
         let mut drew_bitmap = false;
 
@@ -721,15 +737,15 @@ impl Renderer {
                     right: icon_left + icon_size,
                     bottom: icon_top + icon_size,
                 },
-                radiusX: 6.5,
-                radiusY: 6.5,
+                radiusX: 5.0,
+                radiusY: 5.0,
             };
             if let Some(fill) = self.brush(Color::rgba(r, g, b, a)) {
                 unsafe {
                     self.target.FillRoundedRectangle(&swatch, &fill);
                 }
             }
-            if let Some(ring) = self.brush(Color::rgba(0xff, 0xff, 0xff, 0x40)) {
+            if let Some(ring) = self.brush(theme.border) {
                 unsafe {
                     self.target.DrawRoundedRectangle(&swatch, &ring, 1.0, None);
                 }
@@ -764,7 +780,7 @@ impl Renderer {
         if !drew_bitmap {
             let (glyph, tint) = match row.icon.as_ref() {
                 Some(icon) => (icon.letter.as_str(), icon.color),
-                None => ("·", theme.accent),
+                None => ("·", theme.text_dim),
             };
             let tile = D2D1_ROUNDED_RECT {
                 rect: D2D_RECT_F {
@@ -773,21 +789,16 @@ impl Renderer {
                     right: icon_left + icon_size,
                     bottom: icon_top + icon_size,
                 },
-                radiusX: 6.5,
-                radiusY: 6.5,
+                radiusX: 5.0,
+                radiusY: 5.0,
             };
             let fill_alpha = match theme.appearance {
-                Appearance::Dark => 0.18,
-                Appearance::Light => 0.13,
+                Appearance::Dark => 0.16,
+                Appearance::Light => 0.12,
             };
             if let Some(bg) = self.brush(tint.with_alpha(fill_alpha)) {
                 unsafe {
                     self.target.FillRoundedRectangle(&tile, &bg);
-                }
-            }
-            if let Some(ring) = self.brush(tint.with_alpha(0.35)) {
-                unsafe {
-                    self.target.DrawRoundedRectangle(&tile, &ring, 1.0, None);
                 }
             }
             if let Some(layout) = self.layout(glyph, &self.icon_format, icon_size, icon_size) {
@@ -796,7 +807,7 @@ impl Renderer {
                         self.target.DrawTextLayout(
                             Vector2 {
                                 X: icon_left,
-                                Y: icon_top + (icon_size - 16.5) / 2.0,
+                                Y: icon_top + (icon_size - 16.0) / 2.0,
                             },
                             &layout,
                             &fg,
@@ -807,80 +818,112 @@ impl Renderer {
             }
         }
 
-        // Right-aligned shortcut / active value pill (e.g. "Alt+Space", "Dark", "Ctrl+,").
-        let mut cursor_right = right - 12.0;
+        // Right-aligned shortcut / setting value badge and/or muted type accessory.
+        let mut cursor_right = right - 10.0;
         if !row.shortcut.is_empty() {
-            let pill_bg = if is_selected {
-                theme.accent.with_alpha(0.20)
+            if row.shortcut.contains('+') {
+                let kc_w = self.draw_shortcut_keycaps(
+                    &row.shortcut,
+                    cursor_right,
+                    top + row_height / 2.0,
+                    theme,
+                );
+                cursor_right -= kc_w + 10.0;
             } else {
-                match theme.appearance {
-                    Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x0e),
-                    Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x0b),
-                }
-            };
-            let pill_border = if is_selected {
-                theme.accent.with_alpha(0.45)
-            } else {
-                theme.border
-            };
-            let pill_fg = if is_selected {
-                theme.text
-            } else {
-                theme.text_dim
-            };
-            let pill_w = self.draw_pill_right(
-                &row.shortcut,
-                cursor_right,
-                top + row_height / 2.0,
-                pill_bg,
-                pill_border,
-                pill_fg,
-            );
-            cursor_right -= pill_w + 10.0;
+                let pill_bg = match theme.appearance {
+                    Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x12),
+                    Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x0d),
+                };
+                let pill_fg = if is_selected {
+                    theme.text
+                } else {
+                    theme.text_dim
+                };
+                let pill_w = self.draw_pill_right(
+                    &row.shortcut,
+                    cursor_right,
+                    top + row_height / 2.0,
+                    pill_bg,
+                    Color::rgba(0, 0, 0, 0),
+                    pill_fg,
+                );
+                cursor_right -= pill_w + 10.0;
+            }
         }
 
-        // Row primary title & right-aligned muted detail (hidden in narrow split-view master list).
-        let text_left = icon_left + icon_size + 12.0;
-        let available = (cursor_right - text_left).max(0.0);
-
-        let detail_w = if !compact_master && !row.detail.is_empty() && available > 120.0 {
-            let max_detail = (available * 0.46).min(240.0);
-            if let Some(layout) = self.layout(&row.detail, &self.detail_format, max_detail, 20.0) {
-                let measured = measure_width(&layout).min(max_detail);
+        if !compact_master && !row.accessory.is_empty() {
+            let max_acc = 110.0_f32;
+            if let Some(acc_layout) =
+                self.layout(&row.accessory, &self.accessory_format, max_acc, 20.0)
+            {
+                let acc_w = measure_width(&acc_layout).min(max_acc);
                 if let Some(brush) = self.brush(theme.text_dim) {
                     unsafe {
                         self.target.DrawTextLayout(
                             Vector2 {
-                                X: cursor_right - max_detail,
-                                Y: top + (row_height - 16.5) / 2.0,
+                                X: cursor_right - max_acc,
+                                Y: top + (row_height - 18.0) / 2.0,
                             },
-                            &layout,
+                            &acc_layout,
                             &brush,
                             D2D1_DRAW_TEXT_OPTIONS_CLIP,
                         );
                     }
                 }
-                measured + 12.0
-            } else {
-                0.0
+                cursor_right -= acc_w + 16.0;
             }
+        }
+
+        // Raycast inline row layout: Title followed immediately (+10px) by muted Subtitle.
+        let text_left = icon_left + icon_size + 12.0;
+        let available = (cursor_right - text_left).max(0.0);
+        let has_inline_detail = !compact_master && !row.detail.is_empty() && available > 110.0;
+
+        let max_title_w = if has_inline_detail {
+            // Leave room for inline subtitle if the title is very long, while letting
+            // short/medium titles measure at their exact natural width.
+            available.min((available * 0.68).max(160.0))
         } else {
-            0.0
+            available
         };
 
-        let title_width = (available - detail_w).max(0.0);
-        if let Some(layout) = self.layout(&row.name, &self.name_format, title_width, 22.0) {
+        let mut title_used = 0.0_f32;
+        if let Some(layout) = self.layout(&row.name, &self.name_format, max_title_w, 22.0) {
+            title_used = measure_width(&layout).min(max_title_w);
             if let Some(brush) = self.brush(theme.text) {
                 unsafe {
                     self.target.DrawTextLayout(
                         Vector2 {
                             X: text_left,
-                            Y: top + (row_height - 19.0) / 2.0,
+                            Y: top + (row_height - 18.5) / 2.0,
                         },
                         &layout,
                         &brush,
                         D2D1_DRAW_TEXT_OPTIONS_CLIP,
                     );
+                }
+            }
+        }
+
+        if has_inline_detail {
+            let detail_left = text_left + title_used + 10.0;
+            let detail_w = (cursor_right - detail_left).max(0.0);
+            if detail_w >= 28.0 {
+                if let Some(layout) = self.layout(&row.detail, &self.detail_format, detail_w, 20.0)
+                {
+                    if let Some(brush) = self.brush(theme.text_dim) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: detail_left,
+                                    Y: top + (row_height - 18.0) / 2.0,
+                                },
+                                &layout,
+                                &brush,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
                 }
             }
         }
@@ -900,52 +943,55 @@ impl Renderer {
         let card = D2D1_ROUNDED_RECT {
             rect: D2D_RECT_F {
                 left,
-                top: top + 2.0,
+                top: top + 1.0,
                 right,
-                bottom: top + height - 2.0,
+                bottom: top + height - 1.0,
             },
-            radiusX: 10.0,
-            radiusY: 10.0,
+            radiusX: theme.metrics.radius,
+            radiusY: theme.metrics.radius,
         };
         let fill = if is_selected {
             theme.selection
         } else {
-            theme.background_secondary
+            match theme.appearance {
+                Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x08),
+                Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x08),
+            }
         };
         if let Some(bg) = self.brush(fill) {
             unsafe {
                 self.target.FillRoundedRectangle(&card, &bg);
             }
         }
-        let border_col = if is_selected {
-            theme.accent.with_alpha(0.50)
-        } else {
-            theme.border
-        };
-        if let Some(border) = self.brush(border_col) {
-            unsafe {
-                self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
-            }
-        }
 
-        // Symmetric 50/50 split with subtle hairline interrupted by a crisp `→` arrow.
-        let mid_x = left + (right - left) * 0.50;
+        // Full-height subtle 1px vertical divider interrupted cleanly by a centered `→` arrow.
+        let mid_x = (left + (right - left) * 0.50).round();
         let mid_y = top + height * 0.50;
-        self.fill_rect(mid_x, top + 14.0, mid_x + 1.0, mid_y - 12.0, theme.border);
+        let div_col = if is_selected {
+            theme.border
+        } else {
+            theme.border.with_alpha(0.5)
+        };
+        self.fill_rect(mid_x, top + 1.0, mid_x + 1.0, mid_y - 14.0, div_col);
         self.fill_rect(
             mid_x,
-            mid_y + 12.0,
+            mid_y + 14.0,
             mid_x + 1.0,
-            top + height - 14.0,
-            theme.border,
+            top + height - 1.0,
+            div_col,
         );
         if let Some(arrow) = self.layout("→", &self.calc_arrow_format, 24.0, 22.0) {
-            if let Some(brush) = self.brush(theme.text_dim) {
+            let arrow_col = if is_selected {
+                theme.text
+            } else {
+                theme.text_dim
+            };
+            if let Some(brush) = self.brush(arrow_col) {
                 unsafe {
                     self.target.DrawTextLayout(
                         Vector2 {
-                            X: mid_x - 12.0,
-                            Y: mid_y - 10.5,
+                            X: mid_x - 11.5,
+                            Y: mid_y - 11.0,
                         },
                         &arrow,
                         &brush,
@@ -955,15 +1001,23 @@ impl Renderer {
             }
         }
 
+        // Neutral borderless Raycast token pills on BOTH left and right halves.
         let pill_bg = match theme.appearance {
-            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x0e),
-            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x0b),
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x1a),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x14),
         };
-        let pill_border = theme.border;
-        let pill_fg = theme.text_dim;
+        let pill_border = Color::rgba(0, 0, 0, 0);
+        let pill_fg = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0xd9),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0xd9),
+        };
+        let dim_token_col = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x66),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x66),
+        };
 
-        // Left half: optional glossy Color Swatch + centered expression + centered source pill.
-        let mut lhs_left = left + 18.0;
+        // Left half: optional Color Swatch + syntax-dimmed centered expression + bottom pill.
+        let mut lhs_left = left + 16.0;
         let lhs_right = mid_x - 16.0;
         if let Some([r, g, b, a]) = row.color_swatch {
             let sw = 44.0_f32;
@@ -979,13 +1033,13 @@ impl Renderer {
                 radiusY: 10.0,
             };
             if a < 255 {
-                if let Some(base) = self.brush(Color::rgb(0x40, 0x42, 0x4c)) {
+                if let Some(base) = self.brush(Color::rgb(0x40, 0x40, 0x40)) {
                     unsafe {
                         self.target.FillRoundedRectangle(&swatch_rect, &base);
                     }
                 }
                 let cell = sw / 4.0;
-                if let Some(light) = self.brush(Color::rgb(0x74, 0x78, 0x86)) {
+                if let Some(light) = self.brush(Color::rgb(0x76, 0x76, 0x76)) {
                     for gy in 0..4 {
                         for gx in 0..4 {
                             if (gx + gy) % 2 == 0 {
@@ -1010,10 +1064,10 @@ impl Renderer {
                     self.target.FillRoundedRectangle(&swatch_rect, &fill);
                 }
             }
-            if let Some(ring) = self.brush(Color::rgba(0xff, 0xff, 0xff, 0x35)) {
+            if let Some(ring) = self.brush(Color::rgba(0xff, 0xff, 0xff, 0x30)) {
                 unsafe {
                     self.target
-                        .DrawRoundedRectangle(&swatch_rect, &ring, 1.2, None);
+                        .DrawRoundedRectangle(&swatch_rect, &ring, 1.0, None);
                 }
             }
             lhs_left += sw + 12.0;
@@ -1021,15 +1075,40 @@ impl Renderer {
 
         let expr_w = (lhs_right - lhs_left).max(0.0);
         let lhs_center = lhs_left + expr_w / 2.0;
+        let (formatted_expr, dim_ranges) = format_calc_expression_spans(&row.detail);
         let (expr_fmt, expr_y_off) = {
-            let probe = self.layout(&row.detail, &self.calc_expr_format, 2000.0, 32.0);
+            let probe = self.layout(&formatted_expr, &self.calc_expr_format, 2000.0, 38.0);
             if probe.as_ref().is_some_and(|l| measure_width(l) <= expr_w) {
-                (&self.calc_expr_format, 21.0_f32)
+                (&self.calc_expr_format, 32.0_f32)
             } else {
-                (&self.calc_expr_sm_format, 25.0_f32)
+                let probe_med =
+                    self.layout(&formatted_expr, &self.calc_expr_med_format, 2000.0, 34.0);
+                if probe_med
+                    .as_ref()
+                    .is_some_and(|l| measure_width(l) <= expr_w)
+                {
+                    (&self.calc_expr_med_format, 35.0_f32)
+                } else {
+                    (&self.calc_expr_sm_format, 38.0_f32)
+                }
             }
         };
-        if let Some(layout) = self.layout(&row.detail, expr_fmt, expr_w, 32.0) {
+        if let Some(layout) = self.layout(&formatted_expr, expr_fmt, expr_w, 38.0) {
+            if !dim_ranges.is_empty() {
+                if let Some(dim_brush) = self.brush(dim_token_col) {
+                    if let Ok(effect) = dim_brush.cast::<IUnknown>() {
+                        for (start, len) in dim_ranges {
+                            let range = DWRITE_TEXT_RANGE {
+                                startPosition: start,
+                                length: len,
+                            };
+                            unsafe {
+                                let _ = layout.SetDrawingEffect(&effect, range);
+                            }
+                        }
+                    }
+                }
+            }
             if let Some(brush) = self.brush(theme.text) {
                 unsafe {
                     self.target.DrawTextLayout(
@@ -1052,35 +1131,34 @@ impl Renderer {
         self.draw_pill_centered(
             src_badge,
             lhs_center,
-            top + height - 22.0,
+            top + height - 28.0,
             pill_bg,
             pill_border,
             pill_fg,
         );
 
-        // Right half: big crisp centered auto-fitted answer + centered target pill.
+        // Right half: symmetric 24px SemiBold answer + neutral bottom pill.
         let ans_left = mid_x + 16.0;
-        let ans_right = right - 18.0;
+        let ans_right = right - 16.0;
         let ans_w = (ans_right - ans_left).max(0.0);
         let rhs_center = ans_left + ans_w / 2.0;
         let (ans_format, ans_y_offset) = {
-            let probe = self.layout(&row.name, &self.calc_answer_format, 2000.0, 40.0);
-            let fits_large = probe.as_ref().is_some_and(|l| measure_width(l) <= ans_w);
-            if fits_large {
-                (&self.calc_answer_format, 17.0_f32)
+            let probe = self.layout(&row.name, &self.calc_answer_format, 2000.0, 38.0);
+            if probe.as_ref().is_some_and(|l| measure_width(l) <= ans_w) {
+                (&self.calc_answer_format, 32.0_f32)
             } else {
                 let probe_med = self.layout(&row.name, &self.calc_answer_med_format, 2000.0, 34.0);
-                let fits_med = probe_med
+                if probe_med
                     .as_ref()
-                    .is_some_and(|l| measure_width(l) <= ans_w);
-                if fits_med {
-                    (&self.calc_answer_med_format, 21.0_f32)
+                    .is_some_and(|l| measure_width(l) <= ans_w)
+                {
+                    (&self.calc_answer_med_format, 35.0_f32)
                 } else {
-                    (&self.calc_answer_sm_format, 24.0_f32)
+                    (&self.calc_answer_sm_format, 38.0_f32)
                 }
             }
         };
-        if let Some(layout) = self.layout(&row.name, ans_format, ans_w, 40.0) {
+        if let Some(layout) = self.layout(&row.name, ans_format, ans_w, 38.0) {
             if let Some(brush) = self.brush(theme.text) {
                 unsafe {
                     self.target.DrawTextLayout(
@@ -1103,10 +1181,10 @@ impl Renderer {
         self.draw_pill_centered(
             dst_badge,
             rhs_center,
-            top + height - 22.0,
-            theme.accent.with_alpha(0.16),
-            theme.accent.with_alpha(0.38),
-            theme.accent,
+            top + height - 28.0,
+            pill_bg,
+            pill_border,
+            pill_fg,
         );
     }
 
@@ -1269,31 +1347,31 @@ impl Renderer {
 
     fn draw_footer(&mut self, model: &Model, theme: &Theme, top: f32, width: f32, height: f32) {
         let mid_y = top + height / 2.0;
-        let logo_x = 14.0;
+        let left_x = 16.0;
 
         if let Some(toast) = model.toast.as_ref() {
             let dot_col = match toast.kind {
-                ToastKind::Success => Color::rgb(0x22, 0xc5, 0x5e),
+                ToastKind::Success => Color::rgb(0x59, 0xd4, 0x99),
                 ToastKind::Info => theme.accent,
-                ToastKind::Error => Color::rgb(0xef, 0x44, 0x44),
+                ToastKind::Error => Color::rgb(0xff, 0x63, 0x63),
             };
             let halo = D2D1_ELLIPSE {
                 point: Vector2 {
-                    X: logo_x + 6.0,
+                    X: left_x + 5.0,
                     Y: mid_y,
                 },
-                radiusX: 6.5,
-                radiusY: 6.5,
+                radiusX: 6.0,
+                radiusY: 6.0,
             };
             let dot = D2D1_ELLIPSE {
                 point: Vector2 {
-                    X: logo_x + 6.0,
+                    X: left_x + 5.0,
                     Y: mid_y,
                 },
-                radiusX: 3.5,
-                radiusY: 3.5,
+                radiusX: 3.2,
+                radiusY: 3.2,
             };
-            if let Some(b) = self.brush(dot_col.with_alpha(0.26)) {
+            if let Some(b) = self.brush(dot_col.with_alpha(0.24)) {
                 unsafe {
                     self.target.FillEllipse(&halo, &b);
                 }
@@ -1308,8 +1386,8 @@ impl Renderer {
                     unsafe {
                         self.target.DrawTextLayout(
                             Vector2 {
-                                X: logo_x + 19.0,
-                                Y: mid_y - 8.0,
+                                X: left_x + 18.0,
+                                Y: mid_y - 8.5,
                             },
                             &layout,
                             &brush,
@@ -1318,92 +1396,114 @@ impl Renderer {
                     }
                 }
             }
-        } else {
-            // Left: sleek geometric YAL emblem (rounded square + inner highlight bar).
-            let logo_y = mid_y - 7.5;
-            let logo = D2D1_ROUNDED_RECT {
-                rect: D2D_RECT_F {
-                    left: logo_x,
-                    top: logo_y,
-                    right: logo_x + 15.0,
-                    bottom: logo_y + 15.0,
-                },
-                radiusX: 4.0,
-                radiusY: 4.0,
+        } else if let Some(active_emoji) = model.grid.as_ref().and_then(|g| g.active_cell()) {
+            let status = if active_emoji.pinned {
+                format!("{}  {}  ·  Pinned", active_emoji.glyph, active_emoji.name)
+            } else {
+                format!("{}  {}", active_emoji.glyph, active_emoji.name)
             };
-            if let Some(bg) = self.brush(theme.accent.with_alpha(0.22)) {
-                unsafe {
-                    self.target.FillRoundedRectangle(&logo, &bg);
-                }
-            }
-            if let Some(ring) = self.brush(theme.accent.with_alpha(0.60)) {
-                unsafe {
-                    self.target.DrawRoundedRectangle(&logo, &ring, 1.0, None);
-                }
-            }
-            let bar = D2D1_ROUNDED_RECT {
-                rect: D2D_RECT_F {
-                    left: logo_x + 3.5,
-                    top: logo_y + 6.0,
-                    right: logo_x + 11.5,
-                    bottom: logo_y + 9.0,
-                },
-                radiusX: 1.2,
-                radiusY: 1.2,
-            };
-            if let Some(accent) = self.brush(theme.accent) {
-                unsafe {
-                    self.target.FillRoundedRectangle(&bar, &accent);
-                }
-            }
-
-            let active_emoji_status = model.grid.as_ref().and_then(|g| g.active_cell()).map(|c| {
-                if c.pinned {
-                    format!("{}  {}  ·  Pinned", c.glyph, c.name)
-                } else {
-                    format!("{}  {}", c.glyph, c.name)
-                }
-            });
-            let status = active_emoji_status
-                .as_deref()
-                .or_else(|| model.result_count.as_deref().filter(|s| !s.is_empty()))
-                .unwrap_or(&model.footer);
-            if !status.is_empty() {
-                if let Some(layout) = self.layout(status, &self.footer_format, 280.0, 18.0) {
-                    if let Some(brush) = self.brush(theme.text_dim) {
-                        unsafe {
-                            self.target.DrawTextLayout(
-                                Vector2 {
-                                    X: logo_x + 23.0,
-                                    Y: mid_y - 8.0,
-                                },
-                                &layout,
-                                &brush,
-                                D2D1_DRAW_TEXT_OPTIONS_CLIP
-                                    | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
-                            );
-                        }
-                    }
-                }
-            }
-        }
-
-        // Right: crisp drawn keycap hints.
-        let mut cursor_right = width - 14.0;
-        let keycap_bg = match theme.appearance {
-            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x0e),
-            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x0b),
-        };
-        for (keycap, label) in model.footer_hints.iter().rev() {
-            if let Some(label_layout) = self.layout(label, &self.footer_format, 120.0, 18.0) {
-                let label_w = measure_width(&label_layout);
-                let label_x = cursor_right - label_w;
+            if let Some(layout) = self.layout(&status, &self.footer_format, 300.0, 18.0) {
                 if let Some(brush) = self.brush(theme.text_dim) {
                     unsafe {
                         self.target.DrawTextLayout(
                             Vector2 {
+                                X: left_x,
+                                Y: mid_y - 8.5,
+                            },
+                            &layout,
+                            &brush,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                        );
+                    }
+                }
+            }
+        } else {
+            // Subtle minimal dual-bar footer mark matching Raycast's left-side menu icon.
+            let bar_col = theme.text_dim.with_alpha(0.65);
+            let top_bar = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: left_x,
+                    top: mid_y - 3.5,
+                    right: left_x + 13.0,
+                    bottom: mid_y - 2.0,
+                },
+                radiusX: 0.75,
+                radiusY: 0.75,
+            };
+            let bot_bar = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: left_x,
+                    top: mid_y + 1.5,
+                    right: left_x + 9.0,
+                    bottom: mid_y + 3.0,
+                },
+                radiusX: 0.75,
+                radiusY: 0.75,
+            };
+            if let Some(b) = self.brush(bar_col) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&top_bar, &b);
+                    self.target.FillRoundedRectangle(&bot_bar, &b);
+                }
+            }
+        }
+
+        // Right: exact Raycast action bar — `Copy Answer [↵]  |  Actions [Ctrl] [K]`.
+        let mut cursor_right = width - 12.0;
+        let sep_color = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x33),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x26),
+        };
+        let total = model.footer_hints.len();
+        for (rev_idx, (idx, (keycap, label))) in
+            model.footer_hints.iter().enumerate().rev().enumerate()
+        {
+            if rev_idx > 0 {
+                // Vertical 2×12px separator between action items.
+                cursor_right -= 8.0;
+                let sep = D2D1_ROUNDED_RECT {
+                    rect: D2D_RECT_F {
+                        left: cursor_right - 1.5,
+                        top: mid_y - 6.0,
+                        right: cursor_right,
+                        bottom: mid_y + 6.0,
+                    },
+                    radiusX: 0.75,
+                    radiusY: 0.75,
+                };
+                if let Some(b) = self.brush(sep_color) {
+                    unsafe {
+                        self.target.FillRoundedRectangle(&sep, &b);
+                    }
+                }
+                cursor_right -= 11.5;
+            }
+
+            // 1. Separated individual framed keycaps (`Ctrl` + `K` or `↵`) on the right.
+            let cap_total_w = self.draw_shortcut_keycaps(keycap, cursor_right, mid_y, theme);
+            cursor_right -= cap_total_w + 8.0;
+
+            // 2. Action label immediately to the left of its keycaps (Primary in bright white).
+            let is_primary = idx == 0 && total >= 1;
+            let fmt = if is_primary {
+                &self.footer_primary_format
+            } else {
+                &self.footer_format
+            };
+            let label_col = if is_primary {
+                theme.text
+            } else {
+                theme.text_dim
+            };
+            if let Some(label_layout) = self.layout(label, fmt, 150.0, 18.0) {
+                let label_w = measure_width(&label_layout);
+                let label_x = cursor_right - label_w;
+                if let Some(brush) = self.brush(label_col) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
                                 X: label_x,
-                                Y: mid_y - 8.0,
+                                Y: mid_y - 8.5,
                             },
                             &label_layout,
                             &brush,
@@ -1411,54 +1511,86 @@ impl Renderer {
                         );
                     }
                 }
-                cursor_right = label_x - 6.0;
-            }
-
-            if let Some(cap_layout) = self.layout(keycap, &self.keycap_format, 80.0, 16.0) {
-                let cap_text_w = measure_width(&cap_layout);
-                let cap_w = (cap_text_w + 10.0).max(20.0);
-                let cap_h = 19.0;
-                let cap_left = cursor_right - cap_w;
-                let cap_top = mid_y - cap_h / 2.0;
-                let cap_rect = D2D1_ROUNDED_RECT {
-                    rect: D2D_RECT_F {
-                        left: cap_left,
-                        top: cap_top,
-                        right: cursor_right,
-                        bottom: cap_top + cap_h,
-                    },
-                    radiusX: 4.5,
-                    radiusY: 4.5,
-                };
-                if let Some(bg) = self.brush(keycap_bg) {
-                    unsafe {
-                        self.target.FillRoundedRectangle(&cap_rect, &bg);
-                    }
-                }
-                if let Some(border) = self.brush(theme.border) {
-                    unsafe {
-                        self.target
-                            .DrawRoundedRectangle(&cap_rect, &border, 1.0, None);
-                    }
-                }
-                if let Some(centered) = self.layout(keycap, &self.keycap_format, cap_w, 16.0) {
-                    if let Some(fg) = self.brush(theme.text) {
-                        unsafe {
-                            self.target.DrawTextLayout(
-                                Vector2 {
-                                    X: cap_left,
-                                    Y: cap_top + 2.0,
-                                },
-                                &centered,
-                                &fg,
-                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
-                            );
-                        }
-                    }
-                }
-                cursor_right = cap_left - 14.0;
+                cursor_right = label_x - 2.0;
             }
         }
+    }
+
+    /// Draw Raycast-style separated framed keycaps (`"Ctrl+K"` -> `[Ctrl]` `2px` `[K]`),
+    /// right-aligned at `right`, returning total width consumed.
+    fn draw_shortcut_keycaps(
+        &mut self,
+        shortcut: &str,
+        right: f32,
+        center_y: f32,
+        theme: &Theme,
+    ) -> f32 {
+        let keys: Vec<&str> = if shortcut.contains('+') {
+            shortcut
+                .split('+')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .collect()
+        } else {
+            vec![shortcut]
+        };
+        if keys.is_empty() {
+            return 0.0;
+        }
+        let border_col = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x33),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x2b),
+        };
+        let fg_col = theme.text_dim;
+        let mut cursor = right;
+        let start_right = right;
+        for (i, key) in keys.iter().rev().enumerate() {
+            if i > 0 {
+                cursor -= 3.0;
+            }
+            let cap_w = if let Some(probe) = self.layout(key, &self.keycap_format, 80.0, 16.0) {
+                (measure_width(&probe) + 8.0).max(18.0)
+            } else {
+                18.0
+            };
+            let cap_h = 18.0_f32;
+            let cap_left = cursor - cap_w;
+            let cap_top = center_y - cap_h / 2.0;
+            let cap_rect = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: cap_left,
+                    top: cap_top,
+                    right: cursor,
+                    bottom: cap_top + cap_h,
+                },
+                radiusX: 4.0,
+                radiusY: 4.0,
+            };
+            if let Some(border) = self.brush(border_col) {
+                unsafe {
+                    self.target
+                        .DrawRoundedRectangle(&cap_rect, &border, 1.0, None);
+                }
+            }
+            if let Some(centered) = self.layout(key, &self.keycap_format, cap_w, 16.0) {
+                let y_nudge = if *key == "↵" { 1.0 } else { 2.0 };
+                if let Some(fg) = self.brush(fg_col) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: cap_left,
+                                Y: cap_top + y_nudge,
+                            },
+                            &centered,
+                            &fg,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                        );
+                    }
+                }
+            }
+            cursor = cap_left;
+        }
+        (start_right - cursor).max(0.0)
     }
 
     fn draw_back_button(&mut self, theme: &Theme, left: f32, top: f32) {
@@ -1788,17 +1920,21 @@ impl Renderer {
             radiusY: 10.0,
         };
         let panel_bg = match theme.appearance {
-            Appearance::Dark => Color::rgb(0x1c, 0x1d, 0x24),
+            Appearance::Dark => Color::rgb(0x22, 0x22, 0x22),
             Appearance::Light => Color::rgb(0xff, 0xff, 0xff),
+        };
+        let panel_border = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x24),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x1c),
         };
         if let Some(bg) = self.brush(panel_bg) {
             unsafe {
                 self.target.FillRoundedRectangle(&card, &bg);
             }
         }
-        if let Some(border) = self.brush(theme.accent.with_alpha(0.38)) {
+        if let Some(border) = self.brush(panel_border) {
             unsafe {
-                self.target.DrawRoundedRectangle(&card, &border, 1.1, None);
+                self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
             }
         }
 
@@ -1944,13 +2080,11 @@ impl Renderer {
 
             let mut shortcut_reserve = 14.0_f32;
             if !item.shortcut.is_empty() {
-                let sc_w = self.draw_pill_right(
+                let sc_w = self.draw_shortcut_keycaps(
                     &item.shortcut,
                     right - 12.0,
                     ry + ACTION_MENU_ROW_H / 2.0,
-                    theme.border.with_alpha(0.35),
-                    theme.border,
-                    theme.text_dim,
+                    theme,
                 );
                 shortcut_reserve = sc_w + 20.0;
             }
@@ -2003,12 +2137,12 @@ impl Renderer {
         border: Color,
         fg: Color,
     ) -> f32 {
-        let Some(probe) = self.layout(text, &self.pill_format, 220.0, 18.0) else {
+        let Some(probe) = self.layout(text, &self.pill_format, 240.0, 18.0) else {
             return 0.0;
         };
         let text_w = measure_width(&probe);
-        let pill_w = (text_w + 18.0).max(36.0);
-        let pill_h = 21.0;
+        let pill_w = (text_w + 16.0).max(34.0);
+        let pill_h = 20.0;
         let left = center_x - pill_w / 2.0;
         let top = center_y - pill_h / 2.0;
         self.paint_pill(text, left, top, pill_w, pill_h, bg, border, fg);
@@ -2034,17 +2168,21 @@ impl Renderer {
                 right: left + width,
                 bottom: top + height,
             },
-            radiusX: 6.0,
-            radiusY: 6.0,
+            radiusX: 4.0,
+            radiusY: 4.0,
         };
-        if let Some(brush) = self.brush(bg) {
-            unsafe {
-                self.target.FillRoundedRectangle(&rect, &brush);
+        if bg.alpha > 0.0 {
+            if let Some(brush) = self.brush(bg) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&rect, &brush);
+                }
             }
         }
-        if let Some(brush) = self.brush(border) {
-            unsafe {
-                self.target.DrawRoundedRectangle(&rect, &brush, 1.0, None);
+        if border.alpha > 0.0 {
+            if let Some(brush) = self.brush(border) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&rect, &brush, 1.0, None);
+                }
             }
         }
         if let Some(layout) = self.layout(text, &self.pill_format, width, height) {
@@ -2053,7 +2191,7 @@ impl Renderer {
                     self.target.DrawTextLayout(
                         Vector2 {
                             X: left,
-                            Y: top + (height - 16.0) / 2.0,
+                            Y: top + (height - 15.0) / 2.0,
                         },
                         &layout,
                         &brush,
@@ -2078,33 +2216,57 @@ impl Renderer {
         }
     }
 
-    /// Clean magnifying glass icon with the handle starting from the rim (never inside the circle).
+    /// Subtle geometric monochrome prism emblem in the left header slot (matching
+    /// Raycast's 22px tertiary brand mark in `rgba(255,255,255,0.40)`).
     fn draw_search_glyph(&mut self, theme: &Theme, left: f32, middle: f32) {
-        let radius = 6.5_f32;
-        let center = Vector2 {
-            X: left + radius + 1.0,
-            Y: middle - 1.5,
+        let cx = left + 10.5;
+        let cy = middle;
+        let r = 8.5_f32;
+        let top = Vector2 { X: cx, Y: cy - r };
+        let right = Vector2 { X: cx + r, Y: cy };
+        let bottom = Vector2 { X: cx, Y: cy + r };
+        let left_pt = Vector2 { X: cx - r, Y: cy };
+        let col = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x66),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x5c),
         };
-        let ellipse = D2D1_ELLIPSE {
-            point: center,
-            radiusX: radius,
-            radiusY: radius,
-        };
-        let diag = std::f32::consts::FRAC_1_SQRT_2;
-        let start = Vector2 {
-            X: center.X + radius * diag,
-            Y: center.Y + radius * diag,
-        };
-        let end = Vector2 {
-            X: start.X + 4.8,
-            Y: start.Y + 4.8,
-        };
-        if let Some(brush) = self.brush(theme.text_dim) {
+        if let Some(brush) = self.brush(col) {
             unsafe {
                 self.target
-                    .DrawEllipse(&ellipse, &brush, 1.75, None::<&ID2D1StrokeStyle>);
+                    .DrawLine(top, right, &brush, 1.5, None::<&ID2D1StrokeStyle>);
                 self.target
-                    .DrawLine(start, end, &brush, 1.75, None::<&ID2D1StrokeStyle>);
+                    .DrawLine(right, bottom, &brush, 1.5, None::<&ID2D1StrokeStyle>);
+                self.target
+                    .DrawLine(bottom, left_pt, &brush, 1.5, None::<&ID2D1StrokeStyle>);
+                self.target
+                    .DrawLine(left_pt, top, &brush, 1.5, None::<&ID2D1StrokeStyle>);
+                // Inner geometric accent rays.
+                self.target.DrawLine(
+                    Vector2 {
+                        X: cx - 3.5,
+                        Y: cy - 3.5,
+                    },
+                    Vector2 {
+                        X: cx + 3.5,
+                        Y: cy + 3.5,
+                    },
+                    &brush,
+                    1.35,
+                    None::<&ID2D1StrokeStyle>,
+                );
+                self.target.DrawLine(
+                    Vector2 {
+                        X: cx - 3.5,
+                        Y: cy + 3.5,
+                    },
+                    Vector2 {
+                        X: cx + 0.5,
+                        Y: cy - 0.5,
+                    },
+                    &brush,
+                    1.35,
+                    None::<&ID2D1StrokeStyle>,
+                );
             }
         }
     }
@@ -2205,5 +2367,162 @@ fn to_d2d(color: Color) -> D2D1_COLOR_F {
         g: color.green,
         b: color.blue,
         a: color.alpha,
+    }
+}
+
+/// Connector words, prepositions, and prose fillers rendered in Raycast's dimmed
+/// tertiary color (`rgba(255,255,255,0.40)`) inside the Calculator expression card.
+fn is_dimmed_calc_word(word: &str) -> bool {
+    matches!(
+        word.to_ascii_lowercase().as_str(),
+        "till"
+            | "until"
+            | "til"
+            | "'til"
+            | "since"
+            | "between"
+            | "and"
+            | "in"
+            | "to"
+            | "into"
+            | "from"
+            | "of"
+            | "at"
+            | "on"
+            | "by"
+            | "for"
+            | "with"
+            | "as"
+            | "per"
+            | "before"
+            | "after"
+            | "left"
+            | "remaining"
+            | "how"
+            | "many"
+            | "what"
+            | "when"
+            | "is"
+            | "are"
+            | "off"
+            | "plus"
+            | "minus"
+            | "times"
+            | "divided"
+            | "over"
+            | "mod"
+            | "or"
+            | "xor"
+    )
+}
+
+/// Format a Calculator input expression for the left half of the split hero card
+/// (substituting standalone `*` -> `×`, `/` -> `÷`, `-` -> `−`) and return the
+/// UTF-16 `(start, length)` ranges that should be rendered dimmed (operators,
+/// parentheses, and connector words like `till`, `to`, `in`, `of`, `between`).
+fn format_calc_expression_spans(expr: &str) -> (String, Vec<(u32, u32)>) {
+    let chars: Vec<char> = expr.chars().collect();
+    let mut out = String::with_capacity(expr.len() + 4);
+    let mut dimmed: Vec<(u32, u32)> = Vec::new();
+    let mut utf16_pos: u32 = 0;
+    let mut i = 0;
+
+    while i < chars.len() {
+        let ch = chars[i];
+        if ch.is_whitespace() {
+            out.push(ch);
+            utf16_pos += ch.len_utf16() as u32;
+            i += 1;
+            continue;
+        }
+
+        // Alphabetic / apostrophe word tokens (e.g. `hours`, `till`, `'til`, `nov`).
+        if ch.is_alphabetic() || (ch == '\'' && chars.get(i + 1).is_some_and(|c| c.is_alphabetic()))
+        {
+            let start_i = i;
+            i += 1;
+            while i < chars.len() && (chars[i].is_alphabetic() || chars[i] == '\'') {
+                i += 1;
+            }
+            let word: String = chars[start_i..i].iter().collect();
+            let start_u16 = utf16_pos;
+            let len_u16 = word.encode_utf16().count() as u32;
+            out.push_str(&word);
+            utf16_pos += len_u16;
+            if is_dimmed_calc_word(&word) {
+                dimmed.push((start_u16, len_u16));
+            }
+            continue;
+        }
+
+        // Numeric / hex / color / date literal runs stay bright (`27`, `3:45pm`, `29/11`, `2026-11-27`, `#ff5500`).
+        if ch.is_ascii_digit() || ch == '#' {
+            let start_i = i;
+            i += 1;
+            while i < chars.len() {
+                let c = chars[i];
+                let prev = chars[i - 1];
+                let next_is_digit = chars.get(i + 1).is_some_and(|n| n.is_ascii_digit());
+                if c.is_ascii_alphanumeric()
+                    || c == '.'
+                    || c == ','
+                    || c == ':'
+                    || c == '%'
+                    || ((c == '/' || c == '-') && prev.is_ascii_digit() && next_is_digit)
+                {
+                    i += 1;
+                } else {
+                    break;
+                }
+            }
+            let lit: String = chars[start_i..i].iter().collect();
+            utf16_pos += lit.encode_utf16().count() as u32;
+            out.push_str(&lit);
+            continue;
+        }
+
+        // Operators and punctuation.
+        let prev_ws = i == 0 || chars[i - 1].is_whitespace();
+        let next_ws = chars.get(i + 1).is_none_or(|c| c.is_whitespace());
+        let (mapped, is_dim) = match ch {
+            '*' => ('×', true),
+            '/' => ('÷', true),
+            '-' if prev_ws && next_ws => ('−', true),
+            '+' | '^' | '=' | '(' | ')' | '×' | '÷' | '−' | '&' | '|' | '<' | '>' | ',' => {
+                (ch, true)
+            }
+            _ => (ch, false),
+        };
+        let start_u16 = utf16_pos;
+        let len_u16 = mapped.len_utf16() as u32;
+        out.push(mapped);
+        utf16_pos += len_u16;
+        if is_dim {
+            dimmed.push((start_u16, len_u16));
+        }
+        i += 1;
+    }
+
+    (out, dimmed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calc_expression_dims_connectors_and_formats_operators() {
+        let (text, ranges) = format_calc_expression_spans("hours till 27 nov");
+        assert_eq!(text, "hours till 27 nov");
+        assert_eq!(ranges, vec![(6, 4)]); // "till"
+
+        let (math, math_ranges) = format_calc_expression_spans("25 * 4 - 10 / 2");
+        assert_eq!(math, "25 × 4 − 10 ÷ 2");
+        assert_eq!(math_ranges.len(), 3);
+
+        // Date slashes and hyphens stay untouched and bright.
+        let (date, date_ranges) = format_calc_expression_spans("days till 2026-11-27");
+        assert_eq!(date, "days till 2026-11-27");
+        assert_eq!(date_ranges, vec![(5, 4)]); // only "till"
     }
 }

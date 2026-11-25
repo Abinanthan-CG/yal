@@ -270,16 +270,16 @@ unsafe fn paint_hud(hwnd: HWND, state: &HudState) {
 
     let bg = if state.dark {
         D2D1_COLOR_F {
-            r: 0.11,
-            g: 0.11,
-            b: 0.14,
+            r: 0.125,
+            g: 0.125,
+            b: 0.125,
             a: 1.0,
         }
     } else {
         D2D1_COLOR_F {
-            r: 0.98,
-            g: 0.98,
-            b: 0.99,
+            r: 0.97,
+            g: 0.97,
+            b: 0.97,
             a: 1.0,
         }
     };
@@ -292,10 +292,10 @@ unsafe fn paint_hud(hwnd: HWND, state: &HudState) {
         }
     } else {
         D2D1_COLOR_F {
-            r: 0.06,
-            g: 0.09,
-            b: 0.16,
-            a: 0.16,
+            r: 0.0,
+            g: 0.0,
+            b: 0.0,
+            a: 0.14,
         }
     };
     let fg_col = if state.dark {

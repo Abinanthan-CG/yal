@@ -18,8 +18,10 @@ use tc_ui::{
 use crate::features::{CalcHistoryEntry, ClipboardViewFilter, NoteItem, Quicklink};
 use crate::launcher::{ResultRow, CALCULATOR_SECTION};
 
-/// Prefix for fallback web-search rows surfaced when root Launcher has no local matches.
+/// Prefix for fallback web-search rows surfaced under `Use “<query>” with…`.
 pub const FALLBACK_URL_PREFIX: &str = "fallback-url:";
+/// Prefix for built-in fallback commands surfaced under `Use “<query>” with…`.
+pub const FALLBACK_CMD_PREFIX: &str = "fallback-cmd:";
 
 /// Maximum file size (bytes) read for inline UTF-8 text preview in File Search.
 const MAX_FILE_PREVIEW_BYTES: u64 = 32 * 1024;
@@ -855,6 +857,7 @@ pub fn files_model(
             let display_detail = shorten_home_path(&r.detail);
             let mut row = Row::detailed(&r.name, &display_detail)
                 .with_section(section)
+                .with_accessory(if is_dir { "Folder" } else { "File" })
                 .with_icon(icon);
             if idx < 30 {
                 if let Some(bmp) = icon_lookup(&r.target) {
@@ -1758,43 +1761,44 @@ fn shorten_path_with_home(path: &str, home: Option<&str>) -> String {
     path.to_string()
 }
 
-/// Format a fallback search row title cleanly without repeating "Search"
-/// (e.g. `"Google Search"` -> `"Search Google for \"foo\""`).
-fn fallback_search_title(link_name: &str, query: &str) -> String {
-    let name = link_name.trim();
-    if name.len() >= 7 && name[..7].eq_ignore_ascii_case("search ") {
-        return format!("{name} for \"{query}\"");
-    }
-    let clean = if name.len() > 7 && name[name.len() - 7..].eq_ignore_ascii_case(" search") {
-        name[..name.len() - 7].trim_end()
-    } else {
-        name
-    };
-    format!("Search {clean} for \"{query}\"")
-}
-
-/// Fallback web search rows offered at root Launcher when no local result matched `query`.
+/// Fallback command & web-search rows rendered in Raycast's `Use “<query>” with…`
+/// section at the bottom of Root Search whenever `query` has 2+ characters.
 pub fn fallback_search_rows(query: &str, quicklinks: &[Quicklink]) -> Vec<ResultRow> {
     let trimmed = query.trim();
     if trimmed.chars().count() < 2 {
         return Vec::new();
     }
-    quicklinks
-        .iter()
-        .filter(|l| l.needs_query())
-        .take(4)
-        .map(|link| {
-            let url = link.expand_url(trimmed);
-            ResultRow {
-                id: format!("{FALLBACK_URL_PREFIX}{url}"),
-                name: fallback_search_title(&link.name, trimmed),
-                detail: url.clone(),
-                kind: "Fallback Search".to_string(),
-                target: url,
-                ..ResultRow::default()
-            }
-        })
-        .collect()
+    let section = format!("Use \u{201C}{trimmed}\u{201D} with\u{2026}");
+    let mut rows = vec![
+        ResultRow {
+            id: format!("{FALLBACK_CMD_PREFIX}search-files"),
+            name: "Search Files".to_string(),
+            detail: "File Search".to_string(),
+            kind: section.clone(),
+            target: trimmed.to_string(),
+            ..ResultRow::default()
+        },
+        ResultRow {
+            id: format!("{FALLBACK_CMD_PREFIX}search-snippets"),
+            name: "Search Snippets".to_string(),
+            detail: "Snippets".to_string(),
+            kind: section.clone(),
+            target: trimmed.to_string(),
+            ..ResultRow::default()
+        },
+    ];
+    for link in quicklinks.iter().filter(|l| l.needs_query()).take(4) {
+        let url = link.expand_url(trimmed);
+        rows.push(ResultRow {
+            id: format!("{FALLBACK_URL_PREFIX}{url}"),
+            name: link.name.clone(),
+            detail: "Web Searches".to_string(),
+            kind: section.clone(),
+            target: url,
+            ..ResultRow::default()
+        });
+    }
+    rows
 }
 
 fn truncate_chars(text: &str, max_chars: usize) -> String {
@@ -2071,23 +2075,22 @@ mod tests {
     }
 
     #[test]
-    fn fallback_search_title_avoids_duplicate_search_word() {
+    fn fallback_search_rows_uses_raycast_section_header_and_commands() {
+        let links = vec![Quicklink {
+            name: "Google Search".to_string(),
+            url_template: "https://www.google.com/search?q={query}".to_string(),
+            alias: Some("g".to_string()),
+        }];
+        let rows = fallback_search_rows("hours till 27 nov", &links);
+        assert_eq!(rows.len(), 3);
         assert_eq!(
-            fallback_search_title("Google Search", "aistudio2api"),
-            "Search Google for \"aistudio2api\""
+            rows[0].kind,
+            "Use \u{201C}hours till 27 nov\u{201D} with\u{2026}"
         );
-        assert_eq!(
-            fallback_search_title("GitHub Search", "yal"),
-            "Search GitHub for \"yal\""
-        );
-        assert_eq!(
-            fallback_search_title("Search Docs", "win32"),
-            "Search Docs for \"win32\""
-        );
-        assert_eq!(
-            fallback_search_title("DuckDuckGo", "rust"),
-            "Search DuckDuckGo for \"rust\""
-        );
+        assert_eq!(rows[0].name, "Search Files");
+        assert_eq!(rows[1].name, "Search Snippets");
+        assert_eq!(rows[2].name, "Google Search");
+        assert_eq!(rows[2].detail, "Web Searches");
     }
 
     #[test]

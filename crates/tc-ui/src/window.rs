@@ -21,7 +21,6 @@ use windows::Win32::Graphics::Gdi::{
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-use windows::Win32::System::WindowsProgramming::MulDiv;
 use windows::Win32::UI::Controls::{
     InitCommonControlsEx, ICC_STANDARD_CLASSES, INITCOMMONCONTROLSEX, WM_MOUSELEAVE,
 };
@@ -96,7 +95,7 @@ const ACTION_BACK: usize = 9;
 const TRAY_BLUR_DEBOUNCE: Duration = Duration::from_millis(250);
 
 /// Default search placeholder when the model does not specify one.
-const DEFAULT_PLACEHOLDER: &str = "Search apps, commands, or calculate…";
+const DEFAULT_PLACEHOLDER: &str = "Search for apps or commands…";
 
 /// What the palette knows about the display it is on.
 #[derive(Clone, Copy, Debug)]
@@ -1276,8 +1275,8 @@ unsafe fn apply_dwm_chrome(hwnd: HWND, theme: &Theme) {
     );
 
     let border_rgb = match theme.appearance {
-        Appearance::Dark => colorref(Color::rgb(0x32, 0x34, 0x42)),
-        Appearance::Light => colorref(Color::rgb(0xd4, 0xd7, 0xe2)),
+        Appearance::Dark => colorref(Color::rgb(0x38, 0x38, 0x38)),
+        Appearance::Light => colorref(Color::rgb(0xd6, 0xd6, 0xd6)),
     };
     let _ = DwmSetWindowAttribute(
         hwnd,
@@ -1404,8 +1403,8 @@ unsafe fn dismiss(state_ptr: *mut State) {
 }
 
 fn create_edit_font(dpi: u32) -> HFONT {
-    // 13pt (~17.3 DIPs) crisp Segoe UI for the header search input.
-    let height = -unsafe { MulDiv(13, dpi as i32, 72) };
+    // 18 DIP (~13.5pt) crisp Segoe UI matching Raycast's 18px header search input.
+    let height = -((18.0 * (dpi.max(96) as f32 / 96.0)).round() as i32);
     unsafe {
         CreateFontW(
             height,
@@ -1521,9 +1520,9 @@ fn place_field_rect(
     let left = (left_dip * scale).round() as i32;
     let right_reserve = if has_badge { 132.0 } else { 18.0 };
     let width = (window_width_px - left - (right_reserve * scale).round() as i32).max(60);
-    // 13pt Segoe UI line box is ~22 DIPs tall; centering inside 52 DIPs puts the
-    // baseline dead-center with the magnifying glass / back button.
-    let edit_h_dip = 24.0_f32;
+    // 18 DIP Segoe UI line box is ~24 DIPs tall; centering inside 60 DIPs puts the
+    // baseline dead-center with the header icon / back button.
+    let edit_h_dip = 25.0_f32;
     let top_dip = ((metrics.field_height - edit_h_dip) / 2.0).max(4.0);
     let top = (top_dip * scale).round() as i32;
     let height = (edit_h_dip * scale).round() as i32;

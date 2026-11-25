@@ -47,7 +47,7 @@ use crate::screens::{
     run_shell_model, set_alias_model, shorten_home_path, shows_create_note_row,
     shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
     windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
-    SnippetDraftStep, FALLBACK_URL_PREFIX,
+    SnippetDraftStep, FALLBACK_CMD_PREFIX, FALLBACK_URL_PREFIX,
 };
 use crate::shell::{spawn_rates_refresh, FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW, RATES_FILE};
 use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
@@ -1527,7 +1527,64 @@ fn handle_activate(
                 return close_with_hud(format!("Opened {name}"));
             }
 
-            // 1d. Fallback web search URL -> open in default browser immediately.
+            // 1d. Fallback command (`Use “<query>” with…` -> Search Files / Search Snippets pre-filled!).
+            if let Some(cmd_key) = row.id.strip_prefix(FALLBACK_CMD_PREFIX) {
+                let prefill = row.target.clone();
+                if let Some(ctx) = ctx {
+                    match cmd_key {
+                        "search-files" => {
+                            ctx.palette.open_screen("File Search");
+                            shown.mode = Mode::Files;
+                            shown.query = prefill.clone();
+                            shown.selected = 0;
+                            shown.action_menu_open = false;
+                            shown.file_filter = FileType::All;
+                            shown.file_dir = None;
+                            shown.file_dir_cache = None;
+                            if !launcher.has_file_search() {
+                                let _ = ctx.settings.set(FILE_SEARCH_ENABLED, "true");
+                                ctx.features.trigger_file_index(
+                                    Arc::clone(launcher),
+                                    Some(Arc::clone(handle_slot)),
+                                );
+                            }
+                            let rows = shown.filtered_file_rows(launcher, &prefill);
+                            let indexing = ctx.features.is_file_indexing();
+                            let show_detail = shown.show_detail;
+                            shown.file_rows = rows.clone();
+                            let model = files_model(
+                                &prefill,
+                                &rows,
+                                FileType::All,
+                                None,
+                                indexing,
+                                0,
+                                show_detail,
+                                |target| shown.lookup_or_queue_icon(target),
+                            );
+                            return PaletteReply::UpdateWithEdit(prefill, model);
+                        }
+                        "search-snippets" => {
+                            ctx.palette.open_screen("Snippets");
+                            shown.mode = Mode::Snippets;
+                            shown.query = prefill.clone();
+                            shown.selected = 0;
+                            shown.action_menu_open = false;
+                            let list = ctx.features.search_snippets(&prefill);
+                            shown.snippets = list.clone();
+                            let model =
+                                snippets_model(&prefill, &list, 0, shown.show_detail, |rec| {
+                                    ctx.features.expand_snippet(rec)
+                                });
+                            return PaletteReply::UpdateWithEdit(prefill, model);
+                        }
+                        _ => {}
+                    }
+                }
+                return PaletteReply::Keep;
+            }
+
+            // 1e. Fallback web search URL -> open in default browser immediately.
             if let Some(url) = row.id.strip_prefix(FALLBACK_URL_PREFIX) {
                 let url = url.to_string();
                 shown.last_dismissed_at = Some(Instant::now());
@@ -2052,7 +2109,11 @@ fn handle_tertiary(
                     let _ = tc_platform_win::clipboard().write_text(&row.target);
                     close_with_hud("Copied URI".to_string())
                 }
-                QUICKLINK_SECTION | "Fallback Search" => {
+                QUICKLINK_SECTION => {
+                    let _ = tc_platform_win::clipboard().write_text(&row.target);
+                    close_with_hud("Copied URL".to_string())
+                }
+                _ if row.id.starts_with(FALLBACK_URL_PREFIX) => {
                     let _ = tc_platform_win::clipboard().write_text(&row.target);
                     close_with_hud("Copied URL".to_string())
                 }
@@ -2160,7 +2221,8 @@ fn handle_copy_chord(
                                 .unwrap_or_else(|| row.detail.clone());
                         (raw, "Copied Template".to_string())
                     }
-                    QUICKLINK_SECTION | "Fallback Search" => {
+                    QUICKLINK_SECTION => (row.target.clone(), "Copied URL".to_string()),
+                    _ if row.id.starts_with(FALLBACK_URL_PREFIX) => {
                         (row.target.clone(), "Copied URL".to_string())
                     }
                     WIN_SETTING_SECTION => (row.target.clone(), "Copied URI".to_string()),
@@ -3630,11 +3692,28 @@ fn build_root_search_rows(
     for row in file_rows {
         push_unique(row);
     }
+    drop(push_unique);
 
-    if out.is_empty() {
+    // Raycast's `Use “<query>” with…` fallback commands section always appears
+    // at the bottom of Root Search whenever the user has typed 2+ characters.
+    if query.trim().chars().count() >= 2 {
         if let Some(ctx) = ctx {
             let links = ctx.features.search_quicklinks("");
-            out = fallback_search_rows(query, &links);
+            let files_fb_id = format!("{FALLBACK_CMD_PREFIX}search-files");
+            let snippets_fb_id = format!("{FALLBACK_CMD_PREFIX}search-snippets");
+            let has_files_cmd = seen.contains(CommandId::SearchFiles.entry_id());
+            let has_snippets_cmd = seen.contains(CommandId::SearchSnippets.entry_id());
+            for fb in fallback_search_rows(query, &links) {
+                if fb.id == files_fb_id && has_files_cmd {
+                    continue;
+                }
+                if fb.id == snippets_fb_id && has_snippets_cmd {
+                    continue;
+                }
+                if seen.insert(fb.id.clone()) {
+                    out.push(fb);
+                }
+            }
         }
     }
 
@@ -4302,7 +4381,7 @@ fn primary_action_for_row(row: Option<&ResultRow>) -> &'static str {
         return "Open";
     };
     match row.kind.as_str() {
-        CALCULATOR_SECTION => "Copy",
+        CALCULATOR_SECTION => "Copy Answer",
         SNIPPET_SECTION => "Paste",
         WINDOW_COMMAND_SECTION => "Apply",
         SYSTEM_ACTION_SECTION | CUSTOM_COMMAND_SECTION => "Run",
@@ -4361,23 +4440,10 @@ fn model_for_with_icons(
     };
 
     let primary = primary_action_for_row(rows.get(clamped_sel));
-    let mut hints = vec![
+    let hints = vec![
         ("↵".to_string(), primary.to_string()),
         ("Ctrl+K".to_string(), "Actions".to_string()),
     ];
-    if is_suggestions {
-        hints.push(("Tab".to_string(), "Clipboard".to_string()));
-    } else if rows
-        .get(clamped_sel)
-        .is_some_and(|r| r.kind == CALCULATOR_SECTION)
-    {
-        hints.push(("Tab".to_string(), "Use Answer".to_string()));
-    } else if rows.get(clamped_sel).is_some_and(|r| {
-        r.kind == QUICKLINK_SECTION
-            && (r.target.contains("{query}") || r.target.contains("{argument}"))
-    }) {
-        hints.push(("Tab".to_string(), "Fill Arg".to_string()));
-    }
 
     Model {
         query: query.to_string(),
@@ -4385,7 +4451,7 @@ fn model_for_with_icons(
         selected: clamped_sel,
         hovered: None,
         footer: count_label.clone(),
-        placeholder: "Search apps, settings, commands, or calculate…".to_string(),
+        placeholder: "Search for apps or commands…".to_string(),
         header_badge: None,
         result_count: Some(count_label),
         footer_hints: hints,
@@ -4556,20 +4622,53 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
         result.kind.clone()
     };
 
+    let is_fallback =
+        result.id.starts_with(FALLBACK_URL_PREFIX) || result.id.starts_with(FALLBACK_CMD_PREFIX);
+
     let detail = if result.kind == FILE_SECTION {
         shorten_home_path(&result.detail)
-    } else if result.detail.is_empty() && result.kind != APPLICATIONS {
-        result.kind.clone()
+    } else if result.kind == APPLICATIONS
+        && matches!(
+            result.detail.trim().to_ascii_lowercase().as_str(),
+            "start menu"
+                | "application path"
+                | "desktop"
+                | "store app"
+                | "microsoft store"
+                | "registry"
+                | "uninstall"
+        )
+    {
+        String::new()
     } else {
         result.detail.clone()
+    };
+
+    let accessory = if is_fallback {
+        "Command".to_string()
+    } else {
+        match result.kind.as_str() {
+            APPLICATIONS => "Application".to_string(),
+            FILE_SECTION => {
+                if result.is_dir == Some(true) {
+                    "Folder".to_string()
+                } else {
+                    "File".to_string()
+                }
+            }
+            COMMAND_SECTION | CUSTOM_COMMAND_SECTION => "Command".to_string(),
+            QUICKLINK_SECTION => "Quicklink".to_string(),
+            SNIPPET_SECTION => "Snippet".to_string(),
+            WIN_SETTING_SECTION | SYSTEM_ACTION_SECTION => "System".to_string(),
+            WINDOW_COMMAND_SECTION => "Window".to_string(),
+            _ => String::new(),
+        }
     };
 
     let shortcut = if result.kind == QUICKLINK_SECTION
         && (result.target.contains("{query}") || result.target.contains("{argument}"))
     {
-        "Tab Arg".to_string()
-    } else if result.kind == WIN_SETTING_SECTION {
-        "Setting".to_string()
+        "Tab".to_string()
     } else {
         String::new()
     };
@@ -4577,6 +4676,7 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
     Row {
         name: result.name.clone(),
         detail,
+        accessory,
         shortcut,
         icon: Some(icon_of(result)),
         section,
@@ -4585,15 +4685,30 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
 }
 
 fn icon_of(result: &ResultRow) -> Icon {
+    if result.id == format!("{FALLBACK_CMD_PREFIX}search-files") {
+        return Icon::new("F", Color::rgb(0x56, 0xc2, 0xff));
+    }
+    if result.id == format!("{FALLBACK_CMD_PREFIX}search-snippets") {
+        return Icon::new("✂", Color::rgb(0x59, 0xd4, 0x99));
+    }
+    if result.id.starts_with(FALLBACK_URL_PREFIX) {
+        return Icon::new("↗", Color::rgb(0x56, 0xc2, 0xff));
+    }
     let glyph = match result.kind.as_str() {
         CALCULATOR_SECTION => "=".to_string(),
         COMMAND_SECTION => "›".to_string(),
         CUSTOM_COMMAND_SECTION => ">_".to_string(),
         WINDOW_COMMAND_SECTION => "⊞".to_string(),
         SYSTEM_ACTION_SECTION => "⚡".to_string(),
-        FILE_SECTION => "📄".to_string(),
+        FILE_SECTION => {
+            if result.is_dir == Some(true) {
+                "📁".to_string()
+            } else {
+                "📄".to_string()
+            }
+        }
         SNIPPET_SECTION => "✂".to_string(),
-        QUICKLINK_SECTION | "Fallback Search" => "↗".to_string(),
+        QUICKLINK_SECTION => "↗".to_string(),
         WIN_SETTING_SECTION => "⚙".to_string(),
         _ => letter_of(&result.name),
     };
@@ -4609,16 +4724,16 @@ fn letter_of(name: &str) -> String {
 
 fn color_of(kind: &str) -> Color {
     match kind {
-        APPLICATIONS => Color::rgb(0x5e, 0x8b, 0xff),
-        FILE_SECTION => Color::rgb(0x38, 0xbd, 0xf8),
-        COMMAND_SECTION | SNIPPET_SECTION => Color::rgb(0x34, 0xd3, 0x99),
-        QUICKLINK_SECTION | "Fallback Search" => Color::rgb(0x38, 0xbd, 0xf8),
-        WIN_SETTING_SECTION => Color::rgb(0x0e, 0xa5, 0xe9),
-        CUSTOM_COMMAND_SECTION => Color::rgb(0xa7, 0x8b, 0xfa),
-        WINDOW_COMMAND_SECTION => Color::rgb(0xfb, 0x92, 0x3c),
-        SYSTEM_ACTION_SECTION => Color::rgb(0xf8, 0x71, 0x71),
-        CALCULATOR_SECTION => Color::rgb(0x60, 0xa5, 0xfa),
-        _ => Color::rgb(0x94, 0xa3, 0xb8),
+        APPLICATIONS => Color::rgb(0x56, 0xc2, 0xff),
+        FILE_SECTION => Color::rgb(0xff, 0xc5, 0x31),
+        COMMAND_SECTION | SNIPPET_SECTION => Color::rgb(0x59, 0xd4, 0x99),
+        QUICKLINK_SECTION => Color::rgb(0x56, 0xc2, 0xff),
+        WIN_SETTING_SECTION => Color::rgb(0x56, 0xc2, 0xff),
+        CUSTOM_COMMAND_SECTION => Color::rgb(0xa4, 0x85, 0xff),
+        WINDOW_COMMAND_SECTION => Color::rgb(0xff, 0x92, 0x17),
+        SYSTEM_ACTION_SECTION => Color::rgb(0xff, 0x63, 0x63),
+        CALCULATOR_SECTION => Color::rgb(0x56, 0xc2, 0xff),
+        _ => Color::rgb(0x9a, 0x9a, 0x9a),
     }
 }
 
@@ -4719,7 +4834,7 @@ mod tests {
 
     #[test]
     fn a_section_nobody_heard_of_gets_the_neutral_colour() {
-        assert_eq!(color_of("Something Else"), Color::rgb(0x94, 0xa3, 0xb8));
+        assert_eq!(color_of("Something Else"), Color::rgb(0x9a, 0x9a, 0x9a));
     }
 
     #[test]

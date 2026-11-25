@@ -300,13 +300,24 @@ pub fn for_launcher_row(row: &ResultRow, query: &str, meta: LauncherActionMeta) 
             push_shortcut_actions(&mut items, meta.has_hotkey, meta.has_alias);
             build_menu(title, items)
         }
-        "Fallback Search" => build_menu(
+        _ if row.id.starts_with(crate::screens::FALLBACK_URL_PREFIX) => build_menu(
             title,
             vec![
                 ActionMenuItem::new(id::OPEN, "Open in Browser", "Primary")
                     .with_shortcut("↵")
                     .with_glyph("↗"),
                 ActionMenuItem::new(id::QL_COPY_URL, "Copy URL", "Copy")
+                    .with_shortcut("Alt+C")
+                    .with_glyph("⧉"),
+            ],
+        ),
+        _ if row.id.starts_with(crate::screens::FALLBACK_CMD_PREFIX) => build_menu(
+            title,
+            vec![
+                ActionMenuItem::new(id::RUN_PRIMARY, "Run with Query", "Primary")
+                    .with_shortcut("↵")
+                    .with_glyph("›"),
+                ActionMenuItem::new(id::COPY_TEXT, "Copy Query", "Copy")
                     .with_shortcut("Alt+C")
                     .with_glyph("⧉"),
             ],

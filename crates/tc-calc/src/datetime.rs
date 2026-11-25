@@ -34,7 +34,7 @@ pub fn evaluate(query: &str, ctx: &CalcContext) -> Option<CalcResult> {
     }
 
     // 4. Clock spans (`10pm to 2am`, `9:30am to 5:15pm`) and clock arithmetic (`3:45pm + 5`).
-    if let Some(card) = eval_clock_span(&lower, raw) {
+    if let Some(card) = eval_clock_span(&lower, raw, ctx) {
         return Some(card);
     }
     if let Some(card) = eval_clock_math(&lower, raw, ctx) {
@@ -56,8 +56,8 @@ pub fn evaluate(query: &str, ctx: &CalcContext) -> Option<CalcResult> {
         return Some(card);
     }
 
-    // 8. Countdowns & differences (`days until 25 Dec`, `days since march`, `days between ...`).
-    if let Some(card) = eval_date_distance(&lower, raw, &local) {
+    // 8. Countdowns & differences (`days until 25 Dec`, `hours till 27 nov`, `days since march`, `hours between 9am and 5pm`).
+    if let Some(card) = eval_date_distance(&lower, raw, &local, ctx) {
         return Some(card);
     }
 
@@ -110,7 +110,7 @@ fn eval_named_moment(
             Some(unchained(CalcResult::with_badges(
                 raw.to_string(),
                 "Now",
-                "Time",
+                "Your time",
                 Payload::text(&text),
             )))
         }
@@ -240,7 +240,7 @@ fn parse_unix_secs(s: &str) -> Option<i64> {
     }
 }
 
-fn eval_clock_span(lower: &str, raw: &str) -> Option<CalcResult> {
+fn eval_clock_span(lower: &str, raw: &str, ctx: &CalcContext) -> Option<CalcResult> {
     let body = lower.strip_prefix("from ").unwrap_or(lower);
     let (lhs, rhs) = body.split_once(" to ").or_else(|| body.split_once(" - "))?;
     let t1 = parse_clock_time(lhs.trim())?;
@@ -253,10 +253,12 @@ fn eval_clock_span(lower: &str, raw: &str) -> Option<CalcResult> {
         24 * 3600 - s1 + s2
     };
     let text = format_timespan_seconds(diff as f64);
+    let left_pill = format_time_pill(t1, ctx.use_24h_clock);
+    let right_pill = format_time_pill(t2, ctx.use_24h_clock);
     Some(unchained(CalcResult::with_badges(
         raw.to_string(),
-        "Clock Span",
-        "Duration",
+        &left_pill,
+        &right_pill,
         Payload::text(&text),
     )))
 }
@@ -535,11 +537,20 @@ enum PeriodMetric {
     Workhours,
 }
 
-fn eval_date_distance(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResult> {
+fn eval_date_distance(
+    lower: &str,
+    raw: &str,
+    local: &Zoned,
+    ctx: &CalcContext,
+) -> Option<CalcResult> {
     let today = local.date();
 
-    // `<unit> between <d1> and <d2>`
+    // `<unit> between <d1> and <d2>` (supports both clock times and dates)
     for (prefix, unit) in [
+        ("hours between ", DistUnit::Hours),
+        ("minutes between ", DistUnit::Minutes),
+        ("seconds between ", DistUnit::Seconds),
+        ("time between ", DistUnit::Duration),
         ("days between ", DistUnit::Days),
         ("weeks between ", DistUnit::Weeks),
         ("months between ", DistUnit::Months),
@@ -549,17 +560,27 @@ fn eval_date_distance(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResul
     ] {
         if let Some(rest) = lower.strip_prefix(prefix) {
             if let Some((a, b)) = rest.split_once(" and ") {
+                if let (Some(t1), Some(t2)) =
+                    (parse_clock_time(a.trim()), parse_clock_time(b.trim()))
+                {
+                    let s1 = t1.hour() as i64 * 3600 + t1.minute() as i64 * 60 + t1.second() as i64;
+                    let s2 = t2.hour() as i64 * 3600 + t2.minute() as i64 * 60 + t2.second() as i64;
+                    let diff_secs = if s2 >= s1 { s2 - s1 } else { 86_400 - s1 + s2 };
+                    let lp = format_time_pill(t1, ctx.use_24h_clock);
+                    let rp = format_time_pill(t2, ctx.use_24h_clock);
+                    return Some(format_exact_span_card(raw, diff_secs, unit, &lp, &rp));
+                }
                 let d1 = parse_date_expr(a.trim(), today, Bias::Nearest)?;
                 let d2 = parse_date_expr(b.trim(), today, Bias::Nearest)?;
                 let (lo, hi) = if d1 <= d2 { (d1, d2) } else { (d2, d1) };
-                return Some(format_distance_card(raw, lo, hi, unit));
+                return Some(format_distance_card(raw, lo, hi, today, unit));
             }
         }
     }
 
     // Countdowns: `<unit> (until|till|til|'til|to|before|left until|left till|...) <target>`
     // Also supports `how long until/till <target>` and `time until/till <target>`,
-    // and clock-time targets like `hours till 6pm` or `minutes until 11:30pm`!
+    // and both clock-time targets (`hours till 6pm`) and calendar-date targets (`hours till 27 nov`).
     if let Some((lhs_unit, target_str)) = split_countdown_clause(lower) {
         let unit = parse_dist_unit(lhs_unit)?;
 
@@ -571,11 +592,33 @@ fn eval_date_distance(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResul
             let s2 =
                 clock.hour() as i64 * 3600 + clock.minute() as i64 * 60 + clock.second() as i64;
             let diff_secs = if s2 >= s1 { s2 - s1 } else { 86_400 - s1 + s2 };
-            return Some(format_clock_distance_card(raw, diff_secs, unit));
+            let lp = format_time_pill(now_t, ctx.use_24h_clock);
+            let rp = format_time_pill(clock, ctx.use_24h_clock);
+            return Some(format_exact_span_card(raw, diff_secs, unit, &lp, &rp));
         }
 
         let target = parse_date_expr(target_str, today, Bias::Future)?;
-        return Some(format_distance_card(raw, today, target, unit));
+        if unit.is_sub_day() {
+            // Exact wall-clock duration from local `now` to midnight `12:00 am` on `target`
+            // (e.g. at 3:47 pm on Nov 25, `hours till 27 nov` = 32.2075 hours, pills `3:47 pm` -> `12:00 am`).
+            let mut target_dt = target
+                .at(0, 0, 0, 0)
+                .to_zoned(local.time_zone().clone())
+                .ok()?;
+            if target_dt.timestamp() < local.timestamp() {
+                if let Ok(next_year) = Date::new(target.year() + 1, target.month(), target.day()) {
+                    if let Ok(z) = next_year.at(0, 0, 0, 0).to_zoned(local.time_zone().clone()) {
+                        target_dt = z;
+                    }
+                }
+            }
+            let diff_secs =
+                (target_dt.timestamp().as_second() - local.timestamp().as_second()).max(0);
+            let lp = format_time_pill(local.time(), ctx.use_24h_clock);
+            let rp = format_time_pill(Time::midnight(), ctx.use_24h_clock);
+            return Some(format_exact_span_card(raw, diff_secs, unit, &lp, &rp));
+        }
+        return Some(format_distance_card(raw, today, target, today, unit));
     }
 
     // Elapsed: `<unit> since <target>`
@@ -588,10 +631,23 @@ fn eval_date_distance(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResul
             let s2 =
                 now_t.hour() as i64 * 3600 + now_t.minute() as i64 * 60 + now_t.second() as i64;
             let diff_secs = if s2 >= s1 { s2 - s1 } else { 86_400 - s1 + s2 };
-            return Some(format_clock_distance_card(raw, diff_secs, unit));
+            let lp = format_time_pill(clock, ctx.use_24h_clock);
+            let rp = format_time_pill(now_t, ctx.use_24h_clock);
+            return Some(format_exact_span_card(raw, diff_secs, unit, &lp, &rp));
         }
         let target = parse_date_expr(target_str.trim(), today, Bias::Past)?;
-        return Some(format_distance_card(raw, target, today, unit));
+        if unit.is_sub_day() {
+            let start_dt = target
+                .at(0, 0, 0, 0)
+                .to_zoned(local.time_zone().clone())
+                .ok()?;
+            let diff_secs =
+                (local.timestamp().as_second() - start_dt.timestamp().as_second()).max(0);
+            let lp = format_time_pill(Time::midnight(), ctx.use_24h_clock);
+            let rp = format_time_pill(local.time(), ctx.use_24h_clock);
+            return Some(format_exact_span_card(raw, diff_secs, unit, &lp, &rp));
+        }
+        return Some(format_distance_card(raw, target, today, today, unit));
     }
 
     None
@@ -628,7 +684,8 @@ fn split_countdown_clause(lower: &str) -> Option<(&str, &str)> {
 
 fn parse_dist_unit(s: &str) -> Option<DistUnit> {
     Some(match s {
-        "day" | "days" | "how long" | "time" | "time left" => DistUnit::Days,
+        "day" | "days" => DistUnit::Days,
+        "how long" | "time" | "time left" => DistUnit::Duration,
         "week" | "weeks" => DistUnit::Weeks,
         "month" | "months" => DistUnit::Months,
         "year" | "years" => DistUnit::Years,
@@ -640,26 +697,44 @@ fn parse_dist_unit(s: &str) -> Option<DistUnit> {
     })
 }
 
-fn format_clock_distance_card(raw: &str, diff_secs: i64, unit: DistUnit) -> CalcResult {
-    let (display, badge) = match unit {
+fn format_exact_span_card(
+    raw: &str,
+    diff_secs: i64,
+    unit: DistUnit,
+    left_pill: &str,
+    right_pill: &str,
+) -> CalcResult {
+    let display = match unit {
         DistUnit::Hours => {
-            let h = (diff_secs as f64 / 3600.0 * 100.0).round() / 100.0;
-            (format!("{} hours", Formatter::display(h)), "Hours")
+            let h = diff_secs as f64 / 3600.0;
+            let formatted = format_decimal_4(h);
+            let label = if formatted == "1" { "hour" } else { "hours" };
+            format!("{formatted} {label}")
         }
         DistUnit::Minutes => {
-            let m = (diff_secs as f64 / 60.0 * 100.0).round() / 100.0;
-            (format!("{} minutes", Formatter::display(m)), "Minutes")
+            let m = diff_secs as f64 / 60.0;
+            let formatted = format_decimal_4(m);
+            let label = if formatted == "1" {
+                "minute"
+            } else {
+                "minutes"
+            };
+            format!("{formatted} {label}")
         }
-        DistUnit::Seconds => (
-            format!("{} seconds", Formatter::grouped(&diff_secs.to_string())),
-            "Seconds",
-        ),
-        _ => (format_timespan_seconds(diff_secs as f64), "Duration"),
+        DistUnit::Seconds => {
+            let label = if diff_secs.abs() == 1 {
+                "second"
+            } else {
+                "seconds"
+            };
+            format!("{} {label}", Formatter::grouped(&diff_secs.to_string()))
+        }
+        _ => format_timespan_seconds(diff_secs as f64),
     };
     unchained(CalcResult::with_badges(
         raw.to_string(),
-        "Expression",
-        badge,
+        left_pill,
+        right_pill,
         Payload::text(&display),
     ))
 }
@@ -674,39 +749,43 @@ enum DistUnit {
     Hours,
     Minutes,
     Seconds,
+    Duration,
 }
 
-fn format_distance_card(raw: &str, start: Date, end: Date, unit: DistUnit) -> CalcResult {
+impl DistUnit {
+    fn is_sub_day(self) -> bool {
+        matches!(
+            self,
+            DistUnit::Hours | DistUnit::Minutes | DistUnit::Seconds | DistUnit::Duration
+        )
+    }
+}
+
+fn format_distance_card(
+    raw: &str,
+    start: Date,
+    end: Date,
+    today: Date,
+    unit: DistUnit,
+) -> CalcResult {
     let days = start.until(end).map(|s| s.get_days() as i64).unwrap_or(0);
-    let (display, badge) = match unit {
-        DistUnit::Days => (
-            format!(
-                "{} {}",
-                Formatter::grouped(&days.to_string()),
-                if days.abs() == 1 { "day" } else { "days" }
-            ),
-            "Days",
+    let display = match unit {
+        DistUnit::Days => format!(
+            "{} {}",
+            Formatter::grouped(&days.to_string()),
+            if days.abs() == 1 { "day" } else { "days" }
         ),
         DistUnit::Weeks => {
             let w = days as f64 / 7.0;
-            (
-                format!("{} weeks", Formatter::display((w * 100.0).round() / 100.0)),
-                "Weeks",
-            )
+            format!("{} weeks", format_decimal_4(w))
         }
         DistUnit::Months => {
             let m = days as f64 / 30.436875;
-            (
-                format!("{} months", Formatter::display((m * 100.0).round() / 100.0)),
-                "Months",
-            )
+            format!("{} months", format_decimal_4(m))
         }
         DistUnit::Years => {
             let y = days as f64 / 365.2425;
-            (
-                format!("{} years", Formatter::display((y * 100.0).round() / 100.0)),
-                "Years",
-            )
+            format!("{} years", format_decimal_4(y))
         }
         DistUnit::Workdays => {
             let wd = if start <= end {
@@ -714,43 +793,75 @@ fn format_distance_card(raw: &str, start: Date, end: Date, unit: DistUnit) -> Ca
             } else {
                 -count_workdays_exclusive_start(end, start)
             };
-            (
-                format!(
-                    "{} {}",
-                    Formatter::grouped(&wd.to_string()),
-                    if wd.abs() == 1 { "workday" } else { "workdays" }
-                ),
-                "Workdays",
+            format!(
+                "{} {}",
+                Formatter::grouped(&wd.to_string()),
+                if wd.abs() == 1 { "workday" } else { "workdays" }
             )
         }
         DistUnit::Hours => {
             let h = days * 24;
-            (
-                format!("{} hours", Formatter::grouped(&h.to_string())),
-                "Hours",
-            )
+            format!("{} hours", Formatter::grouped(&h.to_string()))
         }
         DistUnit::Minutes => {
             let m = days * 24 * 60;
-            (
-                format!("{} minutes", Formatter::grouped(&m.to_string())),
-                "Minutes",
-            )
+            format!("{} minutes", Formatter::grouped(&m.to_string()))
         }
         DistUnit::Seconds => {
             let s = days * 86_400;
-            (
-                format!("{} seconds", Formatter::grouped(&s.to_string())),
-                "Seconds",
-            )
+            format!("{} seconds", Formatter::grouped(&s.to_string()))
         }
+        DistUnit::Duration => format_timespan_seconds((days.abs() * 86_400) as f64),
     };
+    let left_pill = format_date_pill(start, today);
+    let right_pill = format_date_pill(end, today);
     unchained(CalcResult::with_badges(
         raw.to_string(),
-        "Expression",
-        badge,
+        &left_pill,
+        &right_pill,
         Payload::text(&display),
     ))
+}
+
+/// Format a number rounded to up to 4 decimal places with trailing zeros trimmed
+/// and thousands commas (matching Raycast's `32.2075`, `1,932.45`, `1.85`, `8`).
+fn format_decimal_4(val: f64) -> String {
+    let rounded = (val * 10_000.0).round() / 10_000.0;
+    let rounded = if rounded == 0.0 { 0.0 } else { rounded };
+    let s = format!("{rounded:.4}");
+    let trimmed = s.trim_end_matches('0').trim_end_matches('.');
+    if let Some((int_part, frac_part)) = trimmed.split_once('.') {
+        format!("{}.{frac_part}", Formatter::grouped(int_part))
+    } else {
+        Formatter::grouped(trimmed)
+    }
+}
+
+/// Lowercase pill time matching Raycast Windows (`3:47 pm`, `12:00 am`, or `15:47` in 24h mode).
+fn format_time_pill(t: Time, use_24h: bool) -> String {
+    if use_24h {
+        format!("{:02}:{:02}", t.hour(), t.minute())
+    } else {
+        let hour = t.hour();
+        let (h12, suffix) = match hour {
+            0 => (12, "am"),
+            1..=11 => (hour, "am"),
+            12 => (12, "pm"),
+            _ => (hour - 12, "pm"),
+        };
+        format!("{h12}:{:02} {suffix}", t.minute())
+    }
+}
+
+/// Raycast-style date pill: `EEEE, d MMMM` if same year as `today`, else `EEEE, d MMMM, yyyy`.
+fn format_date_pill(date: Date, today: Date) -> String {
+    let wd = weekday_name(date.weekday());
+    let mon = month_name(date.month());
+    if date.year() == today.year() {
+        format!("{wd}, {} {mon}", date.day())
+    } else {
+        format!("{wd}, {} {mon}, {}", date.day(), date.year())
+    }
 }
 
 fn eval_when_holiday(lower: &str, raw: &str, local: &Zoned) -> Option<CalcResult> {
@@ -935,16 +1046,21 @@ fn apply_relative(
                     format_time(shifted.time(), ctx.use_24h_clock)
                 )
             };
+            let left_pill = format!(
+                "Today, {}",
+                format_time_pill(local.time(), ctx.use_24h_clock)
+            );
             Some(unchained(CalcResult::with_badges(
                 raw.to_string(),
-                "Time",
+                &left_pill,
                 weekday_name(shifted.date().weekday()),
                 Payload::text(&text),
             )))
         }
         _ => {
             let date = add_date_unit(local.date(), n, unit)?;
-            Some(date_card(raw, "Date", date))
+            let left_pill = format_date_pill(local.date(), local.date());
+            Some(date_card(raw, &left_pill, date))
         }
     }
 }
@@ -1046,6 +1162,7 @@ fn eval_date_arithmetic(
     }
 
     let mut current = parse_date_expr(first, today, Bias::Nearest)?;
+    let start_pill = format_date_pill(current, today);
 
     for &(sign, term) in &tokens[1..] {
         let trimmed = term.trim();
@@ -1058,7 +1175,7 @@ fn eval_date_arithmetic(
         current = add_date_unit(current, sign * n, unit)?;
     }
 
-    Some(date_card(raw, "Date", current))
+    Some(date_card(raw, &start_pill, current))
 }
 
 #[derive(Clone, Copy)]
@@ -1803,5 +1920,46 @@ mod tests {
         assert!(disp("10 / 2").is_none());
         assert!(disp("notepad").is_none());
         assert!(disp("1700000000").is_none());
+    }
+
+    #[test]
+    fn sub_day_countdown_to_date_uses_wall_clock_now_and_time_pills() {
+        // Wed 2026-11-25 15:47:33 IST (= 10:17:33 UTC) -> Thu/Fri 2026-11-27 00:00:00 IST
+        // Remaining = 8h 12m 27s + 24h = 32h 12m 27s = 115,947s = 32.2075 hours.
+        let ts: Timestamp = "2026-11-25T10:17:33Z".parse().unwrap();
+        let tz = TimeZone::get("Asia/Kolkata").unwrap();
+        let ctx = CalcContext::fixed(ts, tz);
+
+        let card = evaluate("hours till 27 nov", &ctx).expect("hours till 27 nov");
+        assert_eq!(card.source_badge.as_deref(), Some("3:47 pm"));
+        assert_eq!(card.target_badge.as_deref(), Some("12:00 am"));
+        match card.payload {
+            Payload::Value { display, .. } => assert_eq!(display, "32.2075 hours"),
+            Payload::Error { message } => panic!("unexpected error: {message}"),
+        }
+
+        let mins = evaluate("minutes till 27 nov", &ctx).expect("minutes till 27 nov");
+        assert_eq!(mins.source_badge.as_deref(), Some("3:47 pm"));
+        assert_eq!(mins.target_badge.as_deref(), Some("12:00 am"));
+        match mins.payload {
+            Payload::Value { display, .. } => assert_eq!(display, "1,932.45 minutes"),
+            Payload::Error { message } => panic!("unexpected error: {message}"),
+        }
+
+        let days = evaluate("days till 27 nov", &ctx).expect("days till 27 nov");
+        assert_eq!(days.source_badge.as_deref(), Some("Wednesday, 25 November"));
+        assert_eq!(days.target_badge.as_deref(), Some("Friday, 27 November"));
+        match days.payload {
+            Payload::Value { display, .. } => assert_eq!(display, "2 days"),
+            Payload::Error { message } => panic!("unexpected error: {message}"),
+        }
+
+        let span = evaluate("hours between 9am and 5pm", &ctx).expect("hours between");
+        assert_eq!(span.source_badge.as_deref(), Some("9:00 am"));
+        assert_eq!(span.target_badge.as_deref(), Some("5:00 pm"));
+        match span.payload {
+            Payload::Value { display, .. } => assert_eq!(display, "8 hours"),
+            Payload::Error { message } => panic!("unexpected error: {message}"),
+        }
     }
 }
