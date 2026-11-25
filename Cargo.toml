@@ -22,7 +22,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 # The real floor, not a guess: `rusqlite` 0.41 declares Rust 1.89, and `libsqlite3-sys`
 # 0.39 declares 1.88. The pinned toolchain is 1.99.1 (see rust-toolchain.toml).

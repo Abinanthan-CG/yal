@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <linearGradient id="bg5" x1="24" y1="16" x2="232" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#20253E"/>
+      <stop offset="100%" stop-color="#111322"/>
+    </linearGradient>
+    <linearGradient id="rim5" x1="128" y1="16" x2="128" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.38"/>
+    </linearGradient>
+    <linearGradient id="bolt5" x1="108" y1="148" x2="184" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <radialGradient id="glow5" cx="68%" cy="32%" r="52%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="54" fill="url(#bg5)"/>
+  <rect x="16" y="16" width="224" height="224" rx="54" fill="url(#glow5)"/>
+  <rect x="18" y="18" width="220" height="220" rx="52" stroke="url(#rim5)" stroke-width="4"/>
+  <!-- Exact centered open reticle arc (center 128,128, r=62) -->
+  <path d="M189.06 138.77A62 62 0 1 1 117.23 66.94" stroke="#F1F5F9" stroke-width="20" stroke-linecap="round"/>
+  <!-- Centered 45-deg launch vector through gap -->
+  <path d="M114 142L182 74" stroke="url(#bolt5)" stroke-width="20" stroke-linecap="round"/>
+  <path d="M142 74H182V114" stroke="url(#bolt5)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

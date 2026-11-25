@@ -5,14 +5,23 @@ All notable changes to YAL are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and YAL uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
-YAL is a port of [Tinycast](https://github.com/abue-ammar/tinycast). Feature
-parity with Tinycast is tracked in [`PARITY.md`](PARITY.md), not here: this
-file records changes to YAL itself, and `PARITY.md` records how far the port
-has got.
+YAL is an unofficial community Windows port of [Tinycast](https://github.com/abue-ammar/tinycast).
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2026-11-25
+
+First official **1.0.0** release of **YAL** — a pure-Rust, Win32 + Direct2D + DirectWrite
+keyboard launcher for Windows 10 and 11 with zero WebView2, Electron, or Node dependencies.
+
+### Highlights
+- **Pure Win32 + Direct2D + DirectWrite UI (`tc-ui`)**: Hardware-accelerated palette with native Windows 11 rounded corners and DWM border framing, Compact (single search bar pill) & Expanded window modes, automatic Dark & Light neutral themes, real Windows app icons, Master-Detail split preview panes (`Ctrl+I`), floating `Ctrl+K` Action Panel, Direct2D HUD toasts, and YAL's original **Launch Ring** SVG vector identity (`assets/yal.svg`, `assets/yal-mark.svg`, multi-resolution `assets/yal.ico`).
+- **App, MSIX & Command Search (`tc-apps`, `tc-search`, `tc-commands`)**: Start Menu, App Paths, Uninstall registry, and WinRT Microsoft Store / MSIX app discovery; frecency ranking; favorites (`Ctrl+1..0`); always-on `Use "<query>" with...` fallback search commands; custom shell commands inside Win32 Job Objects; and Raycast script-command import.
+- **SQLite WAL + FTS5 File Search (`tc-files`)**: Background indexing of non-hidden user folders with FTS5 trigram matching, path-component ranking, live overlapped Win32 `FileWatcher`, type filters, `Tab` folder drill-down, Reveal in Explorer, and Recycle Bin actions.
+- **Swiss-Army Calculator (`tc-calc`)**: Arithmetic, unit & compound-unit math, live FX (159 fiat + 23 crypto), DST-aware timezones, wall-clock date/time countdowns (`hours till 27 nov`, `days between ...`), variables & `ans`, color transforms, statistics, finance, chemistry, and Calculator History.
+- **Clipboard History, Snippets, Emoji & Window Management (`tc-clipboard`, `tc-snippets`, `tc-emoji`, `tc-windows`, `tc-platform-win`)**: Rich text/image/file clipboard history with `Paste Queue`, Markdown snippets with live `!keyword` auto-expansion and Raycast import, 2D DirectWrite color emoji grid, 40 window tiling/moving commands + Window Switcher, Quicklinks with inline `Tab` arguments, Quick Notes, per-command hotkeys & aliases, `CapsLock` Hyperkey, 64 Settings, and SHA-256 verified Backup & Restore (`tc-backup`).
+
+### Earlier Development Notes (Pre-1.0 Port History)
 
 ### Added
 - **The arithmetic that carries a unit**: a value now carries its measurement, so `10kg + 500g` answers

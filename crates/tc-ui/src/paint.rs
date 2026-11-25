@@ -8,14 +8,17 @@ use windows::core::{IUnknown, Interface, PCWSTR};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Direct2D::{
     Common::{
-        D2D1_ALPHA_MODE_PREMULTIPLIED, D2D1_COLOR_F, D2D1_PIXEL_FORMAT, D2D_RECT_F, D2D_SIZE_U,
+        D2D1_ALPHA_MODE_PREMULTIPLIED, D2D1_COLOR_F, D2D1_FIGURE_BEGIN_HOLLOW,
+        D2D1_FIGURE_END_OPEN, D2D1_PIXEL_FORMAT, D2D_RECT_F, D2D_SIZE_F, D2D_SIZE_U,
     },
-    D2D1CreateFactory, ID2D1Bitmap, ID2D1Factory, ID2D1HwndRenderTarget, ID2D1SolidColorBrush,
-    ID2D1StrokeStyle, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-    D2D1_BITMAP_PROPERTIES, D2D1_DRAW_TEXT_OPTIONS_CLIP, D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+    D2D1CreateFactory, ID2D1Bitmap, ID2D1Factory, ID2D1HwndRenderTarget, ID2D1PathGeometry,
+    ID2D1SolidColorBrush, ID2D1StrokeStyle, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE, D2D1_ARC_SEGMENT,
+    D2D1_ARC_SIZE_LARGE, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, D2D1_BITMAP_PROPERTIES,
+    D2D1_CAP_STYLE_ROUND, D2D1_DRAW_TEXT_OPTIONS_CLIP, D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
     D2D1_ELLIPSE, D2D1_FACTORY_TYPE_SINGLE_THREADED, D2D1_FEATURE_LEVEL_DEFAULT,
-    D2D1_HWND_RENDER_TARGET_PROPERTIES, D2D1_PRESENT_OPTIONS_NONE, D2D1_RENDER_TARGET_PROPERTIES,
-    D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_ROUNDED_RECT,
+    D2D1_HWND_RENDER_TARGET_PROPERTIES, D2D1_LINE_JOIN_ROUND, D2D1_PRESENT_OPTIONS_NONE,
+    D2D1_RENDER_TARGET_PROPERTIES, D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1_RENDER_TARGET_USAGE_NONE,
+    D2D1_ROUNDED_RECT, D2D1_STROKE_STYLE_PROPERTIES, D2D1_SWEEP_DIRECTION_CLOCKWISE,
 };
 use windows::Win32::Graphics::DirectWrite::{
     DWriteCreateFactory, IDWriteFactory, IDWriteTextFormat, IDWriteTextLayout,
@@ -27,7 +30,7 @@ use windows::Win32::Graphics::DirectWrite::{
     DWRITE_WORD_WRAPPING_NO_WRAP, DWRITE_WORD_WRAPPING_WRAP,
 };
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
-use windows_numerics::Vector2;
+use windows_numerics::{Matrix3x2, Vector2};
 
 use crate::model::{
     ActionMenuModel, DetailPane, GridModel, IconBitmap, Model, Row, ToastKind,
@@ -71,6 +74,9 @@ pub struct Renderer {
     meta_label_format: IDWriteTextFormat,
     meta_value_format: IDWriteTextFormat,
     action_title_format: IDWriteTextFormat,
+    round_stroke: Option<ID2D1StrokeStyle>,
+    logo_ring: Option<ID2D1PathGeometry>,
+    logo_arrow: Option<ID2D1PathGeometry>,
     brushes: Vec<(Color, ID2D1SolidColorBrush)>,
     bitmaps: HashMap<String, ID2D1Bitmap>,
 }
@@ -268,6 +274,19 @@ impl Renderer {
             DWRITE_TEXT_ALIGNMENT_LEADING,
         )?;
 
+        let round_stroke = unsafe {
+            let props = D2D1_STROKE_STYLE_PROPERTIES {
+                startCap: D2D1_CAP_STYLE_ROUND,
+                endCap: D2D1_CAP_STYLE_ROUND,
+                dashCap: D2D1_CAP_STYLE_ROUND,
+                lineJoin: D2D1_LINE_JOIN_ROUND,
+                miterLimit: 10.0,
+                ..Default::default()
+            };
+            factory.CreateStrokeStyle(&props, None).ok()
+        };
+        let (logo_ring, logo_arrow) = build_launch_ring_geometry(&factory);
+
         let renderer = Self {
             target,
             dwrite,
@@ -293,6 +312,9 @@ impl Renderer {
             meta_label_format,
             meta_value_format,
             action_title_format,
+            round_stroke,
+            logo_ring,
+            logo_arrow,
             brushes: Vec::new(),
             bitmaps: HashMap::new(),
         };
@@ -2218,39 +2240,35 @@ impl Renderer {
         }
     }
 
-    /// Clean minimal magnifying glass icon in the left searchbar slot
-    /// (neutral tertiary stroke, optically centered with the 18px search input).
+    /// YAL's Launch Ring monochrome mark in the left searchbar slot
+    /// (250° open reticle ring + 45° launch vector, optically centered at 1:1 DIPs).
     fn draw_search_glyph(&mut self, theme: &Theme, left: f32, middle: f32) {
-        let radius = 6.2_f32;
-        let center = Vector2 {
-            X: left + radius + 1.5,
-            Y: middle - 1.2,
+        let cx = left + 9.2;
+        let cy = middle;
+        let ring_col = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x6c),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x62),
         };
-        let ellipse = D2D1_ELLIPSE {
-            point: center,
-            radiusX: radius,
-            radiusY: radius,
+        let arrow_col = match theme.appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x98),
+            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x8a),
         };
-        let diag = std::f32::consts::FRAC_1_SQRT_2;
-        let start = Vector2 {
-            X: center.X + radius * diag,
-            Y: center.Y + radius * diag,
-        };
-        let end = Vector2 {
-            X: start.X + 4.4,
-            Y: start.Y + 4.4,
-        };
-        let col = match theme.appearance {
-            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x70),
-            Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x66),
-        };
-        if let Some(brush) = self.brush(col) {
-            unsafe {
-                self.target
-                    .DrawEllipse(&ellipse, &brush, 1.6, None::<&ID2D1StrokeStyle>);
-                self.target
-                    .DrawLine(start, end, &brush, 1.6, None::<&ID2D1StrokeStyle>);
+        let stroke = self.round_stroke.clone();
+        let ring_geo = self.logo_ring.clone();
+        let arrow_geo = self.logo_arrow.clone();
+        let ring_brush = self.brush(ring_col);
+        let arrow_brush = self.brush(arrow_col);
+
+        unsafe {
+            let translate = Matrix3x2::translation(cx, cy);
+            self.target.SetTransform(&translate);
+            if let (Some(geo), Some(brush)) = (ring_geo.as_ref(), ring_brush.as_ref()) {
+                self.target.DrawGeometry(geo, brush, 1.8, stroke.as_ref());
             }
+            if let (Some(geo), Some(brush)) = (arrow_geo.as_ref(), arrow_brush.as_ref()) {
+                self.target.DrawGeometry(geo, brush, 1.8, stroke.as_ref());
+            }
+            self.target.SetTransform(&Matrix3x2::identity());
         }
     }
 
@@ -2351,6 +2369,87 @@ fn to_d2d(color: Color) -> D2D1_COLOR_F {
         b: color.blue,
         a: color.alpha,
     }
+}
+
+/// Pre-builds YAL's Launch Ring vector mark (centered at `(0, 0)` in DIPs, matching
+/// `assets/yal-mark.svg`) once per `Renderer` so painting allocates zero COM objects.
+fn build_launch_ring_geometry(
+    factory: &ID2D1Factory,
+) -> (Option<ID2D1PathGeometry>, Option<ID2D1PathGeometry>) {
+    let scale = 0.85_f32;
+    let r = 7.2 * scale;
+    let a_start = 10.0_f32.to_radians();
+    let a_end = (-100.0_f32).to_radians();
+    let start = Vector2 {
+        X: r * a_start.cos(),
+        Y: r * a_start.sin(),
+    };
+    let end = Vector2 {
+        X: r * a_end.cos(),
+        Y: r * a_end.sin(),
+    };
+
+    let ring = unsafe {
+        factory.CreatePathGeometry().ok().and_then(|geo| {
+            let sink = geo.Open().ok()?;
+            sink.BeginFigure(start, D2D1_FIGURE_BEGIN_HOLLOW);
+            sink.AddArc(&D2D1_ARC_SEGMENT {
+                point: end,
+                size: D2D_SIZE_F {
+                    width: r,
+                    height: r,
+                },
+                rotationAngle: 0.0,
+                sweepDirection: D2D1_SWEEP_DIRECTION_CLOCKWISE,
+                arcSize: D2D1_ARC_SIZE_LARGE,
+            });
+            sink.EndFigure(D2D1_FIGURE_END_OPEN);
+            sink.Close().ok()?;
+            Some(geo)
+        })
+    };
+
+    let arrow = unsafe {
+        factory.CreatePathGeometry().ok().and_then(|geo| {
+            let sink = geo.Open().ok()?;
+            // 45° launch shaft from (-1.6, +1.6) to (+6.4, -6.4) scaled by `scale`.
+            sink.BeginFigure(
+                Vector2 {
+                    X: -1.6 * scale,
+                    Y: 1.6 * scale,
+                },
+                D2D1_FIGURE_BEGIN_HOLLOW,
+            );
+            sink.AddLine(Vector2 {
+                X: 6.4 * scale,
+                Y: -6.4 * scale,
+            });
+            sink.EndFigure(D2D1_FIGURE_END_OPEN);
+
+            // Crisp 90° launch arrowhead pointing top-right.
+            sink.BeginFigure(
+                Vector2 {
+                    X: 1.8 * scale,
+                    Y: -6.4 * scale,
+                },
+                D2D1_FIGURE_BEGIN_HOLLOW,
+            );
+            sink.AddLine(Vector2 {
+                X: 6.4 * scale,
+                Y: -6.4 * scale,
+            });
+            sink.AddLine(Vector2 {
+                X: 6.4 * scale,
+                Y: -1.8 * scale,
+            });
+            sink.EndFigure(D2D1_FIGURE_END_OPEN);
+
+            sink.Close().ok()?;
+            Some(geo)
+        })
+    };
+
+    (ring, arrow)
 }
 
 /// Connector words, prepositions, and prose fillers rendered in Raycast's dimmed

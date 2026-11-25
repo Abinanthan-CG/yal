@@ -15,7 +15,7 @@ Unicode true
 ; level up, so every relative path here starts with `..`.
 
 !ifndef VERSION
-  !define VERSION "0.1.0"
+  !define VERSION "1.0.0"
 !endif
 !ifndef ARCH
   !define ARCH "x64"
@@ -142,6 +142,8 @@ Section "Uninstall"
   Delete "$INSTDIR\portable"
   Delete "$INSTDIR\yal.ico"
   Delete "$INSTDIR\yal.png"
+  Delete "$INSTDIR\yal.svg"
+  Delete "$INSTDIR\yal-mark.svg"
   RMDir /r "$INSTDIR\locales"
   RMDir /r "$INSTDIR\resources"
   RMDir "$INSTDIR"

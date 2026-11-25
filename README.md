@@ -1,206 +1,136 @@
-# YAL
+<p align="center">
+  <img src="assets/yal.svg" width="96" height="96" alt="YAL — Yet Another Launcher" />
+</p>
 
-**YAL** is a keyboard launcher for Windows 10 and 11. It is an unofficial,
-community-made port of [Tinycast](https://github.com/abue-ammar/tinycast), the
-macOS launcher by Abue Ammar.
+<h1 align="center">YAL</h1>
+
+<p align="center">
+  <strong>A fast, pure-Rust Win32 + Direct2D keyboard launcher for Windows 10 and 11.</strong><br/>
+  No Electron. No WebView2. No Node runtime. Single native binary.
+</p>
+
+---
+
+**YAL** (*Yet Another Launcher*) is an unofficial, community-made Windows port of
+[Tinycast](https://github.com/abue-ammar/tinycast), rebuilt from the ground up in pure
+Rust on native Win32, Direct2D, DirectWrite, and SQLite.
 
 Press one key, type what you want, press <kbd>Enter</kbd>. YAL finds the app,
-the file, the calculation, the clipboard entry, the window or the setting you
-meant, and puts it in front of you.
+file, calculation, clipboard entry, snippet, emoji, window, or setting you meant
+in milliseconds and puts it in front of you.
 
 ```text
-Alt + Space      open the palette
-Ctrl + Space     open the palette (alternative)
+Alt + Space       Open / toggle the palette
+Ctrl + Space      Alternative open shortcut
+↓ (Compact mode)  Unfold suggestions without leaving the keyboard
+Ctrl + K          Open contextual Action Panel for any item
+Ctrl + I          Toggle Master-Detail info & preview pane
+Tab / Shift+Tab   Fill inline Quicklink arguments or drill into folders
 ```
 
 ---
 
-## What YAL is, and what it is not
+## Features (v1.0.0)
 
-YAL is a **port**, not a clone. It reimplements Tinycast's behaviour on
-Windows, feature by feature, and it keeps a ledger of exactly how far that has
-got. The ledger is [`PARITY.md`](PARITY.md), and every row in it is either
-`PORTED` — with the test that proves it — or `NOT PORTED` — with the reason.
-
-YAL is **not** affiliated with, endorsed by, or supported by the Tinycast
-authors. Upstream is a macOS application; YAL is an independent Windows
-project that follows its documentation.
-
-### The original project
-
-Tinycast is licensed under the AGPL-3.0. YAL is a derivative work and is
-distributed under the same licence. The original author is credited in
-[`LICENSE`](LICENSE) and [`UPSTREAM.md`](UPSTREAM.md). Third-party notices,
-including the MIT licence for the Rooms window-layout work by Sara Gordić, are
-in [`NOTICE.md`](NOTICE.md).
-
-### Support
-
-Support for Tinycast — the original project — is at
-**<https://tinycast.dev/support>**. Please use it for questions about the
-macOS app.
-
----
-
-## Status
-
-| | |
-|---|---|
-| Tier 1 rows in the parity ledger | 1,815 |
-| Tier 2 rows in the parity ledger | 494 |
-| Total rows | 2,309 |
-| Architecture | `x86_64-pc-windows-msvc`, `aarch64-pc-windows-msvc` |
-| Minimum Windows | Windows 10 22H2 |
-| Licence | AGPL-3.0-only |
-
-`PARITY.md` is generated from `parity/parity.toml` and is checked in CI, so it
-cannot drift away from the code without the build failing.
-
-### What works today
-
-The port is a work in progress, and the ledger is honest about where it has
-got. What is in place:
-
-- **The palette.** A borderless, always-on-top window on the system WebView2
-  runtime, shown by the global hotkey and hidden when it loses focus.
-- **The search.** Upstream's own rules, ported whole: the fold, the tiered
-  match, the scorer where a word start outscores any other letter, the
-  relevance cells, the Latin spellings for names in another script, and the
-  ordering that decides which entry comes first.
-- **The program index.** Every program Windows knows about — the Start Menu,
-  the registry's uninstall key, the registry's App Paths — found by its name,
-  its initials, or its scattered letters.
-- **The learned ranking.** What you open, and by which query, remembered in
-  `launcher-ranking.json` in the app's own folder.
-- **The tray, the single-instance lock, the `tinycast://` protocol, the
-  installer and the portable build.**
-
-Everything else is in the ledger as `NOT PORTED`, with the reason.
+- **Native Win32 + Direct2D UI:** Hardware-accelerated rendering with Windows 11 rounded corners, native shadows, per-monitor DPI scaling, automatic Dark & Light themes, and **Compact** (single search pill) or **Expanded** window mode.
+- **Instant App & Command Search:** Indexes Start Menu, App Paths, registry uninstall entries, and Microsoft Store / MSIX apps with real extracted Windows icons, frecency learning, favorites (`Ctrl+1..0`), and per-command hotkeys & aliases.
+- **Fast Local File Search:** Background SQLite WAL + FTS5 trigram index across your user folders with a live overlapped Win32 `FileWatcher`, type filters, folder drill-down (`Tab`), preview pane (`Ctrl+I`), Reveal in Explorer, and Recycle Bin support.
+- **Swiss-Army Calculator:** Live arithmetic, units & compound measures, 159 fiat + 23 crypto currencies (live FX), DST-aware world clocks & date countdowns (`hours till 27 nov`, `days between ...`), variables & `ans`, color space transforms (`#hex` / `rgb` / `hsl`), statistics, finance, chemistry, and Calculator History.
+- **Rich Clipboard History & Paste Queue:** Captures text, links, emails, color swatches, files, and images with pinning, filtering, preview, and sequential `Paste Queue` (`Paste Next`).
+- **Snippets & Auto-Expansion:** Markdown-backed snippets with `{clipboard}`, `{selection}`, `{date}`, `{time}`, `{uuid}`, `{cursor}`, `{argument}`, and nested `{snippet:...}` templates, plus background `!keyword` auto-expansion and Raycast snippet import.
+- **2D Color Emoji & Symbol Picker:** Full searchable DirectWrite color emoji grid with frequent recents and pinning.
+- **Window Management & Switcher:** 40 native window tiling/snapping commands (halves, thirds, quarters, sixths, center, display moves, undo) plus live open-window switching.
+- **Quicklinks, Quick Notes & Fallback Search:** Parameterized `{query}` Quicklinks with inline `Tab` argument pills, persistent Quick Notes, and always-on `Use "<query>" with...` fallback search commands.
+- **Custom Commands & Shell Runner:** PowerShell, `cmd`, Git Bash, and WSL script commands running inside Win32 Job Objects, plus Raycast script-command import.
+- **Power-User Input & Backup:** Optional `CapsLock` Hyperkey, live hotkey recorder, 64 built-in Settings, `tinycast://` deep links, and SHA-256 verified backup & restore.
 
 ---
 
 ## Installing
 
-### The installer
+### Per-user installer (recommended)
 
-Download `yal-setup-<version>-x64.exe` (or `-arm64.exe`) from the
-[releases page](https://github.com/Abinanthan-CG/yal/releases) and run it.
+Download `yal-setup-1.0.0-x64.exe` (or `-arm64.exe`) from the
+[Releases page](https://github.com/Abinanthan-CG/yal/releases) and run it.
 
-The install is **per user**. It never asks for administrator rights, it never
-writes outside your own profile, and it can be undone completely from
-*Settings → Apps → Installed apps*.
+- Installs **per user** (`%LOCALAPPDATA%\Programs\yal`) — never asks for administrator rights.
+- Offers optional Start Menu shortcut, Desktop shortcut, and Launch at Login.
+- Registers the `tinycast://` link protocol for your user account only.
+- Cleanly uninstallable from *Settings → Apps → Installed apps* while preserving your data in `%APPDATA%\yal` unless you choose to remove it.
 
-The installer offers a Start menu shortcut, an optional desktop shortcut, and
-an optional "start when I sign in" entry. It registers the `tinycast://` link
-protocol for your account only.
+### Portable build
 
-### The portable build
+Download `yal-1.0.0-x64-portable.zip`, extract it anywhere, and run `yal.exe`.
+Portable builds store all data in a `portable` folder beside `yal.exe`.
 
-Download `yal-<version>-x64-portable.zip`, extract it anywhere, and run
-`yal.exe`. Portable builds keep their data in a `portable` folder next to the
-executable instead of in your user profile, so you can run YAL from a USB
-stick with nothing left behind.
-
-Every release publishes a `SHA256SUMS.txt`. Check it before you run anything:
+Verify any release download against `SHA256SUMS.txt`:
 
 ```powershell
-Get-FileHash .\yal-setup-0.1.0-x64.exe -Algorithm SHA256
+Get-FileHash .\yal-setup-1.0.0-x64.exe -Algorithm SHA256
 ```
 
 ---
 
 ## Building from source
 
+Requires the pinned Rust toolchain (`rust-toolchain.toml`, MSRV `1.89`) and [NSIS](https://nsis.sourceforge.io/) if building the installer.
+
 ```powershell
 git clone https://github.com/Abinanthan-CG/yal.git
-cd REPO
-.\scripts\bootstrap.ps1     # installs the pinned toolchain and NSIS
-.\scripts\build.ps1         # formats, lints, tests, then builds the installer
+cd YAL
+cargo build --release --bin yal
+.\target\release\yal.exe --self-test
 ```
 
-The result is in `dist/`.
+To build the release installer, portable zip, and `SHA256SUMS.txt`:
 
-Full instructions are in [`BUILD.md`](BUILD.md). If you are working with an
-AI coding assistant, read [`BUILD_WITH_AI.md`](BUILD_WITH_AI.md) instead — it
-explains the repository's conventions, the parity ledger and the rules the
-build enforces.
+```powershell
+cargo run --quiet -p xtask -- dist --arch x64
+```
+
+Artifacts are written to `dist/`. Full build notes live in [`BUILD.md`](BUILD.md).
 
 ---
 
 ## Repository layout
 
 ```text
-crates/          the domain, one crate per feature area
-  tc-core/       commands, launcher rows, deeplinks, identifiers
-  tc-search/     matching and ranking
-  tc-apps/       the programs the launcher can open
-  tc-calc/       the calculator engine
-  tc-platform/   the traits every platform must satisfy, and their fakes
-  tc-platform-win/  the Win32 implementation of those traits
+crates/
+  tc-core/          commands, launcher rows, deeplinks, identifiers
+  tc-search/        fuzzy matching, folding, scoring, frecency ranking
+  tc-apps/          Start Menu, registry, App Paths & MSIX app discovery
+  tc-calc/          calculator engine (units, FX, dates, timezones, colors, finance)
+  tc-clipboard/     clipboard history model, classification, paste queue & SQLite store
+  tc-emoji/         color emoji catalog, search & favorites
+  tc-snippets/      Markdown snippet library, template engine & Raycast import
+  tc-files/         SQLite WAL + FTS5 trigram file indexer & scoped search
+  tc-windows/       40 window-tiling commands & multi-monitor geometry
+  tc-commands/      built-in command catalog, custom commands & Job Object shell runner
+  tc-backup/        SHA-256 verified export/restore & Raycast import
+  tc-palette/       screen stack, key chords, settings schema & compact/expanded policy
+  tc-platform/      platform traits and deterministic test fakes
+  tc-platform-win/  Win32 hotkeys, Hyperkey, snippet expander, clipboard, icons & FileWatcher
+  tc-ui/            pure Win32 + Direct2D + DirectWrite palette renderer & HUD
 apps/
-  yal/           the Tauri shell: palette, tray, hotkey, single instance
-  yal-indexer/   the file indexer helper process
-  yal-ocr/       the text recognition helper process
-  yal-dictation/ the dictation helper process
-frontend/        the palette's user interface: Solid and TypeScript
-installer/       the NSIS installer
-parity/          the parity ledger and its parts
-xtask/           the build tool: parity, ledger, i18n, dist
+  yal/              single-binary Windows launcher (palette, tray, hotkeys, single instance)
+  yal-ui-probe/     standalone Direct2D layout & render probe
+assets/             official Launch Ring SVG (`yal.svg`, `yal-mark.svg`), PNG & multi-res ICO
+installer/          per-user NSIS installer script (`yal.nsi`)
+packaging/          WinGet and Scoop manifest templates
+xtask/              release packaging (`dist`) and self-test orchestration
 ```
 
-The crate map and the reasoning behind it are in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
 ---
 
-## How macOS ideas are read on Windows
+## Attribution & Licence
 
-The port is a translation, not a copy. Every macOS concept has a defined
-Windows answer, and the table lives in
-[`docs/WINDOWS-MAPPING.md`](docs/WINDOWS-MAPPING.md).
+YAL is a derivative work of [Tinycast](https://github.com/abue-ammar/tinycast) by Abue Ammar,
+licensed under **AGPL-3.0-only**. YAL is **not** affiliated with, endorsed by, or supported by
+the Tinycast authors. Upstream credit and third-party notices (including the MIT licence for
+the Rooms window-layout work by Sara Gordić) live in [`LICENSE`](LICENSE),
+[`UPSTREAM.md`](UPSTREAM.md), and [`NOTICE.md`](NOTICE.md).
 
-Some examples:
+### Privacy
 
-| Tinycast on macOS | YAL on Windows |
-|---|---|
-| ⌘ Command | <kbd>Ctrl</kbd> |
-| ⌥ Option | <kbd>Alt</kbd> |
-| ⇧ Shift | <kbd>Shift</kbd> |
-| ⌃ Control | <kbd>Ctrl</kbd> + <kbd>Alt</kbd> |
-| The menu bar | The notification area (system tray) |
-| Spaces | Virtual desktops |
-| Apple Shortcuts | Automations (Power Automate Desktop, Task Scheduler) |
-| The Trash | The Recycle Bin |
-| Secure Input | Administrator windows and the secure desktop |
-| `/Applications` | The Start menu, `shell:AppsFolder` and App Paths |
-
-The full shortcut list is in [`docs/SHORTCUTS.md`](docs/SHORTCUTS.md).
-
----
-
-## Privacy
-
-YAL has no accounts, no telemetry and no analytics. It does not phone home.
-
-It talks to the network only where the original does: to check for updates, to
-download a language pack or a dictation model if you ask for one, and to reach
-an AI provider that you have configured yourself.
-
-Your secrets — API keys for AI providers — are stored in **Windows Credential
-Manager**, never in a file on disk.
-
----
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow, the commit
-conventions and how to add a parity row. The short version: write the test
-first, name the row, and never claim a feature is ported without evidence.
-
-Please read the [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) before taking part.
-
----
-
-## Licence
-
-AGPL-3.0-only. See [`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md).
+YAL has no accounts, no telemetry, and no analytics. Network calls happen only when you
+explicitly use live currency exchange rates or open external URLs/Quicklinks.
