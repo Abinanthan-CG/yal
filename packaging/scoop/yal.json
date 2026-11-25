@@ -1,9 +1,8 @@
 {
     "version": "{{VERSION}}",
-    "description": "A keyboard launcher for Windows, an unofficial port of Tinycast",
+    "description": "YAL — a fast, pure-Rust Win32 + Direct2D keyboard launcher for Windows",
     "homepage": "https://github.com/{{REPOSITORY}}",
     "license": "AGPL-3.0-only",
-    "notes": "An unofficial community port of Tinycast by Abue Ammar.",
     "checkver": {
         "url": "https://github.com/{{REPOSITORY}}/releases/latest",
         "regex": "releases/download/v(?<version>\\d+\\.\\d+\\.\\d+)"
@@ -14,9 +13,6 @@
     "url": "https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-{{VERSION}}-x64-portable.zip",
     "hash": "{{PORTABLE_SHA256_X64}}",
     "home": "yal-{{VERSION}}-x64-portable",
-    "pre_install": [
-        "Write-Host \"YAL is an unofficial community port of Tinycast (https://github.com/abue-ammar/tinycast), which is licensed under the AGPL-3.0.\""
-    ],
     "env_add_path": [
         [".", "."]
     ]

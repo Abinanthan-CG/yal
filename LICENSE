@@ -1,10 +1,7 @@
-YAL - a Windows port of Tinycast
+YAL — Yet Another Launcher
 
-Copyright (C) 2026 Abue Ammar (Tinycast, the original work)
-Copyright (C) 2026 YAL community port contributors (the Windows port)
-
-This is a derivative work of Tinycast, licensed under the GNU Affero General
-Public License version 3. The complete terms follow.
+Copyright (C) 2026 Abinanthan-CG and YAL contributors
+Portions derived from Tinycast, Copyright (C) 2026 Abue Ammar
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

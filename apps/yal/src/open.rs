@@ -168,7 +168,7 @@ impl Runner {
                 Ok(())
             }
             CommandId::Support => {
-                tc_platform_win::open("https://tinycast.dev/support")?;
+                tc_platform_win::open(tc_core::SUPPORT_URL)?;
                 Ok(())
             }
             other => Err(format!(

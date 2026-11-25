@@ -4034,7 +4034,7 @@ fn enter_about(launcher: &LauncherState, shown: &mut Shown) -> PaletteReply {
     PaletteReply::Navigate(status_screen_model(
         "About YAL",
         &format!("YAL v{}", env!("CARGO_PKG_VERSION")),
-        "Yet Another Launcher — Native Windows Port of Tinycast",
+        "Yet Another Launcher — Fast Native Windows Launcher",
         extra,
     ))
 }

@@ -36,10 +36,7 @@ pub use quicklink::QuicklinkDestination;
 pub const REPOSITORY: &str = "Abinanthan-CG/yal";
 
 /// Where a user is sent when they ask for support.
-///
-/// Support belongs to the original project, because the original project is
-/// what people who search for a launcher will find.
-pub const SUPPORT_URL: &str = "https://tinycast.dev/support";
+pub const SUPPORT_URL: &str = "https://github.com/Abinanthan-CG/yal/issues";
 
 /// The latest release of YAL, used by the updater.
 pub fn latest_release_url() -> String {

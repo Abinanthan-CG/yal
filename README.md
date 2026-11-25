@@ -11,9 +11,8 @@
 
 ---
 
-**YAL** (*Yet Another Launcher*) is an unofficial, community-made Windows port of
-[Tinycast](https://github.com/abue-ammar/tinycast), rebuilt from the ground up in pure
-Rust on native Win32, Direct2D, DirectWrite, and SQLite.
+**YAL** (*Yet Another Launcher*) is a fast, lightweight native Windows keyboard launcher
+built in pure Rust on Win32, Direct2D, DirectWrite, and SQLite.
 
 Press one key, type what you want, press <kbd>Enter</kbd>. YAL finds the app,
 file, calculation, clipboard entry, snippet, emoji, window, or setting you meant
@@ -122,13 +121,11 @@ xtask/              release packaging (`dist`) and self-test orchestration
 
 ---
 
-## Attribution & Licence
+## Licence & Attribution
 
-YAL is a derivative work of [Tinycast](https://github.com/abue-ammar/tinycast) by Abue Ammar,
-licensed under **AGPL-3.0-only**. YAL is **not** affiliated with, endorsed by, or supported by
-the Tinycast authors. Upstream credit and third-party notices (including the MIT licence for
-the Rooms window-layout work by Sara Gordić) live in [`LICENSE`](LICENSE),
-[`docs/UPSTREAM.md`](docs/UPSTREAM.md), and [`NOTICE.md`](NOTICE.md).
+Licensed under **AGPL-3.0-only** — see [`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md).
+Portions of YAL's domain logic are derived from [Tinycast](https://github.com/abue-ammar/tinycast)
+(AGPL-3.0); YAL is an independent project and is not affiliated with or endorsed by Tinycast.
 
 ## Documentation
 

@@ -28,7 +28,7 @@ edition = "2021"
 # 0.39 declares 1.88. The pinned toolchain is 1.99.1 (see rust-toolchain.toml).
 rust-version = "1.89"
 license = "AGPL-3.0-only"
-authors = ["YAL community port"]
+authors = ["Abinanthan-CG", "YAL contributors"]
 repository = "https://github.com/Abinanthan-CG/yal"
 
 [workspace.dependencies]

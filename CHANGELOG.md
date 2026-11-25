@@ -5,7 +5,7 @@ All notable changes to YAL are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and YAL uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
-YAL is an unofficial community Windows port of [Tinycast](https://github.com/abue-ammar/tinycast).
+**YAL** (*Yet Another Launcher*) is a fast, pure-Rust Win32 + Direct2D keyboard launcher for Windows.
 
 ---
 

@@ -64,7 +64,7 @@ fn lock_or_recover<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 
 /// The text `yal.exe --help` prints.
 pub fn usage() -> String {
-    "YAL - a native Windows keyboard launcher, an unofficial port of Tinycast\n\
+    "YAL - Yet Another Launcher, a fast native Windows keyboard launcher\n\
      \n\
      Usage: yal [options]\n\
      \n\
@@ -266,7 +266,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         TrayAction::Settings => tc_ui::post_command(handle, COMMAND_OPEN_SETTINGS),
         TrayAction::Support => {
             std::thread::spawn(|| {
-                if let Err(error) = tc_platform_win::open("https://tinycast.dev/support") {
+                if let Err(error) = tc_platform_win::open(tc_core::SUPPORT_URL) {
                     eprintln!("yal: {error}");
                 }
             });

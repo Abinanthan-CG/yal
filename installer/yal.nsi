@@ -34,7 +34,7 @@ Unicode true
 !endif
 
 !define PRODUCT "YAL"
-!define PUBLISHER "YAL community port"
+!define PUBLISHER "YAL"
 !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\YAL-${CHANNEL}"
 !define PROTOCOL "tinycast"
 
