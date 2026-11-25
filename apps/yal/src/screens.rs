@@ -5,7 +5,7 @@
 
 use std::io::Read;
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use tc_clipboard::{ClipboardItem, ItemKind, TextForm};
 use tc_palette::FileType;
@@ -852,7 +852,8 @@ pub fn files_model(
             } else {
                 Icon::new("F", Color::rgb(0x38, 0xbd, 0xf8))
             };
-            let mut row = Row::detailed(&r.name, &r.detail)
+            let display_detail = shorten_home_path(&r.detail);
+            let mut row = Row::detailed(&r.name, &display_detail)
                 .with_section(section)
                 .with_icon(icon);
             if idx < 30 {
@@ -1723,6 +1724,55 @@ pub fn status_screen_model(badge: &str, title: &str, detail: &str, extra_rows: V
     }
 }
 
+/// Shorten a Windows path under the current user's profile folder with `~`
+/// (e.g. `C:\Users\dabin\development\YAL` -> `~\development\YAL`), matching
+/// Raycast's compact path display.
+pub fn shorten_home_path(path: &str) -> String {
+    static HOME_PREFIX: OnceLock<Option<String>> = OnceLock::new();
+    let home = HOME_PREFIX.get_or_init(|| {
+        std::env::var_os("USERPROFILE")
+            .or_else(|| std::env::var_os("HOME"))
+            .map(|v| {
+                v.to_string_lossy()
+                    .trim_end_matches(['\\', '/'])
+                    .to_string()
+            })
+            .filter(|s| !s.is_empty())
+    });
+    shorten_path_with_home(path, home.as_deref())
+}
+
+fn shorten_path_with_home(path: &str, home: Option<&str>) -> String {
+    let Some(home) = home else {
+        return path.to_string();
+    };
+    if path.len() >= home.len() && path[..home.len()].eq_ignore_ascii_case(home) {
+        let rest = &path[home.len()..];
+        if rest.is_empty() {
+            return "~".to_string();
+        }
+        if rest.starts_with('\\') || rest.starts_with('/') {
+            return format!("~{rest}");
+        }
+    }
+    path.to_string()
+}
+
+/// Format a fallback search row title cleanly without repeating "Search"
+/// (e.g. `"Google Search"` -> `"Search Google for \"foo\""`).
+fn fallback_search_title(link_name: &str, query: &str) -> String {
+    let name = link_name.trim();
+    if name.len() >= 7 && name[..7].eq_ignore_ascii_case("search ") {
+        return format!("{name} for \"{query}\"");
+    }
+    let clean = if name.len() > 7 && name[name.len() - 7..].eq_ignore_ascii_case(" search") {
+        name[..name.len() - 7].trim_end()
+    } else {
+        name
+    };
+    format!("Search {clean} for \"{query}\"")
+}
+
 /// Fallback web search rows offered at root Launcher when no local result matched `query`.
 pub fn fallback_search_rows(query: &str, quicklinks: &[Quicklink]) -> Vec<ResultRow> {
     let trimmed = query.trim();
@@ -1737,7 +1787,7 @@ pub fn fallback_search_rows(query: &str, quicklinks: &[Quicklink]) -> Vec<Result
             let url = link.expand_url(trimmed);
             ResultRow {
                 id: format!("{FALLBACK_URL_PREFIX}{url}"),
-                name: format!("Search {} for \"{trimmed}\"", link.name),
+                name: fallback_search_title(&link.name, trimmed),
                 detail: url.clone(),
                 kind: "Fallback Search".to_string(),
                 target: url,
@@ -2018,5 +2068,44 @@ mod tests {
             .metadata
             .iter()
             .any(|(k, v)| k == "Expression" && v == "20% off 500"));
+    }
+
+    #[test]
+    fn fallback_search_title_avoids_duplicate_search_word() {
+        assert_eq!(
+            fallback_search_title("Google Search", "aistudio2api"),
+            "Search Google for \"aistudio2api\""
+        );
+        assert_eq!(
+            fallback_search_title("GitHub Search", "yal"),
+            "Search GitHub for \"yal\""
+        );
+        assert_eq!(
+            fallback_search_title("Search Docs", "win32"),
+            "Search Docs for \"win32\""
+        );
+        assert_eq!(
+            fallback_search_title("DuckDuckGo", "rust"),
+            "Search DuckDuckGo for \"rust\""
+        );
+    }
+
+    #[test]
+    fn shorten_path_with_home_replaces_user_profile_prefix() {
+        assert_eq!(
+            shorten_path_with_home(
+                r"C:\Users\dabin\development\opencode-stack\AIStudio2API",
+                Some(r"C:\Users\dabin")
+            ),
+            r"~\development\opencode-stack\AIStudio2API"
+        );
+        assert_eq!(
+            shorten_path_with_home(r"C:\Users\dabin", Some(r"C:\Users\dabin")),
+            "~"
+        );
+        assert_eq!(
+            shorten_path_with_home(r"C:\Users\dabin2\work", Some(r"C:\Users\dabin")),
+            r"C:\Users\dabin2\work"
+        );
     }
 }

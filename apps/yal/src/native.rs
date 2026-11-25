@@ -44,10 +44,10 @@ use crate::screens::{
     calc_history_model, clipboard_model, create_note_model, create_quicklink_model,
     create_snippet_model, downsample_rgba_premultiplied, emoji_model, fallback_search_rows,
     files_model, notes_model, parse_clipboard_file_paths, quicklink_arg_model, quicklinks_model,
-    run_shell_model, set_alias_model, shows_create_note_row, shows_create_quicklink_row,
-    shows_create_snippet_row, snippets_model, status_screen_model, windows_model, NoteDraft,
-    NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft, SnippetDraftStep,
-    FALLBACK_URL_PREFIX,
+    run_shell_model, set_alias_model, shorten_home_path, shows_create_note_row,
+    shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
+    windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
+    SnippetDraftStep, FALLBACK_URL_PREFIX,
 };
 use crate::shell::{spawn_rates_refresh, FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW, RATES_FILE};
 use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
@@ -762,9 +762,20 @@ fn build(
                 match shown.mode {
                     Mode::Launcher => {
                         let query = shown.query.clone();
-                        let rows = shown.rows.clone();
-                        let sel = shown.selected.min(rows.len().saturating_sub(1));
                         let is_suggestions = query.trim().is_empty();
+                        let rows = if is_suggestions {
+                            shown.rows.clone()
+                        } else {
+                            let fresh = build_root_search_rows(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                                &query,
+                            );
+                            shown.rows = fresh.clone();
+                            fresh
+                        };
+                        let sel = shown.selected.min(rows.len().saturating_sub(1));
+                        shown.selected = sel;
                         PaletteReply::Update(model_for_with_icons(
                             &query,
                             &rows,
@@ -3789,7 +3800,8 @@ fn spawn_import_backup_dialog(
                         let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref()
                             != Some("false");
                         launcher.set_show_window_commands(wm_on);
-                        let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
+                        let fs_show =
+                            ctx.settings.get(FILE_SEARCH_SHOW).as_deref() != Some("false");
                         launcher.set_show_files(fs_show);
                         ctx.hotkeys.reload_bindings(&ctx.settings);
                         ctx.hotkeys
@@ -4121,7 +4133,7 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
     let snippets_expand_on = hotkeys::snippets_auto_expand_enabled(&*ctx.settings);
     let wm_on = ctx.settings.get(KEY_WINDOW_MANAGEMENT_ENABLED).as_deref() != Some("false");
     let fs_on = ctx.settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("false");
-    let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true");
+    let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() != Some("false");
     let pop_policy = pop_to_root_policy(&ctx.settings);
 
     let extra = vec![
@@ -4266,7 +4278,8 @@ fn advance_native_setting(
     }
 
     if key == FILE_SEARCH_SHOW {
-        let now_on = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() != Some("true");
+        let currently_on = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() != Some("false");
+        let now_on = !currently_on;
         let _ = ctx
             .settings
             .set(FILE_SEARCH_SHOW, if now_on { "true" } else { "false" });
@@ -4454,7 +4467,7 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                 KEY_WINDOW_MANAGEMENT_ENABLED => {
                     "Snap windows with Left/Right Half, Maximize, Always on Top"
                 }
-                FILE_SEARCH_ENABLED => "Index Desktop, Documents, Downloads live in background",
+                FILE_SEARCH_ENABLED => "Index your user folders live in background",
                 FILE_SEARCH_SHOW => "Include indexed files inside root Launcher results",
                 KEY_POP_TO_ROOT_SECS => {
                     "Automatically reset sub-screens to Root Search after hiding"
@@ -4543,7 +4556,9 @@ fn row_of(result: &ResultRow, query: &str, is_suggestions: bool) -> Row {
         result.kind.clone()
     };
 
-    let detail = if result.detail.is_empty() && result.kind != APPLICATIONS {
+    let detail = if result.kind == FILE_SECTION {
+        shorten_home_path(&result.detail)
+    } else if result.detail.is_empty() && result.kind != APPLICATIONS {
         result.kind.clone()
     } else {
         result.detail.clone()

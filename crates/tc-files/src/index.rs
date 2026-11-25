@@ -252,6 +252,10 @@ pub fn walk_once<B: Backing>(
         // swept here too, so its rewritten rows do not linger past this pass.
         if let Some(mtime) = dir_mtime_ns(Path::new(&dir)) {
             updates.push((dir, mtime));
+            if updates.len() >= 250 {
+                backing.remember_dirs(&updates);
+                updates.clear();
+            }
         } else if !removed.contains(&dir) {
             removed.push(dir);
         }
@@ -264,7 +268,9 @@ pub fn walk_once<B: Backing>(
         changed: listed > 0 || !removed.is_empty(),
     };
 
-    backing.remember_dirs(&updates);
+    if !updates.is_empty() {
+        backing.remember_dirs(&updates);
+    }
     backing.forget_dirs(&removed);
     report
 }

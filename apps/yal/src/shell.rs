@@ -141,7 +141,11 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     let file_search_enabled = settings.get(FILE_SEARCH_ENABLED).as_deref() != Some("false");
     let file_watcher = if file_search_enabled {
         features.trigger_file_index(Arc::clone(&launcher), Some(Arc::clone(&handle_slot)));
-        let roots = default_index_roots(&paths.home_dir);
+        const MAX_WATCHED_ROOTS: usize = 32;
+        let roots: Vec<_> = default_index_roots(&paths.home_dir)
+            .into_iter()
+            .take(MAX_WATCHED_ROOTS)
+            .collect();
         let fw_features = Arc::clone(&features);
         let fw_launcher = Arc::clone(&launcher);
         let fw_handle_slot = Arc::clone(&handle_slot);
@@ -465,7 +469,7 @@ fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> Lau
             launcher.set_file_search(FileSearch::new(store, paths.home_dir.clone(), Vec::new()));
         }
     }
-    if settings.get(FILE_SEARCH_SHOW).as_deref() == Some("true") {
+    if settings.get(FILE_SEARCH_SHOW).as_deref() != Some("false") {
         launcher.set_show_files(true);
     }
 

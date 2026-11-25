@@ -14,7 +14,6 @@ use tc_clipboard::{ClipboardFilter, ClipboardItem, ClipboardStore, PasteSequence
 use tc_commands::runner::ShellRunner;
 use tc_commands::shell::Shell;
 use tc_emoji::{EmojiIndex, FrequentEmojiStore, PinnedEmojiStore};
-use tc_files::index::walk_once;
 use tc_files::scope::IgnoreRules;
 use tc_files::store::IndexStore;
 use tc_platform::{Clipboard, Paths};
@@ -1363,8 +1362,8 @@ impl FeatureStores {
     }
 
     /// Kick off a non-blocking background incremental index walk of the user's
-    /// default Windows personal folders (Desktop, Documents, Downloads, Pictures,
-    /// Videos, Music) and attach the live SQLite store to `launcher`.
+    /// personal and project folders under their home directory and attach the
+    /// live WAL-backed SQLite store to `launcher`.
     pub fn trigger_file_index(
         &self,
         launcher: Arc<LauncherState>,
@@ -1386,8 +1385,20 @@ impl FeatureStores {
             .spawn(move || {
                 let roots = default_index_roots(&home_dir);
                 if let Ok(mut store) = IndexStore::open(&db_path) {
+                    // Attach a concurrent WAL reader before the walk starts if
+                    // the launcher did not have a file store yet, so results
+                    // become searchable live as each 250-dir batch commits.
+                    if !launcher.has_file_search() {
+                        if let Ok(reader) = IndexStore::open(&db_path) {
+                            launcher.set_file_search(FileSearch::new(
+                                reader,
+                                home_dir.clone(),
+                                Vec::new(),
+                            ));
+                        }
+                    }
                     let rules = IgnoreRules::defaults();
-                    let _ = walk_once(&mut store, &roots, &rules, &home_dir);
+                    let _ = store.walk_batched(&roots, &rules, &home_dir);
                     let now_ns = std::time::SystemTime::now()
                         .duration_since(std::time::UNIX_EPOCH)
                         .map(|d| d.as_nanos() as i64)
@@ -1407,21 +1418,103 @@ impl FeatureStores {
     }
 }
 
-/// Default Windows user folders for incremental file search.
+/// Low-value Windows profile folders skipped from automatic home-root discovery.
+const SKIPPED_PROFILE_DIRS: &[&str] = &[
+    "contacts",
+    "favorites",
+    "links",
+    "saved games",
+    "searches",
+    "3d objects",
+    "intelgraphicsprofiles",
+];
+
+/// Priority Windows user folders ordered first in [`default_index_roots`].
+const PRIORITY_HOME_DIRS: &[&str] = &[
+    "Desktop",
+    "Documents",
+    "Downloads",
+    "Pictures",
+    "Videos",
+    "Music",
+];
+
+/// Discover all non-hidden, non-junction, non-ignored user folders directly
+/// under `home` (e.g. `Desktop`, `Documents`, `Downloads`, `development`,
+/// `OneDrive`, `tools`, `AndroidStudioProjects`), placing standard personal
+/// folders first and skipping `AppData`, dot-folders, and system junctions.
 pub fn default_index_roots(home: &Path) -> Vec<PathBuf> {
-    let candidates = [
-        home.join("Desktop"),
-        home.join("Documents"),
-        home.join("Downloads"),
-        home.join("Pictures"),
-        home.join("Videos"),
-        home.join("Music"),
-    ];
-    let mut roots: Vec<PathBuf> = candidates.into_iter().filter(|p| p.is_dir()).collect();
+    let rules = IgnoreRules::defaults();
+    let mut roots: Vec<PathBuf> = Vec::new();
+    let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
+
+    for name in PRIORITY_HOME_DIRS {
+        let candidate = home.join(name);
+        if is_indexable_home_subdir(&candidate, name, home, &rules)
+            && seen.insert(name.to_ascii_lowercase())
+        {
+            roots.push(candidate);
+        }
+    }
+
+    if let Ok(read_dir) = std::fs::read_dir(home) {
+        let mut extras: Vec<(String, PathBuf)> = Vec::new();
+        for entry in read_dir.flatten() {
+            let path = entry.path();
+            let Some(name) = entry.file_name().to_str().map(str::to_string) else {
+                continue;
+            };
+            let key = name.to_ascii_lowercase();
+            if seen.contains(&key) {
+                continue;
+            }
+            if is_indexable_home_subdir(&path, &name, home, &rules) {
+                seen.insert(key.clone());
+                extras.push((key, path));
+            }
+        }
+        extras.sort_by(|a, b| a.0.cmp(&b.0));
+        roots.extend(extras.into_iter().map(|(_, p)| p));
+    }
+
     if roots.is_empty() && home.is_dir() {
         roots.push(home.to_path_buf());
     }
     roots
+}
+
+fn is_indexable_home_subdir(path: &Path, name: &str, home: &Path, rules: &IgnoreRules) -> bool {
+    if name.starts_with('.') {
+        return false;
+    }
+    let lower = name.to_ascii_lowercase();
+    if SKIPPED_PROFILE_DIRS.contains(&lower.as_str()) {
+        return false;
+    }
+    if rules.is_ignored(name, path, home) {
+        return false;
+    }
+    let Ok(meta) = std::fs::symlink_metadata(path) else {
+        return false;
+    };
+    let ft = meta.file_type();
+    if !ft.is_dir() || ft.is_symlink() {
+        return false;
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        const FILE_ATTRIBUTE_HIDDEN: u32 = 0x0002;
+        const FILE_ATTRIBUTE_SYSTEM: u32 = 0x0004;
+        const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x0400;
+        let attrs = meta.file_attributes();
+        if attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_REPARSE_POINT)
+            != 0
+        {
+            return false;
+        }
+    }
+    true
 }
 
 #[cfg(test)]
@@ -1636,6 +1729,39 @@ mod tests {
             assert!(expanded.ends_with("|c=clip-payload"));
         }
 
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn default_index_roots_discovers_user_project_dirs_and_skips_noise() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-index-roots-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        for sub in [
+            "Desktop",
+            "Documents",
+            "development",
+            "tools",
+            "AppData",
+            "node_modules",
+            ".vscode",
+            ".cache",
+            "Contacts",
+        ] {
+            std::fs::create_dir_all(dir.join(sub)).unwrap();
+        }
+
+        let roots = default_index_roots(&dir);
+        let names: Vec<String> = roots
+            .iter()
+            .filter_map(|p| p.file_name().and_then(|n| n.to_str()).map(str::to_string))
+            .collect();
+        assert_eq!(names, vec!["Desktop", "Documents", "development", "tools"]);
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

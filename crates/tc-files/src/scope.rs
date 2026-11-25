@@ -124,6 +124,10 @@ pub fn expanded_path(text: &str, home: &Path) -> PathBuf {
 pub enum IgnorePatternKind {
     /// A plain word: it matches any folder or name that contains it.
     Word,
+    /// An exact folder or file name (case-insensitive), used for built-in defaults
+    /// so rules like `build`, `dist`, `obj`, `target`, or `Windows` never drop
+    /// legitimate files such as `build.rs`, `distance.rs`, `object.rs`, or `tc-windows`.
+    Exact,
     /// A pattern with a `*`, a `?` or a `[` in it.
     Glob,
     /// A rule that contains a `/`: it matches the whole path.
@@ -140,6 +144,14 @@ pub struct IgnorePattern {
 }
 
 impl IgnorePattern {
+    /// An exact case-insensitive name rule (matches only when `name` equals `text`).
+    pub fn exact(text: &str) -> IgnorePattern {
+        IgnorePattern {
+            kind: IgnorePatternKind::Exact,
+            text: text.trim().to_string(),
+        }
+    }
+
     /// Read a rule from what the user typed, and work out what kind it is.
     ///
     /// A pattern with a wildcard in it is a pattern even when it also has a
@@ -171,6 +183,7 @@ impl IgnorePattern {
         }
         match self.kind {
             IgnorePatternKind::Word => name.to_lowercase().contains(&self.text.to_lowercase()),
+            IgnorePatternKind::Exact => name.to_lowercase() == self.text.to_lowercase(),
             IgnorePatternKind::Glob => {
                 if self.text.contains('/') {
                     glob_matches(&self.text.to_lowercase(), &path_text(path, home))
@@ -307,8 +320,9 @@ impl IgnoreRules {
     /// caches, and the busiest parts of the system folders. Nothing else is
     /// skipped - upstream indexes hidden files, and so does this port.
     pub fn defaults() -> IgnoreRules {
-        let defaults = [
-            // Build and dependency folders.
+        let exact_names = [
+            // Build and dependency folders (exact names so `build.rs`, `distance.rs`,
+            // `object.rs`, `targets.json`, `tc-windows` are never falsely dropped).
             "node_modules",
             ".git",
             "target",
@@ -319,8 +333,12 @@ impl IgnoreRules {
             "build",
             "DerivedData",
             "obj",
-            "bin/Debug",
-            "bin/Release",
+            ".next",
+            ".nuxt",
+            ".svelte-kit",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
             // Caches and package toolchains.
             ".cache",
             ".npm",
@@ -328,6 +346,8 @@ impl IgnoreRules {
             ".rustup",
             ".gradle",
             ".nuget",
+            "unsloth_compiled_cache",
+            "VirtualBox VMs",
             // The system folders that are never the user's own files.
             "AppData",
             "$RECYCLE.BIN",
@@ -337,12 +357,14 @@ impl IgnoreRules {
             "Program Files",
             "Program Files (x86)",
         ];
-        IgnoreRules {
-            patterns: defaults
-                .iter()
-                .map(|text| IgnorePattern::parse(text))
-                .collect(),
-        }
+        let path_rules = ["bin/Debug", "bin/Release"];
+
+        let mut patterns: Vec<IgnorePattern> = exact_names
+            .iter()
+            .map(|text| IgnorePattern::exact(text))
+            .collect();
+        patterns.extend(path_rules.iter().map(|text| IgnorePattern::parse(text)));
+        IgnoreRules { patterns }
     }
 
     /// The rules themselves.
@@ -615,6 +637,20 @@ mod tests {
             ("Documents", "C:\\Users\\dabin\\Documents"),
             ("report.pdf", "C:\\Users\\dabin\\Documents\\report.pdf"),
             (".config", "C:\\Users\\dabin\\.config"),
+            (
+                "tc-windows",
+                "C:\\Users\\dabin\\development\\YAL\\crates\\tc-windows",
+            ),
+            ("build.rs", "C:\\Users\\dabin\\development\\YAL\\build.rs"),
+            (
+                "distance.rs",
+                "C:\\Users\\dabin\\development\\YAL\\distance.rs",
+            ),
+            ("object.rs", "C:\\Users\\dabin\\development\\YAL\\object.rs"),
+            (
+                "targets.json",
+                "C:\\Users\\dabin\\development\\YAL\\targets.json",
+            ),
         ];
         for (name, path) in kept_cases {
             assert!(

@@ -34,7 +34,7 @@ pub fn fold(text: &str) -> String {
         .collect()
 }
 
-/// How well a name matched. Lower is better.
+/// How well a name or path matched. Lower is better.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MatchTier {
     /// The name is exactly what was typed.
@@ -43,6 +43,9 @@ pub enum MatchTier {
     Prefix,
     /// The name contains every word, somewhere.
     Contains,
+    /// Every word appears in the path relative to the user's home folder
+    /// (e.g., files inside a matching folder like `AIStudio2API\runtime\...`).
+    PathContains,
 }
 
 /// The words of a query.
@@ -57,6 +60,25 @@ pub fn matches_words(name: &str, words: &[String]) -> bool {
     }
     let lowered = fold(name);
     words.iter().all(|word| lowered.contains(word))
+}
+
+/// Relative path text used for fallback path-segment matching.
+///
+/// Strips `home` first so queries matching the user's profile folder name
+/// (e.g. `users` or the username) never spuriously match every file on disk.
+fn relative_path_for_search<'a>(path: &'a str, home: &Path) -> &'a str {
+    let home_str = home.to_string_lossy();
+    let home_trimmed = home_str.trim_end_matches(['\\', '/']);
+    if !home_trimmed.is_empty() && path.len() > home_trimmed.len() {
+        let prefix = &path[..home_trimmed.len()];
+        if prefix.eq_ignore_ascii_case(home_trimmed) {
+            let rest = &path[home_trimmed.len()..];
+            if let Some(stripped) = rest.strip_prefix('\\').or_else(|| rest.strip_prefix('/')) {
+                return stripped;
+            }
+        }
+    }
+    path
 }
 
 /// How well a name matched.
@@ -117,16 +139,28 @@ fn compare(
 
 /// The files and folders that match a query.
 ///
-/// The result is the whole ranking, already cut to the limit.
+/// Filename matches (`Exact` → `Prefix` → `Contains`) always rank strictly
+/// above path-segment matches (`PathContains`), which activate for queries of
+/// 3+ characters so searching a project/folder name also surfaces files inside it.
 pub fn search(entries: &[Entry], query: &str, home: &Path, limit: usize) -> Vec<Entry> {
     let words = query_words(query);
     if words.is_empty() {
         return Vec::new();
     }
+    let allow_path_match = query.trim().chars().count() >= 3;
     let mut matches: Vec<(Entry, MatchTier)> = entries
         .iter()
-        .filter(|entry| matches_words(&entry.name, &words))
-        .map(|entry| (entry.clone(), tier_of(&entry.name, query)))
+        .filter_map(|entry| {
+            if matches_words(&entry.name, &words) {
+                Some((entry.clone(), tier_of(&entry.name, query)))
+            } else if allow_path_match
+                && matches_words(relative_path_for_search(&entry.path, home), &words)
+            {
+                Some((entry.clone(), MatchTier::PathContains))
+            } else {
+                None
+            }
+        })
         .collect();
     matches.sort_by(|a, b| compare(&a.0, &b.0, a.1, b.1, home));
     matches
@@ -373,5 +407,38 @@ mod tests {
         )];
         assert_eq!(search(&entries, "cafe", &home, RESULT_LIMIT).len(), 1);
         assert_eq!(search(&entries, "café", &home, RESULT_LIMIT).len(), 1);
+    }
+
+    #[test]
+    fn path_matches_rank_below_filename_matches_and_ignore_home_prefix() {
+        let home = std::path::PathBuf::from("C:\\Users\\dabin");
+        let entries = vec![
+            entry(
+                "C:\\Users\\dabin\\development\\opencode-stack\\AIStudio2API\\runtime\\2x2.png",
+                "2x2.png",
+                300,
+                false,
+            ),
+            entry(
+                "C:\\Users\\dabin\\development\\opencode-stack\\AIStudio2API\\aistudio2api.exe",
+                "aistudio2api.exe",
+                200,
+                false,
+            ),
+            entry(
+                "C:\\Users\\dabin\\development\\opencode-stack\\AIStudio2API",
+                "AIStudio2API",
+                100,
+                true,
+            ),
+        ];
+
+        let results = search(&entries, "aistudio2api", &home, RESULT_LIMIT);
+        let names: Vec<&str> = results.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names, vec!["AIStudio2API", "aistudio2api.exe", "2x2.png"]);
+
+        // Searching the username or "users" must NOT spuriously match files under C:\Users\dabin.
+        assert!(search(&entries, "dabin", &home, RESULT_LIMIT).is_empty());
+        assert!(search(&entries, "users", &home, RESULT_LIMIT).is_empty());
     }
 }

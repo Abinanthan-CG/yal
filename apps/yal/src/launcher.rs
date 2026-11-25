@@ -176,10 +176,18 @@ impl FileSearch {
         }
     }
 
-    /// The whole index, read into memory.
-    fn entries(&self) -> Vec<FileEntry> {
+    /// Fast SQLite candidate search (FTS5 trigram for 3+ char words, indexed
+    /// LIKE for 1–2 char words) without loading the full table into memory.
+    fn search_candidates(&self, query: &str, limit: usize) -> Vec<FileEntry> {
         let store = lock_or_recover(&self.store);
-        store.entries().unwrap_or_default()
+        store.search_candidates(query, limit).unwrap_or_default()
+    }
+
+    /// Fast indexed lookup of the most recently modified files without
+    /// scanning the full index.
+    fn recent_candidates(&self, limit: usize) -> Vec<FileEntry> {
+        let store = lock_or_recover(&self.store);
+        store.recent_candidates(limit).unwrap_or_default()
     }
 }
 
@@ -339,7 +347,14 @@ impl LauncherState {
             let Some(files) = guard.as_ref() else {
                 return Vec::new();
             };
-            (files.entries(), files.home.clone())
+            let candidates = if query.trim().is_empty() {
+                let fetch_limit = if filter == FileType::All { 80 } else { 400 };
+                files.recent_candidates(fetch_limit)
+            } else {
+                let fetch_limit = if filter == FileType::All { 400 } else { 800 };
+                files.search_candidates(query, fetch_limit)
+            };
+            (candidates, files.home.clone())
         };
         tc_palette::screen_rows(
             &entries,
@@ -358,12 +373,19 @@ impl LauncherState {
     /// "When your search has three or more characters, a Files section lists
     /// up to five matches."
     pub fn launcher_file_rows(&self, query: &str) -> Vec<ResultRow> {
+        if query.trim().chars().count() < tc_palette::LAUNCHER_FILES_MIN_CHARS {
+            return Vec::new();
+        }
         let (entries, home, favorites) = {
             let guard = lock_or_recover(&self.files);
             let Some(files) = guard.as_ref() else {
                 return Vec::new();
             };
-            (files.entries(), files.home.clone(), files.favorites.clone())
+            (
+                files.search_candidates(query, 200),
+                files.home.clone(),
+                files.favorites.clone(),
+            )
         };
         tc_palette::launcher_rows(&entries, query, &home, &favorites)
             .into_iter()
