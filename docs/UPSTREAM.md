@@ -34,9 +34,7 @@ on their behalf.
 Revert "Draw the compact bar on the expanded panel's glass (#1845)" (#1846)
 ```
 
-That commit is recorded in [`upstream-sha.txt`](../upstream-sha.txt) and
-[`upstream-commit.txt`](../upstream-commit.txt) in this repository, and it is
-the revision the parity ledger was generated from.
+That commit is the upstream reference revision the Windows port follows.
 
 The upstream sources are not committed here. To get them:
 
@@ -123,7 +121,7 @@ Please send Tinycast questions there. They are about the original project, and
 the people who answer them are the people who wrote it.
 
 For YAL itself, use this repository's issue tracker. Please read
-[SECURITY.md](SECURITY.md) first if your report is about a security problem.
+[SECURITY.md](../.github/SECURITY.md) first if your report is about a security problem.
 
 ---
 
@@ -140,5 +138,4 @@ here only to say what this is a port *of*.
 - [`README.md`](../README.md) — what YAL is
 - [`docs/WINDOWS-MAPPING.md`](WINDOWS-MAPPING.md) — how each macOS idea is
   read on Windows
-- [`docs/DECISIONS.md`](DECISIONS.md) — the decisions the port has made
-- [`docs/port-notes/`](port-notes/) — notes on the difficult parts
+- [`docs/DECISIONS.md`](DECISIONS.md) — architectural decisions

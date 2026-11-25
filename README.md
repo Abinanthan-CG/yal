@@ -88,7 +88,7 @@ To build the release installer, portable zip, and `SHA256SUMS.txt`:
 cargo run --quiet -p xtask -- dist --arch x64
 ```
 
-Artifacts are written to `dist/`. Full build notes live in [`BUILD.md`](BUILD.md).
+Artifacts are written to `dist/`. Full build notes live in [`docs/BUILD.md`](docs/BUILD.md).
 
 ---
 
@@ -128,7 +128,14 @@ YAL is a derivative work of [Tinycast](https://github.com/abue-ammar/tinycast) b
 licensed under **AGPL-3.0-only**. YAL is **not** affiliated with, endorsed by, or supported by
 the Tinycast authors. Upstream credit and third-party notices (including the MIT licence for
 the Rooms window-layout work by Sara Gordić) live in [`LICENSE`](LICENSE),
-[`UPSTREAM.md`](UPSTREAM.md), and [`NOTICE.md`](NOTICE.md).
+[`docs/UPSTREAM.md`](docs/UPSTREAM.md), and [`NOTICE.md`](NOTICE.md).
+
+## Documentation
+
+- [`docs/BUILD.md`](docs/BUILD.md) — building from source & running smoke tests
+- [`docs/SHORTCUTS.md`](docs/SHORTCUTS.md) — keyboard shortcuts reference
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — workspace architecture & crate map
+- [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) & [`.github/SECURITY.md`](.github/SECURITY.md) — contributing & security policy
 
 ### Privacy
 

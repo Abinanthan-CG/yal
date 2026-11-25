@@ -1,1 +1,0 @@
-﻿58168bf7e0b721f7c5fbfc7f4e8a068a48cff446 2026-11-08 Revert "Draw the compact bar on the expanded panel's glass (#1845)" (#1846)
