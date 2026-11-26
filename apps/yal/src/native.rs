@@ -42,12 +42,12 @@ use crate::open::Runner;
 use crate::palette::{PaletteState, SettingRow};
 use crate::screens::{
     calc_history_model, clipboard_model, create_note_model, create_quicklink_model,
-    create_snippet_model, downsample_rgba_premultiplied, emoji_model, fallback_search_rows,
-    files_model, notes_model, parse_clipboard_file_paths, quicklink_arg_model, quicklinks_model,
-    run_shell_model, set_alias_model, shorten_home_path, shows_create_note_row,
-    shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
-    windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
-    SnippetDraftStep, FALLBACK_CMD_PREFIX, FALLBACK_URL_PREFIX,
+    create_snippet_model, downsample_rgba_premultiplied, downsample_square_cover_premultiplied,
+    emoji_model, fallback_search_rows, files_model, notes_model, parse_clipboard_file_paths,
+    quicklink_arg_model, quicklinks_model, run_shell_model, set_alias_model, shorten_home_path,
+    shows_create_note_row, shows_create_quicklink_row, shows_create_snippet_row, snippets_model,
+    status_screen_model, windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft,
+    QuicklinkDraftStep, SnippetDraft, SnippetDraftStep, FALLBACK_CMD_PREFIX, FALLBACK_URL_PREFIX,
 };
 use crate::shell::{spawn_rates_refresh, FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW, RATES_FILE};
 use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
@@ -65,16 +65,24 @@ pub const COMMAND_DISPATCH_HOTKEY: u32 = 4;
 pub const KEY_LAUNCHER_HOTKEY: &str = hotkeys::KEY_LEGACY_LAUNCHER_HOTKEY;
 /// Virtual action key in Settings for launching live hotkey recording.
 const KEY_RECORD_LAUNCHER_HOTKEY: &str = "hotkey.launcher.record";
+/// Prefix for virtual action keys in Settings that record a built-in command hotkey.
+const KEY_RECORD_CMD_HOTKEY_PREFIX: &str = "hotkey.record.cmd.";
+/// Persisted custom dragged palette X coordinate (physical screen pixels).
+const KEY_POSITION_X: &str = "palette.positionX";
+/// Persisted custom dragged palette Y coordinate (physical screen pixels).
+const KEY_POSITION_Y: &str = "palette.positionY";
+/// Virtual action key in Settings to reset custom dragged position back to center.
+const KEY_RESET_WINDOW_POSITION: &str = "palette.resetPosition";
 /// Setting key toggling Window Management commands in the launcher (default: ON).
 pub const KEY_WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
 /// Setting key storing the Pop-to-Root timer policy (`0`, `30`, `60`, `300`, `never`).
 pub const KEY_POP_TO_ROOT_SECS: &str = "palette.popToRootSecs";
 
 /// Header badge displayed while recording a global hotkey.
-const RECORDING_HOTKEY_BADGE: &str = "Recording Hotkey… (Esc to cancel)";
+const RECORDING_HOTKEY_BADGE: &str = "Recording…";
 
 /// Maximum number of decoded clipboard image thumbnails cached in memory.
-const CLIPBOARD_THUMB_CACHE_CAPACITY: usize = 16;
+const CLIPBOARD_THUMB_CACHE_CAPACITY: usize = 48;
 
 /// Prefix for an inline or root-search snippet row.
 pub const INLINE_SNIPPET_PREFIX: &str = "snippet-inline:";
@@ -269,6 +277,7 @@ enum Mode {
 
 struct Shown {
     mode: Mode,
+    visible: bool,
     query: String,
     selected: usize,
     show_detail: bool,
@@ -281,7 +290,7 @@ struct Shown {
     rows: Vec<ResultRow>,
     clipboard_items: Vec<ClipboardItem>,
     clipboard_filter: ClipboardViewFilter,
-    clipboard_thumbs: HashMap<String, (u32, u32, Arc<IconBitmap>)>,
+    clipboard_thumbs: HashMap<String, (u32, u32, Arc<IconBitmap>, Arc<IconBitmap>)>,
     emoji_cells: Vec<GridCell>,
     snippets: Vec<StoredSnippet>,
     notes: Vec<NoteItem>,
@@ -308,6 +317,7 @@ impl Shown {
     ) -> Self {
         Self {
             mode: Mode::Launcher,
+            visible: false,
             query: String::new(),
             selected: 0,
             show_detail: true,
@@ -341,13 +351,14 @@ impl Shown {
         }
     }
 
-    /// Bounded O(1) cache lookup for decoded & downsampled clipboard image thumbnails.
+    /// Bounded O(1) cache lookup for decoded & downsampled clipboard image
+    /// previews `(width, height, detail_preview, square_row_thumb)`.
     fn lookup_clipboard_thumb(
         &mut self,
         features: &FeatureStores,
         item: &ClipboardItem,
         load_if_missing: bool,
-    ) -> Option<(u32, u32, Arc<IconBitmap>)> {
+    ) -> Option<(u32, u32, Arc<IconBitmap>, Arc<IconBitmap>)> {
         if item.kind != ItemKind::Image {
             return None;
         }
@@ -358,13 +369,16 @@ impl Shown {
             return None;
         }
         let (width, height, rgba) = features.load_clipboard_image_rgba(item)?;
-        let bitmap = Arc::new(downsample_rgba_premultiplied(
+        let detail_bitmap = Arc::new(downsample_rgba_premultiplied(
             width, height, &rgba, 440, 260,
+        )?);
+        let row_thumb = Arc::new(downsample_square_cover_premultiplied(
+            width, height, &rgba, 44,
         )?);
         if self.clipboard_thumbs.len() >= CLIPBOARD_THUMB_CACHE_CAPACITY {
             self.clipboard_thumbs.clear();
         }
-        let entry = (width, height, bitmap);
+        let entry = (width, height, detail_bitmap, row_thumb);
         self.clipboard_thumbs.insert(item.id.clone(), entry.clone());
         Some(entry)
     }
@@ -451,6 +465,32 @@ fn build_clipboard_screen_model(
     let queue_len = ctx.features.paste_queue_len();
     let show_detail = shown.show_detail;
     let features = &ctx.features;
+    // Two-pass borrow split: resolve image thumbs & file/app icons cleanly through `shown`.
+    let mut preloaded_icons: HashMap<String, Arc<IconBitmap>> = HashMap::new();
+    for (idx, item) in items.iter().enumerate() {
+        if idx >= 32 {
+            break;
+        }
+        match item.kind {
+            ItemKind::File => {
+                if let Some(first) = parse_clipboard_file_paths(item).into_iter().next() {
+                    if let Some(bmp) = shown.lookup_or_queue_icon(&first) {
+                        preloaded_icons.insert(first, bmp);
+                    }
+                }
+            }
+            ItemKind::Text => {
+                if let Some(src) = item.source_bundle_id.as_deref() {
+                    if src.contains('\\') || src.to_ascii_lowercase().ends_with(".exe") {
+                        if let Some(bmp) = shown.lookup_or_queue_icon(src) {
+                            preloaded_icons.insert(src.to_string(), bmp);
+                        }
+                    }
+                }
+            }
+            ItemKind::Image => {}
+        }
+    }
     clipboard_model(
         query,
         items,
@@ -459,6 +499,7 @@ fn build_clipboard_screen_model(
         selected,
         show_detail,
         |item, load| shown.lookup_clipboard_thumb(features, item, load),
+        |target| preloaded_icons.get(target).cloned(),
     )
 }
 
@@ -701,6 +742,7 @@ fn build(
         match event {
             PaletteEvent::Shown => {
                 let mut shown = lock_shown(&handler_shown);
+                shown.visible = true;
                 shown.action_menu_open = false;
                 let policy = handler_context
                     .as_deref()
@@ -850,6 +892,7 @@ fn build(
                     return PaletteReply::Keep;
                 };
                 let mut shown = lock_shown(&handler_shown);
+                shown.visible = true;
                 enter_settings(ctx, &mut shown)
             }
             PaletteEvent::Command(COMMAND_SHOW_STATUS) => {
@@ -942,6 +985,10 @@ fn build(
                                 Some(trigger),
                             );
                             ctx.hotkeys.reload_bindings(&ctx.settings);
+                            if shown.mode == Mode::Settings {
+                                let q = shown.query.clone();
+                                shown.settings_rows = collect_settings_rows(ctx, &q);
+                            }
                             ToastModel {
                                 kind: ToastKind::Success,
                                 message: format!("Hotkey {formatted} bound to {title}"),
@@ -974,6 +1021,30 @@ fn build(
                     return PaletteReply::Keep;
                 }
                 if let Some(cmd) = LauncherState::command_of(&entry_id) {
+                    // Pressing an action's global shortcut while YAL is already showing
+                    // that exact screen toggles it closed cleanly (just like Raycast).
+                    let already_on_target = shown.visible
+                        && match cmd {
+                            CommandId::ClipboardHistory => shown.mode == Mode::Clipboard,
+                            CommandId::SearchEmoji => shown.mode == Mode::Emoji,
+                            CommandId::SearchSnippets => shown.mode == Mode::Snippets,
+                            CommandId::SearchFiles => shown.mode == Mode::Files,
+                            CommandId::SwitchWindows => shown.mode == Mode::SwitchWindows,
+                            CommandId::ShowNotes | CommandId::SearchNotes => {
+                                shown.mode == Mode::Notes
+                            }
+                            CommandId::SearchQuicklinks => shown.mode == Mode::Quicklinks,
+                            CommandId::CalculatorHistory => shown.mode == Mode::CalcHistory,
+                            CommandId::Settings => shown.mode == Mode::Settings,
+                            _ => false,
+                        };
+                    if already_on_target {
+                        shown.visible = false;
+                        shown.last_dismissed_at = Some(Instant::now());
+                        drop(shown);
+                        return close_reply();
+                    }
+                    shown.visible = true;
                     return match cmd {
                         CommandId::ClipboardHistory => enter_clipboard(ctx, &mut shown),
                         CommandId::PasteSequentially => {
@@ -1272,8 +1343,40 @@ fn build(
                 true,
                 &close_reply,
             ),
+            PaletteEvent::WindowMoved(origin) => {
+                if let Some(ctx) = handler_context.as_ref() {
+                    match origin {
+                        Some((x, y)) => {
+                            let _ = ctx.settings.set(KEY_POSITION_X, &x.to_string());
+                            let _ = ctx.settings.set(KEY_POSITION_Y, &y.to_string());
+                        }
+                        None => {
+                            let _ = ctx.settings.set(KEY_POSITION_X, "");
+                            let _ = ctx.settings.set(KEY_POSITION_Y, "");
+                        }
+                    }
+                    let mut shown = lock_shown(&handler_shown);
+                    if shown.mode == Mode::Settings {
+                        let q = shown.query.clone();
+                        let updated = collect_settings_rows(ctx, &q);
+                        let clamped = shown.selected.min(updated.len().saturating_sub(1));
+                        shown.settings_rows = updated.clone();
+                        shown.selected = clamped;
+                        let mut model = settings_model_for(&q, &updated, clamped);
+                        if origin.is_none() {
+                            model.toast = Some(ToastModel {
+                                kind: ToastKind::Info,
+                                message: "Window centered".to_string(),
+                            });
+                        }
+                        return PaletteReply::Update(model);
+                    }
+                }
+                PaletteReply::Keep
+            }
             PaletteEvent::Dismissed => {
                 let mut shown = lock_shown(&handler_shown);
+                shown.visible = false;
                 shown.last_dismissed_at = Some(Instant::now());
                 shown.action_menu_open = false;
                 shown.compact_expanded = false;
@@ -1299,6 +1402,20 @@ fn build(
     };
 
     let palette = Palette::with_handler(theme, initial_model, Box::new(handler))?;
+    if let Some(ctx) = context.as_ref() {
+        let saved = ctx
+            .settings
+            .get(KEY_POSITION_X)
+            .and_then(|s| s.trim().parse::<i32>().ok())
+            .zip(
+                ctx.settings
+                    .get(KEY_POSITION_Y)
+                    .and_then(|s| s.trim().parse::<i32>().ok()),
+            );
+        if saved.is_some() {
+            palette.set_saved_position(saved);
+        }
+    }
     if let Ok(mut slot) = handle_slot.lock() {
         *slot = Some(palette.handle());
     }
@@ -2066,6 +2183,7 @@ fn handle_activate(
                 return PaletteReply::Keep;
             };
             let key = setting.key.clone();
+            let label = setting.label.clone();
             if key == KEY_RECORD_LAUNCHER_HOTKEY {
                 return start_hotkey_capture(
                     ctx,
@@ -2073,6 +2191,23 @@ fn handle_activate(
                     &mut shown,
                     RecordingTarget::Launcher,
                 );
+            }
+            if let Some(entry_id) = key.strip_prefix(KEY_RECORD_CMD_HOTKEY_PREFIX) {
+                return start_hotkey_capture(
+                    ctx,
+                    handle_slot,
+                    &mut shown,
+                    RecordingTarget::Command {
+                        entry_id: entry_id.to_string(),
+                        title: label,
+                    },
+                );
+            }
+            if key == KEY_RESET_WINDOW_POSITION {
+                if let Some(handle) = *lock_or_recover(handle_slot) {
+                    tc_ui::post_reset_position(handle);
+                }
+                return PaletteReply::Keep;
             }
             let query = shown.query.clone();
             advance_native_setting(ctx, launcher, handle_slot, &key);
@@ -2769,6 +2904,28 @@ fn handle_action(
                     message: "Deleted Quicklink".to_string(),
                 });
                 return PaletteReply::Update(model);
+            }
+            PaletteReply::Keep
+        }
+
+        // Settings Ctrl+Delete: Clear a bound built-in Action Hotkey.
+        (Mode::Settings, ActionKey::CtrlDelete) => {
+            if let Some(setting) = shown.settings_rows.get(selected).cloned() {
+                if let Some(entry_id) = setting.key.strip_prefix(KEY_RECORD_CMD_HOTKEY_PREFIX) {
+                    let _ = hotkeys::set_command_hotkey(&*ctx.settings, entry_id, None);
+                    ctx.hotkeys.reload_bindings(&ctx.settings);
+                    let q = shown.query.clone();
+                    let updated = collect_settings_rows(ctx, &q);
+                    let clamped = selected.min(updated.len().saturating_sub(1));
+                    shown.settings_rows = updated.clone();
+                    shown.selected = clamped;
+                    let mut model = settings_model_for(&q, &updated, clamped);
+                    model.toast = Some(ToastModel {
+                        kind: ToastKind::Info,
+                        message: format!("Cleared hotkey for {}", setting.label),
+                    });
+                    return PaletteReply::Update(model);
+                }
             }
             PaletteReply::Keep
         }
@@ -4254,7 +4411,18 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
     let fs_show = ctx.settings.get(FILE_SEARCH_SHOW).as_deref() != Some("false");
     let pop_policy = pop_to_root_policy(&ctx.settings);
 
-    let extra = vec![
+    let has_custom_pos = ctx
+        .settings
+        .get(KEY_POSITION_X)
+        .and_then(|s| s.trim().parse::<i32>().ok())
+        .is_some()
+        && ctx
+            .settings
+            .get(KEY_POSITION_Y)
+            .and_then(|s| s.trim().parse::<i32>().ok())
+            .is_some();
+
+    let mut extra = vec![
         SettingRow {
             key: KEY_RECORD_LAUNCHER_HOTKEY.to_string(),
             label: "Record Launcher Hotkey".to_string(),
@@ -4273,6 +4441,21 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
             value: if hyperkey_on { "true" } else { "false" }.to_string(),
             options: vec!["true".to_string(), "false".to_string()],
         },
+    ];
+
+    for &(entry_id, label, _) in hotkeys::DEFAULT_COMMAND_HOTKEYS {
+        let current = hotkeys::get_command_hotkey(&*ctx.settings, entry_id)
+            .map(|t| t.format())
+            .unwrap_or_else(|| "Not Set".to_string());
+        extra.push(SettingRow {
+            key: format!("{KEY_RECORD_CMD_HOTKEY_PREFIX}{entry_id}"),
+            label: format!("{label} Hotkey"),
+            value: current,
+            options: Vec::new(),
+        });
+    }
+
+    extra.extend([
         SettingRow {
             key: KEY_SNIPPETS_AUTO_EXPAND.to_string(),
             label: "Auto-Expand Snippets".to_string(),
@@ -4297,10 +4480,17 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
             value: if fs_show { "true" } else { "false" }.to_string(),
             options: vec!["true".to_string(), "false".to_string()],
         },
-    ];
+    ]);
     for (idx, item) in extra.into_iter().enumerate() {
         rows.insert(idx, item);
     }
+
+    rows.push(SettingRow {
+        key: KEY_RESET_WINDOW_POSITION.to_string(),
+        label: "Reset Window Position".to_string(),
+        value: if has_custom_pos { "Custom" } else { "Centered" }.to_string(),
+        options: Vec::new(),
+    });
 
     rows.push(SettingRow {
         key: KEY_POP_TO_ROOT_SECS.to_string(),
@@ -4548,54 +4738,71 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
     let ui_rows: Vec<Row> = rows
         .iter()
         .map(|row| {
-            let section = match row.key.as_str() {
-                KEY_RECORD_LAUNCHER_HOTKEY
-                | KEY_HOTKEY_LAUNCHER
-                | KEY_LAUNCHER_HOTKEY
-                | KEY_HOTKEY_HYPERKEY => "Hotkeys",
-                KEY_SNIPPETS_AUTO_EXPAND
-                | KEY_WINDOW_MANAGEMENT_ENABLED
-                | FILE_SEARCH_ENABLED
-                | FILE_SEARCH_SHOW => "Features",
-                _ => "General",
+            let is_cmd_hotkey = row.key.starts_with(KEY_RECORD_CMD_HOTKEY_PREFIX);
+            let section = if is_cmd_hotkey {
+                "Action Hotkeys"
+            } else {
+                match row.key.as_str() {
+                    KEY_RECORD_LAUNCHER_HOTKEY
+                    | KEY_HOTKEY_LAUNCHER
+                    | KEY_LAUNCHER_HOTKEY
+                    | KEY_HOTKEY_HYPERKEY => "Hotkeys",
+                    KEY_SNIPPETS_AUTO_EXPAND
+                    | KEY_WINDOW_MANAGEMENT_ENABLED
+                    | FILE_SEARCH_ENABLED
+                    | FILE_SEARCH_SHOW => "Features",
+                    _ => "General",
+                }
             };
-            let glyph = match row.key.as_str() {
-                KEY_RECORD_LAUNCHER_HOTKEY => "⏺",
-                KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => "⌘",
-                KEY_HOTKEY_HYPERKEY => "✦",
-                KEY_SNIPPETS_AUTO_EXPAND => "✂",
-                KEY_WINDOW_MANAGEMENT_ENABLED => "⊞",
-                FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => "F",
-                KEY_POP_TO_ROOT_SECS => "◷",
-                _ => "⚙",
+            let glyph = if is_cmd_hotkey {
+                "⌨"
+            } else {
+                match row.key.as_str() {
+                    KEY_RECORD_LAUNCHER_HOTKEY => "⏺",
+                    KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => "⌘",
+                    KEY_HOTKEY_HYPERKEY => "✦",
+                    KEY_SNIPPETS_AUTO_EXPAND => "✂",
+                    KEY_WINDOW_MANAGEMENT_ENABLED => "⊞",
+                    FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => "F",
+                    KEY_RESET_WINDOW_POSITION => "⌖",
+                    KEY_POP_TO_ROOT_SECS => "◷",
+                    _ => "⚙",
+                }
             };
             let display_value = match row.value.trim().to_ascii_lowercase().as_str() {
                 "true" => "On".to_string(),
                 "false" => "Off".to_string(),
                 _ => row.value.clone(),
             };
-            let description = match row.key.as_str() {
-                KEY_RECORD_LAUNCHER_HOTKEY => "Press Enter, then press any chord or double-tap",
-                KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => {
-                    "Cycle built-in global shortcut presets"
+            let description = if is_cmd_hotkey {
+                "Press Enter to record shortcut · Ctrl+Del to clear"
+            } else {
+                match row.key.as_str() {
+                    KEY_RECORD_LAUNCHER_HOTKEY => "Press Enter, then press any chord or double-tap",
+                    KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => {
+                        "Cycle built-in global shortcut presets"
+                    }
+                    KEY_HOTKEY_HYPERKEY => "Hold CapsLock as Ctrl+Alt+Shift+Win Hyperkey",
+                    KEY_SNIPPETS_AUTO_EXPAND => "Auto-expand snippet keywords globally as you type",
+                    KEY_WINDOW_MANAGEMENT_ENABLED => {
+                        "Snap windows with Left/Right Half, Maximize, Always on Top"
+                    }
+                    FILE_SEARCH_ENABLED => "Index your user folders live in background",
+                    FILE_SEARCH_SHOW => "Include indexed files inside root Launcher results",
+                    KEY_RESET_WINDOW_POSITION => {
+                        "Drag header/footer to move · Enter or double-click header to re-center"
+                    }
+                    KEY_POP_TO_ROOT_SECS => {
+                        "Automatically reset sub-screens to Root Search after hiding"
+                    }
+                    tc_palette::KEY_APPEARANCE => "Color theme",
+                    tc_palette::KEY_ANIMATIONS => "Motion & transitions",
+                    tc_palette::KEY_INTERFACE_SIZE => "Palette text scale",
+                    tc_palette::KEY_WINDOW_MODE => "Open as compact search bar or expanded list",
+                    tc_palette::KEY_ESCAPE_BEHAVIOUR => "Action on Esc key",
+                    tc_palette::KEY_POP_TO_ROOT => "Reset screen after hiding",
+                    _ => "",
                 }
-                KEY_HOTKEY_HYPERKEY => "Hold CapsLock as Ctrl+Alt+Shift+Win Hyperkey",
-                KEY_SNIPPETS_AUTO_EXPAND => "Auto-expand snippet keywords globally as you type",
-                KEY_WINDOW_MANAGEMENT_ENABLED => {
-                    "Snap windows with Left/Right Half, Maximize, Always on Top"
-                }
-                FILE_SEARCH_ENABLED => "Index your user folders live in background",
-                FILE_SEARCH_SHOW => "Include indexed files inside root Launcher results",
-                KEY_POP_TO_ROOT_SECS => {
-                    "Automatically reset sub-screens to Root Search after hiding"
-                }
-                tc_palette::KEY_APPEARANCE => "Color theme",
-                tc_palette::KEY_ANIMATIONS => "Motion & transitions",
-                tc_palette::KEY_INTERFACE_SIZE => "Palette text scale",
-                tc_palette::KEY_WINDOW_MODE => "Open as compact search bar or expanded list",
-                tc_palette::KEY_ESCAPE_BEHAVIOUR => "Action on Esc key",
-                tc_palette::KEY_POP_TO_ROOT => "Reset screen after hiding",
-                _ => "",
             };
             Row {
                 name: row.label.clone(),

@@ -17,14 +17,15 @@ use windows::Win32::UI::Shell::{
     Shell_NotifyIconW, NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NOTIFYICONDATAW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    AppendMenuW, ChangeWindowMessageFilterEx, CreatePopupMenu, CreateWindowExW, DefWindowProcW,
-    DestroyIcon, DestroyMenu, DestroyWindow, DispatchMessageW, GetCursorPos, GetMessageW,
-    GetWindowLongPtrW, LoadIconW, LoadImageW, PostMessageW, PostQuitMessage, RegisterClassExW,
-    RegisterWindowMessageW, SetForegroundWindow, SetWindowLongPtrW, TrackPopupMenu,
-    TranslateMessage, CREATESTRUCTW, GWLP_USERDATA, HICON, IDI_APPLICATION, IMAGE_ICON,
-    LR_DEFAULTSIZE, MF_SEPARATOR, MF_STRING, MSG, MSGFLT_ALLOW, TPM_BOTTOMALIGN, TPM_LEFTALIGN,
-    TPM_RIGHTBUTTON, WINDOW_EX_STYLE, WINDOW_STYLE, WM_APP, WM_CANCELMODE, WM_CLOSE, WM_COMMAND,
-    WM_DESTROY, WM_LBUTTONUP, WM_NCCREATE, WM_NCDESTROY, WM_NULL, WM_RBUTTONUP, WNDCLASSEXW,
+    AllowSetForegroundWindow, AppendMenuW, ChangeWindowMessageFilterEx, CreatePopupMenu,
+    CreateWindowExW, DefWindowProcW, DestroyIcon, DestroyMenu, DestroyWindow, DispatchMessageW,
+    GetCursorPos, GetMessageW, GetWindowLongPtrW, LoadIconW, LoadImageW, PostMessageW,
+    PostQuitMessage, RegisterClassExW, RegisterWindowMessageW, SetForegroundWindow,
+    SetWindowLongPtrW, TrackPopupMenu, TranslateMessage, ASFW_ANY, CREATESTRUCTW, GWLP_USERDATA,
+    HICON, IDI_APPLICATION, IMAGE_ICON, LR_DEFAULTSIZE, MF_SEPARATOR, MF_STRING, MSG, MSGFLT_ALLOW,
+    TPM_BOTTOMALIGN, TPM_LEFTALIGN, TPM_RETURNCMD, TPM_RIGHTBUTTON, WINDOW_EX_STYLE, WINDOW_STYLE,
+    WM_APP, WM_CANCELMODE, WM_CLOSE, WM_DESTROY, WM_LBUTTONUP, WM_NCCREATE, WM_NCDESTROY, WM_NULL,
+    WM_RBUTTONUP, WNDCLASSEXW,
 };
 
 /// Message ID posted by Windows when the user interacts with the tray icon.
@@ -42,6 +43,9 @@ const APP_ICON_RESOURCE_ID: usize = 1;
 /// Actions the user can invoke from the notification-area icon.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TrayAction {
+    /// Left-click on the tray icon: toggles visibility (blur-debounced).
+    Toggle,
+    /// Explicit "Open YAL" menu item: always shows and focuses the palette.
     Open,
     Settings,
     Support,
@@ -51,9 +55,9 @@ pub enum TrayAction {
 impl TrayAction {
     pub fn label(self) -> &'static str {
         match self {
-            TrayAction::Open => "Open YAL",
+            TrayAction::Toggle | TrayAction::Open => "Open YAL",
             TrayAction::Settings => "Settings",
-            TrayAction::Support => "Support Tinycast",
+            TrayAction::Support => "Support YAL",
             TrayAction::Quit => "Quit YAL",
         }
     }
@@ -293,15 +297,15 @@ unsafe fn remove_notify_icon(hwnd: HWND) {
     let _ = Shell_NotifyIconW(NIM_DELETE, &data);
 }
 
-unsafe fn show_context_menu(hwnd: HWND) {
+unsafe fn show_context_menu(hwnd: HWND) -> Option<TrayAction> {
     let Ok(menu) = CreatePopupMenu() else {
-        return;
+        return None;
     };
 
     let _ = AppendMenuW(menu, MF_STRING, CMD_OPEN, w!("Open YAL"));
     let _ = AppendMenuW(menu, MF_STRING, CMD_SETTINGS, w!("Settings"));
     let _ = AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null());
-    let _ = AppendMenuW(menu, MF_STRING, CMD_SUPPORT, w!("Support Tinycast"));
+    let _ = AppendMenuW(menu, MF_STRING, CMD_SUPPORT, w!("Support YAL"));
     let _ = AppendMenuW(menu, MF_SEPARATOR, 0, PCWSTR::null());
     let _ = AppendMenuW(menu, MF_STRING, CMD_QUIT, w!("Quit YAL"));
 
@@ -309,10 +313,13 @@ unsafe fn show_context_menu(hwnd: HWND) {
     let _ = GetCursorPos(&mut point);
 
     // Textbook Win32 requirement so clicking outside dismisses the popup menu.
+    // `TPM_RETURNCMD` waits until the menu has completely closed and settled
+    // before returning the selected command ID so the target palette window
+    // does not immediately receive a spurious `WA_INACTIVE` blur.
     let _ = SetForegroundWindow(hwnd);
-    let _ = TrackPopupMenu(
+    let chosen = TrackPopupMenu(
         menu,
-        TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON,
+        TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD,
         point.x,
         point.y,
         None,
@@ -321,6 +328,14 @@ unsafe fn show_context_menu(hwnd: HWND) {
     );
     let _ = PostMessageW(Some(hwnd), WM_NULL, WPARAM(0), LPARAM(0));
     let _ = DestroyMenu(menu);
+
+    match chosen.0 as usize {
+        CMD_OPEN => Some(TrayAction::Open),
+        CMD_SETTINGS => Some(TrayAction::Settings),
+        CMD_SUPPORT => Some(TrayAction::Support),
+        CMD_QUIT => Some(TrayAction::Quit),
+        _ => None,
+    }
 }
 
 unsafe extern "system" fn tray_wnd_proc(
@@ -352,19 +367,16 @@ unsafe extern "system" fn tray_wnd_proc(
         WM_TRAY_ICON => {
             let mouse_msg = (lparam.0 & 0xFFFF) as u32;
             match mouse_msg {
-                WM_LBUTTONUP => ((*ptr).on_action)(TrayAction::Open),
-                WM_RBUTTONUP => show_context_menu(hwnd),
-                _ => {}
-            }
-            LRESULT(0)
-        }
-        WM_COMMAND => {
-            let cmd = wparam.0 & 0xFFFF;
-            match cmd {
-                CMD_OPEN => ((*ptr).on_action)(TrayAction::Open),
-                CMD_SETTINGS => ((*ptr).on_action)(TrayAction::Settings),
-                CMD_SUPPORT => ((*ptr).on_action)(TrayAction::Support),
-                CMD_QUIT => ((*ptr).on_action)(TrayAction::Quit),
+                WM_LBUTTONUP => {
+                    let _ = AllowSetForegroundWindow(ASFW_ANY);
+                    ((*ptr).on_action)(TrayAction::Toggle);
+                }
+                WM_RBUTTONUP => {
+                    if let Some(action) = show_context_menu(hwnd) {
+                        let _ = AllowSetForegroundWindow(ASFW_ANY);
+                        ((*ptr).on_action)(action);
+                    }
+                }
                 _ => {}
             }
             LRESULT(0)

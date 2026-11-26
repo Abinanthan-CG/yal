@@ -281,6 +281,23 @@ pub struct IconBitmap {
     pub premultiplied_rgba: Vec<u8>,
 }
 
+/// Built-in crisp Direct2D vector icon drawn inside a row's leading tile.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IconKind {
+    /// Document / plain text lines icon.
+    Text,
+    /// Chain-link / URL icon.
+    Link,
+    /// Envelope / email icon.
+    Email,
+    /// Landscape photo frame icon (fallback for images while thumbnail decodes).
+    Image,
+    /// Folded document / file icon.
+    File,
+    /// Angle-brackets code icon.
+    Code,
+}
+
 /// The badge/tile that leads a row when no bitmap icon is attached.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Icon {
@@ -288,6 +305,8 @@ pub struct Icon {
     pub letter: String,
     /// The badge's tint colour.
     pub color: Color,
+    /// Optional vector glyph painted with Direct2D geometry instead of `letter`.
+    pub kind: Option<IconKind>,
 }
 
 impl Icon {
@@ -296,6 +315,16 @@ impl Icon {
         Self {
             letter: letter.into(),
             color,
+            kind: None,
+        }
+    }
+
+    /// A badge with a crisp Direct2D vector icon and a tint colour.
+    pub fn vector(kind: IconKind, color: Color) -> Self {
+        Self {
+            letter: String::new(),
+            color,
+            kind: Some(kind),
         }
     }
 }

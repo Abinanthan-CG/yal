@@ -170,19 +170,21 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
         if clip_hotkeys.should_suppress_clipboard() {
             return false;
         }
+        let source_exe = tc_platform_win::foreground_process_exe();
+        let source_ref = source_exe.as_deref();
         match update {
             ClipboardUpdate::Text(text) => {
-                clip_features.record_clipboard_text(&text, None);
+                clip_features.record_clipboard_text(&text, source_ref);
             }
             ClipboardUpdate::Files(paths) => {
-                clip_features.record_clipboard_files(&paths, None);
+                clip_features.record_clipboard_files(&paths, source_ref);
             }
             ClipboardUpdate::Image {
                 width,
                 height,
                 rgba,
             } => {
-                clip_features.record_clipboard_image(width, height, &rgba, None);
+                clip_features.record_clipboard_image(width, height, &rgba, source_ref);
             }
         }
         if let Some(handle) = *lock_or_recover(&clip_handle_slot) {
@@ -262,7 +264,8 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 
     // Start the native Win32 system tray icon.
     let tray = match WindowsTray::spawn(move |action| match action {
-        TrayAction::Open => tc_ui::post_toggle_from_tray(handle),
+        TrayAction::Toggle => tc_ui::post_toggle_from_tray(handle),
+        TrayAction::Open => tc_ui::post_show(handle),
         TrayAction::Settings => tc_ui::post_command(handle, COMMAND_OPEN_SETTINGS),
         TrayAction::Support => {
             std::thread::spawn(|| {

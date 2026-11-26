@@ -1,12 +1,13 @@
 use tc_platform::{IntegrityLevel, WindowInfo, WindowRect, WindowSystem};
-use windows::core::BOOL;
+use windows::core::{BOOL, PWSTR};
 use windows::Win32::Foundation::{HANDLE, HWND, LPARAM, RECT};
 use windows::Win32::Security::{
     GetSidSubAuthority, GetSidSubAuthorityCount, GetTokenInformation, TokenIntegrityLevel,
     TOKEN_MANDATORY_LABEL, TOKEN_QUERY,
 };
 use windows::Win32::System::Threading::{
-    GetCurrentProcess, OpenProcess, OpenProcessToken, PROCESS_QUERY_LIMITED_INFORMATION,
+    GetCurrentProcess, OpenProcess, OpenProcessToken, QueryFullProcessImageNameW,
+    PROCESS_NAME_FORMAT, PROCESS_QUERY_LIMITED_INFORMATION,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     EnumWindows, GetForegroundWindow, GetWindowRect, GetWindowTextW, GetWindowThreadProcessId,
@@ -117,6 +118,44 @@ pub fn own_integrity_level() -> IntegrityLevel {
     unsafe {
         let process = GetCurrentProcess();
         token_integrity_level(process)
+    }
+}
+
+/// Full executable path of the current foreground window's owning process,
+/// when readable (used to tag Clipboard History items with their source app
+/// so the list can show the app's real icon and name).
+pub fn foreground_process_exe() -> Option<String> {
+    unsafe {
+        let hwnd = GetForegroundWindow();
+        if hwnd.0.is_null() {
+            return None;
+        }
+        let mut pid = 0u32;
+        GetWindowThreadProcessId(hwnd, Some(&mut pid));
+        if pid == 0 {
+            return None;
+        }
+        let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?;
+        let mut buf = [0u16; 1024];
+        let mut len = buf.len() as u32;
+        let ok = QueryFullProcessImageNameW(
+            process,
+            PROCESS_NAME_FORMAT(0),
+            PWSTR(buf.as_mut_ptr()),
+            &mut len,
+        )
+        .is_ok();
+        let _ = windows::Win32::Foundation::CloseHandle(process);
+        if !ok || len == 0 {
+            return None;
+        }
+        let path = String::from_utf16_lossy(&buf[..len as usize]);
+        let trimmed = path.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
     }
 }
 

@@ -214,10 +214,10 @@ impl CommandId {
             CommandId::ImportSettings => "Import Backup",
             CommandId::ImportFromRaycast => "Import from Raycast",
             CommandId::CheckForUpdates => "Check for Updates",
-            CommandId::Settings => "Tinycast Settings",
-            CommandId::About => "About Tinycast",
-            CommandId::Support => "Support Tinycast",
-            CommandId::Quit => "Quit Tinycast",
+            CommandId::Settings => "YAL Settings",
+            CommandId::About => "About YAL",
+            CommandId::Support => "Support YAL",
+            CommandId::Quit => "Quit YAL",
         }
     }
 

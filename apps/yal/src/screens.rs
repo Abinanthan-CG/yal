@@ -12,7 +12,7 @@ use tc_palette::FileType;
 use tc_platform_win::window_control::WindowInfo;
 use tc_snippets::StoredSnippet;
 use tc_ui::{
-    Color, DetailPane, GridCell, GridModel, Icon, IconBitmap, InlineArgBanner, Model, Row,
+    Color, DetailPane, GridCell, GridModel, Icon, IconBitmap, IconKind, InlineArgBanner, Model, Row,
 };
 
 use crate::features::{CalcHistoryEntry, ClipboardViewFilter, NoteItem, Quicklink};
@@ -199,7 +199,150 @@ pub fn downsample_rgba_premultiplied(
     })
 }
 
-/// Build the native Clipboard History screen model with Master-Detail preview.
+/// Center-crop and downsample straight RGBA8 pixels into a crisp square
+/// `side × side` premultiplied RGBA8 thumbnail for list rows (e.g. Clipboard History).
+pub fn downsample_square_cover_premultiplied(
+    width: u32,
+    height: u32,
+    rgba: &[u8],
+    side: u32,
+) -> Option<IconBitmap> {
+    if width == 0 || height == 0 || side == 0 {
+        return None;
+    }
+    let expected = (width as usize)
+        .checked_mul(height as usize)?
+        .checked_mul(4)?;
+    if rgba.len() != expected {
+        return None;
+    }
+
+    let crop = width.min(height);
+    let ox = (width - crop) / 2;
+    let oy = (height - crop) / 2;
+    let dst = side.min(crop).max(1);
+    let dst_len = (dst as usize).checked_mul(dst as usize)?.checked_mul(4)?;
+    let mut premultiplied_rgba = Vec::with_capacity(dst_len);
+    let crop_u = crop as u64;
+    let dst_u = dst as u64;
+    let stride = width as usize * 4;
+
+    for dy in 0..dst_u {
+        let y0 = oy as usize + ((dy * crop_u) / dst_u) as usize;
+        let y1 = (oy as usize + (((dy + 1) * crop_u) / dst_u) as usize)
+            .max(y0 + 1)
+            .min(height as usize);
+        for dx in 0..dst_u {
+            let x0 = ox as usize + ((dx * crop_u) / dst_u) as usize;
+            let x1 = (ox as usize + (((dx + 1) * crop_u) / dst_u) as usize)
+                .max(x0 + 1)
+                .min(width as usize);
+            let mut sum_r: u64 = 0;
+            let mut sum_g: u64 = 0;
+            let mut sum_b: u64 = 0;
+            let mut sum_a: u64 = 0;
+            let mut count: u64 = 0;
+            for sy in y0..y1 {
+                let row_off = sy * stride;
+                for sx in x0..x1 {
+                    let off = row_off + sx * 4;
+                    sum_r += u64::from(rgba[off]);
+                    sum_g += u64::from(rgba[off + 1]);
+                    sum_b += u64::from(rgba[off + 2]);
+                    sum_a += u64::from(rgba[off + 3]);
+                    count += 1;
+                }
+            }
+            let count = count.max(1);
+            let r = (sum_r + count / 2) / count;
+            let g = (sum_g + count / 2) / count;
+            let b = (sum_b + count / 2) / count;
+            let a = (sum_a + count / 2) / count;
+            let pr = ((r * a + 127) / 255) as u8;
+            let pg = ((g * a + 127) / 255) as u8;
+            let pb = ((b * a + 127) / 255) as u8;
+            premultiplied_rgba.push(pr);
+            premultiplied_rgba.push(pg);
+            premultiplied_rgba.push(pb);
+            premultiplied_rgba.push(a as u8);
+        }
+    }
+
+    Some(IconBitmap {
+        width: dst,
+        height: dst,
+        premultiplied_rgba,
+    })
+}
+
+/// Format a recorded clipboard source (either an `.exe` path or an app label)
+/// into a concise human-friendly app name for subtitles and metadata.
+fn friendly_source_name(raw: &str) -> String {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return String::new();
+    }
+    let looks_like_path = trimmed.contains('\\')
+        || trimmed.contains('/')
+        || trimmed.to_ascii_lowercase().ends_with(".exe");
+    if !looks_like_path {
+        return truncate_chars(trimmed, 28);
+    }
+    let stem = Path::new(trimmed)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or(trimmed);
+    match stem.to_ascii_lowercase().as_str() {
+        "chrome" => "Chrome".to_string(),
+        "msedge" => "Edge".to_string(),
+        "firefox" => "Firefox".to_string(),
+        "code" => "VS Code".to_string(),
+        "windowsterminal" => "Terminal".to_string(),
+        "powershell" | "pwsh" => "PowerShell".to_string(),
+        "cmd" => "Command Prompt".to_string(),
+        "explorer" => "File Explorer".to_string(),
+        "notepad" => "Notepad".to_string(),
+        "opencode" => "OpenCode".to_string(),
+        "discord" => "Discord".to_string(),
+        "slack" => "Slack".to_string(),
+        "whatsapp" => "WhatsApp".to_string(),
+        "telegram" => "Telegram".to_string(),
+        other => {
+            let mut chars = other.chars();
+            match chars.next() {
+                Some(first) => {
+                    let cap = format!("{}{}", first.to_uppercase(), &stem[first.len_utf8()..]);
+                    truncate_chars(&cap, 28)
+                }
+                None => truncate_chars(stem, 28),
+            }
+        }
+    }
+}
+
+/// Heuristic for code-like copied text so it gets a crisp `< >` code icon.
+fn looks_like_code(text: &str) -> bool {
+    let t = text.trim();
+    if t.len() < 4 {
+        return false;
+    }
+    (t.starts_with('{') && t.ends_with('}'))
+        || (t.starts_with('[') && t.ends_with(']'))
+        || t.starts_with("fn ")
+        || t.starts_with("pub fn ")
+        || t.starts_with("function ")
+        || t.starts_with("const ")
+        || t.starts_with("import ")
+        || t.starts_with("SELECT ")
+        || t.starts_with("git ")
+        || t.starts_with("cargo ")
+        || t.starts_with("npm ")
+        || t.starts_with("```")
+}
+
+/// Build the native Clipboard History screen model with Master-Detail preview,
+/// live image row thumbnails, real file/source-app icons, and vector badges.
+#[allow(clippy::too_many_arguments)]
 pub fn clipboard_model(
     query: &str,
     items: &[ClipboardItem],
@@ -207,7 +350,11 @@ pub fn clipboard_model(
     queue_len: usize,
     selected: usize,
     show_detail: bool,
-    mut image_lookup: impl FnMut(&ClipboardItem, bool) -> Option<(u32, u32, Arc<IconBitmap>)>,
+    mut image_lookup: impl FnMut(
+        &ClipboardItem,
+        bool,
+    ) -> Option<(u32, u32, Arc<IconBitmap>, Arc<IconBitmap>)>,
+    mut shell_icon_lookup: impl FnMut(&str) -> Option<Arc<IconBitmap>>,
 ) -> Model {
     let clamped_sel = selected.min(items.len().saturating_sub(1));
     let mut selected_image_info: Option<(u32, u32, Arc<IconBitmap>)> = None;
@@ -223,19 +370,24 @@ pub fn clipboard_model(
             };
             let is_selected = idx == clamped_sel;
             let mut detail_parts = Vec::new();
+            let mut row_bitmap: Option<(String, Arc<IconBitmap>)> = None;
+
             let title = match item.kind {
                 ItemKind::Image => {
                     if let Some(src) = item.source_bundle_id.as_deref() {
-                        let compact: String = src.chars().take(28).collect();
-                        if !compact.trim().is_empty() {
-                            detail_parts.push(compact);
+                        let friendly = friendly_source_name(src);
+                        if !friendly.is_empty() {
+                            detail_parts.push(friendly);
                         }
                     }
                     detail_parts.push(relative_time_ms(item.created_at));
-                    if let Some((w, h, bmp)) = image_lookup(item, is_selected) {
+                    // Decode thumbnails for the first 32 list items plus the active selection.
+                    let load_thumb = is_selected || idx < 32;
+                    if let Some((w, h, detail_bmp, row_thumb)) = image_lookup(item, load_thumb) {
                         if is_selected {
-                            selected_image_info = Some((w, h, bmp));
+                            selected_image_info = Some((w, h, detail_bmp));
                         }
+                        row_bitmap = Some((format!("clip-row:{}", item.id), row_thumb));
                         format!("Image · {w}×{h}")
                     } else {
                         "Captured Image".to_string()
@@ -243,12 +395,19 @@ pub fn clipboard_model(
                 }
                 ItemKind::File => {
                     let paths = parse_clipboard_file_paths(item);
+                    if let Some(first) = paths.first() {
+                        if idx < 32 {
+                            if let Some(bmp) = shell_icon_lookup(first) {
+                                row_bitmap = Some((first.clone(), bmp));
+                            }
+                        }
+                    }
                     match paths.len() {
                         0 => {
                             if let Some(src) = item.source_bundle_id.as_deref() {
-                                let compact: String = src.chars().take(28).collect();
-                                if !compact.trim().is_empty() {
-                                    detail_parts.push(compact);
+                                let friendly = friendly_source_name(src);
+                                if !friendly.is_empty() {
+                                    detail_parts.push(friendly);
                                 }
                             }
                             detail_parts.push(relative_time_ms(item.created_at));
@@ -272,8 +431,22 @@ pub fn clipboard_model(
                 }
                 ItemKind::Text => {
                     if let Some(src) = item.source_bundle_id.as_deref() {
-                        let compact: String = src.chars().take(28).collect();
-                        detail_parts.push(compact);
+                        let friendly = friendly_source_name(src);
+                        if !friendly.is_empty() {
+                            detail_parts.push(friendly);
+                        }
+                        let is_special = matches!(
+                            item.text_form(),
+                            Some(TextForm::Color | TextForm::Link | TextForm::Email)
+                        );
+                        if !is_special
+                            && idx < 32
+                            && (src.contains('\\') || src.to_ascii_lowercase().ends_with(".exe"))
+                        {
+                            if let Some(bmp) = shell_icon_lookup(src) {
+                                row_bitmap = Some((src.to_string(), bmp));
+                            }
+                        }
                     }
                     detail_parts.push(relative_time_ms(item.created_at));
                     clipboard_preview_title(item)
@@ -281,23 +454,48 @@ pub fn clipboard_model(
             };
             let detail = detail_parts.join(" · ");
 
-            let (letter, tint, swatch) = match item.kind {
-                ItemKind::Image => ("IMG", Color::rgb(0xec, 0x48, 0x99), None),
-                ItemKind::File => ("F", Color::rgb(0x38, 0xbd, 0xf8), None),
+            let (icon, swatch) = match item.kind {
+                ItemKind::Image => (
+                    Icon::vector(IconKind::Image, Color::rgb(0xec, 0x48, 0x99)),
+                    None,
+                ),
+                ItemKind::File => (
+                    Icon::vector(IconKind::File, Color::rgb(0x38, 0xbd, 0xf8)),
+                    None,
+                ),
                 ItemKind::Text => match item.text_form() {
                     Some(TextForm::Color) => {
                         let sw = item.color_value().map(color_value_to_rgba);
-                        ("#", Color::rgb(0xa8, 0x55, 0xf7), sw)
+                        (
+                            Icon::vector(IconKind::Text, Color::rgb(0xa8, 0x55, 0xf7)),
+                            sw,
+                        )
                     }
-                    Some(TextForm::Link) => ("↗", Color::rgb(0x38, 0xbd, 0xf8), None),
-                    Some(TextForm::Email) => ("@", Color::rgb(0x34, 0xd3, 0x99), None),
-                    _ => ("T", Color::rgb(0x81, 0x8c, 0xf8), None),
+                    Some(TextForm::Link) => (
+                        Icon::vector(IconKind::Link, Color::rgb(0x38, 0xbd, 0xf8)),
+                        None,
+                    ),
+                    Some(TextForm::Email) => (
+                        Icon::vector(IconKind::Email, Color::rgb(0x34, 0xd3, 0x99)),
+                        None,
+                    ),
+                    _ => {
+                        let kind = if item.text.as_deref().is_some_and(looks_like_code) {
+                            IconKind::Code
+                        } else {
+                            IconKind::Text
+                        };
+                        (Icon::vector(kind, Color::rgb(0x81, 0x8c, 0xf8)), None)
+                    }
                 },
             };
 
             let mut row = Row::detailed(title, detail)
                 .with_section(section)
-                .with_icon(Icon::new(letter, tint));
+                .with_icon(icon);
+            if let Some((key, bmp)) = row_bitmap {
+                row = row.with_bitmap(key, bmp);
+            }
             if item.is_pinned() {
                 row = row.with_shortcut("★");
             }
@@ -370,8 +568,9 @@ pub fn clipboard_detail_with_image(
     let captured_str = relative_time_ms(item.created_at);
     let push_source = |metadata: &mut Vec<(String, String)>| {
         if let Some(src) = item.source_bundle_id.as_deref() {
-            if !src.trim().is_empty() {
-                metadata.push(("Source".to_string(), src.to_string()));
+            let friendly = friendly_source_name(src);
+            if !friendly.is_empty() {
+                metadata.push(("Source".to_string(), friendly));
             }
         }
     };
@@ -1869,6 +2068,7 @@ mod tests {
             0,
             true,
             |_, _| None,
+            |_| None,
         );
         assert_eq!(model.rows.len(), 1);
         assert_eq!(model.rows[0].section, "Pinned");
@@ -1891,6 +2091,7 @@ mod tests {
             0,
             false,
             |_, _| None,
+            |_| None,
         );
         assert!(hidden.detail.is_none());
     }

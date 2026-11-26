@@ -9,15 +9,15 @@ use std::ffi::c_void;
 use std::time::{Duration, Instant};
 
 use windows::core::{w, BOOL, PCWSTR};
-use windows::Win32::Foundation::{COLORREF, HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
+use windows::Win32::Foundation::{COLORREF, HINSTANCE, HWND, LPARAM, LRESULT, POINT, RECT, WPARAM};
 use windows::Win32::Graphics::Dwm::{
     DwmSetWindowAttribute, DWMWA_BORDER_COLOR, DWMWA_USE_IMMERSIVE_DARK_MODE,
     DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND,
 };
 use windows::Win32::Graphics::Gdi::{
     BeginPaint, CreateFontW, CreateSolidBrush, DeleteObject, EndPaint, GetMonitorInfoW,
-    InvalidateRect, MonitorFromPoint, SetBkColor, SetTextColor, HBRUSH, HDC, HFONT, MONITORINFO,
-    PAINTSTRUCT,
+    InvalidateRect, MonitorFromPoint, MonitorFromRect, ScreenToClient, SetBkColor, SetTextColor,
+    HBRUSH, HDC, HFONT, MONITORINFO, MONITOR_DEFAULTTONEAREST, MONITOR_DEFAULTTONULL, PAINTSTRUCT,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
@@ -35,19 +35,21 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW,
-    GetForegroundWindow, GetMessageW, GetParent, GetWindowLongPtrW, GetWindowTextLengthW,
-    GetWindowTextW, GetWindowThreadProcessId, IsWindow, IsWindowVisible, LoadCursorW, PeekMessageW,
-    PostMessageW, PostQuitMessage, RegisterClassExW, SendMessageW, SetForegroundWindow,
-    SetWindowLongPtrW, SetWindowPos, ShowWindow, TranslateMessage, CREATESTRUCTW, CS_HREDRAW,
-    CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA, GWLP_WNDPROC, HTCLIENT,
-    IDC_ARROW, MINMAXINFO, MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOZORDER, SW_HIDE,
+    AllowSetForegroundWindow, BringWindowToTop, CreateWindowExW, DefWindowProcW, DestroyWindow,
+    DispatchMessageW, GetForegroundWindow, GetMessageW, GetParent, GetWindowLongPtrW,
+    GetWindowRect, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, IsWindow,
+    IsWindowVisible, LoadCursorW, PeekMessageW, PostMessageW, PostQuitMessage, RegisterClassExW,
+    SendMessageW, SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow,
+    TranslateMessage, ASFW_ANY, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL,
+    ES_LEFT, GWLP_USERDATA, GWLP_WNDPROC, HTCAPTION, HTCLIENT, HWND_TOPMOST, IDC_ARROW, MINMAXINFO,
+    MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW, SW_HIDE,
     SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_CHAR, WM_COMMAND,
-    WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_GETMINMAXINFO,
-    WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCACTIVATE, WM_NCCALCSIZE,
-    WM_NCCREATE, WM_NCHITTEST, WM_NCPAINT, WM_PAINT, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE,
-    WM_SYSCHAR, WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS,
-    WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_VISIBLE,
+    WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_EXITSIZEMOVE,
+    WM_GETMINMAXINFO, WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCACTIVATE,
+    WM_NCCALCSIZE, WM_NCCREATE, WM_NCHITTEST, WM_NCLBUTTONDBLCLK, WM_NCPAINT, WM_PAINT,
+    WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR, WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD,
+    WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP,
+    WS_VISIBLE,
 };
 
 use crate::event::{ActionKey, Handler, PaletteEvent, PaletteReply};
@@ -79,6 +81,7 @@ const WM_APP_SHIFT_RETURN: u32 = 0x8011;
 const WM_APP_QUICK_SELECT: u32 = 0x8012;
 const WM_APP_COPY_CHORD: u32 = 0x8013;
 const WM_APP_MENU_CHAR: u32 = 0x8014;
+const WM_APP_RESET_POSITION: u32 = 0x8015;
 
 const ACTION_TAB: usize = 1;
 const ACTION_CTRL_P: usize = 2;
@@ -93,6 +96,10 @@ const ACTION_BACK: usize = 9;
 /// Debounce window so clicking the tray icon while the palette is open closes
 /// the palette rather than blur-dismissing and immediately re-opening it.
 const TRAY_BLUR_DEBOUNCE: Duration = Duration::from_millis(250);
+
+/// Grace period right after showing the palette during which transient Win32
+/// focus churn (e.g. closing a system tray popup menu) must not auto-dismiss it.
+const SHOW_ACTIVATION_GRACE: Duration = Duration::from_millis(220);
 
 /// Default search placeholder when the model does not specify one.
 const DEFAULT_PLACEHOLDER: &str = "Search for apps or commands…";
@@ -117,6 +124,8 @@ struct State {
     font: Option<HFONT>,
     field_brush: Option<HBRUSH>,
     last_blur_dismiss: Option<Instant>,
+    last_shown_at: Option<Instant>,
+    custom_origin: Option<(i32, i32)>,
     tracking_mouse_leave: bool,
     suppress_en_change: bool,
     handler: Handler,
@@ -196,6 +205,18 @@ pub fn post_refresh(handle: PaletteHandle) {
     }
 }
 
+/// Clears any dragged custom position and snaps the palette back to center.
+pub fn post_reset_position(handle: PaletteHandle) {
+    unsafe {
+        let _ = PostMessageW(
+            Some(handle.hwnd()),
+            WM_APP_RESET_POSITION,
+            WPARAM(0),
+            LPARAM(0),
+        );
+    }
+}
+
 /// The palette's window.
 pub struct Palette {
     hwnd: HWND,
@@ -254,6 +275,8 @@ impl Palette {
             font: None,
             field_brush: None,
             last_blur_dismiss: None,
+            last_shown_at: None,
+            custom_origin: None,
             tracking_mouse_leave: false,
             suppress_en_change: false,
             handler,
@@ -287,12 +310,23 @@ impl Palette {
         unsafe {
             (*state_ptr).hwnd = hwnd;
         }
-        place_window_rect(hwnd, metrics, initial_height);
+        place_window_rect(hwnd, metrics, initial_height, None);
 
         Ok(Self {
             hwnd,
             state: state_ptr,
         })
+    }
+
+    /// Seed a persisted custom window position (loaded from settings on startup).
+    pub fn set_saved_position(&self, origin: Option<(i32, i32)>) {
+        let (hwnd, metrics, target_h) = unsafe {
+            let state = &mut *self.state;
+            state.custom_origin = origin;
+            let m = state.theme.metrics;
+            (state.hwnd, m, state.model.layout(m).window_height)
+        };
+        place_window_rect(hwnd, metrics, target_h, origin);
     }
 
     pub fn hwnd(&self) -> HWND {
@@ -570,7 +604,67 @@ unsafe extern "system" fn window_procedure(
             let brush = state.field_brush.map(|b| b.0).unwrap_or_default();
             LRESULT(brush as isize)
         }
-        WM_NCHITTEST => LRESULT(HTCLIENT as isize),
+        WM_NCHITTEST => {
+            let mut pt = POINT {
+                x: (lparam.0 & 0xffff) as i16 as i32,
+                y: ((lparam.0 >> 16) & 0xffff) as i16 as i32,
+            };
+            let _ = ScreenToClient(hwnd, &mut pt);
+            let dpi_scale = GetDpiForWindow(hwnd).max(96) as f32 / 96.0;
+            let x_dip = pt.x as f32 / dpi_scale;
+            let y_dip = pt.y as f32 / dpi_scale;
+            let state = &*state_ptr;
+            let metrics = state.theme.metrics;
+            let win_h = state.model.layout(metrics).window_height;
+
+            if state.model.action_menu.is_some() {
+                return LRESULT(HTCLIENT as isize);
+            }
+
+            // Keep header back button and footer right-side Actions button clickable.
+            if state.model.back_button && x_dip <= 44.0 && y_dip <= metrics.field_height {
+                return LRESULT(HTCLIENT as isize);
+            }
+            if y_dip >= win_h - metrics.footer_height && x_dip >= metrics.width - 135.0 {
+                return LRESULT(HTCLIENT as isize);
+            }
+
+            // Allow dragging the palette by its header chrome, bottom footer bar,
+            // or outer border padding (the child EDIT control owns its own box).
+            let in_header = y_dip <= metrics.field_height;
+            let in_footer = y_dip >= win_h - metrics.footer_height;
+            let in_edge = x_dip <= metrics.padding || x_dip >= metrics.width - metrics.padding;
+            if in_header || in_footer || in_edge {
+                LRESULT(HTCAPTION as isize)
+            } else {
+                LRESULT(HTCLIENT as isize)
+            }
+        }
+        WM_NCLBUTTONDBLCLK => {
+            // Double-clicking draggable header/footer chrome re-centers the palette
+            // instead of letting DefWindowProcW maximize the borderless window.
+            if wparam.0 as u32 == HTCAPTION {
+                let (metrics, target_h) = {
+                    let state = &mut *state_ptr;
+                    state.custom_origin = None;
+                    let m = state.theme.metrics;
+                    (m, state.model.layout(m).window_height)
+                };
+                place_window_rect(hwnd, metrics, target_h, None);
+                dispatch(state_ptr, PaletteEvent::WindowMoved(None));
+                return LRESULT(0);
+            }
+            DefWindowProcW(hwnd, message, wparam, lparam)
+        }
+        WM_EXITSIZEMOVE => {
+            let mut rect = RECT::default();
+            if GetWindowRect(hwnd, &mut rect).is_ok() {
+                let origin = (rect.left, rect.top);
+                (*state_ptr).custom_origin = Some(origin);
+                dispatch(state_ptr, PaletteEvent::WindowMoved(Some(origin)));
+            }
+            LRESULT(0)
+        }
         WM_MOUSEMOVE => {
             let x_phys = (lparam.0 & 0xffff) as i16 as f32;
             let y_phys = ((lparam.0 >> 16) & 0xffff) as i16 as f32;
@@ -720,8 +814,16 @@ unsafe extern "system" fn window_procedure(
         }
         WM_ACTIVATE => {
             if (wparam.0 & 0xffff) == WA_INACTIVE as usize && IsWindowVisible(hwnd).as_bool() {
-                (*state_ptr).last_blur_dismiss = Some(Instant::now());
-                dismiss(state_ptr);
+                let in_grace = (*state_ptr)
+                    .last_shown_at
+                    .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
+                if in_grace {
+                    let edit = (*state_ptr).edit;
+                    bring_to_foreground_and_focus(hwnd, edit);
+                } else {
+                    (*state_ptr).last_blur_dismiss = Some(Instant::now());
+                    dismiss(state_ptr);
+                }
             }
             LRESULT(0)
         }
@@ -919,12 +1021,14 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_APP_CLOSE => {
-            let _ = ShowWindow(hwnd, SW_HIDE);
+            if IsWindowVisible(hwnd).as_bool() {
+                dismiss(state_ptr);
+            }
             LRESULT(0)
         }
         WM_APP_TOGGLE_TRAY => {
             if IsWindowVisible(hwnd).as_bool() {
-                let _ = ShowWindow(hwnd, SW_HIDE);
+                dismiss(state_ptr);
             } else {
                 let recently_blurred = (*state_ptr)
                     .last_blur_dismiss
@@ -943,8 +1047,25 @@ unsafe extern "system" fn window_procedure(
         }
         WM_APP_COMMAND => {
             let code = wparam.0 as u32;
-            show_window_without_shown_event(state_ptr);
+            if !IsWindowVisible(hwnd).as_bool() {
+                show_window_without_shown_event(state_ptr);
+            } else {
+                (*state_ptr).last_shown_at = Some(Instant::now());
+                let edit = (*state_ptr).edit;
+                bring_to_foreground_and_focus(hwnd, edit);
+            }
             dispatch(state_ptr, PaletteEvent::Command(code));
+            LRESULT(0)
+        }
+        WM_APP_RESET_POSITION => {
+            let (metrics, target_h) = {
+                let state = &mut *state_ptr;
+                state.custom_origin = None;
+                let m = state.theme.metrics;
+                (m, state.model.layout(m).window_height)
+            };
+            place_window_rect(hwnd, metrics, target_h, None);
+            dispatch(state_ptr, PaletteEvent::WindowMoved(None));
             LRESULT(0)
         }
         WM_APP_REFRESH => {
@@ -1200,9 +1321,10 @@ unsafe fn set_cue_banner(edit: HWND, text: &str) {
 
 unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
     clear_edit_silently(state_ptr);
-    let (hwnd, edit, metrics, target_h) = {
+    let (hwnd, edit, metrics, target_h, custom_origin) = {
         let state = &mut *state_ptr;
         state.last_blur_dismiss = None;
+        state.last_shown_at = Some(Instant::now());
         state.model.query = String::new();
         state.model.scroll_offset = 0.0;
         let m = state.theme.metrics;
@@ -1211,10 +1333,11 @@ unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
             state.edit,
             m,
             state.model.layout(m).window_height,
+            state.custom_origin,
         )
     };
 
-    place_window_rect(hwnd, metrics, target_h);
+    place_window_rect(hwnd, metrics, target_h, custom_origin);
     let _ = ShowWindow(hwnd, SW_SHOW);
     bring_to_foreground_and_focus(hwnd, edit);
 }
@@ -1222,6 +1345,7 @@ unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
 /// Reliably steals foreground focus and places the blinking keyboard caret
 /// inside `edit` so the user can type immediately without clicking the mouse.
 unsafe fn bring_to_foreground_and_focus(hwnd: HWND, edit: HWND) {
+    let _ = AllowSetForegroundWindow(ASFW_ANY);
     let foreground = GetForegroundWindow();
     let our_thread = GetCurrentThreadId();
     let fg_thread = if !foreground.0.is_null() {
@@ -1236,6 +1360,15 @@ unsafe fn bring_to_foreground_and_focus(hwnd: HWND, edit: HWND) {
         false
     };
 
+    let _ = SetWindowPos(
+        hwnd,
+        Some(HWND_TOPMOST),
+        0,
+        0,
+        0,
+        0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW,
+    );
     let _ = BringWindowToTop(hwnd);
     let _ = SetForegroundWindow(hwnd);
     if !edit.0.is_null() && IsWindow(Some(edit)).as_bool() {
@@ -1434,17 +1567,45 @@ fn create_edit_font(dpi: u32) -> HFONT {
     }
 }
 
-/// Sizes the palette for the monitor the cursor is currently on and places it
-/// centered horizontally and cleanly in the upper third.
-fn place_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
-    let mut cursor = POINT::default();
-    let _ = unsafe { windows::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut cursor) };
-    let monitor = unsafe {
-        MonitorFromPoint(
-            cursor,
-            windows::Win32::Graphics::Gdi::MONITOR_DEFAULTTONEAREST,
+/// Sizes the palette for the active monitor and places it dead-center (or
+/// restores the user's dragged custom origin if still on a connected monitor).
+fn place_window_rect(
+    hwnd: HWND,
+    metrics: Metrics,
+    window_height_dip: f32,
+    custom_origin: Option<(i32, i32)>,
+) {
+    let sys_dpi = unsafe { GetDpiForSystem().max(96) };
+
+    // If the user dragged the palette to a custom position, prefer the monitor
+    // containing that saved spot (falling back to the cursor monitor if detached).
+    let (monitor, use_custom) = if let Some((cx, cy)) = custom_origin {
+        let probe = RECT {
+            left: cx,
+            top: cy,
+            right: cx + 120,
+            bottom: cy + 60,
+        };
+        let mon = unsafe { MonitorFromRect(&probe, MONITOR_DEFAULTTONULL) };
+        if !mon.0.is_null() {
+            (mon, Some((cx, cy)))
+        } else {
+            let mut cursor = POINT::default();
+            let _ = unsafe { windows::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut cursor) };
+            (
+                unsafe { MonitorFromPoint(cursor, MONITOR_DEFAULTTONEAREST) },
+                None,
+            )
+        }
+    } else {
+        let mut cursor = POINT::default();
+        let _ = unsafe { windows::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut cursor) };
+        (
+            unsafe { MonitorFromPoint(cursor, MONITOR_DEFAULTTONEAREST) },
+            None,
         )
     };
+
     let mut dpi_x = 0u32;
     let mut dpi_y = 0u32;
     let monitor_dpi = unsafe {
@@ -1453,7 +1614,7 @@ fn place_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
         {
             dpi_x
         } else {
-            GetDpiForSystem().max(96)
+            sys_dpi
         }
     };
     let scale = monitor_dpi as f32 / 96.0;
@@ -1468,14 +1629,27 @@ fn place_window_rect(hwnd: HWND, metrics: Metrics, window_height_dip: f32) {
         ..Default::default()
     };
     let _ = unsafe { GetMonitorInfoW(monitor, &mut info) };
+    let work = info.rcWork;
 
-    let x = info.rcWork.left + (info.rcWork.right - info.rcWork.left - width) / 2;
-    let y = info.rcWork.top + (info.rcWork.bottom - info.rcWork.top - anchor_height) / 4;
+    let (x, y) = if let Some((cx, cy)) = use_custom {
+        let max_x = (work.right - width).max(work.left);
+        let max_y = (work.bottom - height).max(work.top);
+        (cx.clamp(work.left, max_x), cy.clamp(work.top, max_y))
+    } else {
+        let centered_x = work.left + (work.right - work.left - width) / 2;
+        let centered_y = work.top + (work.bottom - work.top - anchor_height) / 2;
+        let max_x = (work.right - width).max(work.left);
+        let max_y = (work.bottom - height).max(work.top);
+        (
+            centered_x.clamp(work.left, max_x),
+            centered_y.clamp(work.top, max_y),
+        )
+    };
 
     unsafe {
         let _ = SetWindowPos(
             hwnd,
-            Some(windows::Win32::UI::WindowsAndMessaging::HWND_TOPMOST),
+            Some(HWND_TOPMOST),
             x,
             y,
             width,

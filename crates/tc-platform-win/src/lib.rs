@@ -83,7 +83,9 @@ pub use window_control::{
     toggle_always_on_top, toggle_fullscreen, window_rect, ControlError, Outcome, WindowHandle,
     WindowInfo,
 };
-pub use windows::{extended_frame_bounds, own_integrity_level, WindowsWindows};
+pub use windows::{
+    extended_frame_bounds, foreground_process_exe, own_integrity_level, WindowsWindows,
+};
 
 use std::collections::BTreeMap;
 use std::sync::Mutex;

@@ -52,7 +52,7 @@ impl std::fmt::Display for RepositoryError {
             ),
             Self::InvalidFileLocation(file) => write!(
                 f,
-                "The snippet file is outside this Tinycast channel. ({})",
+                "The snippet file is outside this YAL channel. ({})",
                 file.display()
             ),
             Self::Io { file, message } => {

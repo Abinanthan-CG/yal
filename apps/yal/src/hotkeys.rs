@@ -21,6 +21,44 @@ pub const HOTKEY_COMMAND_PREFIX: &str = "hotkey.command.";
 pub const ALIAS_PREFIX: &str = "alias.";
 pub const BINDING_LAUNCHER_TOGGLE: &str = "launcher.toggle";
 pub const BINDING_COMMAND_PREFIX: &str = "cmd:";
+/// Stored value when the user explicitly clears a command that otherwise has a built-in default.
+pub const DISABLED_HOTKEY_VALUE: &str = "none";
+
+/// Built-in global shortcut defaults for core YAL actions: `(entry_id, label, default_chord)`.
+///
+/// Users can override any of these in Settings -> Action Hotkeys (or via `Ctrl+K -> Record Hotkey`)
+/// or clear them (stored as `"none"` so the default stays disabled).
+pub const DEFAULT_COMMAND_HOTKEYS: &[(&str, &str, &str)] = &[
+    (
+        "command:clipboard-history",
+        "Clipboard History",
+        "Ctrl+Alt+V",
+    ),
+    ("command:search-emoji", "Emoji & Symbols", "Ctrl+Alt+E"),
+    ("command:search-snippets", "Snippets", "Ctrl+Alt+S"),
+    ("command:search-files", "Search Files", "Ctrl+Alt+F"),
+    ("command:switch-windows", "Switch Windows", "Ctrl+Alt+W"),
+    ("command:show-notes", "Quick Notes", "Ctrl+Alt+N"),
+    ("command:search-quicklinks", "Quicklinks", "Ctrl+Alt+Q"),
+    (
+        "command:calculator-history",
+        "Calculator History",
+        "Ctrl+Alt+C",
+    ),
+    (
+        "command:paste-sequentially",
+        "Paste Next (Queue)",
+        "Ctrl+Alt+P",
+    ),
+];
+
+/// Return the built-in default global shortcut for a command entry, if any.
+pub fn default_command_hotkey(entry_id: &str) -> Option<HotkeyTrigger> {
+    DEFAULT_COMMAND_HOTKEYS
+        .iter()
+        .find(|(id, _, _)| *id == entry_id)
+        .and_then(|(_, _, chord)| HotkeyTrigger::parse(chord))
+}
 
 fn lock_or_recover<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     mutex
@@ -102,43 +140,81 @@ pub fn command_entry_from_binding(binding_id: &str) -> Option<&str> {
     binding_id.strip_prefix(BINDING_COMMAND_PREFIX)
 }
 
-/// Read a per-command global hotkey from settings.
+/// Read a per-command global hotkey from settings, falling back to built-in
+/// defaults unless the user explicitly cleared it (`"none"`).
 pub fn get_command_hotkey(settings: &impl Settings, entry_id: &str) -> Option<HotkeyTrigger> {
-    let raw = settings.get(&command_hotkey_key(entry_id))?;
-    let trimmed = raw.trim();
-    if trimmed.is_empty() {
-        return None;
+    if let Some(raw) = settings.get(&command_hotkey_key(entry_id)) {
+        let trimmed = raw.trim();
+        if trimmed.eq_ignore_ascii_case(DISABLED_HOTKEY_VALUE) {
+            return None;
+        }
+        if !trimmed.is_empty() {
+            return HotkeyTrigger::parse(trimmed);
+        }
     }
-    HotkeyTrigger::parse(trimmed)
+    default_command_hotkey(entry_id)
 }
 
 /// Save or clear a per-command global hotkey in settings.
+///
+/// Clearing a command with a built-in default persists `"none"` so it stays
+/// disabled across restarts instead of silently reverting to the default.
 pub fn set_command_hotkey(
     settings: &impl Settings,
     entry_id: &str,
     trigger: Option<HotkeyTrigger>,
 ) -> Result<(), String> {
-    let value = trigger.map(|t| t.format()).unwrap_or_default();
+    let value = match trigger {
+        Some(t) => t.format(),
+        None if default_command_hotkey(entry_id).is_some() => DISABLED_HOTKEY_VALUE.to_string(),
+        None => String::new(),
+    };
     settings.set(&command_hotkey_key(entry_id), &value)
 }
 
-/// Collect all valid per-command hotkeys stored in settings.
+/// Collect all effective per-command hotkeys (explicit user settings merged with
+/// built-in defaults, skipping any default disabled via `"none"` or colliding
+/// with the launcher toggle or a user-assigned shortcut).
 pub fn all_command_hotkeys(settings: &impl Settings) -> Vec<(String, HotkeyTrigger)> {
-    settings
-        .all()
-        .into_iter()
-        .filter_map(|(key, value)| {
-            let entry_id = key.strip_prefix(HOTKEY_COMMAND_PREFIX)?;
-            if entry_id.is_empty() {
-                return None;
+    let launcher_trigger = configured_launcher_hotkey(settings);
+    let mut map: BTreeMap<String, Option<HotkeyTrigger>> = BTreeMap::new();
+
+    for (key, value) in settings.all() {
+        let Some(entry_id) = key.strip_prefix(HOTKEY_COMMAND_PREFIX) else {
+            continue;
+        };
+        if entry_id.is_empty() {
+            continue;
+        }
+        let trimmed = value.trim();
+        if trimmed.eq_ignore_ascii_case(DISABLED_HOTKEY_VALUE) {
+            map.insert(entry_id.to_string(), None);
+        } else if !trimmed.is_empty() {
+            if let Some(trigger) = HotkeyTrigger::parse(trimmed) {
+                map.insert(entry_id.to_string(), Some(trigger));
             }
-            let trimmed = value.trim();
-            if trimmed.is_empty() {
-                return None;
+        }
+    }
+
+    let mut used: Vec<HotkeyTrigger> = vec![launcher_trigger];
+    for trigger in map.values().flatten() {
+        used.push(*trigger);
+    }
+
+    for &(entry_id, _, _) in DEFAULT_COMMAND_HOTKEYS {
+        if map.contains_key(entry_id) {
+            continue;
+        }
+        if let Some(default_trigger) = default_command_hotkey(entry_id) {
+            if !used.contains(&default_trigger) {
+                used.push(default_trigger);
+                map.insert(entry_id.to_string(), Some(default_trigger));
             }
-            let trigger = HotkeyTrigger::parse(trimmed)?;
-            Some((entry_id.to_string(), trigger))
-        })
+        }
+    }
+
+    map.into_iter()
+        .filter_map(|(id, trig)| trig.map(|t| (id, t)))
         .collect()
 }
 
@@ -393,6 +469,16 @@ mod tests {
     #[test]
     fn command_hotkeys_persist_clear_build_bindings_and_detect_conflicts() {
         let settings = FakeSettings::new();
+        // Built-in defaults are active out of the box.
+        assert_eq!(
+            get_command_hotkey(&settings, "command:clipboard-history"),
+            HotkeyTrigger::parse("Ctrl+Alt+V")
+        );
+        assert_eq!(
+            all_command_hotkeys(&settings).len(),
+            DEFAULT_COMMAND_HOTKEYS.len()
+        );
+
         let clip_trigger = HotkeyTrigger::parse("Ctrl+Shift+V").expect("parse");
         set_command_hotkey(&settings, "command:clipboard-history", Some(clip_trigger))
             .expect("save command hotkey");
@@ -401,17 +487,21 @@ mod tests {
             get_command_hotkey(&settings, "command:clipboard-history"),
             Some(clip_trigger)
         );
-        assert_eq!(all_command_hotkeys(&settings).len(), 1);
+        assert_eq!(
+            all_command_hotkeys(&settings).len(),
+            DEFAULT_COMMAND_HOTKEYS.len()
+        );
 
         let bindings = build_all_bindings(&settings);
-        assert_eq!(bindings.len(), 2);
+        assert_eq!(bindings.len(), 1 + DEFAULT_COMMAND_HOTKEYS.len());
         assert_eq!(bindings[0].id, BINDING_LAUNCHER_TOGGLE);
+        let clip_binding = bindings
+            .iter()
+            .find(|b| b.id == command_binding_id("command:clipboard-history"))
+            .expect("clipboard binding");
+        assert_eq!(clip_binding.trigger, clip_trigger);
         assert_eq!(
-            bindings[1].id,
-            command_binding_id("command:clipboard-history")
-        );
-        assert_eq!(
-            command_entry_from_binding(&bindings[1].id),
+            command_entry_from_binding(&clip_binding.id),
             Some("command:clipboard-history")
         );
 
@@ -439,13 +529,16 @@ mod tests {
             Some(ConflictKind::ReservedTextEditing)
         );
 
-        // Clearing removes command hotkey.
+        // Clearing disables even a command with a built-in default.
         set_command_hotkey(&settings, "command:clipboard-history", None).expect("clear");
         assert_eq!(
             get_command_hotkey(&settings, "command:clipboard-history"),
             None
         );
-        assert!(all_command_hotkeys(&settings).is_empty());
+        assert_eq!(
+            all_command_hotkeys(&settings).len(),
+            DEFAULT_COMMAND_HOTKEYS.len() - 1
+        );
     }
 
     #[test]

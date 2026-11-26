@@ -33,7 +33,7 @@ use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
 use windows_numerics::{Matrix3x2, Vector2};
 
 use crate::model::{
-    ActionMenuModel, DetailPane, GridModel, IconBitmap, Model, Row, ToastKind,
+    ActionMenuModel, DetailPane, GridModel, IconBitmap, IconKind, Model, Row, ToastKind,
     ACTION_MENU_HEADER_H, ACTION_MENU_MAX_VISIBLE, ACTION_MENU_ROW_H, GRID_CELL_HEIGHT,
     MASTER_SPLIT_RATIO,
 };
@@ -781,6 +781,7 @@ impl Renderer {
             if let (Some(key), Some(bitmap_data)) = (row.icon_key.as_deref(), row.bitmap.as_deref())
             {
                 if let Some(gpu_bitmap) = self.cached_bitmap(key, bitmap_data) {
+                    let is_thumb = key.starts_with("clip-row:");
                     let dest = D2D_RECT_F {
                         left: icon_left,
                         top: icon_top,
@@ -796,15 +797,27 @@ impl Renderer {
                             None,
                         );
                     }
+                    if is_thumb {
+                        let frame = D2D1_ROUNDED_RECT {
+                            rect: dest,
+                            radiusX: 3.0,
+                            radiusY: 3.0,
+                        };
+                        if let Some(ring) = self.brush(theme.border) {
+                            unsafe {
+                                self.target.DrawRoundedRectangle(&frame, &ring, 1.0, None);
+                            }
+                        }
+                    }
                     drew_bitmap = true;
                 }
             }
         }
 
         if !drew_bitmap {
-            let (glyph, tint) = match row.icon.as_ref() {
-                Some(icon) => (icon.letter.as_str(), icon.color),
-                None => ("·", theme.text_dim),
+            let (glyph, tint, vector_kind) = match row.icon.as_ref() {
+                Some(icon) => (icon.letter.as_str(), icon.color, icon.kind),
+                None => ("·", theme.text_dim, None),
             };
             let tile = D2D1_ROUNDED_RECT {
                 rect: D2D_RECT_F {
@@ -825,7 +838,10 @@ impl Renderer {
                     self.target.FillRoundedRectangle(&tile, &bg);
                 }
             }
-            if let Some(layout) = self.layout(glyph, &self.icon_format, icon_size, icon_size) {
+            if let Some(kind) = vector_kind {
+                self.draw_vector_icon(kind, icon_left, icon_top, icon_size, tint);
+            } else if let Some(layout) = self.layout(glyph, &self.icon_format, icon_size, icon_size)
+            {
                 if let Some(fg) = self.brush(tint) {
                     unsafe {
                         self.target.DrawTextLayout(
@@ -2269,6 +2285,272 @@ impl Renderer {
                 self.target.DrawGeometry(geo, brush, 1.8, stroke.as_ref());
             }
             self.target.SetTransform(&Matrix3x2::identity());
+        }
+    }
+
+    /// Crisp 1:1 DIP Direct2D vector icon drawn centered inside a row's leading tile.
+    fn draw_vector_icon(&mut self, kind: IconKind, left: f32, top: f32, size: f32, color: Color) {
+        let Some(brush) = self.brush(color) else {
+            return;
+        };
+        let stroke = self.round_stroke.clone();
+        let cx = left + size * 0.5;
+        let cy = top + size * 0.5;
+        let sw = 1.45_f32;
+
+        unsafe {
+            match kind {
+                IconKind::Text => {
+                    // Clean 3-line document glyph
+                    let x0 = cx - 5.0;
+                    let x1 = cx + 5.0;
+                    let x_short = cx + 1.5;
+                    self.target.DrawLine(
+                        Vector2 { X: x0, Y: cy - 3.6 },
+                        Vector2 { X: x1, Y: cy - 3.6 },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 { X: x0, Y: cy },
+                        Vector2 { X: x1, Y: cy },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 { X: x0, Y: cy + 3.6 },
+                        Vector2 {
+                            X: x_short,
+                            Y: cy + 3.6,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                }
+                IconKind::Link => {
+                    // Interlocked diagonal link capsules rotated -45° around (cx, cy)
+                    let left_link = D2D1_ROUNDED_RECT {
+                        rect: D2D_RECT_F {
+                            left: -5.6,
+                            top: -2.3,
+                            right: 1.0,
+                            bottom: 2.3,
+                        },
+                        radiusX: 2.3,
+                        radiusY: 2.3,
+                    };
+                    let right_link = D2D1_ROUNDED_RECT {
+                        rect: D2D_RECT_F {
+                            left: -1.0,
+                            top: -2.3,
+                            right: 5.6,
+                            bottom: 2.3,
+                        },
+                        radiusX: 2.3,
+                        radiusY: 2.3,
+                    };
+                    let s = std::f32::consts::FRAC_1_SQRT_2;
+                    let transform = Matrix3x2 {
+                        M11: s,
+                        M12: -s,
+                        M21: s,
+                        M22: s,
+                        M31: cx,
+                        M32: cy,
+                    };
+                    self.target.SetTransform(&transform);
+                    self.target
+                        .DrawRoundedRectangle(&left_link, &brush, sw, stroke.as_ref());
+                    self.target
+                        .DrawRoundedRectangle(&right_link, &brush, sw, stroke.as_ref());
+                    self.target.SetTransform(&Matrix3x2::identity());
+                }
+                IconKind::Email => {
+                    // Rounded envelope + V flap
+                    let env = D2D1_ROUNDED_RECT {
+                        rect: D2D_RECT_F {
+                            left: cx - 5.6,
+                            top: cy - 4.0,
+                            right: cx + 5.6,
+                            bottom: cy + 4.0,
+                        },
+                        radiusX: 1.5,
+                        radiusY: 1.5,
+                    };
+                    self.target
+                        .DrawRoundedRectangle(&env, &brush, sw, stroke.as_ref());
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx - 4.8,
+                            Y: cy - 3.0,
+                        },
+                        Vector2 { X: cx, Y: cy + 0.6 },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 { X: cx, Y: cy + 0.6 },
+                        Vector2 {
+                            X: cx + 4.8,
+                            Y: cy - 3.0,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                }
+                IconKind::Image => {
+                    // Framed landscape photo + sun dot
+                    let frame = D2D1_ROUNDED_RECT {
+                        rect: D2D_RECT_F {
+                            left: cx - 5.5,
+                            top: cy - 4.8,
+                            right: cx + 5.5,
+                            bottom: cy + 4.8,
+                        },
+                        radiusX: 1.6,
+                        radiusY: 1.6,
+                    };
+                    self.target
+                        .DrawRoundedRectangle(&frame, &brush, sw, stroke.as_ref());
+                    let sun = D2D1_ELLIPSE {
+                        point: Vector2 {
+                            X: cx - 2.3,
+                            Y: cy - 1.8,
+                        },
+                        radiusX: 1.15,
+                        radiusY: 1.15,
+                    };
+                    self.target.FillEllipse(&sun, &brush);
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx - 4.2,
+                            Y: cy + 3.4,
+                        },
+                        Vector2 {
+                            X: cx - 0.6,
+                            Y: cy - 0.2,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx - 0.6,
+                            Y: cy - 0.2,
+                        },
+                        Vector2 {
+                            X: cx + 1.5,
+                            Y: cy + 1.8,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx + 1.5,
+                            Y: cy + 1.8,
+                        },
+                        Vector2 {
+                            X: cx + 4.2,
+                            Y: cy - 0.8,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                }
+                IconKind::File => {
+                    // Clean page outline with top-right corner fold
+                    let page = D2D1_ROUNDED_RECT {
+                        rect: D2D_RECT_F {
+                            left: cx - 4.5,
+                            top: cy - 5.5,
+                            right: cx + 4.5,
+                            bottom: cy + 5.5,
+                        },
+                        radiusX: 1.3,
+                        radiusY: 1.3,
+                    };
+                    self.target
+                        .DrawRoundedRectangle(&page, &brush, sw, stroke.as_ref());
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx - 2.2,
+                            Y: cy - 1.2,
+                        },
+                        Vector2 {
+                            X: cx + 2.2,
+                            Y: cy - 1.2,
+                        },
+                        &brush,
+                        1.2,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx - 2.2,
+                            Y: cy + 2.0,
+                        },
+                        Vector2 {
+                            X: cx + 1.2,
+                            Y: cy + 2.0,
+                        },
+                        &brush,
+                        1.2,
+                        stroke.as_ref(),
+                    );
+                }
+                IconKind::Code => {
+                    // Crisp < > brackets
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx - 2.0,
+                            Y: cy - 3.6,
+                        },
+                        Vector2 { X: cx - 5.2, Y: cy },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 { X: cx - 5.2, Y: cy },
+                        Vector2 {
+                            X: cx - 2.0,
+                            Y: cy + 3.6,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 {
+                            X: cx + 2.0,
+                            Y: cy - 3.6,
+                        },
+                        Vector2 { X: cx + 5.2, Y: cy },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                    self.target.DrawLine(
+                        Vector2 { X: cx + 5.2, Y: cy },
+                        Vector2 {
+                            X: cx + 2.0,
+                            Y: cy + 3.6,
+                        },
+                        &brush,
+                        sw,
+                        stroke.as_ref(),
+                    );
+                }
+            }
         }
     }
 

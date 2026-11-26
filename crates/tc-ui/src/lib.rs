@@ -14,12 +14,12 @@ pub mod window;
 pub use event::{ignore, ActionKey, Handler, PaletteEvent, PaletteReply};
 pub use hud::show_hud;
 pub use model::{
-    ActionMenuItem, ActionMenuModel, DetailPane, GridCell, GridModel, Icon, IconBitmap,
+    ActionMenuItem, ActionMenuModel, DetailPane, GridCell, GridModel, Icon, IconBitmap, IconKind,
     InlineArgBanner, Model, PaletteLayout, Row, ToastKind, ToastModel,
 };
 pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};
 pub use window::{
-    is_visible, post_close, post_command, post_quit, post_refresh, post_show,
+    is_visible, post_close, post_command, post_quit, post_refresh, post_reset_position, post_show,
     post_toggle_from_tray, Palette, PaletteHandle,
 };

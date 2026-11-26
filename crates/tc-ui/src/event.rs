@@ -61,6 +61,9 @@ pub enum PaletteEvent {
     OpenSettings,
     /// The user dismissed the palette (blur or Escape at root).
     Dismissed,
+    /// The user dragged the palette window to a custom `(x, y)` position, or
+    /// double-clicked chrome (`None`) to snap it back to monitor center.
+    WindowMoved(Option<(i32, i32)>),
     /// An application-defined command posted from another thread (e.g. tray or hotkey).
     Command(u32),
     /// Silent in-place refresh (e.g. background icons/files/shell output became ready).
