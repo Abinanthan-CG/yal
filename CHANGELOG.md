@@ -9,6 +9,24 @@ and YAL uses [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.0.1] - 2026-11-26
+
+Polish & daily-driver bug-fix release for **YAL**.
+
+### Fixed
+- **No background CMD window:** Switched `yal.exe` to the native Windows GUI subsystem (`#![windows_subsystem = "windows"]`) with smart parent-console attachment for `--self-test`, `--version`, and `--help`, eliminating the background console window on launch.
+- **Centered spawn & draggable window:** Palette now spawns dead-center on the active monitor, can be dragged freely by its header/footer/border chrome (remembering position across opens), double-clicks back to center, and resets cleanly to the default centered screen when dismissed with `Esc`.
+- **Reliable click-outside dismiss:** Added an active-only low-level mouse hook (`WH_MOUSE_LL`, 0% idle overhead) and foreground-lock fallback so clicking anywhere outside YAL — Desktop, Taskbar, another monitor, or an elevated app — hides YAL immediately.
+- **System tray focus & branding:** Fixed `Open YAL` and `Settings` from the system tray previously auto-dismissing into the background (`TPM_RETURNCMD` + activation grace window), and replaced remaining `"Tinycast"` UI strings (`Support YAL`, `YAL Settings`, `About YAL`, `Quit YAL`).
+- **Hotkey recording UX:** Fixed highlight jumping back to row 0 when recording a shortcut in Settings, and added a coral-amber highlighted row ring, prompt, and `● Recording…` pill right on the active option.
+- **Clipboard History thumbnails, icons & smart copy:** Added real center-cropped image thumbnails, Windows Shell file icons, real source-app logos, and Direct2D vector icons directly in the Clipboard History list; single-clicking a clip now selects and previews it without pasting; pressing `Enter` pastes when a valid target app is behind YAL or falls back to an active clipboard copy when on Desktop/Taskbar/no target.
+
+### Added
+- **Built-in global shortcuts for core actions:** Ready out of the box and rebindable/clearable under **Settings → Action Hotkeys** (`Ctrl+Alt+V` Clipboard History, `Ctrl+Alt+E` Emoji & Symbols, `Ctrl+Alt+S` Snippets, `Ctrl+Alt+F` Search Files, `Ctrl+Alt+W` Switch Windows, `Ctrl+Alt+N` Quick Notes, `Ctrl+Alt+Q` Quicklinks, `Ctrl+Alt+C` Calculator History, `Ctrl+Alt+P` Paste Next).
+- **Scoop bucket & validated WinGet manifests:** Live Scoop bucket (`bucket/yal.json`) and schema-validated multi-file WinGet manifests (`1.12.0`).
+
+---
+
 ## [1.0.0] - 2026-11-25
 
 First official **1.0.0** release of **YAL** — a pure-Rust, Win32 + Direct2D + DirectWrite

@@ -67,7 +67,7 @@ Tab / Shift+Tab   Fill inline Quicklink arguments or drill into folders
 
 ---
 
-## Features (v1.0.0)
+## Features (v1.0.1)
 
 - **Native Win32 + Direct2D UI:** Hardware-accelerated rendering with Windows 11 rounded corners, native shadows, per-monitor DPI scaling, automatic Dark & Light themes, and **Compact** (single search pill) or **Expanded** window mode.
 - **Instant App & Command Search:** Indexes Start Menu, App Paths, registry uninstall entries, and Microsoft Store / MSIX apps with real extracted Windows icons, frecency learning, favorites (`Ctrl+1..0`), and per-command hotkeys & aliases.
@@ -87,7 +87,7 @@ Tab / Shift+Tab   Fill inline Quicklink arguments or drill into folders
 
 ### Per-user installer (recommended)
 
-Download `yal-setup-1.0.0-x64.exe` (or `-arm64.exe`) from the
+Download `yal-setup-1.0.1-x64.exe` (or `-arm64.exe`) from the
 [Releases page](https://github.com/Abinanthan-CG/yal/releases) and run it.
 
 - Installs **per user** (`%LOCALAPPDATA%\Programs\yal`) — never asks for administrator rights.
@@ -106,12 +106,12 @@ scoop install yal/yal
 
 ### Portable build
 
-Download `yal-1.0.0-x64-portable.zip` (or `-arm64-portable.zip`), extract it anywhere, and run `yal.exe`.
+Download `yal-1.0.1-x64-portable.zip` (or `-arm64-portable.zip`), extract it anywhere, and run `yal.exe`.
 
 Verify any release download against `SHA256SUMS.txt`:
 
 ```powershell
-Get-FileHash .\yal-setup-1.0.0-x64.exe -Algorithm SHA256
+Get-FileHash .\yal-setup-1.0.1-x64.exe -Algorithm SHA256
 ```
 
 ### WinGet manifest
