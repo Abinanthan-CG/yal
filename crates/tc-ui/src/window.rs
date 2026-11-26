@@ -5,6 +5,7 @@
 //! using `SetFocus` (instant typing on open) and `EM_SETCUEBANNER` (native
 //! placeholder text with zero fake-text hacks).
 
+use std::cell::Cell;
 use std::ffi::c_void;
 use std::time::{Duration, Instant};
 
@@ -29,27 +30,30 @@ use windows::Win32::UI::HiDpi::{
     DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, MDT_EFFECTIVE_DPI,
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetKeyState, SetFocus, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT, VK_B, VK_BACK, VK_C,
+    GetKeyState, SendInput, SetFocus, TrackMouseEvent, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT,
+    KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, TME_LEAVE, TRACKMOUSEEVENT, VK_B, VK_BACK, VK_C,
     VK_CONTROL, VK_DELETE, VK_DOWN, VK_ESCAPE, VK_F, VK_H, VK_I, VK_J, VK_K, VK_L, VK_LEFT,
     VK_MENU, VK_N, VK_OEM_4, VK_OEM_COMMA, VK_P, VK_R, VK_RETURN, VK_RIGHT, VK_SHIFT, VK_TAB,
     VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    AllowSetForegroundWindow, BringWindowToTop, CreateWindowExW, DefWindowProcW, DestroyWindow,
-    DispatchMessageW, GetForegroundWindow, GetMessageW, GetParent, GetWindowLongPtrW,
-    GetWindowRect, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, IsWindow,
-    IsWindowVisible, LoadCursorW, PeekMessageW, PostMessageW, PostQuitMessage, RegisterClassExW,
-    SendMessageW, SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow,
-    TranslateMessage, ASFW_ANY, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL,
-    ES_LEFT, GWLP_USERDATA, GWLP_WNDPROC, HTCAPTION, HTCLIENT, HWND_TOPMOST, IDC_ARROW, MINMAXINFO,
-    MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW, SW_HIDE,
-    SW_SHOW, WA_INACTIVE, WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_CHAR, WM_COMMAND,
-    WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_EXITSIZEMOVE,
-    WM_GETMINMAXINFO, WM_KEYDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCACTIVATE,
+    AllowSetForegroundWindow, BringWindowToTop, CallNextHookEx, CreateWindowExW, DefWindowProcW,
+    DestroyWindow, DispatchMessageW, GetForegroundWindow, GetMessageW, GetParent,
+    GetWindowLongPtrW, GetWindowRect, GetWindowTextLengthW, GetWindowTextW,
+    GetWindowThreadProcessId, IsWindow, IsWindowVisible, LoadCursorW, PeekMessageW, PostMessageW,
+    PostQuitMessage, RegisterClassExW, SendMessageW, SetForegroundWindow, SetWindowLongPtrW,
+    SetWindowPos, SetWindowsHookExW, ShowWindow, TranslateMessage, UnhookWindowsHookEx, ASFW_ANY,
+    CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA,
+    GWLP_WNDPROC, HHOOK, HTCAPTION, HTCLIENT, HWND_TOPMOST, IDC_ARROW, MINMAXINFO, MSG,
+    MSLLHOOKSTRUCT, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER,
+    SWP_SHOWWINDOW, SW_HIDE, SW_SHOW, WA_INACTIVE, WH_MOUSE_LL, WINDOW_EX_STYLE, WINDOW_STYLE,
+    WM_ACTIVATE, WM_ACTIVATEAPP, WM_CHAR, WM_COMMAND, WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY,
+    WM_DPICHANGED, WM_ENTERSIZEMOVE, WM_ERASEBKGND, WM_EXITSIZEMOVE, WM_GETMINMAXINFO, WM_KEYDOWN,
+    WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MBUTTONDOWN, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCACTIVATE,
     WM_NCCALCSIZE, WM_NCCREATE, WM_NCHITTEST, WM_NCLBUTTONDBLCLK, WM_NCPAINT, WM_PAINT,
-    WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR, WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD,
-    WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP,
-    WS_VISIBLE,
+    WM_RBUTTONDOWN, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR, WM_SYSKEYDOWN,
+    WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST,
+    WS_POPUP, WS_TABSTOP, WS_VISIBLE,
 };
 
 use crate::event::{ActionKey, Handler, PaletteEvent, PaletteReply};
@@ -82,6 +86,70 @@ const WM_APP_QUICK_SELECT: u32 = 0x8012;
 const WM_APP_COPY_CHORD: u32 = 0x8013;
 const WM_APP_MENU_CHAR: u32 = 0x8014;
 const WM_APP_RESET_POSITION: u32 = 0x8015;
+const WM_APP_OUTSIDE_CLICK: u32 = 0x8016;
+
+thread_local! {
+    /// Low-level mouse hook installed ONLY while the palette window is visible
+    /// so clicking anywhere outside YAL (including the Desktop, Taskbar, or an
+    /// elevated window) always dismisses YAL reliably with 0% idle overhead.
+    static OUTSIDE_CLICK_HOOK: Cell<isize> = const { Cell::new(0) };
+    static OUTSIDE_CLICK_HWND: Cell<isize> = const { Cell::new(0) };
+}
+
+unsafe fn install_outside_click_hook(hwnd: HWND) {
+    OUTSIDE_CLICK_HWND.with(|slot| slot.set(hwnd.0 as isize));
+    let existing = OUTSIDE_CLICK_HOOK.with(Cell::get);
+    if existing != 0 {
+        return;
+    }
+    if let Ok(hook) = SetWindowsHookExW(WH_MOUSE_LL, Some(outside_click_mouse_proc), None, 0) {
+        OUTSIDE_CLICK_HOOK.with(|slot| slot.set(hook.0 as isize));
+    }
+}
+
+unsafe fn uninstall_outside_click_hook() {
+    let raw = OUTSIDE_CLICK_HOOK.with(|slot| slot.replace(0));
+    OUTSIDE_CLICK_HWND.with(|slot| slot.set(0));
+    if raw != 0 {
+        let _ = UnhookWindowsHookEx(HHOOK(raw as *mut c_void));
+    }
+}
+
+unsafe extern "system" fn outside_click_mouse_proc(
+    code: i32,
+    wparam: WPARAM,
+    lparam: LPARAM,
+) -> LRESULT {
+    if code >= 0 {
+        let msg = wparam.0 as u32;
+        if matches!(msg, WM_LBUTTONDOWN | WM_RBUTTONDOWN | WM_MBUTTONDOWN) {
+            let hwnd_raw = OUTSIDE_CLICK_HWND.with(Cell::get);
+            if hwnd_raw != 0 {
+                let hwnd = HWND(hwnd_raw as *mut c_void);
+                if IsWindow(Some(hwnd)).as_bool() && IsWindowVisible(hwnd).as_bool() {
+                    let info = &*(lparam.0 as *const MSLLHOOKSTRUCT);
+                    let mut rect = RECT::default();
+                    if GetWindowRect(hwnd, &mut rect).is_ok() {
+                        let pt = info.pt;
+                        let inside = pt.x >= rect.left
+                            && pt.x < rect.right
+                            && pt.y >= rect.top
+                            && pt.y < rect.bottom;
+                        if !inside {
+                            let _ = PostMessageW(
+                                Some(hwnd),
+                                WM_APP_OUTSIDE_CLICK,
+                                WPARAM(0),
+                                LPARAM(0),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    CallNextHookEx(None, code, wparam, lparam)
+}
 
 const ACTION_TAB: usize = 1;
 const ACTION_CTRL_P: usize = 2;
@@ -126,6 +194,7 @@ struct State {
     last_blur_dismiss: Option<Instant>,
     last_shown_at: Option<Instant>,
     custom_origin: Option<(i32, i32)>,
+    in_size_move: bool,
     tracking_mouse_leave: bool,
     suppress_en_change: bool,
     handler: Handler,
@@ -277,6 +346,7 @@ impl Palette {
             last_blur_dismiss: None,
             last_shown_at: None,
             custom_origin: None,
+            in_size_move: false,
             tracking_mouse_leave: false,
             suppress_en_change: false,
             handler,
@@ -656,7 +726,12 @@ unsafe extern "system" fn window_procedure(
             }
             DefWindowProcW(hwnd, message, wparam, lparam)
         }
+        WM_ENTERSIZEMOVE => {
+            (*state_ptr).in_size_move = true;
+            LRESULT(0)
+        }
         WM_EXITSIZEMOVE => {
+            (*state_ptr).in_size_move = false;
             let mut rect = RECT::default();
             if GetWindowRect(hwnd, &mut rect).is_ok() {
                 let origin = (rect.left, rect.top);
@@ -808,12 +883,20 @@ unsafe extern "system" fn window_procedure(
                 hit
             };
             if let Some(index) = clicked {
-                dispatch(state_ptr, PaletteEvent::Activated(index));
+                if (*state_ptr).model.click_selects_only {
+                    let _ = InvalidateRect(Some(hwnd), None, false);
+                    dispatch(state_ptr, PaletteEvent::SelectionChanged(index));
+                } else {
+                    dispatch(state_ptr, PaletteEvent::Activated(index));
+                }
             }
             LRESULT(0)
         }
         WM_ACTIVATE => {
-            if (wparam.0 & 0xffff) == WA_INACTIVE as usize && IsWindowVisible(hwnd).as_bool() {
+            if (wparam.0 & 0xffff) == WA_INACTIVE as usize
+                && IsWindowVisible(hwnd).as_bool()
+                && !(*state_ptr).in_size_move
+            {
                 let in_grace = (*state_ptr)
                     .last_shown_at
                     .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
@@ -821,6 +904,30 @@ unsafe extern "system" fn window_procedure(
                     let edit = (*state_ptr).edit;
                     bring_to_foreground_and_focus(hwnd, edit);
                 } else {
+                    (*state_ptr).last_blur_dismiss = Some(Instant::now());
+                    dismiss(state_ptr);
+                }
+            }
+            LRESULT(0)
+        }
+        WM_ACTIVATEAPP => {
+            if wparam.0 == 0 && IsWindowVisible(hwnd).as_bool() && !(*state_ptr).in_size_move {
+                let in_grace = (*state_ptr)
+                    .last_shown_at
+                    .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
+                if !in_grace {
+                    (*state_ptr).last_blur_dismiss = Some(Instant::now());
+                    dismiss(state_ptr);
+                }
+            }
+            LRESULT(0)
+        }
+        WM_APP_OUTSIDE_CLICK => {
+            if IsWindowVisible(hwnd).as_bool() && !(*state_ptr).in_size_move {
+                let in_grace = (*state_ptr)
+                    .last_shown_at
+                    .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
+                if !in_grace {
                     (*state_ptr).last_blur_dismiss = Some(Instant::now());
                     dismiss(state_ptr);
                 }
@@ -1075,6 +1182,7 @@ unsafe extern "system" fn window_procedure(
             LRESULT(0)
         }
         WM_DESTROY => {
+            uninstall_outside_click_hook();
             PostQuitMessage(0);
             LRESULT(0)
         }
@@ -1262,6 +1370,8 @@ unsafe extern "system" fn edit_procedure(
 
 /// First Escape clears non-empty text; Escape with an empty search box asks the
 /// app handler (`PaletteEvent::Escape`) whether to go back a screen or dismiss.
+/// When Escape closes the palette, any dragged custom position resets so the
+/// next open spawns centered on the default active monitor.
 unsafe fn handle_escape(state_ptr: *mut State) {
     let edit = (*state_ptr).edit;
     let has_text = GetWindowTextLengthW(edit) > 0;
@@ -1270,7 +1380,14 @@ unsafe fn handle_escape(state_ptr: *mut State) {
         (*state_ptr).model.query = String::new();
         dispatch(state_ptr, PaletteEvent::QueryChanged(String::new()));
     } else {
+        let hwnd = (*state_ptr).hwnd;
         dispatch(state_ptr, PaletteEvent::Escape);
+        if IsWindow(Some(hwnd)).as_bool()
+            && !IsWindowVisible(hwnd).as_bool()
+            && (*state_ptr).custom_origin.take().is_some()
+        {
+            dispatch(state_ptr, PaletteEvent::WindowMoved(None));
+        }
     }
 }
 
@@ -1340,6 +1457,7 @@ unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
     place_window_rect(hwnd, metrics, target_h, custom_origin);
     let _ = ShowWindow(hwnd, SW_SHOW);
     bring_to_foreground_and_focus(hwnd, edit);
+    install_outside_click_hook(hwnd);
 }
 
 /// Reliably steals foreground focus and places the blinking keyboard caret
@@ -1370,7 +1488,23 @@ unsafe fn bring_to_foreground_and_focus(hwnd: HWND, edit: HWND) {
         SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW,
     );
     let _ = BringWindowToTop(hwnd);
-    let _ = SetForegroundWindow(hwnd);
+    if !SetForegroundWindow(hwnd).as_bool() {
+        // Bypass Windows foreground lock cleanly with a no-op extended Alt key-up.
+        let dummy = [INPUT {
+            r#type: INPUT_KEYBOARD,
+            Anonymous: INPUT_0 {
+                ki: KEYBDINPUT {
+                    wVk: VK_MENU,
+                    wScan: 0,
+                    dwFlags: KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+                    time: 0,
+                    dwExtraInfo: 0,
+                },
+            },
+        }];
+        let _ = SendInput(&dummy, std::mem::size_of::<INPUT>() as i32);
+        let _ = SetForegroundWindow(hwnd);
+    }
     if !edit.0.is_null() && IsWindow(Some(edit)).as_bool() {
         let _ = SetFocus(Some(edit));
         let _ = SendMessageW(edit, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
@@ -1461,14 +1595,17 @@ unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
             apply_model_update(state_ptr, hwnd, edit, model);
         }
         PaletteReply::Close => {
+            uninstall_outside_click_hook();
             let _ = ShowWindow(hwnd, SW_HIDE);
         }
         PaletteReply::CloseWithHud(message) => {
             let dark = (*state_ptr).theme.appearance == Appearance::Dark;
+            uninstall_outside_click_hook();
             let _ = ShowWindow(hwnd, SW_HIDE);
             crate::hud::show_hud(message, dark);
         }
         PaletteReply::Quit => {
+            uninstall_outside_click_hook();
             let _ = DestroyWindow(hwnd);
         }
     }
@@ -1538,6 +1675,7 @@ unsafe fn apply_model_update(state_ptr: *mut State, hwnd: HWND, edit: HWND, mut 
 
 unsafe fn dismiss(state_ptr: *mut State) {
     let hwnd = (*state_ptr).hwnd;
+    uninstall_outside_click_hook();
     dispatch(state_ptr, PaletteEvent::Dismissed);
     if IsWindow(Some(hwnd)).as_bool() && IsWindowVisible(hwnd).as_bool() {
         let _ = ShowWindow(hwnd, SW_HIDE);

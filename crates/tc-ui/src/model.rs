@@ -356,6 +356,8 @@ pub struct Row {
     pub bitmap: Option<Arc<IconBitmap>>,
     /// Stable cache key for GPU `ID2D1Bitmap` reuse across repaints.
     pub icon_key: Option<String>,
+    /// True when this row is actively recording a live global hotkey shortcut.
+    pub recording: bool,
 }
 
 impl Row {
@@ -453,6 +455,9 @@ pub struct Model {
     pub primary_action: Option<String>,
     /// Render as a single compact search bar (hiding list & footer until typing or expanding).
     pub compact: bool,
+    /// When `true` (e.g. Clipboard History), single-clicking a row only selects and
+    /// previews it instead of immediately activating/pasting; `Enter` activates.
+    pub click_selects_only: bool,
 }
 
 /// Positioned section header in content-space DIPs (relative to `list_top`).

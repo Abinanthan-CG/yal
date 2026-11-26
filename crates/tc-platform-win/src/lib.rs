@@ -66,7 +66,8 @@ pub use http::https_get;
 pub use icons::{application_icon, extract_icon, shell_item_icon, IconImage};
 pub use launch::{open, open_in_terminal, recycle, reveal, run_as_admin, show_properties};
 pub use paste::{
-    copy_and_paste_async, erase_and_paste_async, paste_files_async, paste_image_async,
+    copy_and_paste_async, erase_and_paste_async, has_paste_target, paste_files_async,
+    paste_image_async,
 };
 pub use paths::is_portable;
 pub use paths::windows_paths;

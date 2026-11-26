@@ -471,20 +471,37 @@ impl Renderer {
             );
         }
 
-        // Optional header mode/filter pill on the right (e.g., "Settings", "Files · Images").
+        // Optional header mode/filter pill on the right (e.g., "Settings", "● Recording…").
         if let Some(badge) = model.header_badge.as_deref() {
             if !badge.is_empty() {
-                let badge_bg = match theme.appearance {
-                    Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x16),
-                    Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x10),
+                let is_recording = badge.contains("Recording");
+                let (badge_bg, badge_border, badge_fg) = if is_recording {
+                    match theme.appearance {
+                        Appearance::Dark => (
+                            Color::rgba(0xf9, 0x73, 0x16, 0x2e),
+                            Color::rgba(0xf9, 0x73, 0x16, 0xa8),
+                            Color::rgb(0xfb, 0x92, 0x3c),
+                        ),
+                        Appearance::Light => (
+                            Color::rgba(0xf9, 0x73, 0x16, 0x1e),
+                            Color::rgba(0xea, 0x58, 0x0c, 0x88),
+                            Color::rgb(0xc2, 0x41, 0x0c),
+                        ),
+                    }
+                } else {
+                    let bg = match theme.appearance {
+                        Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x16),
+                        Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x10),
+                    };
+                    (bg, Color::rgba(0, 0, 0, 0), theme.text)
                 };
                 self.draw_pill_right(
                     badge,
                     width - 16.0,
                     metrics.field_height / 2.0,
                     badge_bg,
-                    Color::rgba(0, 0, 0, 0),
-                    theme.text,
+                    badge_border,
+                    badge_fg,
                 );
             }
         }
@@ -733,9 +750,29 @@ impl Renderer {
 
         // Pure borderless neutral fill (Raycast Windows 2.13: no outline, no accent bar).
         if is_selected {
-            if let Some(sel) = self.brush(theme.selection) {
+            let fill = if row.recording {
+                match theme.appearance {
+                    Appearance::Dark => Color::rgba(0xf9, 0x73, 0x16, 0x1e),
+                    Appearance::Light => Color::rgba(0xf9, 0x73, 0x16, 0x14),
+                }
+            } else {
+                theme.selection
+            };
+            if let Some(sel) = self.brush(fill) {
                 unsafe {
                     self.target.FillRoundedRectangle(&row_rect, &sel);
+                }
+            }
+            if row.recording {
+                let border = match theme.appearance {
+                    Appearance::Dark => Color::rgba(0xf9, 0x73, 0x16, 0x99),
+                    Appearance::Light => Color::rgba(0xea, 0x58, 0x0c, 0x80),
+                };
+                if let Some(ring) = self.brush(border) {
+                    unsafe {
+                        self.target
+                            .DrawRoundedRectangle(&row_rect, &ring, 1.2, None);
+                    }
                 }
             }
         } else if is_hovered {
@@ -861,7 +898,29 @@ impl Renderer {
         // Right-aligned shortcut / setting value badge and/or muted type accessory.
         let mut cursor_right = right - 10.0;
         if !row.shortcut.is_empty() {
-            if row.shortcut.contains('+') {
+            if row.recording {
+                let (pill_bg, pill_border, pill_fg) = match theme.appearance {
+                    Appearance::Dark => (
+                        Color::rgba(0xf9, 0x73, 0x16, 0x30),
+                        Color::rgba(0xf9, 0x73, 0x16, 0xb0),
+                        Color::rgb(0xfb, 0x92, 0x3c),
+                    ),
+                    Appearance::Light => (
+                        Color::rgba(0xf9, 0x73, 0x16, 0x20),
+                        Color::rgba(0xea, 0x58, 0x0c, 0x90),
+                        Color::rgb(0xc2, 0x41, 0x0c),
+                    ),
+                };
+                let pill_w = self.draw_pill_right(
+                    &row.shortcut,
+                    cursor_right,
+                    top + row_height / 2.0,
+                    pill_bg,
+                    pill_border,
+                    pill_fg,
+                );
+                cursor_right -= pill_w + 10.0;
+            } else if row.shortcut.contains('+') {
                 let kc_w = self.draw_shortcut_keycaps(
                     &row.shortcut,
                     cursor_right,
@@ -951,7 +1010,15 @@ impl Renderer {
             if detail_w >= 28.0 {
                 if let Some(layout) = self.layout(&row.detail, &self.detail_format, detail_w, 20.0)
                 {
-                    if let Some(brush) = self.brush(theme.text_dim) {
+                    let detail_col = if row.recording {
+                        match theme.appearance {
+                            Appearance::Dark => Color::rgb(0xfd, 0xba, 0x74),
+                            Appearance::Light => Color::rgb(0x9a, 0x34, 0x12),
+                        }
+                    } else {
+                        theme.text_dim
+                    };
+                    if let Some(brush) = self.brush(detail_col) {
                         unsafe {
                             self.target.DrawTextLayout(
                                 Vector2 {

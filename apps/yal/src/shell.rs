@@ -264,9 +264,18 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 
     // Start the native Win32 system tray icon.
     let tray = match WindowsTray::spawn(move |action| match action {
-        TrayAction::Toggle => tc_ui::post_toggle_from_tray(handle),
-        TrayAction::Open => tc_ui::post_show(handle),
-        TrayAction::Settings => tc_ui::post_command(handle, COMMAND_OPEN_SETTINGS),
+        TrayAction::Toggle => {
+            tc_platform_win::window_control::remember_foreground();
+            tc_ui::post_toggle_from_tray(handle);
+        }
+        TrayAction::Open => {
+            tc_platform_win::window_control::remember_foreground();
+            tc_ui::post_show(handle);
+        }
+        TrayAction::Settings => {
+            tc_platform_win::window_control::remember_foreground();
+            tc_ui::post_command(handle, COMMAND_OPEN_SETTINGS);
+        }
         TrayAction::Support => {
             std::thread::spawn(|| {
                 if let Err(error) = tc_platform_win::open(tc_core::SUPPORT_URL) {

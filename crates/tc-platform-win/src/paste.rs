@@ -12,16 +12,104 @@ use std::time::Duration;
 
 use tc_platform::Clipboard;
 use windows::Win32::Foundation::HWND;
+use windows::Win32::System::Threading::{
+    OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_FORMAT, PROCESS_QUERY_LIMITED_INFORMATION,
+};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP, VK_BACK, VK_CONTROL,
     VK_SHIFT, VK_V,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    GetClassNameW, GetForegroundWindow, IsWindow, SetForegroundWindow,
+    GetClassNameW, GetForegroundWindow, GetWindowThreadProcessId, IsIconic, IsWindow,
+    IsWindowVisible, SetForegroundWindow,
 };
 
 use crate::clipboard::WindowsClipboard;
 use crate::window_control;
+
+/// Returns `true` when there is a valid, visible, non-shell target window
+/// previously focused before YAL opened that can receive a `Ctrl+V` paste.
+///
+/// Returns `false` when the user was on the Desktop, Taskbar, Start Menu,
+/// System Tray, or when the previous window was closed/minimized — letting
+/// Clipboard History fall back to an active clipboard copy instead of
+/// blindly firing `Ctrl+V` into nothing.
+pub fn has_paste_target() -> bool {
+    let Some(handle) = window_control::last_foreground() else {
+        return false;
+    };
+    let hwnd = HWND(handle as *mut c_void);
+    if hwnd.0.is_null() {
+        return false;
+    }
+    // SAFETY: `hwnd` is non-null and validated via `IsWindow` inside `is_pasteable_window`.
+    unsafe { is_pasteable_window(hwnd) }
+}
+
+/// Check whether `hwnd` is a real, visible, non-minimized application window
+/// (excluding YAL itself and non-pasteable Windows shell chrome such as
+/// Desktop, Taskbar, Start Menu, Search, and System Tray).
+unsafe fn is_pasteable_window(hwnd: HWND) -> bool {
+    if hwnd.0.is_null()
+        || !IsWindow(Some(hwnd)).as_bool()
+        || !IsWindowVisible(hwnd).as_bool()
+        || IsIconic(hwnd).as_bool()
+    {
+        return false;
+    }
+    let mut pid = 0u32;
+    GetWindowThreadProcessId(hwnd, Some(&mut pid));
+    if pid == 0 || pid == std::process::id() {
+        return false;
+    }
+
+    let mut buf = [0u16; 128];
+    let len = GetClassNameW(hwnd, &mut buf);
+    if len > 0 {
+        let class = String::from_utf16_lossy(&buf[..len as usize]);
+        if matches!(
+            class.as_str(),
+            "Progman"
+                | "WorkerW"
+                | "Shell_TrayWnd"
+                | "Shell_SecondaryTrayWnd"
+                | "NotifyIconOverflowWindow"
+                | "TopLevelWindowForOverflowXamlIsland"
+                | "Shell_InputSwitchTopLevelWindow"
+                | "TaskListThumbnailWnd"
+                | "TaskSwitcherWnd"
+                | "MultitaskingViewFrame"
+                | "TrayNotifyWnd"
+        ) {
+            return false;
+        }
+        if class == "Windows.UI.Core.CoreWindow" {
+            if let Ok(proc_handle) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) {
+                let mut pbuf = [0u16; 512];
+                let mut plen = pbuf.len() as u32;
+                let ok = QueryFullProcessImageNameW(
+                    proc_handle,
+                    PROCESS_NAME_FORMAT(0),
+                    windows::core::PWSTR(pbuf.as_mut_ptr()),
+                    &mut plen,
+                )
+                .is_ok();
+                let _ = windows::Win32::Foundation::CloseHandle(proc_handle);
+                if ok && plen > 0 {
+                    let exe = String::from_utf16_lossy(&pbuf[..plen as usize]).to_ascii_lowercase();
+                    if exe.ends_with("startmenuexperiencehost.exe")
+                        || exe.ends_with("searchhost.exe")
+                        || exe.ends_with("searchapp.exe")
+                        || exe.ends_with("shellexperiencehost.exe")
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    true
+}
 
 /// Write `text` to the clipboard immediately, then asynchronously restore the
 /// previous foreground window and send `Ctrl+V` (or `Ctrl+Shift+V` for
@@ -39,17 +127,17 @@ pub fn copy_and_paste_async(text: String) -> Result<(), String> {
         if hwnd.0.is_null() {
             return;
         }
-        // SAFETY: `hwnd` is non-null and validated with `IsWindow` before calling `SetForegroundWindow`.
+        // SAFETY: `hwnd` is non-null and validated with `is_pasteable_window` before restoring focus.
         unsafe {
-            if !IsWindow(Some(hwnd)).as_bool() {
+            if !is_pasteable_window(hwnd) {
                 return;
             }
             let _ = SetForegroundWindow(hwnd);
         }
         std::thread::sleep(Duration::from_millis(35));
-        // SAFETY: `hwnd` is re-validated with `IsWindow` and verified as the active foreground window.
+        // SAFETY: `hwnd` is re-validated and verified as the active foreground window.
         unsafe {
-            if IsWindow(Some(hwnd)).as_bool() && GetForegroundWindow() == hwnd {
+            if is_pasteable_window(hwnd) && GetForegroundWindow() == hwnd {
                 let use_ctrl_shift_v = is_terminal_window(hwnd);
                 send_paste(use_ctrl_shift_v);
             }
@@ -108,17 +196,17 @@ pub fn paste_image_async(width: u32, height: u32, rgba: Vec<u8>) -> Result<(), S
         if hwnd.0.is_null() {
             return;
         }
-        // SAFETY: `hwnd` is non-null and validated with `IsWindow` before calling `SetForegroundWindow`.
+        // SAFETY: `hwnd` is non-null and validated with `is_pasteable_window` before restoring focus.
         unsafe {
-            if !IsWindow(Some(hwnd)).as_bool() {
+            if !is_pasteable_window(hwnd) {
                 return;
             }
             let _ = SetForegroundWindow(hwnd);
         }
         std::thread::sleep(Duration::from_millis(35));
-        // SAFETY: `hwnd` is re-validated with `IsWindow` and verified as the active foreground window.
+        // SAFETY: `hwnd` is re-validated and verified as the active foreground window.
         unsafe {
-            if IsWindow(Some(hwnd)).as_bool() && GetForegroundWindow() == hwnd {
+            if is_pasteable_window(hwnd) && GetForegroundWindow() == hwnd {
                 send_paste(false);
             }
         }
@@ -142,17 +230,17 @@ pub fn paste_files_async(paths: Vec<String>) -> Result<(), String> {
         if hwnd.0.is_null() {
             return;
         }
-        // SAFETY: `hwnd` is non-null and validated with `IsWindow` before calling `SetForegroundWindow`.
+        // SAFETY: `hwnd` is non-null and validated with `is_pasteable_window` before restoring focus.
         unsafe {
-            if !IsWindow(Some(hwnd)).as_bool() {
+            if !is_pasteable_window(hwnd) {
                 return;
             }
             let _ = SetForegroundWindow(hwnd);
         }
         std::thread::sleep(Duration::from_millis(35));
-        // SAFETY: `hwnd` is re-validated with `IsWindow` and verified as the active foreground window.
+        // SAFETY: `hwnd` is re-validated and verified as the active foreground window.
         unsafe {
-            if IsWindow(Some(hwnd)).as_bool() && GetForegroundWindow() == hwnd {
+            if is_pasteable_window(hwnd) && GetForegroundWindow() == hwnd {
                 send_paste(false);
             }
         }

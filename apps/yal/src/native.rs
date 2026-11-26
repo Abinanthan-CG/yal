@@ -79,7 +79,7 @@ pub const KEY_WINDOW_MANAGEMENT_ENABLED: &str = "windowManagement.enabled";
 pub const KEY_POP_TO_ROOT_SECS: &str = "palette.popToRootSecs";
 
 /// Header badge displayed while recording a global hotkey.
-const RECORDING_HOTKEY_BADGE: &str = "Recording…";
+const RECORDING_HOTKEY_BADGE: &str = "● Recording…";
 
 /// Maximum number of decoded clipboard image thumbnails cached in memory.
 const CLIPBOARD_THUMB_CACHE_CAPACITY: usize = 48;
@@ -107,8 +107,8 @@ pub enum PopToRootPolicy {
 }
 
 impl PopToRootPolicy {
-    /// Default Raycast-style timeout: 1 minute.
-    pub const DEFAULT: PopToRootPolicy = PopToRootPolicy::AfterSecs(60);
+    /// Default reset timeout: return immediately to Root Search when reopened after closing.
+    pub const DEFAULT: PopToRootPolicy = PopToRootPolicy::Immediately;
 
     /// Parse stored value from `settings.json` (defaults to 1 minute).
     pub fn parse(raw: Option<&str>) -> Self {
@@ -451,6 +451,11 @@ fn lock_or_recover<T>(lock: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
 fn apply_recording_overlay(model: &mut Model, shown: &Shown) {
     if shown.recording_hotkey.is_some() {
         model.header_badge = Some(RECORDING_HOTKEY_BADGE.to_string());
+        if let Some(row) = model.rows.get_mut(model.selected) {
+            row.recording = true;
+            row.shortcut = RECORDING_HOTKEY_BADGE.to_string();
+            row.detail = "Press any key combination now · Esc to cancel".to_string();
+        }
     }
 }
 
@@ -491,7 +496,7 @@ fn build_clipboard_screen_model(
             ItemKind::Image => {}
         }
     }
-    clipboard_model(
+    let mut model = clipboard_model(
         query,
         items,
         filter,
@@ -500,7 +505,17 @@ fn build_clipboard_screen_model(
         show_detail,
         |item, load| shown.lookup_clipboard_thumb(features, item, load),
         |target| preloaded_icons.get(target).cloned(),
-    )
+    );
+    let primary = if tc_platform_win::has_paste_target() {
+        "Paste"
+    } else {
+        "Copy"
+    };
+    model.primary_action = Some(primary.to_string());
+    if let Some(first_hint) = model.footer_hints.first_mut() {
+        first_hint.1 = primary.to_string();
+    }
+    model
 }
 
 fn start_hotkey_capture(
@@ -553,13 +568,16 @@ fn execute_clipboard_item(
     close_with_hud: &dyn Fn(String) -> PaletteReply,
 ) -> PaletteReply {
     ctx.features.promote_clipboard_item(item);
+    // Only inject Ctrl+V if there is an actual visible, pasteable target app;
+    // otherwise keep it as an active copy on the system clipboard.
+    let should_paste = paste && tc_platform_win::has_paste_target();
     match item.kind {
         ItemKind::Image => {
             let Some((w, h, rgba)) = ctx.features.load_clipboard_image_rgba(item) else {
                 return close_with_hud("Image unavailable".to_string());
             };
             ctx.hotkeys.suppress_clipboard_for_ms(700);
-            if paste {
+            if should_paste {
                 let _ = tc_platform_win::paste_image_async(w, h, rgba);
                 close_with_hud("Pasted Image".to_string())
             } else {
@@ -574,7 +592,7 @@ fn execute_clipboard_item(
             }
             let count = paths.len();
             ctx.hotkeys.suppress_clipboard_for_ms(700);
-            if paste {
+            if should_paste {
                 let _ = tc_platform_win::paste_files_async(paths);
                 if count == 1 {
                     close_with_hud("Pasted File".to_string())
@@ -595,7 +613,7 @@ fn execute_clipboard_item(
                 return PaletteReply::Keep;
             };
             ctx.hotkeys.suppress_clipboard_for_ms(700);
-            if paste {
+            if should_paste {
                 let _ = tc_platform_win::copy_and_paste_async(text);
                 close_with_hud("Pasted".to_string())
             } else {
@@ -1454,6 +1472,7 @@ fn handle_escape_or_back(
     match shown.mode.clone() {
         Mode::Launcher => {
             if close_at_root {
+                shown.visible = false;
                 shown.last_dismissed_at = Some(Instant::now());
                 close_reply()
             } else {
@@ -2184,6 +2203,7 @@ fn handle_activate(
             };
             let key = setting.key.clone();
             let label = setting.label.clone();
+            shown.selected = index;
             if key == KEY_RECORD_LAUNCHER_HOTKEY {
                 return start_hotkey_capture(
                     ctx,
@@ -3421,6 +3441,7 @@ fn handle_action_menu_choice(
                 return PaletteReply::Keep;
             };
             let mut shown = lock_shown(shown_lock);
+            shown.selected = selected;
             let Some((entry_id, title)) = shortcut_target_for_current(&shown, selected) else {
                 return PaletteReply::Keep;
             };
@@ -5134,8 +5155,8 @@ mod tests {
 
     #[test]
     fn pop_to_root_policy_cycles_and_evaluates_timer_cleanly() {
-        assert_eq!(PopToRootPolicy::parse(None), PopToRootPolicy::AfterSecs(60));
-        assert_eq!(PopToRootPolicy::parse(None).label(), "1 minute");
+        assert_eq!(PopToRootPolicy::parse(None), PopToRootPolicy::Immediately);
+        assert_eq!(PopToRootPolicy::parse(None).label(), "Immediately (0s)");
 
         let mut p = PopToRootPolicy::Immediately;
         p = p.next();

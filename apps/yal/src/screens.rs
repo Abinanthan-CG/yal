@@ -555,6 +555,7 @@ pub fn clipboard_model(
         back_button: true,
         detail,
         primary_action: Some("Paste".to_string()),
+        click_selects_only: true,
         ..Model::default()
     }
 }
