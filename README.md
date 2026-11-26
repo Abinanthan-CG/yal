@@ -117,7 +117,7 @@ Get-FileHash .\yal-setup-1.0.1-x64.exe -Algorithm SHA256
 ### WinGet manifest
 
 Validated multi-file WinGet manifests (`Abinanthan-CG.YAL`, schema `1.12.0`) live under
-[`packaging/winget/manifests/a/Abinanthan-CG/YAL/1.0.0/`](packaging/winget/manifests/a/Abinanthan-CG/YAL/1.0.0/)
+[`packaging/winget/manifests/a/Abinanthan-CG/YAL/1.0.1/`](packaging/winget/manifests/a/Abinanthan-CG/YAL/1.0.1/)
 for local manifest testing (`winget install --manifest ...`) and submission to `microsoft/winget-pkgs`.
 
 ---
