@@ -272,8 +272,9 @@ fn write_packaging_manifests(
     let installer_x64 = digest_of(&format!("yal-setup-{version}-x64.exe"));
     let installer_arm64 = digest_of(&format!("yal-setup-{version}-arm64.exe"));
     let portable_x64 = digest_of(&format!("yal-{version}-x64-portable.zip"));
-    let (Some(installer_x64), Some(installer_arm64), Some(portable_x64)) =
-        (installer_x64, installer_arm64, portable_x64)
+    let portable_arm64 = digest_of(&format!("yal-{version}-arm64-portable.zip"));
+    let (Some(installer_x64), Some(installer_arm64), Some(portable_x64), Some(portable_arm64)) =
+        (installer_x64, installer_arm64, portable_x64, portable_arm64)
     else {
         // A single architecture was built, so there is nothing complete to
         // write. The release workflow builds both.
@@ -284,15 +285,36 @@ fn write_packaging_manifests(
         ("{{VERSION}}", version.to_string()),
         ("{{REPOSITORY}}", tc_core::REPOSITORY.to_string()),
         ("{{RELEASE_DATE}}", release_date()),
-        ("{{INSTALLER_SHA256_X64}}", installer_x64),
-        ("{{INSTALLER_SHA256_ARM64}}", installer_arm64),
+        ("{{INSTALLER_SHA256_X64}}", installer_x64.clone()),
+        ("{{INSTALLER_SHA256_ARM64}}", installer_arm64.clone()),
+        (
+            "{{INSTALLER_SHA256_X64_UPPER}}",
+            installer_x64.to_ascii_uppercase(),
+        ),
+        (
+            "{{INSTALLER_SHA256_ARM64_UPPER}}",
+            installer_arm64.to_ascii_uppercase(),
+        ),
         ("{{PORTABLE_SHA256_X64}}", portable_x64),
+        ("{{PORTABLE_SHA256_ARM64}}", portable_arm64),
     ];
 
     let out_dir = dist_dir.join("packaging");
+    let winget_dir = format!("winget/manifests/a/Abinanthan-CG/YAL/{version}");
     for (template, relative) in [
-        ("packaging/winget/YAL.YAML", "winget/YAL.YAML"),
-        ("packaging/scoop/yal.json", "scoop/yal.json"),
+        (
+            "packaging/winget/templates/Abinanthan-CG.YAL.yaml",
+            format!("{winget_dir}/Abinanthan-CG.YAL.yaml"),
+        ),
+        (
+            "packaging/winget/templates/Abinanthan-CG.YAL.installer.yaml",
+            format!("{winget_dir}/Abinanthan-CG.YAL.installer.yaml"),
+        ),
+        (
+            "packaging/winget/templates/Abinanthan-CG.YAL.locale.en-US.yaml",
+            format!("{winget_dir}/Abinanthan-CG.YAL.locale.en-US.yaml"),
+        ),
+        ("packaging/scoop/yal.json", "scoop/yal.json".to_string()),
     ] {
         let source = root.join(template);
         let text = std::fs::read_to_string(&source)

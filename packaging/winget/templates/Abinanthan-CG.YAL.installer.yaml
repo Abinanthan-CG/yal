@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+
+PackageIdentifier: Abinanthan-CG.YAL
+PackageVersion: {{VERSION}}
+InstallerLocale: en-US
+Platform:
+- Windows.Desktop
+MinimumOSVersion: 10.0.17763.0
+InstallerType: nullsoft
+Scope: user
+InstallModes:
+- interactive
+- silent
+UpgradeBehavior: install
+Protocols:
+- tinycast
+ReleaseDate: {{RELEASE_DATE}}
+AppsAndFeaturesEntries:
+- DisplayName: YAL
+  Publisher: YAL
+  InstallerType: nullsoft
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-setup-{{VERSION}}-x64.exe
+  InstallerSha256: {{INSTALLER_SHA256_X64_UPPER}}
+- Architecture: arm64
+  InstallerUrl: https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-setup-{{VERSION}}-arm64.exe
+  InstallerSha256: {{INSTALLER_SHA256_ARM64_UPPER}}
+ManifestType: installer
+ManifestVersion: 1.12.0

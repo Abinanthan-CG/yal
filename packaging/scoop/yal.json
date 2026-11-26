@@ -1,19 +1,39 @@
 {
     "version": "{{VERSION}}",
-    "description": "YAL — a fast, pure-Rust Win32 + Direct2D keyboard launcher for Windows",
+    "description": "YAL — a fast, pure-Rust Win32 + Direct2D keyboard launcher for Windows 10 and 11",
     "homepage": "https://github.com/{{REPOSITORY}}",
     "license": "AGPL-3.0-only",
-    "checkver": {
-        "url": "https://github.com/{{REPOSITORY}}/releases/latest",
-        "regex": "releases/download/v(?<version>\\d+\\.\\d+\\.\\d+)"
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-{{VERSION}}-x64-portable.zip",
+            "hash": "{{PORTABLE_SHA256_X64}}"
+        },
+        "arm64": {
+            "url": "https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-{{VERSION}}-arm64-portable.zip",
+            "hash": "{{PORTABLE_SHA256_ARM64}}"
+        }
     },
-    "bin": [
-        "yal"
+    "bin": "yal.exe",
+    "shortcuts": [
+        [
+            "yal.exe",
+            "YAL"
+        ]
     ],
-    "url": "https://github.com/{{REPOSITORY}}/releases/download/v{{VERSION}}/yal-{{VERSION}}-x64-portable.zip",
-    "hash": "{{PORTABLE_SHA256_X64}}",
-    "home": "yal-{{VERSION}}-x64-portable",
-    "env_add_path": [
-        [".", "."]
-    ]
+    "checkver": {
+        "github": "https://github.com/{{REPOSITORY}}"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/{{REPOSITORY}}/releases/download/v$version/yal-$version-x64-portable.zip"
+            },
+            "arm64": {
+                "url": "https://github.com/{{REPOSITORY}}/releases/download/v$version/yal-$version-arm64-portable.zip"
+            }
+        },
+        "hash": {
+            "url": "$baseurl/SHA256SUMS.txt"
+        }
+    }
 }

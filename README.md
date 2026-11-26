@@ -9,6 +9,17 @@
   No Electron. No WebView2. No Node runtime. Single native binary.
 </p>
 
+<p align="center">
+  <a href="https://github.com/Abinanthan-CG/yal/releases/latest"><img src="https://img.shields.io/github/v/release/Abinanthan-CG/yal?style=flat-square&color=2563eb" alt="Latest Release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Abinanthan-CG/yal?style=flat-square" alt="License: AGPL-3.0-only" /></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011%20(x64%20%26%20ARM64)-0078D4?style=flat-square" alt="Windows 10 and 11 (x64 and ARM64)" />
+  <img src="https://img.shields.io/badge/Built%20with-Rust%20%2B%20Direct2D-dea584?style=flat-square" alt="Built with Rust and Direct2D" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/launcher.png" width="760" alt="YAL keyboard launcher showing Quicklinks with inline Tab arguments and built-in Commands" />
+</p>
+
 ---
 
 **YAL** (*Yet Another Launcher*) is a fast, lightweight native Windows keyboard launcher
@@ -26,6 +37,33 @@ Ctrl + K          Open contextual Action Panel for any item
 Ctrl + I          Toggle Master-Detail info & preview pane
 Tab / Shift+Tab   Fill inline Quicklink arguments or drill into folders
 ```
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/screenshots/calculator.png" alt="Live Calculator and Currency Converter hero card" /><br/>
+      <sub><strong>Swiss-Army Calculator</strong> — live currency, unit, date &amp; expression hero cards</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/screenshots/emoji.png" alt="2D DirectWrite Color Emoji Picker" /><br/>
+      <sub><strong>2D Color Emoji Picker</strong> — hardware-accelerated DirectWrite color emoji grid</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="assets/screenshots/window-management.png" alt="Window Management commands" /><br/>
+      <sub><strong>Window Management</strong> — 40 native snap, tile, center &amp; display-move commands</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="assets/screenshots/launcher.png" alt="Launcher Quicklinks and Commands" /><br/>
+      <sub><strong>Quicklinks &amp; Commands</strong> — inline <code>Tab</code> arguments, aliases &amp; frecency ranking</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -57,16 +95,30 @@ Download `yal-setup-1.0.0-x64.exe` (or `-arm64.exe`) from the
 - Registers the `tinycast://` link protocol for your user account only.
 - Cleanly uninstallable from *Settings → Apps → Installed apps* while preserving your data in `%APPDATA%\yal` unless you choose to remove it.
 
+### Scoop
+
+This repository serves directly as a Scoop bucket (supports both `x64` and `arm64`):
+
+```powershell
+scoop bucket add yal https://github.com/Abinanthan-CG/yal
+scoop install yal/yal
+```
+
 ### Portable build
 
-Download `yal-1.0.0-x64-portable.zip`, extract it anywhere, and run `yal.exe`.
-Portable builds store all data in a `portable` folder beside `yal.exe`.
+Download `yal-1.0.0-x64-portable.zip` (or `-arm64-portable.zip`), extract it anywhere, and run `yal.exe`.
 
 Verify any release download against `SHA256SUMS.txt`:
 
 ```powershell
 Get-FileHash .\yal-setup-1.0.0-x64.exe -Algorithm SHA256
 ```
+
+### WinGet manifest
+
+Validated multi-file WinGet manifests (`Abinanthan-CG.YAL`, schema `1.12.0`) live under
+[`packaging/winget/manifests/a/Abinanthan-CG/YAL/1.0.0/`](packaging/winget/manifests/a/Abinanthan-CG/YAL/1.0.0/)
+for local manifest testing (`winget install --manifest ...`) and submission to `microsoft/winget-pkgs`.
 
 ---
 
@@ -113,9 +165,10 @@ crates/
 apps/
   yal/              single-binary Windows launcher (palette, tray, hotkeys, single instance)
   yal-ui-probe/     standalone Direct2D layout & render probe
-assets/             official Launch Ring SVG (`yal.svg`, `yal-mark.svg`), PNG & multi-res ICO
+assets/             official Launch Ring SVG (`yal.svg`, `yal-mark.svg`), PNG, ICO & screenshots
+bucket/             live Scoop bucket manifest (`yal.json`)
 installer/          per-user NSIS installer script (`yal.nsi`)
-packaging/          WinGet and Scoop manifest templates
+packaging/          WinGet multi-file manifests & templates, Scoop manifest template
 xtask/              release packaging (`dist`) and self-test orchestration
 ```
 

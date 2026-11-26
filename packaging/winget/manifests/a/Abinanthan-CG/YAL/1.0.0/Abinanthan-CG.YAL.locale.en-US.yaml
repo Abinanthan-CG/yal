@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.12.0.schema.json
+
+PackageIdentifier: Abinanthan-CG.YAL
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: Abinanthan-CG
+PublisherUrl: https://github.com/Abinanthan-CG
+PublisherSupportUrl: https://github.com/Abinanthan-CG/yal/issues
+Author: Abinanthan-CG
+PackageName: YAL
+PackageUrl: https://github.com/Abinanthan-CG/yal
+License: AGPL-3.0-only
+LicenseUrl: https://github.com/Abinanthan-CG/yal/blob/main/LICENSE
+Copyright: Copyright (c) 2026 Abinanthan-CG and YAL contributors
+ShortDescription: A fast, pure-Rust Win32 + Direct2D keyboard launcher for Windows 10 and 11.
+Description: |-
+  YAL (Yet Another Launcher) is a fast, lightweight native Windows keyboard launcher
+  built in pure Rust on Win32, Direct2D, DirectWrite, and SQLite. Search apps, local files,
+  clipboard history, snippets, emojis, open windows, quicklinks, quick notes, and run
+  live calculations, unit conversions, and currency conversions without Electron or WebView2.
+Moniker: yal
+Tags:
+- calculator
+- clipboard
+- command-palette
+- launcher
+- productivity
+- quick-launcher
+- rust
+- snippets
+- window-manager
+ReleaseNotesUrl: https://github.com/Abinanthan-CG/yal/releases/tag/v1.0.0
+ManifestType: defaultLocale
+ManifestVersion: 1.12.0
