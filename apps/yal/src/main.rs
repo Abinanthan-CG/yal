@@ -1,3 +1,5 @@
+#![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
+
 //! YAL — Yet Another Launcher, a fast pure-Rust Win32 + Direct2D keyboard launcher for Windows.
 //!
 //! Pure Rust + Win32 + Direct2D: wires the platform traits to real Windows
@@ -24,13 +26,16 @@ fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
 
     if arguments.iter().any(|a| a == "--self-test") {
+        tc_platform_win::attach_parent_console_if_needed();
         return selftest::run();
     }
     if arguments.iter().any(|a| a == "--version") {
+        tc_platform_win::attach_parent_console_if_needed();
         println!("yal {}", env!("CARGO_PKG_VERSION"));
         return ExitCode::SUCCESS;
     }
     if arguments.iter().any(|a| a == "--help" || a == "-h") {
+        tc_platform_win::attach_parent_console_if_needed();
         println!("{}", shell::usage());
         return ExitCode::SUCCESS;
     }

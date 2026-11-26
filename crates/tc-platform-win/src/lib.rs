@@ -30,6 +30,33 @@ pub use file_watcher::FileWatcher;
 pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()
 }
+
+/// Attach to the parent process's console when a GUI-subsystem binary is
+/// invoked with CLI flags (`--version`, `--help`, `--self-test`) from an
+/// interactive terminal without redirected stdout.
+///
+/// Does nothing when stdout is already a valid pipe/file handle (such as CI
+/// runners or PowerShell capture) or when launched from Explorer without a
+/// parent console.
+pub fn attach_parent_console_if_needed() {
+    use ::windows::Win32::Foundation::INVALID_HANDLE_VALUE;
+    use ::windows::Win32::Storage::FileSystem::{GetFileType, FILE_TYPE_UNKNOWN};
+    use ::windows::Win32::System::Console::{
+        AttachConsole, GetStdHandle, ATTACH_PARENT_PROCESS, STD_OUTPUT_HANDLE,
+    };
+
+    unsafe {
+        let needs_attach = match GetStdHandle(STD_OUTPUT_HANDLE) {
+            Ok(handle) if !handle.is_invalid() && handle != INVALID_HANDLE_VALUE => {
+                GetFileType(handle) == FILE_TYPE_UNKNOWN
+            }
+            _ => true,
+        };
+        if needs_attach {
+            let _ = AttachConsole(ATTACH_PARENT_PROCESS);
+        }
+    }
+}
 pub use hotkey::{
     check_conflict, is_chord_available_in_os, CaptureOutcome, ConflictKind, GlobalHotkeyService,
     HookDecision, HotkeyBinding, HotkeyCapture, HotkeyMatcher, HotkeyModifiers, HotkeyTrigger,
