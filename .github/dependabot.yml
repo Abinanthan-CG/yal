@@ -5,6 +5,12 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 2
+    ignore:
+      # `windows-numerics` must stay matched to `windows = "0.62"`.
+      - dependency-name: "windows-numerics"
+      # Breaking major version bumps (e.g. jiff 1.x, sha2 0.11) are handled intentionally.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       cargo-deps:
         patterns:
