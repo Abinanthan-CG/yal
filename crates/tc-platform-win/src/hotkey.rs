@@ -583,6 +583,24 @@ impl HotkeyMatcher {
         }
     }
 
+    /// Reconcile a missed `Alt` key-down when Windows delivers `WM_SYSKEYDOWN`
+    /// for a non-modifier key (for example after returning from an elevated
+    /// window, UAC prompt, or Alt+Tab switcher where `WH_KEYBOARD_LL` did not
+    /// see the initial `Alt` press).
+    pub fn sync_missed_alt_down(&mut self, vk: u32, is_vk_physically_down: impl Fn(u32) -> bool) {
+        if classify_modifier_vk(vk).is_some() || self.modifiers.logical().alt {
+            return;
+        }
+        let lalt = is_vk_physically_down(VK_LMENU);
+        let ralt = is_vk_physically_down(VK_RMENU);
+        if lalt || ralt {
+            self.modifiers.lalt = lalt;
+            self.modifiers.ralt = ralt;
+        } else {
+            self.modifiers.lalt = true;
+        }
+    }
+
     /// Process one keyboard event and decide whether to trigger and/or swallow.
     pub fn feed(&mut self, event: KeyEvent) -> HookDecision {
         if event.injected {
@@ -1523,7 +1541,10 @@ impl Drop for GlobalHotkeyService {
 
 enum HookAction {
     Pass,
-    Swallow { mask_menu: bool },
+    Swallow {
+        mask_menu: bool,
+        dispatch_hotkey: Option<(mpsc::Sender<DispatchEvent>, String)>,
+    },
 }
 
 unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
@@ -1561,7 +1582,10 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                 }
                                 match active_capture.state.feed(event) {
                                     CaptureOutcome::PendingSwallow => {
-                                        capture_action = HookAction::Swallow { mask_menu: false };
+                                        capture_action = HookAction::Swallow {
+                                            mask_menu: false,
+                                            dispatch_hotkey: None,
+                                        };
                                     }
                                     CaptureOutcome::PendingPass => {
                                         capture_action = HookAction::Pass;
@@ -1587,7 +1611,10 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                             ));
                                         }
                                         capture_action = if is_chord {
-                                            HookAction::Swallow { mask_menu }
+                                            HookAction::Swallow {
+                                                mask_menu,
+                                                dispatch_hotkey: None,
+                                            }
                                         } else {
                                             HookAction::Pass
                                         };
@@ -1608,7 +1635,10 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                                 finished.on_captured,
                                             ));
                                         }
-                                        capture_action = HookAction::Swallow { mask_menu: false };
+                                        capture_action = HookAction::Swallow {
+                                            mask_menu: false,
+                                            dispatch_hotkey: None,
+                                        };
                                     }
                                 }
                             }
@@ -1624,15 +1654,17 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                     // SAFETY: `GetAsyncKeyState` accepts any virtual-key code.
                                     (GetAsyncKeyState(vk as i32) as u16 & 0x8000) != 0
                                 });
+                                if msg == WM_SYSKEYDOWN && !event.injected {
+                                    matcher.sync_missed_alt_down(event.vk, |vk| {
+                                        // SAFETY: `GetAsyncKeyState` accepts any virtual-key code.
+                                        (GetAsyncKeyState(vk as i32) as u16 & 0x8000) != 0
+                                    });
+                                }
                             }
                             let effective_mods = matcher.effective_modifiers();
                             let decision = matcher.feed(event);
-                            match &decision {
-                                HookDecision::TriggerSwallow { id, .. }
-                                | HookDecision::TriggerPass(id) => {
-                                    let _ = active.tx.send(DispatchEvent::Hotkey(id.clone()));
-                                }
-                                HookDecision::Pass | HookDecision::Swallow => {}
+                            if let HookDecision::TriggerPass(id) = &decision {
+                                let _ = active.tx.send(DispatchEvent::Hotkey(id.clone()));
                             }
                             if matches!(decision, HookDecision::Pass) && !event.injected {
                                 if let Ok(mut snippets) = active.snippets.try_lock() {
@@ -1655,10 +1687,16 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
                                 }
                             }
                             match decision {
-                                HookDecision::TriggerSwallow { mask_menu, .. } => {
-                                    HookAction::Swallow { mask_menu }
+                                HookDecision::TriggerSwallow { id, mask_menu } => {
+                                    HookAction::Swallow {
+                                        mask_menu,
+                                        dispatch_hotkey: Some((active.tx.clone(), id)),
+                                    }
                                 }
-                                HookDecision::Swallow => HookAction::Swallow { mask_menu: false },
+                                HookDecision::Swallow => HookAction::Swallow {
+                                    mask_menu: false,
+                                    dispatch_hotkey: None,
+                                },
                                 HookDecision::Pass | HookDecision::TriggerPass(_) => {
                                     HookAction::Pass
                                 }
@@ -1675,10 +1713,16 @@ unsafe extern "system" fn service_hook_proc(code: i32, wparam: WPARAM, lparam: L
             };
 
             match action {
-                HookAction::Swallow { mask_menu } => {
+                HookAction::Swallow {
+                    mask_menu,
+                    dispatch_hotkey,
+                } => {
                     if mask_menu {
                         // SAFETY: Injects a synthetic `VK_MENU_MASK` down/up pair via `SendInput`.
                         suppress_modifier_menu_activation();
+                    }
+                    if let Some((tx, id)) = dispatch_hotkey {
+                        let _ = tx.send(DispatchEvent::Hotkey(id));
                     }
                     return LRESULT(1);
                 }
@@ -2280,5 +2324,24 @@ mod tests {
             exp.feed_key(VK_SPACE, none, true),
             Some(("".to_string() + "!sig", 5))
         );
+    }
+
+    #[test]
+    fn sync_missed_alt_down_recovers_alt_chord_on_syskeydown() {
+        let alt_v = HotkeyTrigger::parse("Alt+V").expect("Alt+V");
+        let mut matcher = HotkeyMatcher::new(vec![HotkeyBinding::new("clip", alt_v)]);
+
+        // Simulate missing the initial `Alt` key-down (e.g. after returning from an
+        // elevated window or Alt+Tab), then Windows delivers `WM_SYSKEYDOWN` for `V`.
+        matcher.sync_missed_alt_down(0x56, |vk| vk == VK_LMENU);
+        assert_eq!(
+            matcher.feed(down(0x56, 500)),
+            HookDecision::TriggerSwallow {
+                id: "clip".to_string(),
+                mask_menu: true,
+            }
+        );
+        assert_eq!(matcher.feed(up(0x56, 520)), HookDecision::Swallow);
+        assert_eq!(matcher.feed(up(VK_LMENU, 540)), HookDecision::Pass);
     }
 }

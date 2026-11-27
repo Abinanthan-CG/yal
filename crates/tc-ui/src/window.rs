@@ -21,7 +21,9 @@ use windows::Win32::Graphics::Gdi::{
     HBRUSH, HDC, HFONT, MONITORINFO, MONITOR_DEFAULTTONEAREST, MONITOR_DEFAULTTONULL, PAINTSTRUCT,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
-use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
+use windows::Win32::System::Threading::{
+    AttachThreadInput, GetCurrentProcessId, GetCurrentThreadId,
+};
 use windows::Win32::UI::Controls::{
     InitCommonControlsEx, ICC_STANDARD_CLASSES, INITCOMMONCONTROLSEX, WM_MOUSELEAVE,
 };
@@ -30,30 +32,30 @@ use windows::Win32::UI::HiDpi::{
     DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, MDT_EFFECTIVE_DPI,
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetKeyState, SendInput, SetFocus, TrackMouseEvent, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT,
-    KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, TME_LEAVE, TRACKMOUSEEVENT, VK_B, VK_BACK, VK_C,
-    VK_CONTROL, VK_DELETE, VK_DOWN, VK_ESCAPE, VK_F, VK_H, VK_I, VK_J, VK_K, VK_L, VK_LEFT,
-    VK_MENU, VK_N, VK_OEM_4, VK_OEM_COMMA, VK_P, VK_R, VK_RETURN, VK_RIGHT, VK_SHIFT, VK_TAB,
-    VK_UP,
+    GetAsyncKeyState, GetKeyState, SendInput, SetFocus, TrackMouseEvent, INPUT, INPUT_0,
+    INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, TME_LEAVE, TRACKMOUSEEVENT,
+    VK_B, VK_BACK, VK_C, VK_CONTROL, VK_D, VK_DOWN, VK_ESCAPE, VK_F, VK_H, VK_I, VK_J, VK_K, VK_L,
+    VK_LEFT, VK_MENU, VK_N, VK_OEM_4, VK_OEM_COMMA, VK_P, VK_R, VK_RETURN, VK_RIGHT, VK_SHIFT,
+    VK_TAB, VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     AllowSetForegroundWindow, BringWindowToTop, CallNextHookEx, CreateWindowExW, DefWindowProcW,
     DestroyWindow, DispatchMessageW, GetForegroundWindow, GetMessageW, GetParent,
     GetWindowLongPtrW, GetWindowRect, GetWindowTextLengthW, GetWindowTextW,
-    GetWindowThreadProcessId, IsWindow, IsWindowVisible, LoadCursorW, PeekMessageW, PostMessageW,
-    PostQuitMessage, RegisterClassExW, SendMessageW, SetForegroundWindow, SetWindowLongPtrW,
-    SetWindowPos, SetWindowsHookExW, ShowWindow, TranslateMessage, UnhookWindowsHookEx, ASFW_ANY,
-    CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE, ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA,
-    GWLP_WNDPROC, HHOOK, HTCAPTION, HTCLIENT, HWND_TOPMOST, IDC_ARROW, MINMAXINFO, MSG,
-    MSLLHOOKSTRUCT, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER,
-    SWP_SHOWWINDOW, SW_HIDE, SW_SHOW, WA_INACTIVE, WH_MOUSE_LL, WINDOW_EX_STYLE, WINDOW_STYLE,
-    WM_ACTIVATE, WM_ACTIVATEAPP, WM_CHAR, WM_COMMAND, WM_CREATE, WM_CTLCOLOREDIT, WM_DESTROY,
-    WM_DPICHANGED, WM_ENTERSIZEMOVE, WM_ERASEBKGND, WM_EXITSIZEMOVE, WM_GETMINMAXINFO, WM_KEYDOWN,
-    WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MBUTTONDOWN, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCACTIVATE,
-    WM_NCCALCSIZE, WM_NCCREATE, WM_NCHITTEST, WM_NCLBUTTONDBLCLK, WM_NCPAINT, WM_PAINT,
-    WM_RBUTTONDOWN, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR, WM_SYSKEYDOWN,
-    WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW, WS_EX_TOPMOST,
-    WS_POPUP, WS_TABSTOP, WS_VISIBLE,
+    GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, LoadCursorW, PeekMessageW,
+    PostMessageW, PostQuitMessage, RegisterClassExW, SendMessageW, SetForegroundWindow,
+    SetWindowLongPtrW, SetWindowPos, SetWindowsHookExW, ShowWindow, TranslateMessage,
+    UnhookWindowsHookEx, ASFW_ANY, CREATESTRUCTW, CS_HREDRAW, CS_VREDRAW, EN_CHANGE,
+    ES_AUTOHSCROLL, ES_LEFT, GWLP_USERDATA, GWLP_WNDPROC, HHOOK, HTCAPTION, HTCLIENT, HWND_TOPMOST,
+    IDC_ARROW, MINMAXINFO, MSG, MSLLHOOKSTRUCT, PM_REMOVE, SWP_HIDEWINDOW, SWP_NOACTIVATE,
+    SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SW_HIDE, SW_SHOWNOACTIVATE, WA_INACTIVE, WH_MOUSE_LL,
+    WINDOW_EX_STYLE, WINDOW_STYLE, WM_ACTIVATE, WM_ACTIVATEAPP, WM_CHAR, WM_COMMAND, WM_CREATE,
+    WM_CTLCOLOREDIT, WM_DESTROY, WM_DPICHANGED, WM_ENTERSIZEMOVE, WM_ERASEBKGND, WM_EXITSIZEMOVE,
+    WM_GETMINMAXINFO, WM_KEYDOWN, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MBUTTONDOWN, WM_MOUSEMOVE,
+    WM_MOUSEWHEEL, WM_NCACTIVATE, WM_NCCALCSIZE, WM_NCCREATE, WM_NCHITTEST, WM_NCLBUTTONDBLCLK,
+    WM_NCPAINT, WM_PAINT, WM_RBUTTONDOWN, WM_SETFOCUS, WM_SETFONT, WM_SETTEXT, WM_SIZE, WM_SYSCHAR,
+    WM_SYSKEYDOWN, WNDCLASSEXW, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS, WS_EX_TOOLWINDOW,
+    WS_EX_TOPMOST, WS_POPUP, WS_TABSTOP, WS_VISIBLE,
 };
 
 use crate::event::{ActionKey, Handler, PaletteEvent, PaletteReply};
@@ -193,6 +195,8 @@ struct State {
     field_brush: Option<HBRUSH>,
     last_blur_dismiss: Option<Instant>,
     last_shown_at: Option<Instant>,
+    previous_foreground: Option<HWND>,
+    hiding: bool,
     custom_origin: Option<(i32, i32)>,
     in_size_move: bool,
     tracking_mouse_leave: bool,
@@ -345,6 +349,8 @@ impl Palette {
             field_brush: None,
             last_blur_dismiss: None,
             last_shown_at: None,
+            previous_foreground: None,
+            hiding: false,
             custom_origin: None,
             in_size_move: false,
             tracking_mouse_leave: false,
@@ -449,7 +455,7 @@ impl Palette {
 
     pub fn hide(&self) {
         unsafe {
-            let _ = ShowWindow(self.hwnd, SW_HIDE);
+            hide_palette_window(self.state, false);
         }
     }
 
@@ -896,40 +902,46 @@ unsafe extern "system" fn window_procedure(
             if (wparam.0 & 0xffff) == WA_INACTIVE as usize
                 && IsWindowVisible(hwnd).as_bool()
                 && !(*state_ptr).in_size_move
+                && !(*state_ptr).hiding
             {
                 let in_grace = (*state_ptr)
                     .last_shown_at
                     .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
                 if in_grace {
                     let edit = (*state_ptr).edit;
-                    bring_to_foreground_and_focus(hwnd, edit);
+                    bring_to_foreground_and_focus(hwnd, edit, false);
                 } else {
                     (*state_ptr).last_blur_dismiss = Some(Instant::now());
-                    dismiss(state_ptr);
+                    dismiss(state_ptr, false);
                 }
             }
             LRESULT(0)
         }
         WM_ACTIVATEAPP => {
-            if wparam.0 == 0 && IsWindowVisible(hwnd).as_bool() && !(*state_ptr).in_size_move {
+            if wparam.0 == 0
+                && IsWindowVisible(hwnd).as_bool()
+                && !(*state_ptr).in_size_move
+                && !(*state_ptr).hiding
+            {
                 let in_grace = (*state_ptr)
                     .last_shown_at
                     .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
                 if !in_grace {
                     (*state_ptr).last_blur_dismiss = Some(Instant::now());
-                    dismiss(state_ptr);
+                    dismiss(state_ptr, false);
                 }
             }
             LRESULT(0)
         }
         WM_APP_OUTSIDE_CLICK => {
-            if IsWindowVisible(hwnd).as_bool() && !(*state_ptr).in_size_move {
+            if IsWindowVisible(hwnd).as_bool() && !(*state_ptr).in_size_move && !(*state_ptr).hiding
+            {
                 let in_grace = (*state_ptr)
                     .last_shown_at
                     .is_some_and(|at| at.elapsed() < SHOW_ACTIVATION_GRACE);
                 if !in_grace {
                     (*state_ptr).last_blur_dismiss = Some(Instant::now());
-                    dismiss(state_ptr);
+                    dismiss(state_ptr, false);
                 }
             }
             LRESULT(0)
@@ -1129,13 +1141,13 @@ unsafe extern "system" fn window_procedure(
         }
         WM_APP_CLOSE => {
             if IsWindowVisible(hwnd).as_bool() {
-                dismiss(state_ptr);
+                dismiss(state_ptr, true);
             }
             LRESULT(0)
         }
         WM_APP_TOGGLE_TRAY => {
             if IsWindowVisible(hwnd).as_bool() {
-                dismiss(state_ptr);
+                dismiss(state_ptr, true);
             } else {
                 let recently_blurred = (*state_ptr)
                     .last_blur_dismiss
@@ -1154,14 +1166,7 @@ unsafe extern "system" fn window_procedure(
         }
         WM_APP_COMMAND => {
             let code = wparam.0 as u32;
-            if !IsWindowVisible(hwnd).as_bool() {
-                show_window_without_shown_event(state_ptr);
-            } else {
-                (*state_ptr).last_shown_at = Some(Instant::now());
-                let edit = (*state_ptr).edit;
-                bring_to_foreground_and_focus(hwnd, edit);
-            }
-            dispatch(state_ptr, PaletteEvent::Command(code));
+            dispatch_command(state_ptr, code);
             LRESULT(0)
         }
         WM_APP_RESET_POSITION => {
@@ -1250,12 +1255,14 @@ unsafe extern "system" fn edit_procedure(
             return LRESULT(0);
         }
         // Suppress system beep / control char box on Enter, Ctrl+Enter, Escape, Tab,
-        // Ctrl+H/I/K/P/R, and Ctrl+Shift+Backspace (0x7F DEL).
+        // Ctrl+D/H/I/K/P/R, and Ctrl+Shift+Backspace (0x7F DEL).
         if matches!(
             ch,
             0x08 if (GetKeyState(VK_CONTROL.0 as i32) as u16 & 0x8000) != 0
-        ) || matches!(ch, 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x12 | 0x1B | 0x7F)
-        {
+        ) || matches!(
+            ch,
+            0x04 | 0x09 | 0x0A | 0x0B | 0x0D | 0x10 | 0x12 | 0x1B | 0x7F
+        ) {
             return LRESULT(0);
         }
     }
@@ -1323,7 +1330,9 @@ unsafe extern "system" fn edit_procedure(
             || (alt_down && !ctrl_down && key == VK_LEFT.0)
         {
             Some((WM_APP_ACTION, ACTION_BACK))
-        } else if ctrl_down && (key == VK_DELETE.0 || (shift_down && key == VK_BACK.0)) {
+        } else if (ctrl_down && !alt_down && !shift_down && key == VK_D.0)
+            || (ctrl_down && shift_down && !alt_down && key == VK_BACK.0)
+        {
             Some((WM_APP_ACTION, ACTION_CTRL_DELETE))
         } else if key == VK_TAB.0 && !ctrl_down && !alt_down {
             if shift_down {
@@ -1436,14 +1445,27 @@ unsafe fn set_cue_banner(edit: HWND, text: &str) {
     );
 }
 
-unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
-    clear_edit_silently(state_ptr);
-    let (hwnd, edit, metrics, target_h, custom_origin) = {
+/// Record the active foreground window right before YAL becomes visible,
+/// ignoring any window belonging to YAL's own process.
+unsafe fn capture_previous_foreground(state_ptr: *mut State) {
+    let fg = GetForegroundWindow();
+    if fg.0.is_null() || !IsWindow(Some(fg)).as_bool() {
+        return;
+    }
+    let mut pid = 0u32;
+    GetWindowThreadProcessId(fg, Some(&mut pid));
+    if pid != 0 && pid != GetCurrentProcessId() {
+        (*state_ptr).previous_foreground = Some(fg);
+    }
+}
+
+/// Place the palette cleanly on the active monitor, show it without premature
+/// activation bounce, bring it to the foreground, and arm the outside-click hook.
+unsafe fn present_palette_window(state_ptr: *mut State, reset_caret: bool) {
+    let (hwnd, edit, metrics, target_h, custom_origin, has_badge, inline_pill_w) = {
         let state = &mut *state_ptr;
         state.last_blur_dismiss = None;
         state.last_shown_at = Some(Instant::now());
-        state.model.query = String::new();
-        state.model.scroll_offset = 0.0;
         let m = state.theme.metrics;
         (
             state.hwnd,
@@ -1451,73 +1473,303 @@ unsafe fn show_window_without_shown_event(state_ptr: *mut State) {
             m,
             state.model.layout(m).window_height,
             state.custom_origin,
+            state.model.header_badge.is_some(),
+            inline_arg_pill_width(&state.model),
         )
     };
 
     place_window_rect(hwnd, metrics, target_h, custom_origin);
-    let _ = ShowWindow(hwnd, SW_SHOW);
-    bring_to_foreground_and_focus(hwnd, edit);
+    let dpi = GetDpiForWindow(hwnd).max(96) as f32;
+    let width_px = (metrics.width * (dpi / 96.0)).round() as i32;
+    place_field_rect(hwnd, edit, metrics, width_px, has_badge, inline_pill_w);
+    let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+    bring_to_foreground_and_focus(hwnd, edit, reset_caret);
     install_outside_click_hook(hwnd);
+    let _ = InvalidateRect(Some(hwnd), None, false);
 }
 
-/// Reliably steals foreground focus and places the blinking keyboard caret
-/// inside `edit` so the user can type immediately without clicking the mouse.
-unsafe fn bring_to_foreground_and_focus(hwnd: HWND, edit: HWND) {
+/// Hide the palette window cleanly without triggering `ShowWindow(SW_HIDE)`'s
+/// default Z-order activation walk (which on Windows 11 can activate
+/// `Shell_TrayWnd` or an unrelated background window behind the active app).
+/// When `restore_previous` is `true` and YAL currently holds foreground focus,
+/// hand foreground directly back to the window that was active before YAL opened.
+unsafe fn hide_palette_window(state_ptr: *mut State, restore_previous: bool) {
+    let hwnd = (*state_ptr).hwnd;
+    uninstall_outside_click_hook();
+    let prev = (*state_ptr).previous_foreground.take();
+    (*state_ptr).hiding = true;
+    let was_foreground = IsWindow(Some(hwnd)).as_bool() && GetForegroundWindow() == hwnd;
+    let valid_target = if restore_previous && was_foreground {
+        prev.filter(|&target| {
+            !target.0.is_null()
+                && target != hwnd
+                && IsWindow(Some(target)).as_bool()
+                && IsWindowVisible(target).as_bool()
+                && !IsIconic(target).as_bool()
+        })
+    } else {
+        None
+    };
+
+    if let Some(target) = valid_target {
+        let mut target_pid = 0u32;
+        let target_thread = GetWindowThreadProcessId(target, Some(&mut target_pid));
+        if target_pid != 0 {
+            let _ = AllowSetForegroundWindow(target_pid);
+        }
+        let _ = SetForegroundWindow(target);
+        if GetForegroundWindow() != target {
+            let our_thread = GetCurrentThreadId();
+            let attached = target_thread != 0
+                && target_thread != our_thread
+                && AttachThreadInput(our_thread, target_thread, true).as_bool();
+            let _ = SetForegroundWindow(target);
+            if attached {
+                let _ = AttachThreadInput(our_thread, target_thread, false);
+            }
+        }
+    }
+
+    if IsWindow(Some(hwnd)).as_bool() && IsWindowVisible(hwnd).as_bool() {
+        let still_foreground = GetForegroundWindow() == hwnd;
+        if still_foreground {
+            // Fallback: never leave a hidden window holding foreground focus.
+            let _ = ShowWindow(hwnd, SW_HIDE);
+        } else {
+            let _ = SetWindowPos(
+                hwnd,
+                None,
+                0,
+                0,
+                0,
+                0,
+                SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER,
+            );
+        }
+    }
+    (*state_ptr).hiding = false;
     let _ = AllowSetForegroundWindow(ASFW_ANY);
-    let foreground = GetForegroundWindow();
-    let our_thread = GetCurrentThreadId();
-    let fg_thread = if !foreground.0.is_null() {
-        GetWindowThreadProcessId(foreground, None)
-    } else {
-        0
-    };
+}
 
-    let attached = if fg_thread != 0 && fg_thread != our_thread {
-        AttachThreadInput(our_thread, fg_thread, true).as_bool()
-    } else {
-        false
-    };
-
-    let _ = SetWindowPos(
-        hwnd,
-        Some(HWND_TOPMOST),
-        0,
-        0,
-        0,
-        0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW,
-    );
-    let _ = BringWindowToTop(hwnd);
-    if !SetForegroundWindow(hwnd).as_bool() {
-        // Bypass Windows foreground lock cleanly with a no-op extended Alt key-up.
-        let dummy = [INPUT {
-            r#type: INPUT_KEYBOARD,
-            Anonymous: INPUT_0 {
-                ki: KEYBDINPUT {
-                    wVk: VK_MENU,
-                    wScan: 0,
-                    dwFlags: KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
-                    time: 0,
-                    dwExtraInfo: 0,
-                },
-            },
-        }];
-        let _ = SendInput(&dummy, std::mem::size_of::<INPUT>() as i32);
+/// Reliably gives foreground focus to YAL without corrupting the Z-order of
+/// background windows, and places the keyboard caret inside `edit`.
+unsafe fn bring_to_foreground_and_focus(hwnd: HWND, edit: HWND, reset_caret: bool) {
+    if GetForegroundWindow() != hwnd {
+        let _ = AllowSetForegroundWindow(ASFW_ANY);
         let _ = SetForegroundWindow(hwnd);
     }
-    if !edit.0.is_null() && IsWindow(Some(edit)).as_bool() {
-        let _ = SetFocus(Some(edit));
-        let _ = SendMessageW(edit, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+
+    if GetForegroundWindow() != hwnd {
+        let foreground = GetForegroundWindow();
+        let our_thread = GetCurrentThreadId();
+        let fg_thread = if !foreground.0.is_null() {
+            GetWindowThreadProcessId(foreground, None)
+        } else {
+            0
+        };
+        let attached = if fg_thread != 0 && fg_thread != our_thread {
+            AttachThreadInput(our_thread, fg_thread, true).as_bool()
+        } else {
+            false
+        };
+        let _ = SetForegroundWindow(hwnd);
+        if GetForegroundWindow() != hwnd {
+            let _ = BringWindowToTop(hwnd);
+            let _ = SetForegroundWindow(hwnd);
+        }
+        if attached {
+            let _ = AttachThreadInput(our_thread, fg_thread, false);
+        }
     }
 
-    if attached {
-        let _ = AttachThreadInput(our_thread, fg_thread, false);
+    if GetForegroundWindow() != hwnd {
+        // Last-resort UIPI foreground-lock bypass (e.g. when an elevated window
+        // currently holds focus and blocks `AttachThreadInput`).
+        let alt_physically_down = (GetAsyncKeyState(VK_MENU.0 as i32) as u16 & 0x8000) != 0;
+        if !alt_physically_down {
+            let pulse = [
+                INPUT {
+                    r#type: INPUT_KEYBOARD,
+                    Anonymous: INPUT_0 {
+                        ki: KEYBDINPUT {
+                            wVk: VK_MENU,
+                            wScan: 0,
+                            dwFlags: KEYEVENTF_EXTENDEDKEY,
+                            time: 0,
+                            dwExtraInfo: 0,
+                        },
+                    },
+                },
+                INPUT {
+                    r#type: INPUT_KEYBOARD,
+                    Anonymous: INPUT_0 {
+                        ki: KEYBDINPUT {
+                            wVk: VK_MENU,
+                            wScan: 0,
+                            dwFlags: KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+                            time: 0,
+                            dwExtraInfo: 0,
+                        },
+                    },
+                },
+            ];
+            let _ = SendInput(&pulse, std::mem::size_of::<INPUT>() as i32);
+        } else {
+            let dummy = [INPUT {
+                r#type: INPUT_KEYBOARD,
+                Anonymous: INPUT_0 {
+                    ki: KEYBDINPUT {
+                        wVk: VK_MENU,
+                        wScan: 0,
+                        dwFlags: KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP,
+                        time: 0,
+                        dwExtraInfo: 0,
+                    },
+                },
+            }];
+            let _ = SendInput(&dummy, std::mem::size_of::<INPUT>() as i32);
+        }
+        let _ = SetForegroundWindow(hwnd);
+    }
+
+    if !edit.0.is_null() && IsWindow(Some(edit)).as_bool() {
+        let _ = SetFocus(Some(edit));
+        if reset_caret {
+            let _ = SendMessageW(edit, EM_SETSEL, Some(WPARAM(0)), Some(LPARAM(0)));
+        }
     }
 }
 
 unsafe fn show_window(state_ptr: *mut State) {
-    show_window_without_shown_event(state_ptr);
-    dispatch(state_ptr, PaletteEvent::Shown);
+    let hwnd = (*state_ptr).hwnd;
+    let was_visible = IsWindowVisible(hwnd).as_bool();
+    if !was_visible {
+        capture_previous_foreground(state_ptr);
+    }
+    clear_edit_silently(state_ptr);
+    {
+        let state = &mut *state_ptr;
+        state.model.query = String::new();
+        state.model.scroll_offset = 0.0;
+    }
+
+    // Run `PaletteEvent::Shown` BEFORE making the window visible so Pop-to-Root
+    // or saved-query restoration updates the model and window height with zero flicker.
+    let reply = invoke_handler(state_ptr, PaletteEvent::Shown);
+    let edit = (*state_ptr).edit;
+    let mut reset_caret = true;
+    match reply {
+        PaletteReply::Keep => {}
+        PaletteReply::Update(model) => {
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::UpdateWithEdit(text, model) => {
+            reset_caret = false;
+            set_edit_text_silently(state_ptr, &text);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::Navigate(model) => {
+            clear_edit_silently(state_ptr);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::UpdateTheme(new_theme, model) => {
+            apply_theme_live(state_ptr, *new_theme);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::Close => {
+            hide_palette_window(state_ptr, was_visible);
+            return;
+        }
+        PaletteReply::CloseWithHud(message) => {
+            let dark = (*state_ptr).theme.appearance == Appearance::Dark;
+            hide_palette_window(state_ptr, was_visible);
+            crate::hud::show_hud(message, dark);
+            return;
+        }
+        PaletteReply::Quit => {
+            uninstall_outside_click_hook();
+            (*state_ptr).previous_foreground = None;
+            let _ = DestroyWindow(hwnd);
+            return;
+        }
+    }
+
+    present_palette_window(state_ptr, reset_caret);
+}
+
+/// Dispatch an application command (`WM_APP_COMMAND`, e.g. action global hotkey
+/// or tray Settings) *before* changing window visibility so toggling an already-
+/// open screen off never flashes or churns focus, and opening a screen while
+/// hidden builds its model and height before showing it.
+unsafe fn dispatch_command(state_ptr: *mut State, code: u32) {
+    let hwnd = (*state_ptr).hwnd;
+    let was_visible = IsWindowVisible(hwnd).as_bool();
+    if !was_visible {
+        capture_previous_foreground(state_ptr);
+    }
+
+    let reply = invoke_handler(state_ptr, PaletteEvent::Command(code));
+    let edit = (*state_ptr).edit;
+    let mut reset_caret = true;
+    match reply {
+        PaletteReply::Keep => {
+            if !was_visible {
+                (*state_ptr).previous_foreground = None;
+            }
+            return;
+        }
+        PaletteReply::Close => {
+            hide_palette_window(state_ptr, was_visible);
+            return;
+        }
+        PaletteReply::CloseWithHud(message) => {
+            let dark = (*state_ptr).theme.appearance == Appearance::Dark;
+            hide_palette_window(state_ptr, was_visible);
+            crate::hud::show_hud(message, dark);
+            return;
+        }
+        PaletteReply::Quit => {
+            uninstall_outside_click_hook();
+            (*state_ptr).previous_foreground = None;
+            let _ = DestroyWindow(hwnd);
+            return;
+        }
+        PaletteReply::Update(model) => {
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::UpdateWithEdit(text, model) => {
+            reset_caret = false;
+            set_edit_text_silently(state_ptr, &text);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::Navigate(model) => {
+            clear_edit_silently(state_ptr);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+        PaletteReply::UpdateTheme(new_theme, model) => {
+            apply_theme_live(state_ptr, *new_theme);
+            apply_model_update(state_ptr, hwnd, edit, model);
+        }
+    }
+
+    if !was_visible {
+        present_palette_window(state_ptr, reset_caret);
+    } else {
+        (*state_ptr).last_shown_at = Some(Instant::now());
+        bring_to_foreground_and_focus(hwnd, edit, reset_caret);
+    }
+}
+
+/// Calls the app handler without holding `&mut State` across the callback.
+unsafe fn invoke_handler(state_ptr: *mut State, event: PaletteEvent) -> PaletteReply {
+    let handler = {
+        let state = &mut *state_ptr;
+        let placeholder: Handler = Box::new(crate::event::ignore);
+        std::mem::replace(&mut state.handler, placeholder)
+    };
+    let reply = handler(event);
+    (*state_ptr).handler = handler;
+    reply
 }
 
 unsafe fn apply_theme_live(state_ptr: *mut State, new_theme: Theme) {
@@ -1565,15 +1817,9 @@ unsafe fn apply_dwm_chrome(hwnd: HWND, theme: &Theme) {
 /// Dispatches an event to the app handler without holding `&mut State` across
 /// the callback or any Win32 sizing/visibility calls.
 unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
-    let handler = {
-        let state = &mut *state_ptr;
-        let placeholder: Handler = Box::new(crate::event::ignore);
-        std::mem::replace(&mut state.handler, placeholder)
-    };
-    let reply = handler(event);
+    let reply = invoke_handler(state_ptr, event);
     let (hwnd, edit) = {
-        let state = &mut *state_ptr;
-        state.handler = handler;
+        let state = &*state_ptr;
         (state.hwnd, state.edit)
     };
 
@@ -1595,17 +1841,16 @@ unsafe fn dispatch(state_ptr: *mut State, event: PaletteEvent) {
             apply_model_update(state_ptr, hwnd, edit, model);
         }
         PaletteReply::Close => {
-            uninstall_outside_click_hook();
-            let _ = ShowWindow(hwnd, SW_HIDE);
+            hide_palette_window(state_ptr, true);
         }
         PaletteReply::CloseWithHud(message) => {
             let dark = (*state_ptr).theme.appearance == Appearance::Dark;
-            uninstall_outside_click_hook();
-            let _ = ShowWindow(hwnd, SW_HIDE);
+            hide_palette_window(state_ptr, true);
             crate::hud::show_hud(message, dark);
         }
         PaletteReply::Quit => {
             uninstall_outside_click_hook();
+            (*state_ptr).previous_foreground = None;
             let _ = DestroyWindow(hwnd);
         }
     }
@@ -1673,13 +1918,10 @@ unsafe fn apply_model_update(state_ptr: *mut State, hwnd: HWND, edit: HWND, mut 
     let _ = InvalidateRect(Some(hwnd), None, false);
 }
 
-unsafe fn dismiss(state_ptr: *mut State) {
-    let hwnd = (*state_ptr).hwnd;
+unsafe fn dismiss(state_ptr: *mut State, restore_previous: bool) {
     uninstall_outside_click_hook();
     dispatch(state_ptr, PaletteEvent::Dismissed);
-    if IsWindow(Some(hwnd)).as_bool() && IsWindowVisible(hwnd).as_bool() {
-        let _ = ShowWindow(hwnd, SW_HIDE);
-    }
+    hide_palette_window(state_ptr, restore_previous);
 }
 
 fn create_edit_font(dpi: u32) -> HFONT {

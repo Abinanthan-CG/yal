@@ -132,7 +132,9 @@ pub fn copy_and_paste_async(text: String) -> Result<(), String> {
             if !is_pasteable_window(hwnd) {
                 return;
             }
-            let _ = SetForegroundWindow(hwnd);
+            if GetForegroundWindow() != hwnd {
+                let _ = SetForegroundWindow(hwnd);
+            }
         }
         std::thread::sleep(Duration::from_millis(35));
         // SAFETY: `hwnd` is re-validated and verified as the active foreground window.
@@ -201,7 +203,9 @@ pub fn paste_image_async(width: u32, height: u32, rgba: Vec<u8>) -> Result<(), S
             if !is_pasteable_window(hwnd) {
                 return;
             }
-            let _ = SetForegroundWindow(hwnd);
+            if GetForegroundWindow() != hwnd {
+                let _ = SetForegroundWindow(hwnd);
+            }
         }
         std::thread::sleep(Duration::from_millis(35));
         // SAFETY: `hwnd` is re-validated and verified as the active foreground window.
@@ -235,7 +239,9 @@ pub fn paste_files_async(paths: Vec<String>) -> Result<(), String> {
             if !is_pasteable_window(hwnd) {
                 return;
             }
-            let _ = SetForegroundWindow(hwnd);
+            if GetForegroundWindow() != hwnd {
+                let _ = SetForegroundWindow(hwnd);
+            }
         }
         std::thread::sleep(Duration::from_millis(35));
         // SAFETY: `hwnd` is re-validated and verified as the active foreground window.

@@ -219,7 +219,7 @@ pub fn for_launcher_row(row: &ResultRow, query: &str, meta: LauncherActionMeta) 
             push_shortcut_actions(&mut items, meta.has_hotkey, meta.has_alias);
             items.push(
                 ActionMenuItem::new(id::SNIPPET_DELETE, "Delete Snippet", "Danger")
-                    .with_shortcut("Ctrl+Del")
+                    .with_shortcut("Ctrl+D")
                     .with_glyph("✕")
                     .destructive(),
             );
@@ -246,7 +246,7 @@ pub fn for_launcher_row(row: &ResultRow, query: &str, meta: LauncherActionMeta) 
             push_shortcut_actions(&mut items, meta.has_hotkey, meta.has_alias);
             items.push(
                 ActionMenuItem::new(id::QL_DELETE, "Delete Quicklink", "Danger")
-                    .with_shortcut("Ctrl+Del")
+                    .with_shortcut("Ctrl+D")
                     .with_glyph("✕")
                     .destructive(),
             );
@@ -360,7 +360,7 @@ pub fn for_file_row(row: &ResultRow) -> ActionMenuModel {
                 .with_shortcut("Ctrl+I")
                 .with_glyph("◧"),
             ActionMenuItem::new(id::RECYCLE, "Move to Recycle Bin", "Danger")
-                .with_shortcut("Ctrl+Del")
+                .with_shortcut("Ctrl+D")
                 .with_glyph("✕")
                 .destructive(),
         ],
@@ -412,7 +412,7 @@ pub fn for_clipboard_item(item: &ClipboardItem, queue_len: usize) -> ActionMenuM
     }
     items.push(
         ActionMenuItem::new(id::CLIP_DELETE, "Delete Entry", "Danger")
-            .with_shortcut("Ctrl+Del")
+            .with_shortcut("Ctrl+D")
             .with_glyph("✕")
             .destructive(),
     );
@@ -456,7 +456,7 @@ pub fn for_snippet(
     push_shortcut_actions(&mut items, has_hotkey, has_alias);
     items.push(
         ActionMenuItem::new(id::SNIPPET_DELETE, "Delete Snippet", "Danger")
-            .with_shortcut("Ctrl+Del")
+            .with_shortcut("Ctrl+D")
             .with_glyph("✕")
             .destructive(),
     );
@@ -495,7 +495,7 @@ pub fn for_quicklink(link: &Quicklink, in_quicklinks_screen: bool) -> ActionMenu
     }
     items.push(
         ActionMenuItem::new(id::QL_DELETE, "Delete Quicklink", "Danger")
-            .with_shortcut("Ctrl+Del")
+            .with_shortcut("Ctrl+D")
             .with_glyph("✕")
             .destructive(),
     );
@@ -522,7 +522,7 @@ pub fn for_note(note: &NoteItem) -> ActionMenuModel {
                 .with_shortcut("Ctrl+I")
                 .with_glyph("◧"),
             ActionMenuItem::new(id::NOTE_DELETE, "Delete Note", "Danger")
-                .with_shortcut("Ctrl+Del")
+                .with_shortcut("Ctrl+D")
                 .with_glyph("✕")
                 .destructive(),
         ],
@@ -555,7 +555,7 @@ pub fn for_calc_history(entry: &CalcHistoryEntry) -> ActionMenuModel {
                 .with_shortcut("Ctrl+I")
                 .with_glyph("◧"),
             ActionMenuItem::new(id::CALCHIST_DELETE, "Remove Entry", "Danger")
-                .with_shortcut("Ctrl+Del")
+                .with_shortcut("Ctrl+D")
                 .with_glyph("✕")
                 .destructive(),
         ],
@@ -713,7 +713,7 @@ mod tests {
 
         let delete = find_item(&empty_queue, id::CLIP_DELETE);
         let clear = find_item(&empty_queue, id::CLIP_CLEAR_UNPINNED);
-        assert!(delete.is_some_and(|entry| entry.destructive));
+        assert!(delete.is_some_and(|entry| entry.destructive && entry.shortcut == "Ctrl+D"));
         assert!(clear.is_some_and(|entry| entry.destructive));
 
         let populated_queue = for_clipboard_item(&item, 3);

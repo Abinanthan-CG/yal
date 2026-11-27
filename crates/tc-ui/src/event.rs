@@ -22,7 +22,7 @@ pub enum ActionKey {
     CtrlR,
     /// `Alt+Left` or `Ctrl+[` — navigate back one screen.
     Back,
-    /// `Ctrl+Shift+Backspace` or `Ctrl+Delete` — remove/recycle selected item.
+    /// `Ctrl+D` (or `Ctrl+Shift+Backspace`) — remove/recycle selected item.
     CtrlDelete,
     /// `Down` while in Compact Mode — expand the compact search bar to show Suggestions.
     Expand,

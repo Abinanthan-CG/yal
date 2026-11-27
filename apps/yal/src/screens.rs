@@ -546,9 +546,9 @@ pub fn clipboard_model(
         result_count: Some(count_label),
         footer_hints: vec![
             ("↵".to_string(), "Paste".to_string()),
+            ("Ctrl+D".to_string(), "Delete".to_string()),
             ("Tab".to_string(), "Filter".to_string()),
             ("Ctrl+K".to_string(), "Actions".to_string()),
-            ("Ctrl+I".to_string(), "Preview".to_string()),
         ],
         scroll_offset: 0.0,
         grid: None,

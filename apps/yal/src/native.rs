@@ -757,659 +757,688 @@ fn build(
     };
 
     let handler = move |event: PaletteEvent| -> PaletteReply {
-        match event {
-            PaletteEvent::Shown => {
-                let mut shown = lock_shown(&handler_shown);
-                shown.visible = true;
-                shown.action_menu_open = false;
-                let policy = handler_context
-                    .as_deref()
-                    .map(|ctx| pop_to_root_policy(&ctx.settings))
-                    .unwrap_or(PopToRootPolicy::DEFAULT);
-                let should_reset = policy.should_reset(shown.last_dismissed_at, Instant::now());
+        let reply = (|| -> PaletteReply {
+            match event {
+                PaletteEvent::Shown => {
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.visible = true;
+                    shown.action_menu_open = false;
+                    let policy = handler_context
+                        .as_deref()
+                        .map(|ctx| pop_to_root_policy(&ctx.settings))
+                        .unwrap_or(PopToRootPolicy::DEFAULT);
+                    let should_reset = policy.should_reset(shown.last_dismissed_at, Instant::now());
 
-                if shown.mode != Mode::Launcher {
-                    if should_reset {
-                        if let Some(ctx) = handler_context.as_ref() {
-                            ctx.palette.back_to_root();
+                    if shown.mode != Mode::Launcher {
+                        if should_reset {
+                            if let Some(ctx) = handler_context.as_ref() {
+                                ctx.palette.back_to_root();
+                            }
+                            return enter_launcher(
+                                &handler_launcher,
+                                handler_context.as_deref(),
+                                &mut shown,
+                                true,
+                            );
                         }
-                        return enter_launcher(
+                        let saved_query = shown.query.clone();
+                        if let Some(model) =
+                            rebuild_current_model(handler_context.as_deref(), &mut shown, None)
+                        {
+                            return PaletteReply::UpdateWithEdit(saved_query, model);
+                        }
+                    }
+
+                    if !should_reset && !shown.query.is_empty() {
+                        let saved_query = shown.query.clone();
+                        let rows = build_root_search_rows(
                             &handler_launcher,
                             handler_context.as_deref(),
-                            &mut shown,
-                            true,
+                            &saved_query,
                         );
-                    }
-                    let saved_query = shown.query.clone();
-                    if let Some(model) =
-                        rebuild_current_model(handler_context.as_deref(), &mut shown, None)
-                    {
+                        shown.rows = rows.clone();
+                        let sel = shown.selected.min(rows.len().saturating_sub(1));
+                        shown.selected = sel;
+                        let model = model_for_with_icons(
+                            &saved_query,
+                            &rows,
+                            false,
+                            sel,
+                            handler_context.as_deref(),
+                            &mut shown,
+                        );
                         return PaletteReply::UpdateWithEdit(saved_query, model);
                     }
-                }
 
-                if !should_reset && !shown.query.is_empty() {
-                    let saved_query = shown.query.clone();
-                    let rows = build_root_search_rows(
+                    if let Some(ctx) = handler_context.as_ref() {
+                        ctx.palette.back_to_root();
+                    }
+                    enter_launcher(
                         &handler_launcher,
                         handler_context.as_deref(),
-                        &saved_query,
-                    );
-                    shown.rows = rows.clone();
-                    let sel = shown.selected.min(rows.len().saturating_sub(1));
-                    shown.selected = sel;
-                    let model = model_for_with_icons(
-                        &saved_query,
-                        &rows,
-                        false,
-                        sel,
-                        handler_context.as_deref(),
                         &mut shown,
-                    );
-                    return PaletteReply::UpdateWithEdit(saved_query, model);
+                        false,
+                    )
                 }
-
-                if let Some(ctx) = handler_context.as_ref() {
-                    ctx.palette.back_to_root();
+                PaletteEvent::Refresh => {
+                    let mut shown = lock_shown(&handler_shown);
+                    match shown.mode {
+                        Mode::Launcher => {
+                            let query = shown.query.clone();
+                            let is_suggestions = query.trim().is_empty();
+                            let rows = if is_suggestions {
+                                shown.rows.clone()
+                            } else {
+                                let fresh = build_root_search_rows(
+                                    &handler_launcher,
+                                    handler_context.as_deref(),
+                                    &query,
+                                );
+                                shown.rows = fresh.clone();
+                                fresh
+                            };
+                            let sel = shown.selected.min(rows.len().saturating_sub(1));
+                            shown.selected = sel;
+                            PaletteReply::Update(model_for_with_icons(
+                                &query,
+                                &rows,
+                                is_suggestions,
+                                sel,
+                                handler_context.as_deref(),
+                                &mut shown,
+                            ))
+                        }
+                        Mode::Files => {
+                            shown.invalidate_file_dir_cache_if_stale(Duration::from_millis(1500));
+                            let query = shown.query.clone();
+                            let filter = shown.file_filter;
+                            let current_dir = shown.file_dir.clone();
+                            let rows = shown.filtered_file_rows(&handler_launcher, &query);
+                            let indexing = handler_context
+                                .as_ref()
+                                .is_some_and(|c| c.features.is_file_indexing());
+                            let sel = shown.selected.min(rows.len().saturating_sub(1));
+                            let show_detail = shown.show_detail;
+                            shown.file_rows = rows.clone();
+                            shown.selected = sel;
+                            PaletteReply::Update(files_model(
+                                &query,
+                                &rows,
+                                filter,
+                                current_dir.as_deref(),
+                                indexing,
+                                sel,
+                                show_detail,
+                                |target| shown.lookup_or_queue_icon(target),
+                            ))
+                        }
+                        Mode::Clipboard => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let query = shown.query.clone();
+                            let filter = shown.clipboard_filter;
+                            let items = ctx.features.search_clipboard_view(&query, filter);
+                            let sel = shown.selected.min(items.len().saturating_sub(1));
+                            shown.clipboard_items = items.clone();
+                            shown.selected = sel;
+                            let mut model =
+                                build_clipboard_screen_model(ctx, &mut shown, &query, &items, sel);
+                            apply_recording_overlay(&mut model, &shown);
+                            PaletteReply::Update(model)
+                        }
+                        Mode::RunShell => {
+                            let query = shown.query.clone();
+                            let last = shown.last_shell_output.clone();
+                            PaletteReply::Update(run_shell_model(&query, last.as_deref()))
+                        }
+                        _ => PaletteReply::Keep,
+                    }
                 }
-                enter_launcher(
+                PaletteEvent::SelectionChanged(idx) => {
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.selected = idx;
+                    if shown.action_menu_open {
+                        return PaletteReply::Keep;
+                    }
+                    match rebuild_current_model(handler_context.as_deref(), &mut shown, None) {
+                        Some(model) => PaletteReply::Update(model),
+                        None => PaletteReply::Keep,
+                    }
+                }
+                PaletteEvent::Command(COMMAND_OPEN_SETTINGS) | PaletteEvent::OpenSettings => {
+                    let Some(ctx) = handler_context.as_ref() else {
+                        return PaletteReply::Keep;
+                    };
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.visible = true;
+                    enter_settings(ctx, &mut shown)
+                }
+                PaletteEvent::Command(COMMAND_SHOW_STATUS) => {
+                    let mut shown = lock_shown(&handler_shown);
+                    let Some((badge, title, detail, refresh_theme)) = shown.pending_status.take()
+                    else {
+                        return PaletteReply::Keep;
+                    };
+                    shown.visible = true;
+                    shown.mode = Mode::Status;
+                    shown.query.clear();
+                    shown.selected = 0;
+                    shown.action_menu_open = false;
+                    let model = status_screen_model(&badge, &title, &detail, Vec::new());
+                    if refresh_theme {
+                        if let Some(ctx) = handler_context.as_ref() {
+                            return PaletteReply::UpdateTheme(
+                                Box::new(theme_from_settings(&ctx.settings)),
+                                model,
+                            );
+                        }
+                    }
+                    PaletteReply::Navigate(model)
+                }
+                PaletteEvent::Command(COMMAND_HOTKEY_CAPTURED) => {
+                    let Some(ctx) = handler_context.as_ref() else {
+                        return PaletteReply::Keep;
+                    };
+                    let mut shown = lock_shown(&handler_shown);
+                    let Some(event) = lock_or_recover(&shown.captured_hotkey).take() else {
+                        shown.recording_hotkey = None;
+                        return PaletteReply::Keep;
+                    };
+                    let trigger = match event {
+                        CapturedHotkeyEvent::Trigger(t) => t,
+                        CapturedHotkeyEvent::Cancelled => {
+                            shown.recording_hotkey = None;
+                            let toast = ToastModel {
+                                kind: ToastKind::Info,
+                                message: "Hotkey recording cancelled".to_string(),
+                            };
+                            return match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                                Some(model) => PaletteReply::Update(model),
+                                None => PaletteReply::Keep,
+                            };
+                        }
+                    };
+                    let Some(target) = shown.recording_hotkey.take() else {
+                        return PaletteReply::Keep;
+                    };
+                    let formatted = trigger.format();
+                    let toast = match target {
+                        RecordingTarget::Launcher => {
+                            if let Some(conflict) = hotkeys::check_hotkey_conflict(
+                                &*ctx.settings,
+                                trigger,
+                                Some(BINDING_LAUNCHER_TOGGLE),
+                            ) {
+                                ToastModel {
+                                    kind: ToastKind::Error,
+                                    message: hotkeys::conflict_message(conflict),
+                                }
+                            } else {
+                                let _ = hotkeys::save_launcher_hotkey(&*ctx.settings, trigger);
+                                ctx.hotkeys.reload_bindings(&ctx.settings);
+                                if shown.mode == Mode::Settings {
+                                    let q = shown.query.clone();
+                                    shown.settings_rows = collect_settings_rows(ctx, &q);
+                                }
+                                ToastModel {
+                                    kind: ToastKind::Success,
+                                    message: format!("Launcher hotkey set to {formatted}"),
+                                }
+                            }
+                        }
+                        RecordingTarget::Command { entry_id, title } => {
+                            let binding_id = hotkeys::command_binding_id(&entry_id);
+                            if let Some(conflict) = hotkeys::check_hotkey_conflict(
+                                &*ctx.settings,
+                                trigger,
+                                Some(&binding_id),
+                            ) {
+                                ToastModel {
+                                    kind: ToastKind::Error,
+                                    message: hotkeys::conflict_message(conflict),
+                                }
+                            } else {
+                                let _ = hotkeys::set_command_hotkey(
+                                    &*ctx.settings,
+                                    &entry_id,
+                                    Some(trigger),
+                                );
+                                ctx.hotkeys.reload_bindings(&ctx.settings);
+                                if shown.mode == Mode::Settings {
+                                    let q = shown.query.clone();
+                                    shown.settings_rows = collect_settings_rows(ctx, &q);
+                                }
+                                ToastModel {
+                                    kind: ToastKind::Success,
+                                    message: format!("Hotkey {formatted} bound to {title}"),
+                                }
+                            }
+                        }
+                    };
+                    match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
+                        Some(model) => PaletteReply::Update(model),
+                        None => PaletteReply::Keep,
+                    }
+                }
+                PaletteEvent::Command(COMMAND_DISPATCH_HOTKEY) => {
+                    let Some(ctx) = handler_context.as_ref() else {
+                        return PaletteReply::Keep;
+                    };
+                    let Some(entry_id) = lock_or_recover(&ctx.pending_hotkey_command).take() else {
+                        return PaletteReply::Keep;
+                    };
+                    let mut shown = lock_shown(&handler_shown);
+                    if let Some(ql_name) = entry_id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
+                        if let Some(link) = ctx
+                            .features
+                            .search_quicklinks("")
+                            .into_iter()
+                            .find(|l| l.name.eq_ignore_ascii_case(ql_name))
+                        {
+                            shown.visible = true;
+                            return enter_quicklink_arg(link, true, String::new(), &mut shown);
+                        }
+                        return PaletteReply::Keep;
+                    }
+                    if let Some(cmd) = LauncherState::command_of(&entry_id) {
+                        // Pressing an action's global shortcut while YAL is already showing
+                        // that exact screen toggles it closed cleanly (just like Raycast).
+                        // Check live Win32 visibility so stale state can never prevent opening.
+                        let actually_visible = lock_or_recover(&handler_handle)
+                            .map(tc_ui::is_visible)
+                            .unwrap_or(shown.visible);
+                        let already_on_target = actually_visible
+                            && match cmd {
+                                CommandId::ClipboardHistory => shown.mode == Mode::Clipboard,
+                                CommandId::SearchEmoji => shown.mode == Mode::Emoji,
+                                CommandId::SearchSnippets => shown.mode == Mode::Snippets,
+                                CommandId::SearchFiles => shown.mode == Mode::Files,
+                                CommandId::SwitchWindows => shown.mode == Mode::SwitchWindows,
+                                CommandId::ShowNotes | CommandId::SearchNotes => {
+                                    shown.mode == Mode::Notes
+                                }
+                                CommandId::SearchQuicklinks => shown.mode == Mode::Quicklinks,
+                                CommandId::CalculatorHistory => shown.mode == Mode::CalcHistory,
+                                CommandId::Settings => shown.mode == Mode::Settings,
+                                _ => false,
+                            };
+                        if already_on_target {
+                            shown.visible = false;
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            return close_reply();
+                        }
+                        shown.visible = true;
+                        return match cmd {
+                            CommandId::ClipboardHistory => enter_clipboard(ctx, &mut shown),
+                            CommandId::PasteSequentially => {
+                                shown.last_dismissed_at = Some(Instant::now());
+                                drop(shown);
+                                paste_next_from_queue(ctx, &close_with_hud)
+                            }
+                            CommandId::SearchEmoji => enter_emoji(ctx, &mut shown),
+                            CommandId::SearchSnippets => enter_snippets(ctx, &mut shown),
+                            CommandId::CreateSnippet => enter_create_snippet(&mut shown),
+                            CommandId::ShowNotes | CommandId::SearchNotes => {
+                                enter_notes(ctx, &mut shown)
+                            }
+                            CommandId::CreateNote => enter_create_note(&mut shown),
+                            CommandId::SearchQuicklinks => enter_quicklinks(ctx, &mut shown),
+                            CommandId::CreateQuicklink => enter_create_quicklink(&mut shown),
+                            CommandId::RunShellCommand => enter_run_shell(&mut shown),
+                            CommandId::ExportSettings => {
+                                shown.mode = Mode::Status;
+                                shown.query.clear();
+                                shown.selected = 0;
+                                shown.action_menu_open = false;
+                                drop(shown);
+                                run_export_backup(ctx)
+                            }
+                            CommandId::ImportSettings => {
+                                shown.last_dismissed_at = Some(Instant::now());
+                                drop(shown);
+                                spawn_import_backup_dialog(
+                                    Arc::clone(ctx),
+                                    Arc::clone(&handler_launcher),
+                                    Arc::clone(&handler_shown),
+                                    Arc::clone(&handler_handle),
+                                );
+                                close_reply()
+                            }
+                            CommandId::ImportFromRaycast => {
+                                shown.last_dismissed_at = Some(Instant::now());
+                                drop(shown);
+                                spawn_import_raycast_dialog(
+                                    Arc::clone(ctx),
+                                    Arc::clone(&handler_shown),
+                                    Arc::clone(&handler_handle),
+                                );
+                                close_reply()
+                            }
+                            CommandId::SearchFiles => {
+                                enter_files(&handler_launcher, ctx, &handler_handle, &mut shown)
+                            }
+                            CommandId::SwitchWindows => enter_switch_windows(&mut shown),
+                            CommandId::CalculatorHistory => {
+                                enter_calc_history(ctx, &handler_launcher, &mut shown)
+                            }
+                            CommandId::Settings => enter_settings(ctx, &mut shown),
+                            CommandId::About => enter_about(&handler_launcher, &mut shown),
+                            CommandId::Quit => PaletteReply::Quit,
+                            _ => enter_launcher(&handler_launcher, Some(ctx), &mut shown, true),
+                        };
+                    }
+                    PaletteReply::Keep
+                }
+                PaletteEvent::Command(_) => PaletteReply::Keep,
+                PaletteEvent::QueryChanged(query) => {
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.query = query.clone();
+                    shown.selected = 0;
+                    shown.action_menu_open = false;
+                    match shown.mode.clone() {
+                        Mode::Launcher => {
+                            let is_suggestions = query.trim().is_empty();
+                            if is_suggestions {
+                                shown.compact_expanded = false;
+                            }
+                            let rows = if is_suggestions {
+                                suggestions_with_favorites(
+                                    &handler_launcher,
+                                    handler_context.as_deref(),
+                                )
+                            } else {
+                                build_root_search_rows(
+                                    &handler_launcher,
+                                    handler_context.as_deref(),
+                                    &query,
+                                )
+                            };
+                            shown.rows = rows.clone();
+                            PaletteReply::Update(model_for_with_icons(
+                                &query,
+                                &rows,
+                                is_suggestions,
+                                0,
+                                handler_context.as_deref(),
+                                &mut shown,
+                            ))
+                        }
+                        Mode::Clipboard => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let filter = shown.clipboard_filter;
+                            let items = ctx.features.search_clipboard_view(&query, filter);
+                            shown.clipboard_items = items.clone();
+                            PaletteReply::Update(build_clipboard_screen_model(
+                                ctx, &mut shown, &query, &items, 0,
+                            ))
+                        }
+                        Mode::Emoji => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let cells = ctx.features.emoji_cells(&query);
+                            shown.emoji_cells = cells.clone();
+                            PaletteReply::Update(emoji_model(&query, cells, 0))
+                        }
+                        Mode::Snippets => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let list = ctx.features.search_snippets(&query);
+                            shown.snippets = list.clone();
+                            PaletteReply::Update(snippets_model(
+                                &query,
+                                &list,
+                                0,
+                                shown.show_detail,
+                                |rec| ctx.features.expand_snippet(rec),
+                            ))
+                        }
+                        Mode::CreateSnippet(draft) => {
+                            PaletteReply::Update(create_snippet_model(&draft, &query))
+                        }
+                        Mode::Notes => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let list = ctx.features.search_notes(&query);
+                            shown.notes = list.clone();
+                            PaletteReply::Update(notes_model(&query, &list, 0, shown.show_detail))
+                        }
+                        Mode::CreateNote(draft) => {
+                            PaletteReply::Update(create_note_model(&draft, &query))
+                        }
+                        Mode::Quicklinks => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let list = ctx.features.search_quicklinks(&query);
+                            shown.quicklinks = list.clone();
+                            PaletteReply::Update(quicklinks_model(
+                                &query,
+                                &list,
+                                0,
+                                shown.show_detail,
+                            ))
+                        }
+                        Mode::QuicklinkArg { link, .. } => {
+                            PaletteReply::Update(quicklink_arg_model(&link, &query))
+                        }
+                        Mode::SetAlias {
+                            title,
+                            current_alias,
+                            ..
+                        } => PaletteReply::Update(set_alias_model(
+                            &title,
+                            current_alias.as_deref(),
+                            &query,
+                        )),
+                        Mode::CreateQuicklink(draft) => {
+                            PaletteReply::Update(create_quicklink_model(&draft, &query))
+                        }
+                        Mode::RunShell => {
+                            let last = shown.last_shell_output.clone();
+                            PaletteReply::Update(run_shell_model(&query, last.as_deref()))
+                        }
+                        Mode::Status => PaletteReply::Keep,
+                        Mode::Files => {
+                            let filter = shown.file_filter;
+                            let current_dir = shown.file_dir.clone();
+                            let rows = shown.filtered_file_rows(&handler_launcher, &query);
+                            let indexing = handler_context
+                                .as_ref()
+                                .is_some_and(|c| c.features.is_file_indexing());
+                            let show_detail = shown.show_detail;
+                            shown.file_rows = rows.clone();
+                            PaletteReply::Update(files_model(
+                                &query,
+                                &rows,
+                                filter,
+                                current_dir.as_deref(),
+                                indexing,
+                                0,
+                                show_detail,
+                                |target| shown.lookup_or_queue_icon(target),
+                            ))
+                        }
+                        Mode::SwitchWindows => {
+                            let filtered = filter_windows(&query);
+                            shown.windows = filtered.clone();
+                            PaletteReply::Update(windows_model(&query, &filtered, 0))
+                        }
+                        Mode::CalcHistory => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let live = handler_launcher.evaluate_calc(&query);
+                            let entries = ctx.features.search_calc_history(&query);
+                            shown.calc_live = live.clone();
+                            shown.calc_entries = entries.clone();
+                            PaletteReply::Update(calc_history_model(
+                                &query,
+                                live.as_ref(),
+                                &entries,
+                                0,
+                                shown.show_detail,
+                            ))
+                        }
+                        Mode::Settings => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let rows = collect_settings_rows(ctx, &query);
+                            shown.settings_rows = rows.clone();
+                            PaletteReply::Update(settings_model_for(&query, &rows, 0))
+                        }
+                    }
+                }
+                PaletteEvent::Activated(index) => handle_activate(
+                    index,
+                    false,
+                    &handler_shown,
+                    &handler_launcher,
+                    &handler_runner,
+                    handler_context.as_ref(),
+                    &handler_handle,
+                    &close_reply,
+                    &close_with_hud,
+                ),
+                PaletteEvent::QuickSelect(index) => handle_activate(
+                    index,
+                    false,
+                    &handler_shown,
+                    &handler_launcher,
+                    &handler_runner,
+                    handler_context.as_ref(),
+                    &handler_handle,
+                    &close_reply,
+                    &close_with_hud,
+                ),
+                PaletteEvent::SecondaryActivated(index) => handle_activate(
+                    index,
+                    true,
+                    &handler_shown,
+                    &handler_launcher,
+                    &handler_runner,
+                    handler_context.as_ref(),
+                    &handler_handle,
+                    &close_reply,
+                    &close_with_hud,
+                ),
+                PaletteEvent::TertiaryActivated(index) => {
+                    handle_tertiary(index, &handler_shown, &close_with_hud)
+                }
+                PaletteEvent::QuaternaryActivated(index) => {
+                    handle_quaternary(index, &handler_shown, &close_with_hud)
+                }
+                PaletteEvent::CopyChord(index) => handle_copy_chord(
+                    index,
+                    &handler_shown,
                     &handler_launcher,
                     handler_context.as_deref(),
-                    &mut shown,
-                    false,
-                )
-            }
-            PaletteEvent::Refresh => {
-                let mut shown = lock_shown(&handler_shown);
-                match shown.mode {
-                    Mode::Launcher => {
-                        let query = shown.query.clone();
-                        let is_suggestions = query.trim().is_empty();
-                        let rows = if is_suggestions {
-                            shown.rows.clone()
-                        } else {
-                            let fresh = build_root_search_rows(
-                                &handler_launcher,
-                                handler_context.as_deref(),
-                                &query,
-                            );
-                            shown.rows = fresh.clone();
-                            fresh
-                        };
-                        let sel = shown.selected.min(rows.len().saturating_sub(1));
-                        shown.selected = sel;
-                        PaletteReply::Update(model_for_with_icons(
-                            &query,
-                            &rows,
-                            is_suggestions,
-                            sel,
-                            handler_context.as_deref(),
-                            &mut shown,
-                        ))
-                    }
-                    Mode::Files => {
-                        shown.invalidate_file_dir_cache_if_stale(Duration::from_millis(1500));
-                        let query = shown.query.clone();
-                        let filter = shown.file_filter;
-                        let current_dir = shown.file_dir.clone();
-                        let rows = shown.filtered_file_rows(&handler_launcher, &query);
-                        let indexing = handler_context
-                            .as_ref()
-                            .is_some_and(|c| c.features.is_file_indexing());
-                        let sel = shown.selected.min(rows.len().saturating_sub(1));
-                        let show_detail = shown.show_detail;
-                        shown.file_rows = rows.clone();
-                        shown.selected = sel;
-                        PaletteReply::Update(files_model(
-                            &query,
-                            &rows,
-                            filter,
-                            current_dir.as_deref(),
-                            indexing,
-                            sel,
-                            show_detail,
-                            |target| shown.lookup_or_queue_icon(target),
-                        ))
-                    }
-                    Mode::Clipboard => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let query = shown.query.clone();
-                        let filter = shown.clipboard_filter;
-                        let items = ctx.features.search_clipboard_view(&query, filter);
-                        let sel = shown.selected.min(items.len().saturating_sub(1));
-                        shown.clipboard_items = items.clone();
-                        shown.selected = sel;
-                        let mut model =
-                            build_clipboard_screen_model(ctx, &mut shown, &query, &items, sel);
-                        apply_recording_overlay(&mut model, &shown);
-                        PaletteReply::Update(model)
-                    }
-                    Mode::RunShell => {
-                        let query = shown.query.clone();
-                        let last = shown.last_shell_output.clone();
-                        PaletteReply::Update(run_shell_model(&query, last.as_deref()))
-                    }
-                    _ => PaletteReply::Keep,
-                }
-            }
-            PaletteEvent::SelectionChanged(idx) => {
-                let mut shown = lock_shown(&handler_shown);
-                shown.selected = idx;
-                if shown.action_menu_open {
-                    return PaletteReply::Keep;
-                }
-                match rebuild_current_model(handler_context.as_deref(), &mut shown, None) {
-                    Some(model) => PaletteReply::Update(model),
-                    None => PaletteReply::Keep,
-                }
-            }
-            PaletteEvent::Command(COMMAND_OPEN_SETTINGS) | PaletteEvent::OpenSettings => {
-                let Some(ctx) = handler_context.as_ref() else {
-                    return PaletteReply::Keep;
-                };
-                let mut shown = lock_shown(&handler_shown);
-                shown.visible = true;
-                enter_settings(ctx, &mut shown)
-            }
-            PaletteEvent::Command(COMMAND_SHOW_STATUS) => {
-                let mut shown = lock_shown(&handler_shown);
-                let Some((badge, title, detail, refresh_theme)) = shown.pending_status.take()
-                else {
-                    return PaletteReply::Keep;
-                };
-                shown.mode = Mode::Status;
-                shown.query.clear();
-                shown.selected = 0;
-                shown.action_menu_open = false;
-                let model = status_screen_model(&badge, &title, &detail, Vec::new());
-                if refresh_theme {
-                    if let Some(ctx) = handler_context.as_ref() {
-                        return PaletteReply::UpdateTheme(
-                            Box::new(theme_from_settings(&ctx.settings)),
-                            model,
-                        );
-                    }
-                }
-                PaletteReply::Navigate(model)
-            }
-            PaletteEvent::Command(COMMAND_HOTKEY_CAPTURED) => {
-                let Some(ctx) = handler_context.as_ref() else {
-                    return PaletteReply::Keep;
-                };
-                let mut shown = lock_shown(&handler_shown);
-                let Some(event) = lock_or_recover(&shown.captured_hotkey).take() else {
-                    shown.recording_hotkey = None;
-                    return PaletteReply::Keep;
-                };
-                let trigger = match event {
-                    CapturedHotkeyEvent::Trigger(t) => t,
-                    CapturedHotkeyEvent::Cancelled => {
-                        shown.recording_hotkey = None;
-                        let toast = ToastModel {
-                            kind: ToastKind::Info,
-                            message: "Hotkey recording cancelled".to_string(),
-                        };
-                        return match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
-                            Some(model) => PaletteReply::Update(model),
-                            None => PaletteReply::Keep,
-                        };
-                    }
-                };
-                let Some(target) = shown.recording_hotkey.take() else {
-                    return PaletteReply::Keep;
-                };
-                let formatted = trigger.format();
-                let toast = match target {
-                    RecordingTarget::Launcher => {
-                        if let Some(conflict) = hotkeys::check_hotkey_conflict(
-                            &*ctx.settings,
-                            trigger,
-                            Some(BINDING_LAUNCHER_TOGGLE),
-                        ) {
-                            ToastModel {
-                                kind: ToastKind::Error,
-                                message: hotkeys::conflict_message(conflict),
-                            }
-                        } else {
-                            let _ = hotkeys::save_launcher_hotkey(&*ctx.settings, trigger);
-                            ctx.hotkeys.reload_bindings(&ctx.settings);
-                            if shown.mode == Mode::Settings {
-                                let q = shown.query.clone();
-                                shown.settings_rows = collect_settings_rows(ctx, &q);
-                            }
-                            ToastModel {
-                                kind: ToastKind::Success,
-                                message: format!("Launcher hotkey set to {formatted}"),
-                            }
-                        }
-                    }
-                    RecordingTarget::Command { entry_id, title } => {
-                        let binding_id = hotkeys::command_binding_id(&entry_id);
-                        if let Some(conflict) = hotkeys::check_hotkey_conflict(
-                            &*ctx.settings,
-                            trigger,
-                            Some(&binding_id),
-                        ) {
-                            ToastModel {
-                                kind: ToastKind::Error,
-                                message: hotkeys::conflict_message(conflict),
-                            }
-                        } else {
-                            let _ = hotkeys::set_command_hotkey(
-                                &*ctx.settings,
-                                &entry_id,
-                                Some(trigger),
-                            );
-                            ctx.hotkeys.reload_bindings(&ctx.settings);
-                            if shown.mode == Mode::Settings {
-                                let q = shown.query.clone();
-                                shown.settings_rows = collect_settings_rows(ctx, &q);
-                            }
-                            ToastModel {
-                                kind: ToastKind::Success,
-                                message: format!("Hotkey {formatted} bound to {title}"),
-                            }
-                        }
-                    }
-                };
-                match rebuild_current_model(Some(ctx), &mut shown, Some(toast)) {
-                    Some(model) => PaletteReply::Update(model),
-                    None => PaletteReply::Keep,
-                }
-            }
-            PaletteEvent::Command(COMMAND_DISPATCH_HOTKEY) => {
-                let Some(ctx) = handler_context.as_ref() else {
-                    return PaletteReply::Keep;
-                };
-                let Some(entry_id) = lock_or_recover(&ctx.pending_hotkey_command).take() else {
-                    return PaletteReply::Keep;
-                };
-                let mut shown = lock_shown(&handler_shown);
-                if let Some(ql_name) = entry_id.strip_prefix(ROOT_QUICKLINK_PREFIX) {
-                    if let Some(link) = ctx
-                        .features
-                        .search_quicklinks("")
-                        .into_iter()
-                        .find(|l| l.name.eq_ignore_ascii_case(ql_name))
-                    {
-                        return enter_quicklink_arg(link, true, String::new(), &mut shown);
-                    }
-                    return PaletteReply::Keep;
-                }
-                if let Some(cmd) = LauncherState::command_of(&entry_id) {
-                    // Pressing an action's global shortcut while YAL is already showing
-                    // that exact screen toggles it closed cleanly (just like Raycast).
-                    let already_on_target = shown.visible
-                        && match cmd {
-                            CommandId::ClipboardHistory => shown.mode == Mode::Clipboard,
-                            CommandId::SearchEmoji => shown.mode == Mode::Emoji,
-                            CommandId::SearchSnippets => shown.mode == Mode::Snippets,
-                            CommandId::SearchFiles => shown.mode == Mode::Files,
-                            CommandId::SwitchWindows => shown.mode == Mode::SwitchWindows,
-                            CommandId::ShowNotes | CommandId::SearchNotes => {
-                                shown.mode == Mode::Notes
-                            }
-                            CommandId::SearchQuicklinks => shown.mode == Mode::Quicklinks,
-                            CommandId::CalculatorHistory => shown.mode == Mode::CalcHistory,
-                            CommandId::Settings => shown.mode == Mode::Settings,
-                            _ => false,
-                        };
-                    if already_on_target {
-                        shown.visible = false;
-                        shown.last_dismissed_at = Some(Instant::now());
-                        drop(shown);
-                        return close_reply();
-                    }
-                    shown.visible = true;
-                    return match cmd {
-                        CommandId::ClipboardHistory => enter_clipboard(ctx, &mut shown),
-                        CommandId::PasteSequentially => {
-                            shown.last_dismissed_at = Some(Instant::now());
-                            drop(shown);
-                            paste_next_from_queue(ctx, &close_with_hud)
-                        }
-                        CommandId::SearchEmoji => enter_emoji(ctx, &mut shown),
-                        CommandId::SearchSnippets => enter_snippets(ctx, &mut shown),
-                        CommandId::CreateSnippet => enter_create_snippet(&mut shown),
-                        CommandId::ShowNotes | CommandId::SearchNotes => {
-                            enter_notes(ctx, &mut shown)
-                        }
-                        CommandId::CreateNote => enter_create_note(&mut shown),
-                        CommandId::SearchQuicklinks => enter_quicklinks(ctx, &mut shown),
-                        CommandId::CreateQuicklink => enter_create_quicklink(&mut shown),
-                        CommandId::RunShellCommand => enter_run_shell(&mut shown),
-                        CommandId::ExportSettings => {
-                            shown.mode = Mode::Status;
-                            shown.query.clear();
-                            shown.selected = 0;
-                            shown.action_menu_open = false;
-                            drop(shown);
-                            run_export_backup(ctx)
-                        }
-                        CommandId::ImportSettings => {
-                            shown.last_dismissed_at = Some(Instant::now());
-                            drop(shown);
-                            spawn_import_backup_dialog(
-                                Arc::clone(ctx),
-                                Arc::clone(&handler_launcher),
-                                Arc::clone(&handler_shown),
-                                Arc::clone(&handler_handle),
-                            );
-                            close_reply()
-                        }
-                        CommandId::ImportFromRaycast => {
-                            shown.last_dismissed_at = Some(Instant::now());
-                            drop(shown);
-                            spawn_import_raycast_dialog(
-                                Arc::clone(ctx),
-                                Arc::clone(&handler_shown),
-                                Arc::clone(&handler_handle),
-                            );
-                            close_reply()
-                        }
-                        CommandId::SearchFiles => {
-                            enter_files(&handler_launcher, ctx, &handler_handle, &mut shown)
-                        }
-                        CommandId::SwitchWindows => enter_switch_windows(&mut shown),
-                        CommandId::CalculatorHistory => {
-                            enter_calc_history(ctx, &handler_launcher, &mut shown)
-                        }
-                        CommandId::Settings => enter_settings(ctx, &mut shown),
-                        CommandId::About => enter_about(&handler_launcher, &mut shown),
-                        CommandId::Quit => PaletteReply::Quit,
-                        _ => enter_launcher(&handler_launcher, Some(ctx), &mut shown, true),
-                    };
-                }
-                PaletteReply::Keep
-            }
-            PaletteEvent::Command(_) => PaletteReply::Keep,
-            PaletteEvent::QueryChanged(query) => {
-                let mut shown = lock_shown(&handler_shown);
-                shown.query = query.clone();
-                shown.selected = 0;
-                shown.action_menu_open = false;
-                match shown.mode.clone() {
-                    Mode::Launcher => {
-                        let is_suggestions = query.trim().is_empty();
-                        if is_suggestions {
-                            shown.compact_expanded = false;
-                        }
-                        let rows = if is_suggestions {
-                            suggestions_with_favorites(
-                                &handler_launcher,
-                                handler_context.as_deref(),
-                            )
-                        } else {
-                            build_root_search_rows(
-                                &handler_launcher,
-                                handler_context.as_deref(),
-                                &query,
-                            )
-                        };
-                        shown.rows = rows.clone();
-                        PaletteReply::Update(model_for_with_icons(
-                            &query,
-                            &rows,
-                            is_suggestions,
-                            0,
-                            handler_context.as_deref(),
-                            &mut shown,
-                        ))
-                    }
-                    Mode::Clipboard => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let filter = shown.clipboard_filter;
-                        let items = ctx.features.search_clipboard_view(&query, filter);
-                        shown.clipboard_items = items.clone();
-                        PaletteReply::Update(build_clipboard_screen_model(
-                            ctx, &mut shown, &query, &items, 0,
-                        ))
-                    }
-                    Mode::Emoji => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let cells = ctx.features.emoji_cells(&query);
-                        shown.emoji_cells = cells.clone();
-                        PaletteReply::Update(emoji_model(&query, cells, 0))
-                    }
-                    Mode::Snippets => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let list = ctx.features.search_snippets(&query);
-                        shown.snippets = list.clone();
-                        PaletteReply::Update(snippets_model(
-                            &query,
-                            &list,
-                            0,
-                            shown.show_detail,
-                            |rec| ctx.features.expand_snippet(rec),
-                        ))
-                    }
-                    Mode::CreateSnippet(draft) => {
-                        PaletteReply::Update(create_snippet_model(&draft, &query))
-                    }
-                    Mode::Notes => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let list = ctx.features.search_notes(&query);
-                        shown.notes = list.clone();
-                        PaletteReply::Update(notes_model(&query, &list, 0, shown.show_detail))
-                    }
-                    Mode::CreateNote(draft) => {
-                        PaletteReply::Update(create_note_model(&draft, &query))
-                    }
-                    Mode::Quicklinks => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let list = ctx.features.search_quicklinks(&query);
-                        shown.quicklinks = list.clone();
-                        PaletteReply::Update(quicklinks_model(&query, &list, 0, shown.show_detail))
-                    }
-                    Mode::QuicklinkArg { link, .. } => {
-                        PaletteReply::Update(quicklink_arg_model(&link, &query))
-                    }
-                    Mode::SetAlias {
-                        title,
-                        current_alias,
-                        ..
-                    } => PaletteReply::Update(set_alias_model(
-                        &title,
-                        current_alias.as_deref(),
-                        &query,
-                    )),
-                    Mode::CreateQuicklink(draft) => {
-                        PaletteReply::Update(create_quicklink_model(&draft, &query))
-                    }
-                    Mode::RunShell => {
-                        let last = shown.last_shell_output.clone();
-                        PaletteReply::Update(run_shell_model(&query, last.as_deref()))
-                    }
-                    Mode::Status => PaletteReply::Keep,
-                    Mode::Files => {
-                        let filter = shown.file_filter;
-                        let current_dir = shown.file_dir.clone();
-                        let rows = shown.filtered_file_rows(&handler_launcher, &query);
-                        let indexing = handler_context
-                            .as_ref()
-                            .is_some_and(|c| c.features.is_file_indexing());
-                        let show_detail = shown.show_detail;
-                        shown.file_rows = rows.clone();
-                        PaletteReply::Update(files_model(
-                            &query,
-                            &rows,
-                            filter,
-                            current_dir.as_deref(),
-                            indexing,
-                            0,
-                            show_detail,
-                            |target| shown.lookup_or_queue_icon(target),
-                        ))
-                    }
-                    Mode::SwitchWindows => {
-                        let filtered = filter_windows(&query);
-                        shown.windows = filtered.clone();
-                        PaletteReply::Update(windows_model(&query, &filtered, 0))
-                    }
-                    Mode::CalcHistory => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let live = handler_launcher.evaluate_calc(&query);
-                        let entries = ctx.features.search_calc_history(&query);
-                        shown.calc_live = live.clone();
-                        shown.calc_entries = entries.clone();
-                        PaletteReply::Update(calc_history_model(
-                            &query,
-                            live.as_ref(),
-                            &entries,
-                            0,
-                            shown.show_detail,
-                        ))
-                    }
-                    Mode::Settings => {
-                        let Some(ctx) = handler_context.as_ref() else {
-                            return PaletteReply::Keep;
-                        };
-                        let rows = collect_settings_rows(ctx, &query);
-                        shown.settings_rows = rows.clone();
-                        PaletteReply::Update(settings_model_for(&query, &rows, 0))
-                    }
-                }
-            }
-            PaletteEvent::Activated(index) => handle_activate(
-                index,
-                false,
-                &handler_shown,
-                &handler_launcher,
-                &handler_runner,
-                handler_context.as_ref(),
-                &handler_handle,
-                &close_reply,
-                &close_with_hud,
-            ),
-            PaletteEvent::QuickSelect(index) => handle_activate(
-                index,
-                false,
-                &handler_shown,
-                &handler_launcher,
-                &handler_runner,
-                handler_context.as_ref(),
-                &handler_handle,
-                &close_reply,
-                &close_with_hud,
-            ),
-            PaletteEvent::SecondaryActivated(index) => handle_activate(
-                index,
-                true,
-                &handler_shown,
-                &handler_launcher,
-                &handler_runner,
-                handler_context.as_ref(),
-                &handler_handle,
-                &close_reply,
-                &close_with_hud,
-            ),
-            PaletteEvent::TertiaryActivated(index) => {
-                handle_tertiary(index, &handler_shown, &close_with_hud)
-            }
-            PaletteEvent::QuaternaryActivated(index) => {
-                handle_quaternary(index, &handler_shown, &close_with_hud)
-            }
-            PaletteEvent::CopyChord(index) => handle_copy_chord(
-                index,
-                &handler_shown,
-                &handler_launcher,
-                handler_context.as_deref(),
-                &close_with_hud,
-            ),
-            PaletteEvent::Action(action, selected) => handle_action(
-                action,
-                selected,
-                &handler_shown,
-                &handler_launcher,
-                handler_context.as_deref(),
-                &handler_handle,
-                &close_with_hud,
-            ),
-            PaletteEvent::ActionMenuDismissed => {
-                let mut shown = lock_shown(&handler_shown);
-                shown.action_menu_open = false;
-                PaletteReply::Keep
-            }
-            PaletteEvent::ActionMenuActivated(action_id) => handle_action_menu_choice(
-                &action_id,
-                &handler_shown,
-                &handler_launcher,
-                &handler_runner,
-                handler_context.as_ref(),
-                &handler_handle,
-                &close_reply,
-                &close_with_hud,
-            ),
-            PaletteEvent::Escape => handle_escape_or_back(
-                &handler_shown,
-                &handler_launcher,
-                handler_context.as_deref(),
-                true,
-                &close_reply,
-            ),
-            PaletteEvent::WindowMoved(origin) => {
-                if let Some(ctx) = handler_context.as_ref() {
-                    match origin {
-                        Some((x, y)) => {
-                            let _ = ctx.settings.set(KEY_POSITION_X, &x.to_string());
-                            let _ = ctx.settings.set(KEY_POSITION_Y, &y.to_string());
-                        }
-                        None => {
-                            let _ = ctx.settings.set(KEY_POSITION_X, "");
-                            let _ = ctx.settings.set(KEY_POSITION_Y, "");
-                        }
-                    }
+                    &close_with_hud,
+                ),
+                PaletteEvent::Action(action, selected) => handle_action(
+                    action,
+                    selected,
+                    &handler_shown,
+                    &handler_launcher,
+                    handler_context.as_deref(),
+                    &handler_handle,
+                    &close_with_hud,
+                ),
+                PaletteEvent::ActionMenuDismissed => {
                     let mut shown = lock_shown(&handler_shown);
-                    if shown.mode == Mode::Settings {
-                        let q = shown.query.clone();
-                        let updated = collect_settings_rows(ctx, &q);
-                        let clamped = shown.selected.min(updated.len().saturating_sub(1));
-                        shown.settings_rows = updated.clone();
-                        shown.selected = clamped;
-                        let mut model = settings_model_for(&q, &updated, clamped);
-                        if origin.is_none() {
-                            model.toast = Some(ToastModel {
-                                kind: ToastKind::Info,
-                                message: "Window centered".to_string(),
-                            });
-                        }
-                        return PaletteReply::Update(model);
-                    }
-                }
-                PaletteReply::Keep
-            }
-            PaletteEvent::Dismissed => {
-                let mut shown = lock_shown(&handler_shown);
-                shown.visible = false;
-                shown.last_dismissed_at = Some(Instant::now());
-                shown.action_menu_open = false;
-                shown.compact_expanded = false;
-                if shown.recording_hotkey.take().is_some() {
-                    if let Some(ctx) = handler_context.as_ref() {
-                        ctx.hotkeys.cancel_capture();
-                    }
-                }
-                if quit_on_close {
-                    PaletteReply::Quit
-                } else {
+                    shown.action_menu_open = false;
                     PaletteReply::Keep
+                }
+                PaletteEvent::ActionMenuActivated(action_id) => handle_action_menu_choice(
+                    &action_id,
+                    &handler_shown,
+                    &handler_launcher,
+                    &handler_runner,
+                    handler_context.as_ref(),
+                    &handler_handle,
+                    &close_reply,
+                    &close_with_hud,
+                ),
+                PaletteEvent::Escape => handle_escape_or_back(
+                    &handler_shown,
+                    &handler_launcher,
+                    handler_context.as_deref(),
+                    true,
+                    &close_reply,
+                ),
+                PaletteEvent::WindowMoved(origin) => {
+                    if let Some(ctx) = handler_context.as_ref() {
+                        match origin {
+                            Some((x, y)) => {
+                                let _ = ctx.settings.set(KEY_POSITION_X, &x.to_string());
+                                let _ = ctx.settings.set(KEY_POSITION_Y, &y.to_string());
+                            }
+                            None => {
+                                let _ = ctx.settings.set(KEY_POSITION_X, "");
+                                let _ = ctx.settings.set(KEY_POSITION_Y, "");
+                            }
+                        }
+                        let mut shown = lock_shown(&handler_shown);
+                        if shown.mode == Mode::Settings {
+                            let q = shown.query.clone();
+                            let updated = collect_settings_rows(ctx, &q);
+                            let clamped = shown.selected.min(updated.len().saturating_sub(1));
+                            shown.settings_rows = updated.clone();
+                            shown.selected = clamped;
+                            let mut model = settings_model_for(&q, &updated, clamped);
+                            if origin.is_none() {
+                                model.toast = Some(ToastModel {
+                                    kind: ToastKind::Info,
+                                    message: "Window centered".to_string(),
+                                });
+                            }
+                            return PaletteReply::Update(model);
+                        }
+                    }
+                    PaletteReply::Keep
+                }
+                PaletteEvent::Dismissed => {
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.visible = false;
+                    shown.last_dismissed_at = Some(Instant::now());
+                    shown.action_menu_open = false;
+                    shown.compact_expanded = false;
+                    if shown.recording_hotkey.take().is_some() {
+                        if let Some(ctx) = handler_context.as_ref() {
+                            ctx.hotkeys.cancel_capture();
+                        }
+                    }
+                    if quit_on_close {
+                        PaletteReply::Quit
+                    } else {
+                        PaletteReply::Keep
+                    }
+                }
+            }
+        })();
+        if matches!(
+            reply,
+            PaletteReply::Close | PaletteReply::CloseWithHud(_) | PaletteReply::Quit
+        ) {
+            let mut shown = lock_shown(&handler_shown);
+            shown.visible = false;
+            shown.last_dismissed_at = Some(Instant::now());
+            shown.action_menu_open = false;
+            shown.compact_expanded = false;
+            if shown.recording_hotkey.take().is_some() {
+                if let Some(ctx) = handler_context.as_ref() {
+                    ctx.hotkeys.cancel_capture();
                 }
             }
         }
+        reply
     };
 
     let rows = suggestions_with_favorites(&launcher, context.as_deref());
@@ -4796,7 +4825,7 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                 _ => row.value.clone(),
             };
             let description = if is_cmd_hotkey {
-                "Press Enter to record shortcut · Ctrl+Del to clear"
+                "Press Enter to record shortcut · Ctrl+D to clear"
             } else {
                 match row.key.as_str() {
                     KEY_RECORD_LAUNCHER_HOTKEY => "Press Enter, then press any chord or double-tap",
