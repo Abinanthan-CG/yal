@@ -21,4 +21,4 @@ windows = { workspace = true, features = [
 ] }
 serde = { workspace = true }
 serde_json = { workspace = true }
-windows-numerics = "0.3"
+windows-numerics = "0.100"
