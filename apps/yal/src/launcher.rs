@@ -66,6 +66,91 @@ pub const FILE_SECTION: &str = "Files";
 /// The prefix a file row's id carries.
 pub const FILE_PREFIX: &str = "file:";
 
+/// Built-in native power-tool command entry IDs.
+pub const CMD_SCREEN_OCR: &str = "command:screen-ocr";
+pub const CMD_COLOR_PICKER: &str = "command:color-picker";
+pub const CMD_COLOR_HISTORY: &str = "command:color-history";
+
+struct PowerToolSpec {
+    id: &'static str,
+    name: &'static str,
+    detail: &'static str,
+    keywords: &'static [&'static str],
+}
+
+const POWER_TOOL_COMMANDS: &[PowerToolSpec] = &[
+    PowerToolSpec {
+        id: CMD_SCREEN_OCR,
+        name: "Extract Text (OCR)",
+        detail: "Capture text from any screen region (Smart/Raw)",
+        keywords: &[
+            "ocr",
+            "text",
+            "capture",
+            "screenshot",
+            "normcap",
+            "scan",
+            "read",
+        ],
+    },
+    PowerToolSpec {
+        id: CMD_COLOR_PICKER,
+        name: "Pick Color",
+        detail: "Sample any screen pixel with magnifier loupe",
+        keywords: &[
+            "color",
+            "eyedropper",
+            "hex",
+            "rgb",
+            "hsl",
+            "oklch",
+            "pipette",
+            "swatch",
+        ],
+    },
+    PowerToolSpec {
+        id: CMD_COLOR_HISTORY,
+        name: "Color History",
+        detail: "Inspect picked colors, WCAG contrast & shade ramps",
+        keywords: &[
+            "color",
+            "palette",
+            "swatch",
+            "contrast",
+            "wcag",
+            "hex",
+            "inspector",
+        ],
+    },
+];
+
+/// Whether `id` names one of the built-in native power-tool commands.
+pub fn is_power_tool_command(id: &str) -> bool {
+    POWER_TOOL_COMMANDS.iter().any(|spec| spec.id == id)
+}
+
+/// Build a launcher `ResultRow` for a built-in native power-tool command ID.
+pub fn power_tool_row(id: &str) -> Option<ResultRow> {
+    POWER_TOOL_COMMANDS
+        .iter()
+        .find(|spec| spec.id == id)
+        .map(power_tool_row_from_spec)
+}
+
+fn power_tool_row_from_spec(spec: &PowerToolSpec) -> ResultRow {
+    ResultRow {
+        id: spec.id.to_string(),
+        name: spec.name.to_string(),
+        detail: spec.detail.to_string(),
+        kind: COMMAND_SECTION.to_string(),
+        target: spec.id.to_string(),
+        needs_confirm: false,
+        is_dir: None,
+        arguments: Vec::new(),
+        ..ResultRow::default()
+    }
+}
+
 /// The built-in commands this build can run.
 ///
 /// The catalogue holds every built-in command; the launcher offers only the
@@ -402,7 +487,7 @@ impl LauncherState {
         if wanted.is_empty() {
             return Vec::new();
         }
-        CommandId::ALL
+        let mut rows: Vec<ResultRow> = CommandId::ALL
             .into_iter()
             .filter(|command| AVAILABLE_COMMANDS.contains(command))
             .filter(|command| self.commands.switches.is_listed(*command))
@@ -425,7 +510,18 @@ impl LauncherState {
                 arguments: Vec::new(),
                 ..ResultRow::default()
             })
-            .collect()
+            .collect();
+        rows.extend(
+            POWER_TOOL_COMMANDS
+                .iter()
+                .filter(|spec| {
+                    spec.name.to_lowercase().contains(&wanted)
+                        || spec.detail.to_lowercase().contains(&wanted)
+                        || spec.keywords.iter().any(|kw| kw.contains(&wanted))
+                })
+                .map(power_tool_row_from_spec),
+        );
+        rows
     }
 
     /// The user's own commands whose name the query finds.
@@ -474,6 +570,11 @@ impl LauncherState {
     /// The built-in command a row id names.
     pub fn command_of(id: &str) -> Option<CommandId> {
         CommandId::from_entry_id(id)
+    }
+
+    /// Resolve a built-in native power-tool command row by its entry ID.
+    pub fn power_tool_row(id: &str) -> Option<ResultRow> {
+        power_tool_row(id)
     }
 
     /// The programs the launcher knows about.
@@ -677,6 +778,9 @@ impl LauncherState {
                     ..ResultRow::default()
                 });
             }
+        }
+        if let Some(row) = Self::power_tool_row(id) {
+            return Some(row);
         }
         if let Some(command) = self.custom_command_of(id) {
             if command.is_enabled {
@@ -1406,5 +1510,61 @@ mod tests {
         assert_eq!(query_match[0].name, "notes.md");
 
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn power_tool_commands_are_searchable_by_name_detail_and_keywords() {
+        let launcher = launcher(vec![]);
+
+        for query in ["ocr", "normcap"] {
+            let rows = launcher.search(query);
+            assert!(
+                rows.iter()
+                    .any(|row| row.id == CMD_SCREEN_OCR && row.kind == COMMAND_SECTION),
+                "expected `{query}` to find `{CMD_SCREEN_OCR}`"
+            );
+        }
+
+        for query in ["eyedropper", "oklch"] {
+            let rows = launcher.search(query);
+            assert!(
+                rows.iter()
+                    .any(|row| row.id == CMD_COLOR_PICKER && row.kind == COMMAND_SECTION),
+                "expected `{query}` to find `{CMD_COLOR_PICKER}`"
+            );
+        }
+
+        for query in ["wcag", "color history"] {
+            let rows = launcher.search(query);
+            assert!(
+                rows.iter()
+                    .any(|row| row.id == CMD_COLOR_HISTORY && row.kind == COMMAND_SECTION),
+                "expected `{query}` to find `{CMD_COLOR_HISTORY}`"
+            );
+        }
+    }
+
+    #[test]
+    fn row_for_entry_id_resolves_all_power_tool_commands() {
+        let launcher = launcher(vec![]);
+        for (id, expected_name) in [
+            (CMD_SCREEN_OCR, "Extract Text (OCR)"),
+            (CMD_COLOR_PICKER, "Pick Color"),
+            (CMD_COLOR_HISTORY, "Color History"),
+        ] {
+            assert!(is_power_tool_command(id));
+            let row = launcher
+                .row_for_entry_id(id)
+                .expect("resolve power-tool command row");
+            assert_eq!(row.id, id);
+            assert_eq!(row.target, id);
+            assert_eq!(row.name, expected_name);
+            assert_eq!(row.kind, COMMAND_SECTION);
+            assert!(!row.needs_confirm);
+            assert_eq!(row.is_dir, None);
+            assert!(row.arguments.is_empty());
+        }
+        assert!(!is_power_tool_command("command:unknown"));
+        assert!(power_tool_row("command:unknown").is_none());
     }
 }

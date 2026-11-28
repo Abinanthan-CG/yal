@@ -3,6 +3,7 @@
 //! `tc-ui` is the native surface: a borderless window, painted with Direct2D
 //! and typed into with a real Windows edit control.
 
+pub mod capture_overlay;
 pub mod event;
 pub mod hud;
 pub mod model;
@@ -11,6 +12,10 @@ pub mod theme;
 pub mod tokens;
 pub mod window;
 
+pub use capture_overlay::{
+    run_capture_overlay, CaptureMode, CaptureResult, OverlayColorFormat, OverlayOcrMode,
+    OverlaySnapshot,
+};
 pub use event::{ignore, ActionKey, Handler, PaletteEvent, PaletteReply};
 pub use hud::show_hud;
 pub use model::{

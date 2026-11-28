@@ -18,6 +18,7 @@ mod palette;
 mod screens;
 mod selftest;
 mod shell;
+mod tools;
 mod win_settings;
 
 use std::process::ExitCode;

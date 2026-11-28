@@ -48,6 +48,25 @@ const EMOJI_FONT_FAMILY: &str = "Segoe UI Emoji";
 /// Maximum GPU-cached application icon bitmaps to keep RAM strictly bounded.
 const MAX_CACHED_BITMAPS: usize = 128;
 
+/// Layout constants for the horizontal tint/shade color ramp strip in `DetailPane`.
+const COLOR_RAMP_TILE_HEIGHT: f32 = 28.0;
+const COLOR_RAMP_TILE_GAP: f32 = 4.0;
+const COLOR_RAMP_TILE_RADIUS: f32 = 5.0;
+const COLOR_RAMP_LABEL_GAP: f32 = 3.0;
+const COLOR_RAMP_LABEL_HEIGHT: f32 = 13.0;
+const COLOR_RAMP_TOTAL_HEIGHT: f32 =
+    COLOR_RAMP_TILE_HEIGHT + COLOR_RAMP_LABEL_GAP + COLOR_RAMP_LABEL_HEIGHT;
+
+/// Geometry for one swatch tile and its centered label in a horizontal color ramp.
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct ColorRampTile {
+    left: f32,
+    top: f32,
+    right: f32,
+    bottom: f32,
+    label_top: f32,
+}
+
 /// Draws the palette onto a window in crisp 1:1 DIPs.
 pub struct Renderer {
     target: ID2D1HwndRenderTarget,
@@ -73,6 +92,7 @@ pub struct Renderer {
     detail_body_format: IDWriteTextFormat,
     meta_label_format: IDWriteTextFormat,
     meta_value_format: IDWriteTextFormat,
+    ramp_label_format: IDWriteTextFormat,
     action_title_format: IDWriteTextFormat,
     round_stroke: Option<ID2D1StrokeStyle>,
     logo_ring: Option<ID2D1PathGeometry>,
@@ -266,6 +286,13 @@ impl Renderer {
             11.5,
             DWRITE_TEXT_ALIGNMENT_TRAILING,
         )?;
+        let ramp_label_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_MEDIUM,
+            9.5,
+            DWRITE_TEXT_ALIGNMENT_CENTER,
+        )?;
         let action_title_format = dwrite_format(
             &dwrite,
             FONT_FAMILY,
@@ -311,6 +338,7 @@ impl Renderer {
             detail_body_format,
             meta_label_format,
             meta_value_format,
+            ramp_label_format,
             action_title_format,
             round_stroke,
             logo_ring,
@@ -344,6 +372,7 @@ impl Renderer {
             &self.emoji_label_format,
             &self.meta_label_format,
             &self.meta_value_format,
+            &self.ramp_label_format,
             &self.action_title_format,
         ] {
             unsafe {
@@ -1801,7 +1830,14 @@ impl Renderer {
 
         // Top preview surface: Color banner > Preview bitmap > Multi-line wrapped text.
         if let Some([r, g, b, a]) = detail.color_swatch {
-            let sw_h = (preview_h * 0.58).clamp(72.0, 140.0);
+            let sw_h = if detail.color_ramp.is_empty() {
+                (preview_h * 0.58).clamp(72.0, 140.0)
+            } else {
+                let ramp_section_h = 10.0 + COLOR_RAMP_TOTAL_HEIGHT;
+                let body_reserve = if detail.body.is_empty() { 4.0 } else { 28.0 };
+                let max_sw = (preview_h - ramp_section_h - body_reserve).max(48.0);
+                (preview_h * 0.44).clamp(48.0, 108.0).min(max_sw)
+            };
             let card = D2D1_ROUNDED_RECT {
                 rect: D2D_RECT_F {
                     left: left + pad,
@@ -1822,24 +1858,58 @@ impl Renderer {
                     self.target.DrawRoundedRectangle(&card, &ring, 1.0, None);
                 }
             }
-            if !detail.body.is_empty() {
-                if let Some(layout) = self.layout(
-                    &detail.body,
-                    &self.detail_body_format,
+            if detail.color_ramp.is_empty() {
+                if !detail.body.is_empty() {
+                    if let Some(layout) = self.layout(
+                        &detail.body,
+                        &self.detail_body_format,
+                        content_w,
+                        (preview_bottom - (preview_top + sw_h + 12.0)).max(24.0),
+                    ) {
+                        if let Some(fg) = self.brush(theme.text) {
+                            unsafe {
+                                self.target.DrawTextLayout(
+                                    Vector2 {
+                                        X: left + pad,
+                                        Y: preview_top + sw_h + 12.0,
+                                    },
+                                    &layout,
+                                    &fg,
+                                    D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                                );
+                            }
+                        }
+                    }
+                }
+            } else {
+                let mut cursor_y = preview_top + sw_h + 10.0;
+                let ramp_h = self.draw_color_ramp(
+                    &detail.color_ramp,
+                    theme,
+                    left + pad,
+                    cursor_y,
                     content_w,
-                    (preview_bottom - (preview_top + sw_h + 12.0)).max(24.0),
-                ) {
-                    if let Some(fg) = self.brush(theme.text) {
-                        unsafe {
-                            self.target.DrawTextLayout(
-                                Vector2 {
-                                    X: left + pad,
-                                    Y: preview_top + sw_h + 12.0,
-                                },
-                                &layout,
-                                &fg,
-                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
-                            );
+                );
+                cursor_y += ramp_h + 10.0;
+                if !detail.body.is_empty() && preview_bottom > cursor_y + 8.0 {
+                    if let Some(layout) = self.layout(
+                        &detail.body,
+                        &self.detail_body_format,
+                        content_w,
+                        (preview_bottom - cursor_y).max(20.0),
+                    ) {
+                        if let Some(fg) = self.brush(theme.text) {
+                            unsafe {
+                                self.target.DrawTextLayout(
+                                    Vector2 {
+                                        X: left + pad,
+                                        Y: cursor_y,
+                                    },
+                                    &layout,
+                                    &fg,
+                                    D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                                );
+                            }
                         }
                     }
                 }
@@ -1877,49 +1947,63 @@ impl Renderer {
                 }
             }
         } else {
-            // Subtle inner preview card for text/code/notes/clipboard body.
-            let card = D2D1_ROUNDED_RECT {
-                rect: D2D_RECT_F {
-                    left: left + pad,
-                    top: preview_top,
-                    right: right - pad,
-                    bottom: preview_bottom,
-                },
-                radiusX: 8.0,
-                radiusY: 8.0,
-            };
-            if let Some(bg) = self.brush(theme.background_secondary) {
-                unsafe {
-                    self.target.FillRoundedRectangle(&card, &bg);
-                }
+            let mut cursor_y = preview_top;
+            if !detail.color_ramp.is_empty() {
+                let ramp_h = self.draw_color_ramp(
+                    &detail.color_ramp,
+                    theme,
+                    left + pad,
+                    cursor_y,
+                    content_w,
+                );
+                cursor_y += ramp_h + 10.0;
             }
-            if let Some(border) = self.brush(theme.border) {
-                unsafe {
-                    self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
-                }
-            }
-            let text_content = if detail.body.trim().is_empty() {
-                detail.title.as_str()
-            } else {
-                detail.body.as_str()
-            };
-            if let Some(layout) = self.layout(
-                text_content,
-                &self.detail_body_format,
-                (content_w - 24.0).max(20.0),
-                (preview_h - 20.0).max(20.0),
-            ) {
-                if let Some(fg) = self.brush(theme.text) {
+            if preview_bottom > cursor_y + 20.0 {
+                // Subtle inner preview card for text/code/notes/clipboard body.
+                let card = D2D1_ROUNDED_RECT {
+                    rect: D2D_RECT_F {
+                        left: left + pad,
+                        top: cursor_y,
+                        right: right - pad,
+                        bottom: preview_bottom,
+                    },
+                    radiusX: 8.0,
+                    radiusY: 8.0,
+                };
+                if let Some(bg) = self.brush(theme.background_secondary) {
                     unsafe {
-                        self.target.DrawTextLayout(
-                            Vector2 {
-                                X: left + pad + 12.0,
-                                Y: preview_top + 10.0,
-                            },
-                            &layout,
-                            &fg,
-                            D2D1_DRAW_TEXT_OPTIONS_CLIP | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
-                        );
+                        self.target.FillRoundedRectangle(&card, &bg);
+                    }
+                }
+                if let Some(border) = self.brush(theme.border) {
+                    unsafe {
+                        self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
+                    }
+                }
+                let text_content = if detail.body.trim().is_empty() {
+                    detail.title.as_str()
+                } else {
+                    detail.body.as_str()
+                };
+                if let Some(layout) = self.layout(
+                    text_content,
+                    &self.detail_body_format,
+                    (content_w - 24.0).max(20.0),
+                    (preview_bottom - cursor_y - 20.0).max(20.0),
+                ) {
+                    if let Some(fg) = self.brush(theme.text) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: left + pad + 12.0,
+                                    Y: cursor_y + 10.0,
+                                },
+                                &layout,
+                                &fg,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP
+                                    | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                            );
+                        }
                     }
                 }
             }
@@ -1996,6 +2080,73 @@ impl Renderer {
         unsafe {
             self.target.PopAxisAlignedClip();
         }
+    }
+
+    /// Paint a horizontal row of rounded tint/shade swatch tiles with tiny centered labels below.
+    /// Returns the total vertical DIP height consumed (`0.0` when `ramp` is empty).
+    fn draw_color_ramp(
+        &mut self,
+        ramp: &[([u8; 4], String)],
+        theme: &Theme,
+        left: f32,
+        top: f32,
+        width: f32,
+    ) -> f32 {
+        if ramp.is_empty() {
+            return 0.0;
+        }
+        let tiles = compute_color_ramp_rects(left, top, width, ramp.len());
+        if tiles.is_empty() {
+            return 0.0;
+        }
+        for (tile, (rgba, label)) in tiles.iter().zip(ramp.iter()) {
+            let [r, g, b, a] = *rgba;
+            let card = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: tile.left,
+                    top: tile.top,
+                    right: tile.right,
+                    bottom: tile.bottom,
+                },
+                radiusX: COLOR_RAMP_TILE_RADIUS,
+                radiusY: COLOR_RAMP_TILE_RADIUS,
+            };
+            if let Some(fill) = self.brush(Color::rgba(r, g, b, a)) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&card, &fill);
+                }
+            }
+            let border_color = color_ramp_border(*rgba, theme.appearance);
+            if let Some(ring) = self.brush(border_color) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&card, &ring, 1.0, None);
+                }
+            }
+            if !label.is_empty() {
+                let tile_w = (tile.right - tile.left).max(1.0);
+                if let Some(layout) = self.layout(
+                    label,
+                    &self.ramp_label_format,
+                    tile_w,
+                    COLOR_RAMP_LABEL_HEIGHT,
+                ) {
+                    if let Some(dim) = self.brush(theme.text_dim) {
+                        unsafe {
+                            self.target.DrawTextLayout(
+                                Vector2 {
+                                    X: tile.left,
+                                    Y: tile.label_top,
+                                },
+                                &layout,
+                                &dim,
+                                D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        COLOR_RAMP_TOTAL_HEIGHT
     }
 
     /// Paint the floating bottom-right Raycast-style `Ctrl+K` Action Panel Popover.
@@ -2937,6 +3088,63 @@ fn format_calc_expression_spans(expr: &str) -> (String, Vec<(u32, u32)>) {
     (out, dimmed)
 }
 
+/// Compute evenly spaced horizontal tile rects and label Y anchors for a color ramp strip.
+fn compute_color_ramp_rects(left: f32, top: f32, width: f32, count: usize) -> Vec<ColorRampTile> {
+    if count == 0 || width <= 0.0 {
+        return Vec::new();
+    }
+    let gaps = count.saturating_sub(1) as f32;
+    let gap = if gaps > 0.0 && gaps * COLOR_RAMP_TILE_GAP >= width {
+        0.0
+    } else {
+        COLOR_RAMP_TILE_GAP
+    };
+    let tile_w = (width - gaps * gap) / count as f32;
+    let bottom = top + COLOR_RAMP_TILE_HEIGHT;
+    let label_top = bottom + COLOR_RAMP_LABEL_GAP;
+    let max_right = left + width;
+
+    (0..count)
+        .map(|i| {
+            let tile_left = left + i as f32 * (tile_w + gap);
+            let tile_right = if i + 1 == count {
+                max_right
+            } else {
+                (tile_left + tile_w).min(max_right)
+            };
+            ColorRampTile {
+                left: tile_left,
+                top,
+                right: tile_right,
+                bottom,
+                label_top,
+            }
+        })
+        .collect()
+}
+
+/// Choose a subtle contrasting 1px hairline border for a color ramp tile based on swatch luminance.
+fn color_ramp_border(rgba: [u8; 4], appearance: Appearance) -> Color {
+    let [r, g, b, _] = rgba;
+    let luma = (0.2126 * r as f32 + 0.7152 * g as f32 + 0.0722 * b as f32) / 255.0;
+    if luma >= 0.60 {
+        match appearance {
+            Appearance::Dark => Color::rgba(0x00, 0x00, 0x00, 0x45),
+            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x33),
+        }
+    } else if luma <= 0.30 {
+        match appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x38),
+            Appearance::Light => Color::rgba(0xff, 0xff, 0xff, 0x30),
+        }
+    } else {
+        match appearance {
+            Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x24),
+            Appearance::Light => Color::rgba(0x0f, 0x17, 0x2a, 0x1f),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2955,5 +3163,66 @@ mod tests {
         let (date, date_ranges) = format_calc_expression_spans("days till 2026-11-27");
         assert_eq!(date, "days till 2026-11-27");
         assert_eq!(date_ranges, vec![(5, 4)]); // only "till"
+    }
+
+    #[test]
+    fn color_ramp_rects_handle_empty_single_and_nine_step_ramps() {
+        assert!(compute_color_ramp_rects(16.0, 100.0, 400.0, 0).is_empty());
+        assert!(compute_color_ramp_rects(16.0, 100.0, 0.0, 9).is_empty());
+        assert!(compute_color_ramp_rects(16.0, 100.0, -10.0, 3).is_empty());
+
+        let single = compute_color_ramp_rects(16.0, 100.0, 320.0, 1);
+        assert_eq!(single.len(), 1);
+        assert!((single[0].left - 16.0).abs() < 1e-4);
+        assert!((single[0].right - 336.0).abs() < 1e-4);
+        assert!((single[0].bottom - single[0].top - COLOR_RAMP_TILE_HEIGHT).abs() < 1e-4);
+        assert!((single[0].label_top - (single[0].bottom + COLOR_RAMP_LABEL_GAP)).abs() < 1e-4);
+
+        let left = 16.0_f32;
+        let top = 120.0_f32;
+        let width = 392.0_f32;
+        let tiles = compute_color_ramp_rects(left, top, width, 9);
+        assert_eq!(tiles.len(), 9);
+        let expected_w = (width - 8.0 * COLOR_RAMP_TILE_GAP) / 9.0;
+        for (i, tile) in tiles.iter().enumerate() {
+            assert!(tile.left >= left - 1e-4);
+            assert!(tile.right <= left + width + 1e-4);
+            assert!((tile.right - tile.left - expected_w).abs() < 1e-3);
+            assert!((tile.top - top).abs() < 1e-4);
+            assert!((tile.bottom - (top + COLOR_RAMP_TILE_HEIGHT)).abs() < 1e-4);
+            assert!((tile.label_top - (tile.bottom + COLOR_RAMP_LABEL_GAP)).abs() < 1e-4);
+            if i > 0 {
+                let gap = tile.left - tiles[i - 1].right;
+                assert!((gap - COLOR_RAMP_TILE_GAP).abs() < 1e-3);
+            }
+        }
+        assert!((tiles[0].left - left).abs() < 1e-4);
+        assert!((tiles[8].right - (left + width)).abs() < 1e-4);
+    }
+
+    #[test]
+    fn color_ramp_border_adapts_contrast_for_light_and_dark_swatches() {
+        let light_swatch = [250, 250, 250, 255];
+        let dark_swatch = [18, 18, 22, 255];
+
+        for appearance in [Appearance::Dark, Appearance::Light] {
+            let on_light = color_ramp_border(light_swatch, appearance);
+            let on_dark = color_ramp_border(dark_swatch, appearance);
+            let on_light_luma =
+                0.2126 * on_light.red + 0.7152 * on_light.green + 0.0722 * on_light.blue;
+            let on_dark_luma =
+                0.2126 * on_dark.red + 0.7152 * on_dark.green + 0.0722 * on_dark.blue;
+
+            assert!(on_light.alpha > 0.0 && on_light.alpha < 0.5);
+            assert!(on_dark.alpha > 0.0 && on_dark.alpha < 0.5);
+            assert!(
+                on_light_luma < 0.2,
+                "bright swatch should use dark hairline border"
+            );
+            assert!(
+                on_dark_luma > 0.8,
+                "dark swatch should use light hairline border"
+            );
+        }
     }
 }

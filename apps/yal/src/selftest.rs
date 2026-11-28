@@ -70,6 +70,47 @@ fn collect() -> Vec<Check> {
     checks.extend(check_windows());
     checks.extend(check_launcher());
     checks.extend(check_window_commands());
+    checks.extend(check_capture_and_ocr());
+    checks
+}
+
+/// Virtual desktop screen capture and native Windows OCR engine availability.
+fn check_capture_and_ocr() -> Vec<Check> {
+    let mut checks = Vec::new();
+
+    checks.push(
+        match tc_platform_win::ScreenSnapshot::capture_virtual_desktop() {
+            Ok(snap) if snap.width > 0 && snap.height > 0 => Check::pass(
+                "capture.virtual_desktop",
+                format!(
+                    "{}x{} at ({}, {})",
+                    snap.width, snap.height, snap.origin_x, snap.origin_y
+                ),
+            ),
+            Ok(snap) => Check::fail(
+                "capture.virtual_desktop",
+                format!(
+                    "empty virtual desktop capture ({}x{})",
+                    snap.width, snap.height
+                ),
+            ),
+            Err(error) => Check::fail("capture.virtual_desktop", error),
+        },
+    );
+
+    let langs = tc_platform_win::available_ocr_languages();
+    let ocr_detail = if langs.is_empty() {
+        "0 language packs installed (optional)".to_string()
+    } else {
+        let tags = langs
+            .iter()
+            .map(|lang| lang.tag.as_str())
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!("{} language pack(s): {tags}", langs.len())
+    };
+    checks.push(Check::pass("ocr.engine", ocr_detail));
+
     checks
 }
 

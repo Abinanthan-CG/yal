@@ -7,7 +7,10 @@ use std::io::Read;
 use std::path::Path;
 use std::sync::{Arc, OnceLock};
 
-use tc_clipboard::{ClipboardItem, ItemKind, TextForm};
+use tc_clipboard::{
+    color_from_rgb, contrast_report, tint_shade_ramp, ClipboardItem, ItemKind, OcrFormatMode,
+    PickerColorFormat, TextForm,
+};
 use tc_palette::FileType;
 use tc_platform_win::window_control::WindowInfo;
 use tc_snippets::StoredSnippet;
@@ -15,8 +18,11 @@ use tc_ui::{
     Color, DetailPane, GridCell, GridModel, Icon, IconBitmap, IconKind, InlineArgBanner, Model, Row,
 };
 
-use crate::features::{CalcHistoryEntry, ClipboardViewFilter, NoteItem, Quicklink};
+use crate::features::{
+    CalcHistoryEntry, ClipboardViewFilter, ColorHistoryEntry, NoteItem, Quicklink,
+};
 use crate::launcher::{ResultRow, CALCULATOR_SECTION};
+use crate::tools::OcrPreviewState;
 
 /// Prefix for fallback web-search rows surfaced under `Use “<query>” with…`.
 pub const FALLBACK_URL_PREFIX: &str = "fallback-url:";
@@ -590,6 +596,7 @@ pub fn clipboard_detail_with_image(
                     title: format!("Image · {w}×{h}"),
                     body: format!("{w} × {h} px"),
                     color_swatch: None,
+                    color_ramp: Vec::new(),
                     image: Some(bmp),
                     image_key: Some(format!("clip-img-{}", item.id)),
                     metadata,
@@ -605,6 +612,7 @@ pub fn clipboard_detail_with_image(
                     title: "Image".to_string(),
                     body: "Captured clipboard image".to_string(),
                     color_swatch: None,
+                    color_ramp: Vec::new(),
                     image: None,
                     image_key: None,
                     metadata,
@@ -634,6 +642,7 @@ pub fn clipboard_detail_with_image(
                 title,
                 body,
                 color_swatch: None,
+                color_ramp: Vec::new(),
                 image: None,
                 image_key: None,
                 metadata,
@@ -646,6 +655,15 @@ pub fn clipboard_detail_with_image(
                 Some(TextForm::Email) => ("Email", None),
                 _ => ("Text", None),
             };
+            let color_ramp = item
+                .color_value()
+                .map(|cv| {
+                    tint_shade_ramp(cv)
+                        .into_iter()
+                        .map(|s| (s.rgba, s.label.to_string()))
+                        .collect()
+                })
+                .unwrap_or_default();
 
             let raw_body = item.text.as_deref().unwrap_or("");
             let body = if raw_body.is_empty() {
@@ -682,6 +700,7 @@ pub fn clipboard_detail_with_image(
                 title,
                 body,
                 color_swatch: swatch,
+                color_ramp,
                 image: None,
                 image_key: None,
                 metadata,
@@ -910,6 +929,7 @@ pub fn snippet_detail(record: &StoredSnippet, expanded: &str) -> DetailPane {
         title: record.snippet.name.clone(),
         body: truncate_chars(expanded, MAX_DETAIL_BODY_CHARS),
         color_swatch: None,
+        color_ramp: Vec::new(),
         image: None,
         image_key: None,
         metadata: vec![
@@ -1193,6 +1213,7 @@ pub fn file_detail(row: &ResultRow) -> DetailPane {
         title: row.name.clone(),
         body,
         color_swatch: None,
+        color_ramp: Vec::new(),
         image: None,
         image_key: None,
         metadata: vec![
@@ -1397,6 +1418,7 @@ pub fn calc_history_model(
                     title: calc.name.clone(),
                     body: format!("{} = {}", calc.detail, calc.name),
                     color_swatch: calc.color_swatch,
+                    color_ramp: Vec::new(),
                     image: None,
                     image_key: None,
                     metadata: vec![
@@ -1444,6 +1466,7 @@ pub fn calc_history_detail(entry: &CalcHistoryEntry) -> DetailPane {
         title: entry.display.clone(),
         body: format!("{} = {}", entry.expression, entry.display),
         color_swatch: None,
+        color_ramp: Vec::new(),
         image: None,
         image_key: None,
         metadata: vec![
@@ -1543,6 +1566,7 @@ pub fn note_detail(note: &NoteItem) -> DetailPane {
         title: note.title.clone(),
         body: truncate_chars(&note.body, MAX_DETAIL_BODY_CHARS),
         color_swatch: None,
+        color_ramp: Vec::new(),
         image: None,
         image_key: None,
         metadata: vec![
@@ -1703,6 +1727,7 @@ pub fn quicklink_detail(link: &Quicklink) -> DetailPane {
         title: link.name.clone(),
         body,
         color_swatch: None,
+        color_ramp: Vec::new(),
         image: None,
         image_key: None,
         metadata,
@@ -1745,6 +1770,7 @@ pub fn quicklink_arg_model(link: &Quicklink, input: &str) -> Model {
             title: link.name.clone(),
             body: preview_url.clone(),
             color_swatch: None,
+            color_ramp: Vec::new(),
             image: None,
             image_key: None,
             metadata: vec![
@@ -1903,6 +1929,234 @@ pub fn set_alias_model(target_title: &str, current_alias: Option<&str>, input: &
     }
 }
 
+/// Build the Color Inspector / Color Picker History screen model with Master-Detail
+/// WCAG contrast report and 9-step tint/shade color ramp.
+pub fn color_history_model(
+    query: &str,
+    entries: &[ColorHistoryEntry],
+    selected: usize,
+    show_detail: bool,
+    default_format: PickerColorFormat,
+) -> Model {
+    let rows: Vec<Row> = if entries.is_empty() {
+        if query.trim().is_empty() {
+            vec![Row::detailed(
+                "Pick a Color from Screen",
+                "No picked colors yet — press Ctrl+Alt+X or Enter to pick a color",
+            )
+            .with_section("Color Inspector")
+            .with_icon(Icon::new("⌖", Color::rgb(0x5e, 0x8b, 0xff)))
+            .with_shortcut("Ctrl+Alt+X")]
+        } else {
+            Vec::new()
+        }
+    } else {
+        entries
+            .iter()
+            .map(|e| {
+                let cv = color_from_rgb(e.r, e.g, e.b);
+                let rgb_str = PickerColorFormat::Rgb.format(cv);
+                let hsl_str = PickerColorFormat::Hsl.format(cv);
+                let title = if e.pinned {
+                    format!("★ {}", e.hex)
+                } else {
+                    e.hex.clone()
+                };
+                let detail = format!("{rgb_str} · {hsl_str}");
+                let section = if e.pinned {
+                    "Pinned Colors"
+                } else {
+                    "Recent Colors"
+                };
+                let shortcut = if e.pinned {
+                    "Pinned".to_string()
+                } else {
+                    default_format.label().to_string()
+                };
+                Row::detailed(title, detail)
+                    .with_section(section)
+                    .with_color_swatch([e.r, e.g, e.b, 255])
+                    .with_shortcut(shortcut)
+            })
+            .collect()
+    };
+
+    let clamped = selected.min(rows.len().saturating_sub(1));
+    let detail = if show_detail {
+        entries.get(clamped).map(|entry| {
+            let cv = color_from_rgb(entry.r, entry.g, entry.b);
+            let report = contrast_report(cv);
+            let ramp = tint_shade_ramp(cv)
+                .into_iter()
+                .map(|s| (s.rgba, s.label.to_string()))
+                .collect();
+            DetailPane {
+                title: entry.hex.clone(),
+                body: format!(
+                    "Default copy ({}): {}",
+                    default_format.label(),
+                    default_format.format(cv)
+                ),
+                color_swatch: Some([entry.r, entry.g, entry.b, 255]),
+                color_ramp: ramp,
+                image: None,
+                image_key: None,
+                metadata: vec![
+                    ("HEX".to_string(), PickerColorFormat::Hex.format(cv)),
+                    ("RGB".to_string(), PickerColorFormat::Rgb.format(cv)),
+                    ("HSL".to_string(), PickerColorFormat::Hsl.format(cv)),
+                    ("OKLCH".to_string(), PickerColorFormat::Oklch.format(cv)),
+                    (
+                        "On White".to_string(),
+                        format!(
+                            "{:.2}:1 · {}",
+                            report.vs_white,
+                            report.vs_white_level.badge()
+                        ),
+                    ),
+                    (
+                        "On Black".to_string(),
+                        format!(
+                            "{:.2}:1 · {}",
+                            report.vs_black,
+                            report.vs_black_level.badge()
+                        ),
+                    ),
+                ],
+            }
+        })
+    } else {
+        None
+    };
+
+    let count_label = if entries.is_empty() {
+        if query.trim().is_empty() {
+            "No picked colors yet".to_string()
+        } else {
+            "No matching colors".to_string()
+        }
+    } else if entries.len() == 1 {
+        "1 color".to_string()
+    } else {
+        format!("{} colors", entries.len())
+    };
+
+    let primary_action = if entries.is_empty() {
+        "Pick Color".to_string()
+    } else {
+        format!("Copy {}", default_format.label())
+    };
+
+    Model {
+        query: query.to_string(),
+        rows,
+        selected: clamped,
+        hovered: None,
+        footer: count_label.clone(),
+        placeholder: "Search picked colors (hex, rgb, hsl, oklch)…".to_string(),
+        header_badge: Some(format!("Color Inspector · {}", default_format.label())),
+        result_count: Some(count_label),
+        footer_hints: vec![
+            ("↵".to_string(), "Copy".to_string()),
+            ("Tab".to_string(), "Format".to_string()),
+            ("Ctrl+P".to_string(), "Pin".to_string()),
+            ("Ctrl+D".to_string(), "Delete".to_string()),
+            ("Ctrl+K".to_string(), "Actions".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+        back_button: true,
+        detail,
+        primary_action: Some(primary_action),
+        ..Model::default()
+    }
+}
+
+/// Build the Screen OCR Preview screen model with Smart/Raw toggle and text metadata.
+pub fn ocr_preview_model(state: &OcrPreviewState, selected: usize) -> Model {
+    let rows = vec![
+        Row::detailed(
+            "Copy Extracted Text",
+            format!(
+                "{} chars · {} lines ({})",
+                state.char_count,
+                state.line_count,
+                state.mode.label()
+            ),
+        )
+        .with_section("OCR Preview")
+        .with_icon(Icon::new("⧉", Color::rgb(0x34, 0xc7, 0x59)))
+        .with_shortcut("↵"),
+        Row::detailed(
+            format!(
+                "Toggle Mode: {} → {}",
+                state.mode.label(),
+                state.mode.toggle().label()
+            ),
+            "Compare Smart (NormCap) reflow vs Raw line breaks",
+        )
+        .with_section("OCR Preview")
+        .with_icon(Icon::new("⇄", Color::rgb(0x5e, 0x8b, 0xff)))
+        .with_shortcut("Tab"),
+        Row::detailed(
+            "Capture Again (OCR)",
+            "Hide YAL and select another screen region",
+        )
+        .with_section("OCR Preview")
+        .with_icon(Icon::new("⌖", Color::rgb(0xff, 0x9f, 0x0a)))
+        .with_shortcut("Ctrl+Alt+T"),
+    ];
+
+    let clamped = selected.min(rows.len().saturating_sub(1));
+    let primary_action = match clamped {
+        0 => "Copy Text",
+        1 => "Toggle Mode",
+        _ => "Capture",
+    };
+    let mode_meta = if state.mode == OcrFormatMode::Smart {
+        "Smart (NormCap)"
+    } else {
+        "Raw"
+    };
+    let summary = format!("{} chars · {} lines", state.char_count, state.line_count);
+
+    Model {
+        query: String::new(),
+        rows,
+        selected: clamped,
+        hovered: None,
+        footer: summary.clone(),
+        placeholder: "Review extracted text · Enter to Copy · Tab to toggle Smart/Raw".to_string(),
+        header_badge: Some(format!("OCR Preview · {}", state.mode.label())),
+        result_count: Some(summary),
+        footer_hints: vec![
+            ("↵".to_string(), "Run".to_string()),
+            ("Tab".to_string(), "Smart/Raw".to_string()),
+            ("Ctrl+K".to_string(), "Actions".to_string()),
+            ("Esc".to_string(), "Back".to_string()),
+        ],
+        scroll_offset: 0.0,
+        grid: None,
+        back_button: true,
+        detail: Some(DetailPane {
+            title: format!("Extracted Text · {}", state.mode.label()),
+            body: truncate_chars(&state.text, MAX_DETAIL_BODY_CHARS),
+            color_swatch: None,
+            color_ramp: Vec::new(),
+            image: None,
+            image_key: None,
+            metadata: vec![
+                ("Mode".to_string(), mode_meta.to_string()),
+                ("Language".to_string(), state.language_tag.clone()),
+                ("Characters".to_string(), state.char_count.to_string()),
+                ("Lines".to_string(), state.line_count.to_string()),
+            ],
+        }),
+        primary_action: Some(primary_action.to_string()),
+        ..Model::default()
+    }
+}
+
 /// Build the About YAL screen (or toast/status feedback view).
 pub fn status_screen_model(badge: &str, title: &str, detail: &str, extra_rows: Vec<Row>) -> Model {
     let mut rows = vec![Row::detailed(title, detail)
@@ -1949,7 +2203,10 @@ fn shorten_path_with_home(path: &str, home: Option<&str>) -> String {
     let Some(home) = home else {
         return path.to_string();
     };
-    if path.len() >= home.len() && path[..home.len()].eq_ignore_ascii_case(home) {
+    if path.len() >= home.len()
+        && path.is_char_boundary(home.len())
+        && path[..home.len()].eq_ignore_ascii_case(home)
+    {
         let rest = &path[home.len()..];
         if rest.is_empty() {
             return "~".to_string();
@@ -2312,5 +2569,95 @@ mod tests {
             shorten_path_with_home(r"C:\Users\dabin2\work", Some(r"C:\Users\dabin")),
             r"C:\Users\dabin2\work"
         );
+    }
+
+    #[test]
+    fn color_history_model_builds_swatch_ramp_metadata_and_empty_states() {
+        let empty = color_history_model("", &[], 0, true, PickerColorFormat::Hex);
+        assert_eq!(empty.rows.len(), 1);
+        assert_eq!(empty.rows[0].name, "Pick a Color from Screen");
+        assert_eq!(empty.primary_action.as_deref(), Some("Pick Color"));
+        assert!(empty.detail.is_none());
+
+        let no_match = color_history_model("zzz", &[], 0, true, PickerColorFormat::Hex);
+        assert!(no_match.rows.is_empty());
+        assert_eq!(no_match.footer, "No matching colors");
+
+        let entries = vec![ColorHistoryEntry {
+            hex: "#3B82F6".to_string(),
+            r: 0x3b,
+            g: 0x82,
+            b: 0xf6,
+            pinned: true,
+            picked_at: 1_700_000_000,
+        }];
+        let model = color_history_model("", &entries, 0, true, PickerColorFormat::Oklch);
+        assert_eq!(model.rows.len(), 1);
+        assert_eq!(model.rows[0].name, "★ #3B82F6");
+        assert_eq!(model.rows[0].section, "Pinned Colors");
+        assert_eq!(model.rows[0].color_swatch, Some([0x3b, 0x82, 0xf6, 0xff]));
+        assert_eq!(
+            model.header_badge.as_deref(),
+            Some("Color Inspector · OKLCH")
+        );
+        assert_eq!(model.primary_action.as_deref(), Some("Copy OKLCH"));
+        assert!(model.back_button);
+
+        let detail = model.detail.expect("color detail pane");
+        assert_eq!(detail.color_swatch, Some([0x3b, 0x82, 0xf6, 0xff]));
+        assert_eq!(detail.color_ramp.len(), 9);
+        assert_eq!(detail.color_ramp[0].1, "100");
+        assert_eq!(detail.color_ramp[4].1, "500");
+        assert_eq!(detail.color_ramp[8].1, "900");
+        for key in ["HEX", "RGB", "HSL", "OKLCH", "On White", "On Black"] {
+            assert!(
+                detail.metadata.iter().any(|(k, _)| k == key),
+                "missing metadata key {key}"
+            );
+        }
+    }
+
+    #[test]
+    fn ocr_preview_model_builds_rows_detail_and_reflects_mode_toggle() {
+        let mut state = OcrPreviewState::from_texts(
+            "Hello world".to_string(),
+            "Hello\nworld".to_string(),
+            OcrFormatMode::Smart,
+            "en-US".to_string(),
+        );
+        let smart = ocr_preview_model(&state, 0);
+        assert_eq!(smart.rows.len(), 3);
+        assert_eq!(smart.header_badge.as_deref(), Some("OCR Preview · Smart"));
+        assert_eq!(smart.primary_action.as_deref(), Some("Copy Text"));
+        assert!(smart.back_button);
+        let smart_detail = smart.detail.expect("smart ocr detail");
+        assert_eq!(smart_detail.body, "Hello world");
+        assert!(smart_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Mode" && v == "Smart (NormCap)"));
+        assert!(smart_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Language" && v == "en-US"));
+        assert!(smart_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Lines" && v == "1"));
+
+        state.toggle_mode();
+        let raw = ocr_preview_model(&state, 1);
+        assert_eq!(raw.header_badge.as_deref(), Some("OCR Preview · Raw"));
+        assert_eq!(raw.primary_action.as_deref(), Some("Toggle Mode"));
+        let raw_detail = raw.detail.expect("raw ocr detail");
+        assert_eq!(raw_detail.body, "Hello\nworld");
+        assert!(raw_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Mode" && v == "Raw"));
+        assert!(raw_detail
+            .metadata
+            .iter()
+            .any(|(k, v)| k == "Lines" && v == "2"));
     }
 }

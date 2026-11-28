@@ -23,6 +23,7 @@ const ROOT_FILES: &[&str] = &[
     "emoji-pins.json",
     "emoji-frequency.json",
     "calc-history.json",
+    "color-history.json",
     "commands.json",
 ];
 
@@ -286,6 +287,7 @@ mod tests {
         )
         .unwrap();
         std::fs::write(src.join("favorites.json"), r#"["app:notepad"]"#).unwrap();
+        std::fs::write(src.join("color-history.json"), r##"["#FF5733","#1E293B"]"##).unwrap();
         std::fs::create_dir_all(src.join("snippets")).unwrap();
         std::fs::write(src.join("snippets").join("sig.md"), "Best regards,\nYAL").unwrap();
         std::fs::create_dir_all(src.join("notes")).unwrap();
@@ -293,8 +295,18 @@ mod tests {
         // Unrelated file must NOT be swept into the backup.
         std::fs::write(src.join("secret.key"), "do-not-export").unwrap();
 
+        let archive = BackupArchive::collect(&src).expect("collect succeeds");
+        assert_eq!(
+            archive
+                .payload
+                .files
+                .get("color-history.json")
+                .map(String::as_str),
+            Some(r##"["#FF5733","#1E293B"]"##)
+        );
+
         let exported = export_backup(&src, &archive_file).expect("export succeeds");
-        assert_eq!(exported.files_processed, 4);
+        assert_eq!(exported.files_processed, 5);
 
         // Pre-populate destination to prove restore overwrites atomically on Windows.
         std::fs::write(
@@ -304,11 +316,15 @@ mod tests {
         .unwrap();
 
         let imported = import_backup(&archive_file, &dst).expect("import succeeds");
-        assert_eq!(imported.files_processed, 4);
+        assert_eq!(imported.files_processed, 5);
 
         assert_eq!(
             std::fs::read_to_string(dst.join("settings.json")).unwrap(),
             r#"{"palette.appearance":"Dark"}"#
+        );
+        assert_eq!(
+            std::fs::read_to_string(dst.join("color-history.json")).unwrap(),
+            r##"["#FF5733","#1E293B"]"##
         );
         assert_eq!(
             std::fs::read_to_string(dst.join("snippets/sig.md")).unwrap(),

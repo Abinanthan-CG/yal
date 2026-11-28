@@ -4,6 +4,7 @@
 //! reaches Windows through `tc-platform`, so the rules can be tested without a
 //! desktop.
 
+pub mod capture;
 mod clipboard;
 pub mod clipboard_watcher;
 pub mod dialog;
@@ -12,6 +13,7 @@ pub mod hotkey;
 pub mod http;
 pub mod icons;
 mod launch;
+pub mod ocr;
 pub mod paste;
 mod paths;
 mod programs;
@@ -22,10 +24,15 @@ pub mod tray;
 pub mod window_control;
 mod windows;
 
+pub use capture::ScreenSnapshot;
 pub use clipboard::{encode_dib_rgba, is_sensitive_clipboard, parse_dib_rgba, WindowsClipboard};
 pub use clipboard_watcher::{is_password_manager_title, ClipboardUpdate, ClipboardWatcher};
 pub use dialog::pick_file;
 pub use file_watcher::FileWatcher;
+pub use ocr::{
+    available_ocr_languages, open_windows_language_settings, recognize_rgba, OcrError, OcrLanguage,
+    OcrRecognition,
+};
 /// The Windows clipboard, as text.
 pub fn clipboard() -> WindowsClipboard {
     WindowsClipboard::new()

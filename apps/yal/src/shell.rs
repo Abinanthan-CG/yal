@@ -198,6 +198,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
 
     let palette_state = Arc::new(build_palette_state(&settings));
     let window_commands = Arc::new(build_window_commands(&settings));
+    let tools_bridge = Arc::new(crate::tools::ToolsBridge::new());
 
     let quit_slot = Arc::clone(&handle_slot);
     let runner = Arc::new(
@@ -220,6 +221,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
             features: Arc::clone(&features),
             hotkeys: Arc::clone(&hotkeys),
             pending_hotkey_command: Arc::clone(&pending_hotkey_command),
+            tools: Arc::clone(&tools_bridge),
         },
         theme,
     )?;
@@ -235,6 +237,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     let hk_features = Arc::clone(&features);
     let hk_controller = Arc::clone(&hotkeys);
     let hk_settings = Arc::clone(&settings);
+    let hk_tools = Arc::clone(&tools_bridge);
     match GlobalHotkeyService::spawn(initial_bindings, move |binding_id| {
         if binding_id == BINDING_LAUNCHER_TOGGLE {
             toggle_palette(handle);
@@ -249,6 +252,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
                 &hk_features,
                 &hk_controller,
                 &hk_settings,
+                &hk_tools,
             );
         }
     }) {
@@ -314,6 +318,7 @@ pub fn run(arguments: &[String]) -> Result<(), String> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn dispatch_global_command_hotkey(
     entry_id: &str,
     handle: PaletteHandle,
@@ -321,7 +326,8 @@ fn dispatch_global_command_hotkey(
     runner: &Arc<Runner>,
     features: &Arc<FeatureStores>,
     hotkeys: &Arc<HotkeyController>,
-    settings: &WindowsSettings,
+    settings: &Arc<WindowsSettings>,
+    tools: &Arc<crate::tools::ToolsBridge>,
 ) {
     tc_platform_win::window_control::remember_foreground();
     let dark_hud = settings_prefers_dark(settings);
@@ -367,6 +373,34 @@ fn dispatch_global_command_hotkey(
             }
         }
         tc_ui::show_hud(hud, dark_hud);
+        return;
+    }
+
+    if entry_id == crate::launcher::CMD_SCREEN_OCR {
+        let delay = if tc_ui::is_visible(handle) {
+            tc_ui::post_close(handle);
+            110
+        } else {
+            0
+        };
+        crate::tools::launch_screen_ocr(handle, Arc::clone(settings), Arc::clone(tools), delay);
+        return;
+    }
+
+    if entry_id == crate::launcher::CMD_COLOR_PICKER {
+        let delay = if tc_ui::is_visible(handle) {
+            tc_ui::post_close(handle);
+            110
+        } else {
+            0
+        };
+        crate::tools::launch_color_picker(
+            handle,
+            Arc::clone(features),
+            Arc::clone(settings),
+            Arc::clone(tools),
+            delay,
+        );
         return;
     }
 
@@ -428,14 +462,7 @@ fn dispatch_global_command_hotkey(
 }
 
 fn settings_prefers_dark(settings: &WindowsSettings) -> bool {
-    let appearance = settings
-        .get(tc_palette::KEY_APPEARANCE)
-        .unwrap_or_else(|| "System".to_string());
-    match appearance.trim().to_ascii_lowercase().as_str() {
-        "light" => false,
-        "dark" => true,
-        _ => tc_platform_win::apps_use_dark_theme(),
-    }
+    crate::tools::settings_prefers_dark(settings)
 }
 
 fn build_launcher(paths: &tc_platform::Paths, settings: &WindowsSettings) -> LauncherState {

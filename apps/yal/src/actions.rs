@@ -1,15 +1,16 @@
 //! Context-sensitive `Ctrl+K` Action Panel builders for every YAL screen and
 //! launcher row kind.
 
-use tc_clipboard::ClipboardItem;
+use tc_clipboard::{ClipboardItem, ItemKind, PickerColorFormat};
 use tc_snippets::StoredSnippet;
 use tc_ui::{ActionMenuItem, ActionMenuModel};
 
-use crate::features::{CalcHistoryEntry, NoteItem, Quicklink};
+use crate::features::{CalcHistoryEntry, ColorHistoryEntry, NoteItem, Quicklink};
 use crate::launcher::{
     ResultRow, CALCULATOR_SECTION, COMMAND_SECTION, CUSTOM_COMMAND_SECTION, FILE_SECTION,
     SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
 };
+use crate::tools::OcrPreviewState;
 use crate::win_settings::WIN_SETTING_SECTION;
 
 /// Stable action identifiers dispatched by the `Ctrl+K` Action Panel.
@@ -39,6 +40,7 @@ pub mod id {
     pub const CLIP_QUEUE_ADD: &str = "clip_queue_add";
     pub const CLIP_QUEUE_PASTE_NEXT: &str = "clip_queue_paste_next";
     pub const CLIP_QUEUE_CLEAR: &str = "clip_queue_clear";
+    pub const CLIP_OCR: &str = "clip.ocr";
     pub const CLIP_DELETE: &str = "clip_delete";
     pub const CLIP_CLEAR_UNPINNED: &str = "clip_clear_unpinned";
 
@@ -81,6 +83,20 @@ pub mod id {
     pub const EMOJI_COPY: &str = "emoji_copy";
     pub const EMOJI_COPY_NAME: &str = "emoji_copy_name";
     pub const EMOJI_TOGGLE_PIN: &str = "emoji_toggle_pin";
+
+    pub const COLOR_COPY_DEFAULT: &str = "color.copy.default";
+    pub const COLOR_COPY_HEX: &str = "color.copy.hex";
+    pub const COLOR_COPY_RGB: &str = "color.copy.rgb";
+    pub const COLOR_COPY_HSL: &str = "color.copy.hsl";
+    pub const COLOR_COPY_OKLCH: &str = "color.copy.oklch";
+    pub const COLOR_PICK_NEW: &str = "color.pick.new";
+    pub const COLOR_TOGGLE_PIN: &str = "color.toggle.pin";
+    pub const COLOR_DELETE: &str = "color.delete";
+    pub const COLOR_CLEAR_UNPINNED: &str = "color.clear.unpinned";
+
+    pub const OCR_COPY: &str = "ocr.copy";
+    pub const OCR_TOGGLE_MODE: &str = "ocr.toggle.mode";
+    pub const OCR_CAPTURE_AGAIN: &str = "ocr.capture.again";
 }
 
 fn build_menu(title: impl Into<String>, items: Vec<ActionMenuItem>) -> ActionMenuModel {
@@ -389,6 +405,15 @@ pub fn for_clipboard_item(item: &ClipboardItem, queue_len: usize) -> ActionMenuM
         ActionMenuItem::new(id::CLIP_COPY_PLAIN, "Copy Plain Text", "Copy")
             .with_shortcut("Alt+C")
             .with_glyph("≡"),
+    ];
+    if item.kind == ItemKind::Image {
+        items.push(
+            ActionMenuItem::new(id::CLIP_OCR, "Extract Text (OCR)", "Image")
+                .with_shortcut("Ctrl+Shift+O")
+                .with_glyph("⌖"),
+        );
+    }
+    items.extend([
         ActionMenuItem::new(id::CLIP_TOGGLE_PIN, pin_label, "Organize")
             .with_shortcut("Ctrl+P")
             .with_glyph(pin_glyph),
@@ -402,7 +427,7 @@ pub fn for_clipboard_item(item: &ClipboardItem, queue_len: usize) -> ActionMenuM
             .with_glyph("+"),
         ActionMenuItem::new(id::CLIP_QUEUE_PASTE_NEXT, paste_next_label, "Paste Queue")
             .with_glyph("⏭"),
-    ];
+    ]);
     if queue_len > 0 {
         items.push(
             ActionMenuItem::new(id::CLIP_QUEUE_CLEAR, "Clear Paste Queue", "Paste Queue")
@@ -609,6 +634,81 @@ pub fn for_emoji(glyph: &str, name: &str, pinned: bool) -> ActionMenuModel {
     )
 }
 
+/// Build the Action Panel for the Color Inspector / Color Picker History screen.
+pub fn for_color_history(
+    entry: Option<&ColorHistoryEntry>,
+    default_format: PickerColorFormat,
+) -> ActionMenuModel {
+    let Some(entry) = entry else {
+        return build_menu(
+            "Color Inspector",
+            vec![
+                ActionMenuItem::new(id::COLOR_PICK_NEW, "Pick New Color", "Primary")
+                    .with_shortcut("↵")
+                    .with_glyph("⌖"),
+            ],
+        );
+    };
+
+    let (pin_label, pin_glyph) = if entry.pinned {
+        ("Unpin Color", "★")
+    } else {
+        ("Pin Color", "☆")
+    };
+    let title = non_empty_title(&entry.hex, "Color");
+    build_menu(
+        title,
+        vec![
+            ActionMenuItem::new(
+                id::COLOR_COPY_DEFAULT,
+                format!("Copy {}", default_format.label()),
+                "Primary",
+            )
+            .with_shortcut("↵")
+            .with_glyph("⧉"),
+            ActionMenuItem::new(id::COLOR_COPY_HEX, "Copy HEX", "Copy").with_glyph("#"),
+            ActionMenuItem::new(id::COLOR_COPY_RGB, "Copy RGB", "Copy").with_glyph("◉"),
+            ActionMenuItem::new(id::COLOR_COPY_HSL, "Copy HSL", "Copy").with_glyph("◐"),
+            ActionMenuItem::new(id::COLOR_COPY_OKLCH, "Copy OKLCH", "Copy").with_glyph("◈"),
+            ActionMenuItem::new(id::COLOR_PICK_NEW, "Pick New Color", "Color Picker")
+                .with_shortcut("Ctrl+Alt+X")
+                .with_glyph("⌖"),
+            ActionMenuItem::new(id::COLOR_TOGGLE_PIN, pin_label, "Organize")
+                .with_shortcut("Ctrl+P")
+                .with_glyph(pin_glyph),
+            ActionMenuItem::new(id::TOGGLE_DETAIL, "Toggle Preview Pane", "View")
+                .with_shortcut("Ctrl+I")
+                .with_glyph("◧"),
+            ActionMenuItem::new(id::COLOR_DELETE, "Delete Color", "Danger")
+                .with_shortcut("Ctrl+D")
+                .with_glyph("✕")
+                .destructive(),
+            ActionMenuItem::new(id::COLOR_CLEAR_UNPINNED, "Clear Unpinned Colors", "Danger")
+                .with_glyph("⊘")
+                .destructive(),
+        ],
+    )
+}
+
+/// Build the Action Panel for the Screen OCR Preview screen.
+pub fn for_ocr_preview(state: &OcrPreviewState) -> ActionMenuModel {
+    let toggle_label = format!("Switch to {}", state.mode.toggle().label());
+    build_menu(
+        format!("OCR Preview · {}", state.mode.label()),
+        vec![
+            ActionMenuItem::new(id::OCR_COPY, "Copy Extracted Text", "Primary")
+                .with_shortcut("↵")
+                .with_glyph("⧉"),
+            ActionMenuItem::new(id::OCR_TOGGLE_MODE, toggle_label, "Format")
+                .with_shortcut("Tab")
+                .with_glyph("⇄"),
+            ActionMenuItem::new(id::OCR_CAPTURE_AGAIN, "Capture Again", "OCR")
+                .with_shortcut("Ctrl+Alt+T")
+                .with_glyph("⌖"),
+        ],
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -796,6 +896,94 @@ mod tests {
         assert_eq!(
             item_ids(&menu),
             vec![id::WS_OPEN, id::WS_COPY_URI, id::SET_HOTKEY, id::SET_ALIAS]
+        );
+    }
+
+    #[test]
+    fn clipboard_menu_includes_ocr_action_only_for_images() {
+        let text_item = ClipboardItem::text("plain text", None);
+        let file_item = ClipboardItem::file("C:\\temp\\doc.pdf", None);
+        let image_item = ClipboardItem::image("C:\\temp\\shot.png", None);
+
+        assert!(find_item(&for_clipboard_item(&text_item, 0), id::CLIP_OCR).is_none());
+        assert!(find_item(&for_clipboard_item(&file_item, 0), id::CLIP_OCR).is_none());
+
+        let image_menu = for_clipboard_item(&image_item, 0);
+        let ocr_item = find_item(&image_menu, id::CLIP_OCR).expect("image ocr action");
+        assert_eq!(ocr_item.title, "Extract Text (OCR)");
+        assert_eq!(ocr_item.shortcut, "Ctrl+Shift+O");
+
+        let ids = item_ids(&image_menu);
+        let copy_plain_pos = ids
+            .iter()
+            .position(|&x| x == id::CLIP_COPY_PLAIN)
+            .expect("copy plain");
+        let ocr_pos = ids.iter().position(|&x| x == id::CLIP_OCR).expect("ocr");
+        let pin_pos = ids
+            .iter()
+            .position(|&x| x == id::CLIP_TOGGLE_PIN)
+            .expect("pin");
+        assert!(copy_plain_pos < ocr_pos && ocr_pos < pin_pos);
+    }
+
+    #[test]
+    fn color_history_menu_handles_empty_and_selected_entries() {
+        let empty = for_color_history(None, PickerColorFormat::Hex);
+        assert_eq!(item_ids(&empty), vec![id::COLOR_PICK_NEW]);
+        assert_eq!(empty.items[0].shortcut, "↵");
+
+        let entry = ColorHistoryEntry {
+            hex: "#3B82F6".to_string(),
+            r: 0x3b,
+            g: 0x82,
+            b: 0xf6,
+            pinned: true,
+            picked_at: 1_700_000_000,
+        };
+        let menu = for_color_history(Some(&entry), PickerColorFormat::Oklch);
+        assert_eq!(
+            item_ids(&menu),
+            vec![
+                id::COLOR_COPY_DEFAULT,
+                id::COLOR_COPY_HEX,
+                id::COLOR_COPY_RGB,
+                id::COLOR_COPY_HSL,
+                id::COLOR_COPY_OKLCH,
+                id::COLOR_PICK_NEW,
+                id::COLOR_TOGGLE_PIN,
+                id::TOGGLE_DETAIL,
+                id::COLOR_DELETE,
+                id::COLOR_CLEAR_UNPINNED,
+            ]
+        );
+        assert_eq!(
+            find_item(&menu, id::COLOR_COPY_DEFAULT).map(|i| i.title.as_str()),
+            Some("Copy OKLCH")
+        );
+        assert_eq!(
+            find_item(&menu, id::COLOR_TOGGLE_PIN).map(|i| i.title.as_str()),
+            Some("Unpin Color")
+        );
+        assert!(find_item(&menu, id::COLOR_DELETE).is_some_and(|i| i.destructive));
+        assert!(find_item(&menu, id::COLOR_CLEAR_UNPINNED).is_some_and(|i| i.destructive));
+    }
+
+    #[test]
+    fn ocr_preview_menu_returns_expected_actions_and_toggle_label() {
+        let state = OcrPreviewState::from_texts(
+            "Smart text".to_string(),
+            "Raw\ntext".to_string(),
+            tc_clipboard::OcrFormatMode::Smart,
+            "en-US".to_string(),
+        );
+        let menu = for_ocr_preview(&state);
+        assert_eq!(
+            item_ids(&menu),
+            vec![id::OCR_COPY, id::OCR_TOGGLE_MODE, id::OCR_CAPTURE_AGAIN]
+        );
+        assert_eq!(
+            find_item(&menu, id::OCR_TOGGLE_MODE).map(|i| i.title.as_str()),
+            Some("Switch to Raw")
         );
     }
 }

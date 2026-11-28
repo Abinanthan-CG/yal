@@ -50,6 +50,8 @@ pub const DEFAULT_COMMAND_HOTKEYS: &[(&str, &str, &str)] = &[
         "Paste Next (Queue)",
         "Ctrl+Alt+P",
     ),
+    ("command:screen-ocr", "Extract Text (OCR)", "Ctrl+Alt+T"),
+    ("command:color-picker", "Pick Color", "Ctrl+Alt+X"),
 ];
 
 /// Return the built-in default global shortcut for a command entry, if any.
@@ -473,6 +475,14 @@ mod tests {
         assert_eq!(
             get_command_hotkey(&settings, "command:clipboard-history"),
             HotkeyTrigger::parse("Ctrl+Alt+V")
+        );
+        assert_eq!(
+            get_command_hotkey(&settings, "command:screen-ocr"),
+            HotkeyTrigger::parse("Ctrl+Alt+T")
+        );
+        assert_eq!(
+            get_command_hotkey(&settings, "command:color-picker"),
+            HotkeyTrigger::parse("Ctrl+Alt+X")
         );
         assert_eq!(
             all_command_hotkeys(&settings).len(),

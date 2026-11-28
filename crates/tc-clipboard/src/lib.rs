@@ -14,11 +14,13 @@
 //! `Features/Clipboard/Model` and the tests in `Tests/clipboard-*-test.swift`.
 
 pub mod color;
+pub mod color_inspector;
 pub mod color_spaces;
 pub mod file_kind;
 pub mod filter;
 pub mod image_blob;
 pub mod item;
+pub mod ocr_text;
 pub mod paste_sequence;
 pub mod policy;
 pub mod raycast;
@@ -27,11 +29,18 @@ pub mod store;
 mod tests;
 
 pub use color::{ColorFormat, ColorValue, Hsl};
+pub use color_inspector::{
+    color_from_rgb, color_to_rgba_u8, contrast_ratio, contrast_report, format_color_rgb,
+    relative_luminance, tint_shade_ramp, ContrastReport, PickerColorFormat, RampStep, WcagLevel,
+};
 pub use color_spaces::{Oklab, Oklch};
 pub use file_kind::ClipboardFileKind;
 pub use filter::ClipboardFilter;
 pub use image_blob::{decode_png_rgba, encode_png_rgba};
 pub use item::{ClipboardItem, EntryId, ItemKind, TextForm, Timestamp};
+pub use ocr_text::{
+    crop_bgra_to_rgba, format_ocr_lines, join_ocr_words, prepare_ocr_rgba, OcrFormatMode,
+};
 pub use paste_sequence::PasteSequence;
 pub use policy::CapturePolicy;
 pub use raycast::RaycastImport;

@@ -10,7 +10,10 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use chrono::Local;
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use serde::{Deserialize, Serialize};
-use tc_clipboard::{ClipboardFilter, ClipboardItem, ClipboardStore, PasteSequence};
+use tc_clipboard::{
+    color_from_rgb, ClipboardFilter, ClipboardItem, ClipboardStore, PasteSequence,
+    PickerColorFormat,
+};
 use tc_commands::runner::ShellRunner;
 use tc_commands::shell::Shell;
 use tc_emoji::{EmojiIndex, FrequentEmojiStore, PinnedEmojiStore};
@@ -28,11 +31,13 @@ use crate::shell::INDEX_FILE;
 const EMOJI_PINS_FILE: &str = "emoji-pins.json";
 const EMOJI_FREQ_FILE: &str = "emoji-frequency.json";
 const CALC_HISTORY_FILE: &str = "calc-history.json";
+pub const COLOR_HISTORY_FILE: &str = "color-history.json";
 const FAVORITES_FILE: &str = "favorites.json";
 const QUICKLINKS_FILE: &str = "quicklinks.json";
 const SNIPPETS_DIR: &str = "snippets";
 const NOTES_DIR: &str = "notes";
 const MAX_CALC_HISTORY: usize = 100;
+const MAX_COLOR_HISTORY: usize = 100;
 
 fn lock_or_recover<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     mutex
@@ -295,6 +300,149 @@ impl CalcHistoryStore {
             })
             .cloned()
             .collect()
+    }
+
+    fn save(&self) {
+        if let Some(parent) = self.path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        if let Ok(json) = serde_json::to_string_pretty(&self.entries) {
+            let _ = std::fs::write(&self.path, json);
+        }
+    }
+}
+
+/// One remembered screen-picked color entry.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ColorHistoryEntry {
+    pub hex: String,
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+    pub pinned: bool,
+    pub picked_at: i64,
+}
+
+/// Persistent JSON store for recent screen-picked colors.
+#[derive(Debug, Default)]
+pub struct ColorHistoryStore {
+    path: PathBuf,
+    entries: Vec<ColorHistoryEntry>,
+}
+
+impl ColorHistoryStore {
+    pub fn open(path: impl AsRef<Path>) -> Self {
+        let path = path.as_ref().to_path_buf();
+        let mut entries = std::fs::read(&path)
+            .ok()
+            .and_then(|bytes| serde_json::from_slice::<Vec<ColorHistoryEntry>>(&bytes).ok())
+            .unwrap_or_default();
+        entries.sort_by_key(|e| !e.pinned);
+        entries.truncate(MAX_COLOR_HISTORY);
+        Self { path, entries }
+    }
+
+    pub fn reload(&mut self) {
+        if let Ok(bytes) = std::fs::read(&self.path) {
+            if let Ok(mut loaded) = serde_json::from_slice::<Vec<ColorHistoryEntry>>(&bytes) {
+                loaded.sort_by_key(|e| !e.pinned);
+                loaded.truncate(MAX_COLOR_HISTORY);
+                self.entries = loaded;
+            }
+        }
+    }
+
+    pub fn record(&mut self, r: u8, g: u8, b: u8) -> ColorHistoryEntry {
+        let hex = format!("#{r:02X}{g:02X}{b:02X}");
+        let pinned = self
+            .entries
+            .iter()
+            .find(|e| e.hex.eq_ignore_ascii_case(&hex))
+            .is_some_and(|e| e.pinned);
+        self.entries.retain(|e| !e.hex.eq_ignore_ascii_case(&hex));
+
+        let picked_at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| i64::try_from(d.as_secs()).unwrap_or(i64::MAX))
+            .unwrap_or(0);
+        let entry = ColorHistoryEntry {
+            hex,
+            r,
+            g,
+            b,
+            pinned,
+            picked_at,
+        };
+        self.entries.insert(0, entry.clone());
+        self.entries.sort_by_key(|e| !e.pinned);
+        self.entries.truncate(MAX_COLOR_HISTORY);
+        self.save();
+        entry
+    }
+
+    pub fn search(&self, query: &str) -> Vec<ColorHistoryEntry> {
+        let q = query.trim().to_ascii_lowercase();
+        let mut results: Vec<ColorHistoryEntry> = if q.is_empty() {
+            self.entries.clone()
+        } else {
+            self.entries
+                .iter()
+                .filter(|entry| {
+                    if entry.hex.to_ascii_lowercase().contains(&q) {
+                        return true;
+                    }
+                    let color = color_from_rgb(entry.r, entry.g, entry.b);
+                    [
+                        PickerColorFormat::Rgb,
+                        PickerColorFormat::Hsl,
+                        PickerColorFormat::Oklch,
+                    ]
+                    .into_iter()
+                    .any(|fmt| fmt.format(color).to_ascii_lowercase().contains(&q))
+                })
+                .cloned()
+                .collect()
+        };
+        results.sort_by_key(|e| !e.pinned);
+        results
+    }
+
+    pub fn toggle_pin(&mut self, hex: &str) -> Option<bool> {
+        let target = hex.trim();
+        let entry = self
+            .entries
+            .iter_mut()
+            .find(|e| e.hex.eq_ignore_ascii_case(target))?;
+        entry.pinned = !entry.pinned;
+        let new_pinned = entry.pinned;
+        self.entries.sort_by(|a, b| {
+            b.pinned
+                .cmp(&a.pinned)
+                .then_with(|| b.picked_at.cmp(&a.picked_at))
+        });
+        self.save();
+        Some(new_pinned)
+    }
+
+    pub fn delete(&mut self, hex: &str) -> bool {
+        let target = hex.trim();
+        let before = self.entries.len();
+        self.entries.retain(|e| !e.hex.eq_ignore_ascii_case(target));
+        let removed = self.entries.len() < before;
+        if removed {
+            self.save();
+        }
+        removed
+    }
+
+    pub fn clear_unpinned(&mut self) -> usize {
+        let before = self.entries.len();
+        self.entries.retain(|e| e.pinned);
+        let removed = before.saturating_sub(self.entries.len());
+        if removed > 0 {
+            self.save();
+        }
+        removed
     }
 
     fn save(&self) {
@@ -670,6 +818,7 @@ pub struct FeatureStores {
     pub quicklinks: Mutex<QuicklinksStore>,
     pub favorites: Mutex<FavoritesStore>,
     pub calc_history: Mutex<CalcHistoryStore>,
+    pub color_history: Mutex<ColorHistoryStore>,
     pub file_indexing: Arc<AtomicBool>,
 }
 
@@ -702,6 +851,7 @@ impl FeatureStores {
         let quicklinks = QuicklinksStore::open(paths.data_dir.join(QUICKLINKS_FILE));
         let favorites = FavoritesStore::open(paths.data_dir.join(FAVORITES_FILE));
         let calc_history = CalcHistoryStore::open(paths.data_dir.join(CALC_HISTORY_FILE));
+        let color_history = ColorHistoryStore::open(paths.data_dir.join(COLOR_HISTORY_FILE));
 
         Self {
             data_dir: paths.data_dir.clone(),
@@ -717,6 +867,7 @@ impl FeatureStores {
             quicklinks: Mutex::new(quicklinks),
             favorites: Mutex::new(favorites),
             calc_history: Mutex::new(calc_history),
+            color_history: Mutex::new(color_history),
             file_indexing: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -1175,6 +1326,31 @@ impl FeatureStores {
         }
     }
 
+    /// Record a screen-picked RGB color into persistent color history.
+    pub fn record_picked_color(&self, r: u8, g: u8, b: u8) -> ColorHistoryEntry {
+        lock_or_recover(&self.color_history).record(r, g, b)
+    }
+
+    /// Search persistent color history (pinned first, then newest).
+    pub fn color_history_items(&self, query: &str) -> Vec<ColorHistoryEntry> {
+        lock_or_recover(&self.color_history).search(query)
+    }
+
+    /// Toggle the pinned state of a color history entry by hex string.
+    pub fn toggle_pin_color(&self, hex: &str) -> Option<bool> {
+        lock_or_recover(&self.color_history).toggle_pin(hex)
+    }
+
+    /// Delete one color history entry by hex string.
+    pub fn delete_color(&self, hex: &str) -> bool {
+        lock_or_recover(&self.color_history).delete(hex)
+    }
+
+    /// Remove all unpinned color history entries, returning how many were removed.
+    pub fn clear_unpinned_colors(&self) -> usize {
+        lock_or_recover(&self.color_history).clear_unpinned()
+    }
+
     /// Whether a background file index pass is currently running.
     pub fn is_file_indexing(&self) -> bool {
         self.file_indexing.load(Ordering::Relaxed)
@@ -1317,6 +1493,9 @@ impl FeatureStores {
         }
         if let Ok(mut hist) = self.calc_history.lock() {
             *hist = CalcHistoryStore::open(self.data_dir.join(CALC_HISTORY_FILE));
+        }
+        if let Ok(mut colors) = self.color_history.lock() {
+            colors.reload();
         }
         Ok(summary.files_processed)
     }
@@ -1762,6 +1941,129 @@ mod tests {
             .filter_map(|p| p.file_name().and_then(|n| n.to_str()).map(str::to_string))
             .collect();
         assert_eq!(names, vec!["Desktop", "Documents", "development", "tools"]);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn color_history_dedup_pins_sort_cap_search_mutations_and_reload() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-color-hist-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        let path = dir.join(COLOR_HISTORY_FILE);
+        let mut store = ColorHistoryStore::open(&path);
+
+        // Record three colors; newest unpinned sits at index 0.
+        let coral = store.record(255, 87, 51);
+        assert_eq!(coral.hex, "#FF5733");
+        assert!(!coral.pinned);
+        let sky = store.record(14, 165, 233);
+        assert_eq!(sky.hex, "#0EA5E9");
+        let mint = store.record(16, 185, 129);
+        assert_eq!(mint.hex, "#10B981");
+
+        let hexes = |items: &[ColorHistoryEntry]| -> Vec<String> {
+            items.iter().map(|e| e.hex.clone()).collect()
+        };
+        assert_eq!(
+            hexes(&store.search("")),
+            vec!["#10B981", "#0EA5E9", "#FF5733"]
+        );
+
+        // Pinning moves entry ahead of unpinned entries (case-insensitive lookup).
+        assert_eq!(store.toggle_pin("#ff5733"), Some(true));
+        assert_eq!(store.toggle_pin("#000000"), None);
+        assert_eq!(
+            hexes(&store.search("")),
+            vec!["#FF5733", "#10B981", "#0EA5E9"]
+        );
+
+        // Pin a second color and re-record the first pinned color: pin is preserved & moves to top.
+        assert_eq!(store.toggle_pin("#0ea5e9"), Some(true));
+        let re_coral = store.record(255, 87, 51);
+        assert!(re_coral.pinned);
+        let after_repick = store.search("");
+        assert_eq!(after_repick.len(), 3);
+        assert_eq!(after_repick[0].hex, "#FF5733");
+        assert!(after_repick[0].pinned);
+        assert_eq!(after_repick[1].hex, "#0EA5E9");
+        assert!(after_repick[1].pinned);
+        assert_eq!(after_repick[2].hex, "#10B981");
+        assert!(!after_repick[2].pinned);
+
+        // Query matching against hex, rgb, hsl, and oklch (case-insensitive).
+        let coral_val = color_from_rgb(255, 87, 51);
+        let rgb_str = PickerColorFormat::Rgb.format(coral_val);
+        let hsl_str = PickerColorFormat::Hsl.format(coral_val);
+        let oklch_str = PickerColorFormat::Oklch.format(coral_val);
+        for q in ["ff5733", &rgb_str.to_uppercase(), &hsl_str, &oklch_str] {
+            let found = store.search(q);
+            assert!(
+                found.iter().any(|e| e.hex == "#FF5733"),
+                "expected query `{q}` to match #FF5733"
+            );
+        }
+
+        // Disk persistence & reload round-trip.
+        let reopened = ColorHistoryStore::open(&path);
+        assert_eq!(reopened.search(""), store.search(""));
+
+        // Unpin, delete, and clear_unpinned.
+        assert_eq!(store.toggle_pin("#0EA5E9"), Some(false));
+        assert!(store.delete("#10b981"));
+        assert!(!store.delete("#10b981"));
+        assert_eq!(store.clear_unpinned(), 1);
+        assert_eq!(hexes(&store.search("")), vec!["#FF5733"]);
+
+        // Cap at MAX_COLOR_HISTORY (100), keeping pinned first and newest unpinned next.
+        for idx in 0..120u8 {
+            store.record(idx, idx.wrapping_mul(2), idx.wrapping_mul(3));
+        }
+        let capped = store.search("");
+        assert_eq!(capped.len(), MAX_COLOR_HISTORY);
+        assert_eq!(capped[0].hex, "#FF5733");
+        assert!(capped[0].pinned);
+        assert_eq!(capped[1].hex, format!("#{:02X}{:02X}{:02X}", 119, 238, 101));
+
+        // Reload picks up persisted state from disk.
+        let mut reloaded = ColorHistoryStore::open(dir.join("other.json"));
+        reloaded.path = path.clone();
+        reloaded.reload();
+        assert_eq!(reloaded.search("").len(), MAX_COLOR_HISTORY);
+        assert_eq!(reloaded.search("")[0].hex, "#FF5733");
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn feature_stores_color_history_methods_round_trip() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-features-colors-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        let paths = Paths {
+            data_dir: dir.join("data"),
+            cache_dir: dir.join("cache"),
+            home_dir: dir.join("home"),
+            settings_file: dir.join("settings.json"),
+        };
+        let stores = FeatureStores::open(&paths);
+        let first = stores.record_picked_color(17, 34, 51);
+        assert_eq!(first.hex, "#112233");
+        stores.record_picked_color(68, 85, 102);
+        assert_eq!(stores.toggle_pin_color("#112233"), Some(true));
+        let items = stores.color_history_items("");
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0].hex, "#112233");
+        assert_eq!(stores.clear_unpinned_colors(), 1);
+        assert!(stores.delete_color("#112233"));
+        assert!(stores.color_history_items("").is_empty());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

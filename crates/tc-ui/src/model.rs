@@ -29,6 +29,8 @@ pub struct DetailPane {
     pub body: String,
     /// Optional large color preview swatch banner (RGBA).
     pub color_swatch: Option<[u8; 4]>,
+    /// Optional horizontal tint/shade color ramp swatches `(rgba, label)` rendered below `color_swatch`.
+    pub color_ramp: Vec<([u8; 4], String)>,
     /// Optional preview bitmap (clipboard image thumbnail or large shell icon).
     pub image: Option<Arc<IconBitmap>>,
     /// Stable GPU cache key for `image`.
@@ -881,5 +883,22 @@ mod tests {
         assert_eq!(layout.window_height, metrics.field_height);
         assert!(layout.rows.is_empty());
         assert!(layout.sections.is_empty());
+    }
+
+    #[test]
+    fn detail_pane_color_ramp_defaults_empty_and_preserves_entries() {
+        let default_pane = DetailPane::default();
+        assert!(default_pane.color_ramp.is_empty());
+
+        let ramp = vec![
+            ([239, 246, 255, 255], "100".to_string()),
+            ([59, 130, 246, 255], "500".to_string()),
+            ([30, 58, 138, 255], "900".to_string()),
+        ];
+        let pane = DetailPane {
+            color_ramp: ramp.clone(),
+            ..DetailPane::default()
+        };
+        assert_eq!(pane.color_ramp, ramp);
     }
 }

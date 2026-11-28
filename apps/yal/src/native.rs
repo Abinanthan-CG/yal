@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use tc_clipboard::{ClipboardItem, ItemKind};
+use tc_clipboard::{ClipboardItem, ItemKind, OcrFormatMode, PickerColorFormat};
 use tc_core::CommandId;
 use tc_palette::FileType;
 use tc_platform::{Clipboard, FileSystem, Settings};
@@ -27,29 +27,36 @@ use tc_ui::{
 
 use crate::actions::{self, LauncherActionMeta};
 use crate::features::{
-    CalcHistoryEntry, ClipboardViewFilter, FeatureStores, NoteItem, PasteNext, Quicklink,
+    CalcHistoryEntry, ClipboardViewFilter, ColorHistoryEntry, FeatureStores, NoteItem, PasteNext,
+    Quicklink,
 };
 use crate::hotkeys::{
     self, HotkeyController, BINDING_LAUNCHER_TOGGLE, KEY_HOTKEY_HYPERKEY, KEY_HOTKEY_LAUNCHER,
     KEY_SNIPPETS_AUTO_EXPAND,
 };
 use crate::launcher::{
-    filter_directory_entries, parse_numeric_answer, LauncherState, ResultRow, CALCULATOR_PREFIX,
-    CALCULATOR_SECTION, COMMAND_SECTION, CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION,
+    filter_directory_entries, is_power_tool_command, parse_numeric_answer, LauncherState,
+    ResultRow, CALCULATOR_PREFIX, CALCULATOR_SECTION, CMD_COLOR_HISTORY, CMD_COLOR_PICKER,
+    CMD_SCREEN_OCR, COMMAND_SECTION, CUSTOM_COMMAND_SECTION, FILE_PREFIX, FILE_SECTION,
     RANKING_FILE, SYSTEM_ACTION_SECTION, WINDOW_COMMAND_SECTION,
 };
 use crate::open::Runner;
 use crate::palette::{PaletteState, SettingRow};
 use crate::screens::{
-    calc_history_model, clipboard_model, create_note_model, create_quicklink_model,
-    create_snippet_model, downsample_rgba_premultiplied, downsample_square_cover_premultiplied,
-    emoji_model, fallback_search_rows, files_model, notes_model, parse_clipboard_file_paths,
-    quicklink_arg_model, quicklinks_model, run_shell_model, set_alias_model, shorten_home_path,
-    shows_create_note_row, shows_create_quicklink_row, shows_create_snippet_row, snippets_model,
-    status_screen_model, windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft,
-    QuicklinkDraftStep, SnippetDraft, SnippetDraftStep, FALLBACK_CMD_PREFIX, FALLBACK_URL_PREFIX,
+    calc_history_model, clipboard_model, color_history_model, create_note_model,
+    create_quicklink_model, create_snippet_model, downsample_rgba_premultiplied,
+    downsample_square_cover_premultiplied, emoji_model, fallback_search_rows, files_model,
+    notes_model, ocr_preview_model, parse_clipboard_file_paths, quicklink_arg_model,
+    quicklinks_model, run_shell_model, set_alias_model, shorten_home_path, shows_create_note_row,
+    shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
+    windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
+    SnippetDraftStep, FALLBACK_CMD_PREFIX, FALLBACK_URL_PREFIX,
 };
 use crate::shell::{spawn_rates_refresh, FILE_SEARCH_ENABLED, FILE_SEARCH_SHOW, RATES_FILE};
+use crate::tools::{
+    self, OcrPreviewState, ToolsBridge, COMMAND_OPEN_COLOR_INSPECTOR, COMMAND_OPEN_OCR_PREVIEW,
+    KEY_COLOR_PICKER_FORMAT, KEY_OCR_LANGUAGE, KEY_OCR_MODE,
+};
 use crate::win_settings::{self, WIN_SETTING_PREFIX, WIN_SETTING_SECTION};
 
 /// Cross-thread command code asking the native palette to open Settings.
@@ -190,6 +197,7 @@ pub struct NativeContext {
     pub features: Arc<FeatureStores>,
     pub hotkeys: Arc<HotkeyController>,
     pub pending_hotkey_command: Arc<Mutex<Option<String>>>,
+    pub tools: Arc<ToolsBridge>,
 }
 
 /// The native palette window.
@@ -272,6 +280,8 @@ enum Mode {
     Files,
     SwitchWindows,
     CalcHistory,
+    ColorHistory,
+    OcrPreview,
     Settings,
 }
 
@@ -304,6 +314,8 @@ struct Shown {
     windows: Vec<WindowInfo>,
     calc_live: Option<ResultRow>,
     calc_entries: Vec<CalcHistoryEntry>,
+    color_entries: Vec<ColorHistoryEntry>,
+    ocr_preview: Option<OcrPreviewState>,
     settings_rows: Vec<SettingRow>,
     icons: Arc<Mutex<HashMap<String, Option<Arc<IconBitmap>>>>>,
     queued: HashSet<String>,
@@ -344,6 +356,8 @@ impl Shown {
             windows: Vec::new(),
             calc_live: None,
             calc_entries: Vec::new(),
+            color_entries: Vec::new(),
+            ocr_preview: None,
             settings_rows: Vec::new(),
             icons,
             queued: HashSet::new(),
@@ -892,6 +906,24 @@ fn build(
                             let last = shown.last_shell_output.clone();
                             PaletteReply::Update(run_shell_model(&query, last.as_deref()))
                         }
+                        Mode::ColorHistory => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let query = shown.query.clone();
+                            let entries = ctx.features.color_history_items(&query);
+                            let sel = shown.selected.min(entries.len().saturating_sub(1));
+                            shown.color_entries = entries.clone();
+                            shown.selected = sel;
+                            let fmt = tools::configured_color_format(&*ctx.settings);
+                            PaletteReply::Update(color_history_model(
+                                &query,
+                                &entries,
+                                sel,
+                                shown.show_detail,
+                                fmt,
+                            ))
+                        }
                         _ => PaletteReply::Keep,
                     }
                 }
@@ -913,6 +945,32 @@ fn build(
                     let mut shown = lock_shown(&handler_shown);
                     shown.visible = true;
                     enter_settings(ctx, &mut shown)
+                }
+                PaletteEvent::Command(COMMAND_OPEN_OCR_PREVIEW) => {
+                    let Some(ctx) = handler_context.as_ref() else {
+                        return PaletteReply::Keep;
+                    };
+                    let Some(state) = ctx.tools.take_pending_ocr_preview() else {
+                        return PaletteReply::Keep;
+                    };
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.visible = true;
+                    shown.mode = Mode::OcrPreview;
+                    shown.query.clear();
+                    shown.selected = 0;
+                    shown.action_menu_open = false;
+                    let model = ocr_preview_model(&state, 0);
+                    shown.ocr_preview = Some(state);
+                    PaletteReply::Navigate(model)
+                }
+                PaletteEvent::Command(COMMAND_OPEN_COLOR_INSPECTOR) => {
+                    let Some(ctx) = handler_context.as_ref() else {
+                        return PaletteReply::Keep;
+                    };
+                    let pending_hex = ctx.tools.take_pending_color_hex();
+                    let mut shown = lock_shown(&handler_shown);
+                    shown.visible = true;
+                    enter_color_history(ctx, &mut shown, pending_hex.as_deref())
                 }
                 PaletteEvent::Command(COMMAND_SHOW_STATUS) => {
                     let mut shown = lock_shown(&handler_shown);
@@ -1040,6 +1098,55 @@ fn build(
                             return enter_quicklink_arg(link, true, String::new(), &mut shown);
                         }
                         return PaletteReply::Keep;
+                    }
+                    if is_power_tool_command(&entry_id) {
+                        let actually_visible = lock_or_recover(&handler_handle)
+                            .map(tc_ui::is_visible)
+                            .unwrap_or(shown.visible);
+                        match entry_id.as_str() {
+                            CMD_COLOR_HISTORY => {
+                                if actually_visible && shown.mode == Mode::ColorHistory {
+                                    shown.visible = false;
+                                    shown.last_dismissed_at = Some(Instant::now());
+                                    drop(shown);
+                                    return close_reply();
+                                }
+                                shown.visible = true;
+                                return enter_color_history(ctx, &mut shown, None);
+                            }
+                            CMD_SCREEN_OCR => {
+                                let delay = if actually_visible { 110 } else { 0 };
+                                shown.visible = false;
+                                shown.last_dismissed_at = Some(Instant::now());
+                                drop(shown);
+                                if let Some(handle) = *lock_or_recover(&handler_handle) {
+                                    tools::launch_screen_ocr(
+                                        handle,
+                                        Arc::clone(&ctx.settings),
+                                        Arc::clone(&ctx.tools),
+                                        delay,
+                                    );
+                                }
+                                return close_reply();
+                            }
+                            CMD_COLOR_PICKER => {
+                                let delay = if actually_visible { 110 } else { 0 };
+                                shown.visible = false;
+                                shown.last_dismissed_at = Some(Instant::now());
+                                drop(shown);
+                                if let Some(handle) = *lock_or_recover(&handler_handle) {
+                                    tools::launch_color_picker(
+                                        handle,
+                                        Arc::clone(&ctx.features),
+                                        Arc::clone(&ctx.settings),
+                                        Arc::clone(&ctx.tools),
+                                        delay,
+                                    );
+                                }
+                                return close_reply();
+                            }
+                            _ => return PaletteReply::Keep,
+                        }
                     }
                     if let Some(cmd) = LauncherState::command_of(&entry_id) {
                         // Pressing an action's global shortcut while YAL is already showing
@@ -1286,6 +1393,22 @@ fn build(
                                 shown.show_detail,
                             ))
                         }
+                        Mode::ColorHistory => {
+                            let Some(ctx) = handler_context.as_ref() else {
+                                return PaletteReply::Keep;
+                            };
+                            let entries = ctx.features.color_history_items(&query);
+                            shown.color_entries = entries.clone();
+                            let fmt = tools::configured_color_format(&*ctx.settings);
+                            PaletteReply::Update(color_history_model(
+                                &query,
+                                &entries,
+                                0,
+                                shown.show_detail,
+                                fmt,
+                            ))
+                        }
+                        Mode::OcrPreview => PaletteReply::Keep,
                         Mode::Settings => {
                             let Some(ctx) = handler_context.as_ref() else {
                                 return PaletteReply::Keep;
@@ -1774,6 +1897,55 @@ fn handle_activate(
                 return close_with_hud("Opened in Browser".to_string());
             }
 
+            // 1f. Native Screen OCR, Color Picker, and Color Inspector power tools.
+            if is_power_tool_command(&row.id) {
+                launcher.remember(&row.id, &shown.query);
+                match row.id.as_str() {
+                    CMD_SCREEN_OCR => {
+                        if let Some(ctx_shared) = ctx_arc {
+                            shown.visible = false;
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            if let Some(handle) = *lock_or_recover(handle_slot) {
+                                tools::launch_screen_ocr(
+                                    handle,
+                                    Arc::clone(&ctx_shared.settings),
+                                    Arc::clone(&ctx_shared.tools),
+                                    110,
+                                );
+                            }
+                            return close_reply();
+                        }
+                        return PaletteReply::Keep;
+                    }
+                    CMD_COLOR_PICKER => {
+                        if let Some(ctx_shared) = ctx_arc {
+                            shown.visible = false;
+                            shown.last_dismissed_at = Some(Instant::now());
+                            drop(shown);
+                            if let Some(handle) = *lock_or_recover(handle_slot) {
+                                tools::launch_color_picker(
+                                    handle,
+                                    Arc::clone(&ctx_shared.features),
+                                    Arc::clone(&ctx_shared.settings),
+                                    Arc::clone(&ctx_shared.tools),
+                                    110,
+                                );
+                            }
+                            return close_reply();
+                        }
+                        return PaletteReply::Keep;
+                    }
+                    CMD_COLOR_HISTORY => {
+                        if let Some(ctx) = ctx {
+                            return enter_color_history(ctx, &mut shown, None);
+                        }
+                        return PaletteReply::Keep;
+                    }
+                    _ => {}
+                }
+            }
+
             // 2. Built-in screen commands navigate cleanly inside the same palette window!
             if let Some(cmd) = LauncherState::command_of(&row.id) {
                 if let Some(ctx) = ctx {
@@ -2223,6 +2395,89 @@ fn handle_activate(
                 close_with_hud(format!("Copied {}", entry.display))
             }
         }
+        Mode::ColorHistory => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            if shown.color_entries.is_empty() && shown.query.trim().is_empty() {
+                if let Some(ctx_shared) = ctx_arc {
+                    shown.visible = false;
+                    shown.last_dismissed_at = Some(Instant::now());
+                    drop(shown);
+                    if let Some(handle) = *lock_or_recover(handle_slot) {
+                        tools::launch_color_picker(
+                            handle,
+                            Arc::clone(&ctx_shared.features),
+                            Arc::clone(&ctx_shared.settings),
+                            Arc::clone(&ctx_shared.tools),
+                            110,
+                        );
+                    }
+                    return close_reply();
+                }
+                return PaletteReply::Keep;
+            }
+            let Some(entry) = shown.color_entries.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            let fmt = tools::configured_color_format(&*ctx.settings);
+            let fmt = if secondary { fmt.next() } else { fmt };
+            let formatted = fmt.format(tc_clipboard::color_from_rgb(entry.r, entry.g, entry.b));
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&formatted);
+            close_with_hud(format!("Copied {formatted}"))
+        }
+        Mode::OcrPreview => match index {
+            0 => {
+                let Some(state) = shown.ocr_preview.clone() else {
+                    return PaletteReply::Keep;
+                };
+                if state.text.trim().is_empty() {
+                    return PaletteReply::Keep;
+                }
+                shown.last_dismissed_at = Some(Instant::now());
+                drop(shown);
+                let _ = tc_platform_win::clipboard().write_text(&state.text);
+                close_with_hud(format!(
+                    "Copied {} chars ({})",
+                    state.char_count,
+                    state.mode.label()
+                ))
+            }
+            1 => {
+                let Some(state) = shown.ocr_preview.as_mut() else {
+                    return PaletteReply::Keep;
+                };
+                state.toggle_mode();
+                let mode_label = state.mode.label();
+                let mut model = ocr_preview_model(state, 1);
+                shown.selected = 1;
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: format!("Switched to {mode_label} mode"),
+                });
+                PaletteReply::Update(model)
+            }
+            2 => {
+                if let Some(ctx_shared) = ctx_arc {
+                    shown.visible = false;
+                    shown.last_dismissed_at = Some(Instant::now());
+                    drop(shown);
+                    if let Some(handle) = *lock_or_recover(handle_slot) {
+                        tools::launch_screen_ocr(
+                            handle,
+                            Arc::clone(&ctx_shared.settings),
+                            Arc::clone(&ctx_shared.tools),
+                            110,
+                        );
+                    }
+                    return close_reply();
+                }
+                PaletteReply::Keep
+            }
+            _ => PaletteReply::Keep,
+        },
         Mode::Settings => {
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
@@ -2259,12 +2514,13 @@ fn handle_activate(
                 return PaletteReply::Keep;
             }
             let query = shown.query.clone();
-            advance_native_setting(ctx, launcher, handle_slot, &key);
+            let toast = advance_native_setting(ctx, launcher, handle_slot, &key);
             let updated = collect_settings_rows(ctx, &query);
             let clamped = index.min(updated.len().saturating_sub(1));
             shown.settings_rows = updated.clone();
             shown.selected = clamped;
-            let model = settings_model_for(&query, &updated, clamped);
+            let mut model = settings_model_for(&query, &updated, clamped);
+            model.toast = toast;
             if key == tc_palette::KEY_APPEARANCE {
                 PaletteReply::UpdateTheme(Box::new(theme_from_settings(&ctx.settings)), model)
             } else {
@@ -2521,6 +2777,31 @@ fn handle_copy_chord(
             let _ = tc_platform_win::clipboard().write_text(&cell.name);
             close_with_hud("Copied Emoji Name".to_string())
         }
+        Mode::ColorHistory => {
+            let Some(entry) = shown.color_entries.get(index).cloned() else {
+                return PaletteReply::Keep;
+            };
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&entry.hex);
+            close_with_hud(format!("Copied {}", entry.hex))
+        }
+        Mode::OcrPreview => {
+            let Some(state) = shown.ocr_preview.clone() else {
+                return PaletteReply::Keep;
+            };
+            if state.text.trim().is_empty() {
+                return PaletteReply::Keep;
+            }
+            shown.last_dismissed_at = Some(Instant::now());
+            drop(shown);
+            let _ = tc_platform_win::clipboard().write_text(&state.text);
+            close_with_hud(format!(
+                "Copied {} chars ({})",
+                state.char_count,
+                state.mode.label()
+            ))
+        }
         _ => PaletteReply::Keep,
     }
 }
@@ -2768,6 +3049,35 @@ fn handle_action(
                 return PaletteReply::Update(build_clipboard_screen_model(
                     ctx, &mut shown, &q, &items, 0,
                 ));
+            }
+            Mode::ColorHistory => {
+                let Some(ctx) = ctx else {
+                    return PaletteReply::Keep;
+                };
+                let next = tools::cycle_color_format(&*ctx.settings);
+                let q = shown.query.clone();
+                let entries = shown.color_entries.clone();
+                let sel = selected.min(entries.len().saturating_sub(1));
+                shown.selected = sel;
+                let mut model = color_history_model(&q, &entries, sel, shown.show_detail, next);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: format!("Default format: {}", next.label()),
+                });
+                return PaletteReply::Update(model);
+            }
+            Mode::OcrPreview => {
+                let Some(state) = shown.ocr_preview.as_mut() else {
+                    return PaletteReply::Keep;
+                };
+                state.toggle_mode();
+                let mode_label = state.mode.label();
+                let mut model = ocr_preview_model(state, selected);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: format!("Switched to {mode_label} mode"),
+                });
+                return PaletteReply::Update(model);
             }
             _ => return PaletteReply::Keep,
         }
@@ -3115,6 +3425,55 @@ fn handle_action(
             PaletteReply::Keep
         }
 
+        // Color Inspector: Ctrl+P Pin/Unpin, Ctrl+Delete Remove.
+        (Mode::ColorHistory, ActionKey::CtrlP) => {
+            if let Some(entry) = shown.color_entries.get(selected).cloned() {
+                if let Some(pinned) = ctx.features.toggle_pin_color(&entry.hex) {
+                    let q = shown.query.clone();
+                    let entries = ctx.features.color_history_items(&q);
+                    let next_sel = entries
+                        .iter()
+                        .position(|e| e.hex.eq_ignore_ascii_case(&entry.hex))
+                        .unwrap_or_else(|| selected.min(entries.len().saturating_sub(1)));
+                    shown.color_entries = entries.clone();
+                    shown.selected = next_sel;
+                    let fmt = tools::configured_color_format(&*ctx.settings);
+                    let mut model =
+                        color_history_model(&q, &entries, next_sel, shown.show_detail, fmt);
+                    model.toast = Some(ToastModel {
+                        kind: ToastKind::Success,
+                        message: if pinned {
+                            format!("Pinned {}", entry.hex)
+                        } else {
+                            format!("Unpinned {}", entry.hex)
+                        },
+                    });
+                    return PaletteReply::Update(model);
+                }
+            }
+            PaletteReply::Keep
+        }
+        (Mode::ColorHistory, ActionKey::CtrlDelete) => {
+            if let Some(entry) = shown.color_entries.get(selected).cloned() {
+                if ctx.features.delete_color(&entry.hex) {
+                    let q = shown.query.clone();
+                    let entries = ctx.features.color_history_items(&q);
+                    let next_sel = selected.min(entries.len().saturating_sub(1));
+                    shown.color_entries = entries.clone();
+                    shown.selected = next_sel;
+                    let fmt = tools::configured_color_format(&*ctx.settings);
+                    let mut model =
+                        color_history_model(&q, &entries, next_sel, shown.show_detail, fmt);
+                    model.toast = Some(ToastModel {
+                        kind: ToastKind::Info,
+                        message: format!("Deleted {}", entry.hex),
+                    });
+                    return PaletteReply::Update(model);
+                }
+            }
+            PaletteReply::Keep
+        }
+
         _ => PaletteReply::Keep,
     }
 }
@@ -3198,6 +3557,16 @@ fn build_action_menu_for_current(
             .emoji_cells
             .get(selected)
             .map(|c| actions::for_emoji(&c.glyph, &c.name, c.pinned)),
+        Mode::ColorHistory => {
+            let fmt = ctx
+                .map(|c| tools::configured_color_format(&*c.settings))
+                .unwrap_or(PickerColorFormat::Hex);
+            Some(actions::for_color_history(
+                shown.color_entries.get(selected),
+                fmt,
+            ))
+        }
+        Mode::OcrPreview => shown.ocr_preview.as_ref().map(actions::for_ocr_preview),
         _ => None,
     }
 }
@@ -3332,23 +3701,25 @@ fn handle_action_menu_choice(
                 PaletteReply::Keep
             }
         }
-        actions::id::TOGGLE_PIN | actions::id::CLIP_TOGGLE_PIN | actions::id::EMOJI_TOGGLE_PIN => {
-            handle_action(
-                ActionKey::CtrlP,
-                selected,
-                shown_lock,
-                launcher,
-                ctx,
-                handle_slot,
-                close_with_hud,
-            )
-        }
+        actions::id::TOGGLE_PIN
+        | actions::id::CLIP_TOGGLE_PIN
+        | actions::id::EMOJI_TOGGLE_PIN
+        | actions::id::COLOR_TOGGLE_PIN => handle_action(
+            ActionKey::CtrlP,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
         actions::id::RECYCLE
         | actions::id::CLIP_DELETE
         | actions::id::SNIPPET_DELETE
         | actions::id::QL_DELETE
         | actions::id::NOTE_DELETE
-        | actions::id::CALCHIST_DELETE => handle_action(
+        | actions::id::CALCHIST_DELETE
+        | actions::id::COLOR_DELETE => handle_action(
             ActionKey::CtrlDelete,
             selected,
             shown_lock,
@@ -3702,6 +4073,161 @@ fn handle_action_menu_choice(
             handle_copy_chord(selected, shown_lock, launcher, ctx, close_with_hud)
         }
 
+        // Clipboard Image OCR
+        actions::id::CLIP_OCR => {
+            let Some(ctx_shared) = ctx_arc else {
+                return PaletteReply::Keep;
+            };
+            let item = {
+                let shown = lock_shown(shown_lock);
+                if shown.mode != Mode::Clipboard {
+                    return PaletteReply::Keep;
+                }
+                shown.clipboard_items.get(selected).cloned()
+            };
+            let png_bytes = item
+                .filter(|item| item.kind == ItemKind::Image)
+                .and_then(|item| {
+                    item.image_path
+                        .as_deref()
+                        .and_then(|path| std::fs::read(path).ok())
+                        .or_else(|| {
+                            ctx_shared
+                                .features
+                                .load_clipboard_image_rgba(&item)
+                                .and_then(|(w, h, rgba)| tc_clipboard::encode_png_rgba(w, h, &rgba))
+                        })
+                });
+            if let Some(png_bytes) = png_bytes {
+                {
+                    let mut shown = lock_shown(shown_lock);
+                    shown.visible = false;
+                    shown.last_dismissed_at = Some(Instant::now());
+                }
+                tools::run_clipboard_image_ocr(png_bytes, Arc::clone(&ctx_shared.settings));
+                close_reply()
+            } else {
+                let mut shown = lock_shown(shown_lock);
+                let toast = ToastModel {
+                    kind: ToastKind::Error,
+                    message: "Clipboard image unavailable for OCR".to_string(),
+                };
+                match rebuild_current_model(ctx, &mut shown, Some(toast)) {
+                    Some(model) => PaletteReply::Update(model),
+                    None => PaletteReply::Keep,
+                }
+            }
+        }
+
+        // Color Inspector actions
+        actions::id::COLOR_COPY_DEFAULT => handle_activate(
+            selected,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::COLOR_COPY_HEX
+        | actions::id::COLOR_COPY_RGB
+        | actions::id::COLOR_COPY_HSL
+        | actions::id::COLOR_COPY_OKLCH => {
+            let fmt = match action_id {
+                actions::id::COLOR_COPY_HEX => PickerColorFormat::Hex,
+                actions::id::COLOR_COPY_RGB => PickerColorFormat::Rgb,
+                actions::id::COLOR_COPY_HSL => PickerColorFormat::Hsl,
+                _ => PickerColorFormat::Oklch,
+            };
+            let entry = {
+                let mut shown = lock_shown(shown_lock);
+                let entry = shown.color_entries.get(selected).cloned();
+                if entry.is_some() {
+                    shown.last_dismissed_at = Some(Instant::now());
+                }
+                entry
+            };
+            let Some(entry) = entry else {
+                return PaletteReply::Keep;
+            };
+            let formatted = fmt.format(tc_clipboard::color_from_rgb(entry.r, entry.g, entry.b));
+            let _ = tc_platform_win::clipboard().write_text(&formatted);
+            close_with_hud(format!("Copied {formatted}"))
+        }
+        actions::id::COLOR_PICK_NEW => {
+            let Some(ctx_shared) = ctx_arc else {
+                return PaletteReply::Keep;
+            };
+            {
+                let mut shown = lock_shown(shown_lock);
+                shown.visible = false;
+                shown.last_dismissed_at = Some(Instant::now());
+            }
+            if let Some(handle) = *lock_or_recover(handle_slot) {
+                tools::launch_color_picker(
+                    handle,
+                    Arc::clone(&ctx_shared.features),
+                    Arc::clone(&ctx_shared.settings),
+                    Arc::clone(&ctx_shared.tools),
+                    110,
+                );
+            }
+            close_reply()
+        }
+        actions::id::COLOR_CLEAR_UNPINNED => {
+            let Some(ctx) = ctx else {
+                return PaletteReply::Keep;
+            };
+            let removed = ctx.features.clear_unpinned_colors();
+            let mut shown = lock_shown(shown_lock);
+            let q = shown.query.clone();
+            let entries = ctx.features.color_history_items(&q);
+            shown.color_entries = entries.clone();
+            shown.selected = 0;
+            let fmt = tools::configured_color_format(&*ctx.settings);
+            let mut model = color_history_model(&q, &entries, 0, shown.show_detail, fmt);
+            model.toast = Some(ToastModel {
+                kind: ToastKind::Info,
+                message: format!("Cleared {removed} unpinned colors"),
+            });
+            PaletteReply::Update(model)
+        }
+
+        // Screen OCR Preview actions
+        actions::id::OCR_COPY => handle_activate(
+            0,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+        actions::id::OCR_TOGGLE_MODE => handle_action(
+            ActionKey::Tab,
+            selected,
+            shown_lock,
+            launcher,
+            ctx,
+            handle_slot,
+            close_with_hud,
+        ),
+        actions::id::OCR_CAPTURE_AGAIN => handle_activate(
+            2,
+            false,
+            shown_lock,
+            launcher,
+            runner,
+            ctx_arc,
+            handle_slot,
+            close_reply,
+            close_with_hud,
+        ),
+
         _ => {
             // Dismiss menu cleanly if an unknown ID ever arrives.
             let mut shown = lock_shown(shown_lock);
@@ -3777,6 +4303,15 @@ fn rebuild_current_model(
             sel,
             show_detail,
         ),
+        Mode::ColorHistory => {
+            let ctx = ctx?;
+            let fmt = tools::configured_color_format(&*ctx.settings);
+            color_history_model(&query, &shown.color_entries, sel, show_detail, fmt)
+        }
+        Mode::OcrPreview => {
+            let state = shown.ocr_preview.as_ref()?;
+            ocr_preview_model(state, sel)
+        }
         Mode::Settings => settings_model_for(&query, &shown.settings_rows, sel),
         Mode::Status => return None,
     };
@@ -4361,6 +4896,35 @@ fn enter_calc_history(
     PaletteReply::Navigate(calc_history_model("", None, &entries, 0, shown.show_detail))
 }
 
+fn enter_color_history(
+    ctx: &NativeContext,
+    shown: &mut Shown,
+    select_hex: Option<&str>,
+) -> PaletteReply {
+    ctx.palette.open_screen("Color Inspector");
+    shown.mode = Mode::ColorHistory;
+    shown.query.clear();
+    shown.action_menu_open = false;
+    let entries = ctx.features.color_history_items("");
+    let selected = select_hex
+        .and_then(|hex| {
+            entries
+                .iter()
+                .position(|entry| entry.hex.eq_ignore_ascii_case(hex))
+        })
+        .unwrap_or(0);
+    shown.selected = selected;
+    shown.color_entries = entries.clone();
+    let fmt = tools::configured_color_format(&*ctx.settings);
+    PaletteReply::Navigate(color_history_model(
+        "",
+        &entries,
+        selected,
+        shown.show_detail,
+        fmt,
+    ))
+}
+
 fn enter_settings(ctx: &NativeContext, shown: &mut Shown) -> PaletteReply {
     ctx.palette.open_screen("Settings");
     let rows = collect_settings_rows(ctx, "");
@@ -4472,6 +5036,19 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
             .and_then(|s| s.trim().parse::<i32>().ok())
             .is_some();
 
+    let ocr_language_value = tools::ocr_language_display(
+        &tools::configured_ocr_language(&*ctx.settings),
+        &tc_platform_win::available_ocr_languages(),
+    );
+    let ocr_mode_value = match tools::configured_ocr_mode(&*ctx.settings) {
+        OcrFormatMode::Smart => "Smart (NormCap)",
+        OcrFormatMode::Raw => "Raw",
+    }
+    .to_string();
+    let color_picker_format_value = tools::configured_color_format(&*ctx.settings)
+        .label()
+        .to_string();
+
     let mut extra = vec![
         SettingRow {
             key: KEY_RECORD_LAUNCHER_HOTKEY.to_string(),
@@ -4490,6 +5067,29 @@ fn collect_settings_rows(ctx: &NativeContext, query: &str) -> Vec<SettingRow> {
             label: "CapsLock Hyperkey".to_string(),
             value: if hyperkey_on { "true" } else { "false" }.to_string(),
             options: vec!["true".to_string(), "false".to_string()],
+        },
+        SettingRow {
+            key: KEY_OCR_LANGUAGE.to_string(),
+            label: "OCR Language".to_string(),
+            value: ocr_language_value,
+            options: Vec::new(),
+        },
+        SettingRow {
+            key: KEY_OCR_MODE.to_string(),
+            label: "OCR Formatting Mode".to_string(),
+            value: ocr_mode_value,
+            options: vec!["Smart (NormCap)".to_string(), "Raw".to_string()],
+        },
+        SettingRow {
+            key: KEY_COLOR_PICKER_FORMAT.to_string(),
+            label: "Color Picker Default Format".to_string(),
+            value: color_picker_format_value,
+            options: vec![
+                "HEX".to_string(),
+                "RGB".to_string(),
+                "HSL".to_string(),
+                "OKLCH".to_string(),
+            ],
         },
     ];
 
@@ -4573,7 +5173,7 @@ fn advance_native_setting(
     launcher: &Arc<LauncherState>,
     handle_slot: &Arc<Mutex<Option<PaletteHandle>>>,
     key: &str,
-) {
+) -> Option<ToastModel> {
     if key == KEY_HOTKEY_LAUNCHER || key == KEY_LAUNCHER_HOTKEY {
         let current = hotkeys::configured_launcher_hotkey(&*ctx.settings).format();
         let pos = HOTKEY_PRESETS
@@ -4586,14 +5186,46 @@ fn advance_native_setting(
             let _ = hotkeys::save_launcher_hotkey(&*ctx.settings, trigger);
             ctx.hotkeys.reload_bindings(&ctx.settings);
         }
-        return;
+        return None;
     }
 
     if key == KEY_HOTKEY_HYPERKEY {
         let now_on = !hotkeys::hyperkey_enabled(&*ctx.settings);
         let _ = hotkeys::set_hyperkey_enabled_setting(&*ctx.settings, now_on);
         ctx.hotkeys.set_hyperkey_enabled(now_on);
-        return;
+        return None;
+    }
+
+    if key == KEY_OCR_LANGUAGE {
+        return match tools::cycle_ocr_language(&*ctx.settings) {
+            Ok(label) => Some(ToastModel {
+                kind: ToastKind::Success,
+                message: format!("OCR language: {label}"),
+            }),
+            Err(msg) => {
+                tc_ui::show_hud(msg, tools::settings_prefers_dark(&*ctx.settings));
+                Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: msg.to_string(),
+                })
+            }
+        };
+    }
+
+    if key == KEY_OCR_MODE {
+        let next = tools::toggle_ocr_mode(&*ctx.settings);
+        return Some(ToastModel {
+            kind: ToastKind::Success,
+            message: format!("OCR mode: {}", next.label()),
+        });
+    }
+
+    if key == KEY_COLOR_PICKER_FORMAT {
+        let next = tools::cycle_color_format(&*ctx.settings);
+        return Some(ToastModel {
+            kind: ToastKind::Success,
+            message: format!("Color format: {}", next.label()),
+        });
     }
 
     if key == KEY_SNIPPETS_AUTO_EXPAND {
@@ -4601,7 +5233,7 @@ fn advance_native_setting(
         let _ = hotkeys::set_snippets_auto_expand_setting(&*ctx.settings, now_on);
         ctx.hotkeys
             .sync_snippet_keywords(&ctx.settings, Arc::clone(&ctx.features));
-        return;
+        return None;
     }
 
     if key == KEY_WINDOW_MANAGEMENT_ENABLED {
@@ -4613,13 +5245,13 @@ fn advance_native_setting(
             if now_on { "true" } else { "false" },
         );
         launcher.set_show_window_commands(now_on);
-        return;
+        return None;
     }
 
     if key == KEY_POP_TO_ROOT_SECS {
         let next = pop_to_root_policy(&ctx.settings).next();
         let _ = ctx.settings.set(KEY_POP_TO_ROOT_SECS, next.stored_value());
-        return;
+        return None;
     }
 
     if key == FILE_SEARCH_ENABLED {
@@ -4632,7 +5264,7 @@ fn advance_native_setting(
             ctx.features
                 .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
         }
-        return;
+        return None;
     }
 
     if key == FILE_SEARCH_SHOW {
@@ -4647,12 +5279,13 @@ fn advance_native_setting(
             ctx.features
                 .trigger_file_index(Arc::clone(launcher), Some(Arc::clone(handle_slot)));
         }
-        return;
+        return None;
     }
 
     if let Some(next) = ctx.palette.advance_setting(key) {
         let _ = ctx.settings.set(key, &next);
     }
+    None
 }
 
 fn primary_action_for_row(row: Option<&ResultRow>) -> &'static str {
@@ -4797,6 +5430,9 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                     | KEY_HOTKEY_LAUNCHER
                     | KEY_LAUNCHER_HOTKEY
                     | KEY_HOTKEY_HYPERKEY => "Hotkeys",
+                    KEY_OCR_LANGUAGE | KEY_OCR_MODE | KEY_COLOR_PICKER_FORMAT => {
+                        "Screen OCR & Color Picker"
+                    }
                     KEY_SNIPPETS_AUTO_EXPAND
                     | KEY_WINDOW_MANAGEMENT_ENABLED
                     | FILE_SEARCH_ENABLED
@@ -4811,6 +5447,9 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                     KEY_RECORD_LAUNCHER_HOTKEY => "⏺",
                     KEY_HOTKEY_LAUNCHER | KEY_LAUNCHER_HOTKEY => "⌘",
                     KEY_HOTKEY_HYPERKEY => "✦",
+                    KEY_OCR_LANGUAGE => "A",
+                    KEY_OCR_MODE => "¶",
+                    KEY_COLOR_PICKER_FORMAT => "◉",
                     KEY_SNIPPETS_AUTO_EXPAND => "✂",
                     KEY_WINDOW_MANAGEMENT_ENABLED => "⊞",
                     FILE_SEARCH_ENABLED | FILE_SEARCH_SHOW => "F",
@@ -4833,6 +5472,15 @@ fn settings_model_for(query: &str, rows: &[SettingRow], selected: usize) -> Mode
                         "Cycle built-in global shortcut presets"
                     }
                     KEY_HOTKEY_HYPERKEY => "Hold CapsLock as Ctrl+Alt+Shift+Win Hyperkey",
+                    KEY_OCR_LANGUAGE => {
+                        "Cycle Auto (System) and installed Windows OCR language packs"
+                    }
+                    KEY_OCR_MODE => {
+                        "Smart (NormCap) reflows wrapped paragraphs · Raw keeps exact line breaks"
+                    }
+                    KEY_COLOR_PICKER_FORMAT => {
+                        "Default copy notation for Color Picker & Color Inspector (HEX, RGB, HSL, OKLCH)"
+                    }
                     KEY_SNIPPETS_AUTO_EXPAND => "Auto-expand snippet keywords globally as you type",
                     KEY_WINDOW_MANAGEMENT_ENABLED => {
                         "Snap windows with Left/Right Half, Maximize, Always on Top"
@@ -5228,5 +5876,84 @@ mod tests {
             .iter()
             .skip(1)
             .any(|r| r.kind == WIN_SETTING_SECTION && r.target == "ms-settings:display"));
+    }
+
+    #[test]
+    fn settings_rows_and_model_include_ocr_color_picker_and_action_hotkeys() {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let base = std::env::temp_dir().join(format!(
+            "yal-native-settings-test-{}-{unique}",
+            std::process::id()
+        ));
+        let paths = tc_platform::Paths {
+            data_dir: base.join("data"),
+            cache_dir: base.join("cache"),
+            home_dir: base.join("home"),
+            settings_file: base.join("settings.json"),
+        };
+        let ctx = NativeContext {
+            palette: Arc::new(PaletteState::new()),
+            settings: Arc::new(WindowsSettings::load(paths.settings_file.clone())),
+            features: Arc::new(FeatureStores::open(&paths)),
+            hotkeys: Arc::new(HotkeyController::new()),
+            pending_hotkey_command: Arc::new(Mutex::new(None)),
+            tools: Arc::new(ToolsBridge::new()),
+        };
+
+        let rows = collect_settings_rows(&ctx, "");
+        let ocr_lang_pos = rows.iter().position(|r| r.key == KEY_OCR_LANGUAGE);
+        let ocr_mode_pos = rows.iter().position(|r| r.key == KEY_OCR_MODE);
+        let color_fmt_pos = rows.iter().position(|r| r.key == KEY_COLOR_PICKER_FORMAT);
+        let ocr_hk_key = format!("{KEY_RECORD_CMD_HOTKEY_PREFIX}{CMD_SCREEN_OCR}");
+        let color_hk_key = format!("{KEY_RECORD_CMD_HOTKEY_PREFIX}{CMD_COLOR_PICKER}");
+        let first_action_hk_pos = rows
+            .iter()
+            .position(|r| r.key.starts_with(KEY_RECORD_CMD_HOTKEY_PREFIX));
+        let ocr_hk_row = rows.iter().find(|r| r.key == ocr_hk_key);
+        let color_hk_row = rows.iter().find(|r| r.key == color_hk_key);
+
+        assert!(ocr_lang_pos.is_some());
+        assert!(ocr_mode_pos.is_some());
+        assert!(color_fmt_pos.is_some());
+        assert!(first_action_hk_pos.is_some());
+        assert!(ocr_lang_pos < ocr_mode_pos);
+        assert!(ocr_mode_pos < color_fmt_pos);
+        assert!(color_fmt_pos < first_action_hk_pos);
+
+        assert_eq!(
+            ocr_hk_row.map(|r| r.label.as_str()),
+            Some("Extract Text (OCR) Hotkey")
+        );
+        assert_eq!(
+            color_hk_row.map(|r| r.label.as_str()),
+            Some("Pick Color Hotkey")
+        );
+
+        let model = settings_model_for("", &rows, 0);
+        for (label, glyph) in [
+            ("OCR Language", "A"),
+            ("OCR Formatting Mode", "¶"),
+            ("Color Picker Default Format", "◉"),
+        ] {
+            let ui_row = model.rows.iter().find(|r| r.name == label);
+            assert!(ui_row.is_some(), "missing settings row `{label}`");
+            if let Some(ui_row) = ui_row {
+                assert_eq!(ui_row.section, "Screen OCR & Color Picker");
+                assert_eq!(ui_row.icon.as_ref().map(|i| i.letter.as_str()), Some(glyph));
+                assert!(!ui_row.detail.is_empty());
+            }
+        }
+        for label in ["Extract Text (OCR) Hotkey", "Pick Color Hotkey"] {
+            let ui_row = model.rows.iter().find(|r| r.name == label);
+            assert!(ui_row.is_some(), "missing action hotkey row `{label}`");
+            if let Some(ui_row) = ui_row {
+                assert_eq!(ui_row.section, "Action Hotkeys");
+            }
+        }
+
+        let _ = std::fs::remove_dir_all(&base);
     }
 }
