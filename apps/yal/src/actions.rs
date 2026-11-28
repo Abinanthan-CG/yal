@@ -408,7 +408,7 @@ pub fn for_clipboard_item(item: &ClipboardItem, queue_len: usize) -> ActionMenuM
     ];
     if item.kind == ItemKind::Image {
         items.push(
-            ActionMenuItem::new(id::CLIP_OCR, "Extract Text (OCR)", "Image")
+            ActionMenuItem::new(id::CLIP_OCR, "Extract Text / QR (OCR)", "Image")
                 .with_shortcut("Ctrl+Shift+O")
                 .with_glyph("⌖"),
         );
@@ -910,7 +910,7 @@ mod tests {
 
         let image_menu = for_clipboard_item(&image_item, 0);
         let ocr_item = find_item(&image_menu, id::CLIP_OCR).expect("image ocr action");
-        assert_eq!(ocr_item.title, "Extract Text (OCR)");
+        assert_eq!(ocr_item.title, "Extract Text / QR (OCR)");
         assert_eq!(ocr_item.shortcut, "Ctrl+Shift+O");
 
         let ids = item_ids(&image_menu);

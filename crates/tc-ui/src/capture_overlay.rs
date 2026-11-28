@@ -1716,7 +1716,7 @@ fn paint_ocr_instruction_pill(
     language_label: &str,
 ) {
     let text = format!(
-        "Screen OCR ({language_label})  ·  Mode: {}  ·  Tab: Toggle  ·  Shift: Preview  ·  Esc: Cancel",
+        "Screen OCR & QR ({language_label})  ·  Mode: {}  ·  Tab: Toggle  ·  Shift: Preview  ·  Esc: Cancel",
         ocr_mode_label(mode)
     );
     let mon_w = (monitor.right - monitor.left).max(1) as f32;

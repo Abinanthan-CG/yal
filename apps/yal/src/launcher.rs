@@ -82,9 +82,12 @@ const POWER_TOOL_COMMANDS: &[PowerToolSpec] = &[
     PowerToolSpec {
         id: CMD_SCREEN_OCR,
         name: "Extract Text (OCR)",
-        detail: "Capture text from any screen region (Smart/Raw)",
+        detail: "Capture text or QR codes from any screen region (Smart/Raw)",
         keywords: &[
             "ocr",
+            "qr",
+            "qrcode",
+            "qr code",
             "text",
             "capture",
             "screenshot",
@@ -1516,7 +1519,7 @@ mod tests {
     fn power_tool_commands_are_searchable_by_name_detail_and_keywords() {
         let launcher = launcher(vec![]);
 
-        for query in ["ocr", "normcap"] {
+        for query in ["ocr", "normcap", "qr", "qrcode"] {
             let rows = launcher.search(query);
             assert!(
                 rows.iter()

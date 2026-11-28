@@ -67,6 +67,7 @@ flate2 = "1"
 # the local file header and once in the central directory - and a reader that uses the
 # local names can write files under names a check never saw.
 zip = { version = "9", default-features = false, features = ["deflate"] }
+rqrr = { version = "0.11", default-features = false }
 walkdir = "2"
 globset = "0.4"
 toml_datetime = "0.7"

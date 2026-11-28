@@ -9,8 +9,8 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
 use tc_clipboard::{
-    color_from_rgb, decode_png_rgba, format_ocr_lines, prepare_ocr_rgba, OcrFormatMode,
-    PickerColorFormat,
+    color_from_rgb, decode_png_rgba, decode_qr_codes_rgba, format_ocr_lines, format_qr_hud_preview,
+    prepare_ocr_rgba, OcrFormatMode, PickerColorFormat,
 };
 use tc_platform::{Clipboard, Settings};
 use tc_platform_win::{
@@ -342,6 +342,33 @@ pub fn launch_screen_ocr(
                         tc_ui::show_hud("Selected region was empty", dark);
                         return;
                     };
+
+                    // Fast pure-Rust QR pass first (works offline with zero OCR language packs).
+                    let qr_codes = decode_qr_codes_rgba(&rgba, cw, ch);
+                    if !qr_codes.is_empty() {
+                        let joined = qr_codes.join("\n");
+                        if open_preview {
+                            let state = OcrPreviewState::from_texts(
+                                joined.clone(),
+                                joined,
+                                OcrFormatMode::Raw,
+                                "QR Code".to_string(),
+                            );
+                            bridge.set_pending_ocr_preview(state);
+                            tc_ui::post_command(handle, COMMAND_OPEN_OCR_PREVIEW);
+                        } else {
+                            match WindowsClipboard::new().write_text(&joined) {
+                                Ok(()) => {
+                                    tc_ui::show_hud(format_qr_hud_preview(&qr_codes), dark);
+                                }
+                                Err(err) => {
+                                    tc_ui::show_hud(format!("Clipboard copy failed: {err}"), dark);
+                                }
+                            }
+                        }
+                        return;
+                    }
+
                     let Some((prep_rgba, pw, ph)) = prepare_ocr_rgba(&rgba, cw, ch) else {
                         tc_ui::show_hud("Unable to prepare region for OCR", dark);
                         return;
@@ -373,7 +400,7 @@ pub fn launch_screen_ocr(
                                 rec.language_tag,
                             );
                             if state.text.trim().is_empty() {
-                                tc_ui::show_hud("No text detected", dark);
+                                tc_ui::show_hud("No text or QR code detected", dark);
                                 return;
                             }
                             if open_preview {
@@ -488,6 +515,19 @@ pub fn run_clipboard_image_ocr(png_bytes: Vec<u8>, settings: Arc<WindowsSettings
                 tc_ui::show_hud("Unable to decode clipboard image", dark);
                 return;
             };
+            let qr_codes = decode_qr_codes_rgba(&rgba, width, height);
+            if !qr_codes.is_empty() {
+                let joined = qr_codes.join("\n");
+                match WindowsClipboard::new().write_text(&joined) {
+                    Ok(()) => {
+                        tc_ui::show_hud(format_qr_hud_preview(&qr_codes), dark);
+                    }
+                    Err(err) => {
+                        tc_ui::show_hud(format!("Clipboard copy failed: {err}"), dark);
+                    }
+                }
+                return;
+            }
             let Some((prep_rgba, pw, ph)) = prepare_ocr_rgba(&rgba, width, height) else {
                 tc_ui::show_hud("Unable to prepare clipboard image for OCR", dark);
                 return;
@@ -513,7 +553,7 @@ pub fn run_clipboard_image_ocr(png_bytes: Vec<u8>, settings: Arc<WindowsSettings
                     let mode = configured_ocr_mode(settings.as_ref());
                     let text = format_ocr_lines(&rec.lines, mode);
                     if text.trim().is_empty() {
-                        tc_ui::show_hud("No text detected in image", dark);
+                        tc_ui::show_hud("No text or QR code detected in image", dark);
                         return;
                     }
                     match WindowsClipboard::new().write_text(&text) {

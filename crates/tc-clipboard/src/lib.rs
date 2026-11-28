@@ -23,6 +23,7 @@ pub mod item;
 pub mod ocr_text;
 pub mod paste_sequence;
 pub mod policy;
+pub mod qr;
 pub mod raycast;
 pub mod store;
 #[cfg(test)]
@@ -43,6 +44,7 @@ pub use ocr_text::{
 };
 pub use paste_sequence::PasteSequence;
 pub use policy::CapturePolicy;
+pub use qr::{decode_qr_codes_rgba, format_qr_hud_preview};
 pub use raycast::RaycastImport;
 pub use store::{
     ClipboardChord, ClipboardDefaultAction, ClipboardRetention, ClipboardStore, StoreError,
