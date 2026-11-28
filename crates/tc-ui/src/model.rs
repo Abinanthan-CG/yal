@@ -39,6 +39,19 @@ pub struct DetailPane {
     pub metadata: Vec<(String, String)>,
 }
 
+/// Native multi-line text editor surface (e.g. Edit Clipboard Entry).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct EditorModel {
+    /// Header title displayed in the top bar while editing.
+    pub title: String,
+    /// Initial text loaded into the multi-line editor when entering edit mode.
+    pub text: String,
+    /// Label for primary in-place save (`Ctrl+Enter` / `Ctrl+S`).
+    pub primary_label: String,
+    /// Label for secondary save-as-new (`Ctrl+Shift+Enter` / `Ctrl+Shift+S`).
+    pub secondary_label: String,
+}
+
 /// One selectable command inside the floating `Ctrl+K` Action Panel popover.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ActionMenuItem {
@@ -134,18 +147,41 @@ impl ActionMenuModel {
         }
     }
 
-    /// Bounding rectangle `(left, top, right, bottom)` in DIPs anchored bottom-right above footer.
-    pub fn rect(&self, metrics: Metrics, window_height: f32) -> (f32, f32, f32, f32) {
+    /// Total desired height of the floating Action Panel in DIPs for its current filtered rows.
+    pub fn desired_height(&self) -> f32 {
         let count = self
             .filtered_indices()
             .len()
             .clamp(1, ACTION_MENU_MAX_VISIBLE);
-        let h = ACTION_MENU_HEADER_H + count as f32 * ACTION_MENU_ROW_H + 12.0;
+        ACTION_MENU_HEADER_H + count as f32 * ACTION_MENU_ROW_H + 12.0
+    }
+
+    /// Bounding rectangle `(left, top, right, bottom)` in DIPs anchored bottom-right above footer.
+    pub fn rect(&self, metrics: Metrics, window_height: f32) -> (f32, f32, f32, f32) {
+        let h = self.desired_height();
         let right = metrics.width - 10.0;
         let left = (right - ACTION_MENU_WIDTH).max(10.0);
         let bottom = (window_height - metrics.footer_height - 8.0).max(metrics.field_height + 40.0);
         let top = (bottom - h).max(metrics.field_height + 8.0);
         (left, top, right, bottom)
+    }
+
+    /// Number of action rows that physically fit inside the menu card for the given window height.
+    pub fn visible_slots(&self, metrics: Metrics, window_height: f32) -> usize {
+        let (_, top, _, bottom) = self.rect(metrics, window_height);
+        let rows_top = top + ACTION_MENU_HEADER_H + 4.0;
+        let avail = (bottom - rows_top).max(0.0);
+        ((avail / ACTION_MENU_ROW_H).floor() as usize).clamp(1, ACTION_MENU_MAX_VISIBLE)
+    }
+
+    /// First filtered row index visible when `max_slots` rows fit in the menu card.
+    pub fn scroll_start_for_slots(&self, total: usize, max_slots: usize) -> usize {
+        let slots = max_slots.max(1);
+        if total <= slots || self.selected < slots {
+            0
+        } else {
+            (self.selected + 1 - slots).min(total - slots)
+        }
     }
 
     /// Hit-test a DIP point against the Action Panel rows; returns filtered row index.
@@ -165,10 +201,14 @@ impl ActionMenuModel {
             return None;
         }
         let idx = ((y_dip - rows_top) / ACTION_MENU_ROW_H).floor() as usize;
+        let slots = self.visible_slots(metrics, window_height);
+        if idx >= slots {
+            return None;
+        }
         let filtered = self.filtered_indices();
-        let scroll = self.scroll_start(filtered.len());
+        let scroll = self.scroll_start_for_slots(filtered.len(), slots);
         let target = scroll + idx;
-        if target < filtered.len() && idx < ACTION_MENU_MAX_VISIBLE {
+        if target < filtered.len() {
             Some(target)
         } else {
             None
@@ -176,11 +216,7 @@ impl ActionMenuModel {
     }
 
     pub fn scroll_start(&self, total: usize) -> usize {
-        if total <= ACTION_MENU_MAX_VISIBLE || self.selected < ACTION_MENU_MAX_VISIBLE {
-            0
-        } else {
-            (self.selected + 1 - ACTION_MENU_MAX_VISIBLE).min(total - ACTION_MENU_MAX_VISIBLE)
-        }
+        self.scroll_start_for_slots(total, ACTION_MENU_MAX_VISIBLE)
     }
 }
 
@@ -460,6 +496,8 @@ pub struct Model {
     /// When `true` (e.g. Clipboard History), single-clicking a row only selects and
     /// previews it instead of immediately activating/pasting; `Enter` activates.
     pub click_selects_only: bool,
+    /// Optional native multi-line text editor surface (e.g. Edit Clipboard Entry).
+    pub editor: Option<EditorModel>,
 }
 
 /// Positioned section header in content-space DIPs (relative to `list_top`).
@@ -567,6 +605,7 @@ impl Model {
             && self.action_menu.is_none()
             && self.detail.is_none()
             && self.grid.is_none()
+            && self.editor.is_none()
         {
             return PaletteLayout {
                 list_top: metrics.field_height,
@@ -580,6 +619,20 @@ impl Model {
 
         let list_top = metrics.field_height + 1.0 + metrics.list_gap;
 
+        if self.editor.is_some() {
+            let visible_height = SPLIT_VIEW_MIN_HEIGHT;
+            let list_bottom = list_top + visible_height;
+            let window_height = list_bottom + metrics.list_gap + metrics.footer_height;
+            return PaletteLayout {
+                list_top,
+                list_bottom,
+                content_height: visible_height,
+                window_height,
+                sections: Vec::new(),
+                rows: Vec::new(),
+            };
+        }
+
         if let Some(grid) = self.grid.as_ref() {
             let row_count = grid.row_count();
             let content_height = if row_count == 0 {
@@ -588,7 +641,11 @@ impl Model {
                 row_count as f32 * GRID_CELL_HEIGHT + 8.0
             };
             let max_grid_height = 5.0 * GRID_CELL_HEIGHT + 8.0;
-            let visible_height = content_height.min(max_grid_height);
+            let mut visible_height = content_height.min(max_grid_height);
+            if let Some(menu) = self.action_menu.as_ref() {
+                visible_height =
+                    visible_height.max((menu.desired_height() + 16.0).min(max_grid_height));
+            }
             let list_bottom = list_top + visible_height;
             let window_height = list_bottom + metrics.list_gap + metrics.footer_height;
             return PaletteLayout {
@@ -652,11 +709,15 @@ impl Model {
             - metrics.footer_height)
             .max(metrics.max_rows as f32 * metrics.row_height);
         let max_list_height = expanded_viewport;
-        let visible_list_height = if self.detail.is_some() {
+        let mut visible_list_height = if self.detail.is_some() {
             SPLIT_VIEW_MIN_HEIGHT.max(content_height.min(max_list_height))
         } else {
             content_height.min(max_list_height)
         };
+        if let Some(menu) = self.action_menu.as_ref() {
+            let min_menu_height = (menu.desired_height() + 16.0).min(max_list_height);
+            visible_list_height = visible_list_height.max(min_menu_height);
+        }
         let list_bottom = list_top + visible_list_height;
         let window_height = list_bottom + metrics.list_gap + metrics.footer_height;
 
@@ -695,6 +756,9 @@ impl Model {
 
     /// Hit-test a 2D point `(x_dip, y_dip)` against either the Emoji Grid or the row list.
     pub fn hit_test_dip(&self, x_dip: f32, y_dip: f32, metrics: Metrics) -> Option<usize> {
+        if self.editor.is_some() {
+            return None;
+        }
         let layout = self.layout(metrics);
         if y_dip < layout.list_top || y_dip >= layout.list_bottom {
             return None;
@@ -900,5 +964,145 @@ mod tests {
             ..DetailPane::default()
         };
         assert_eq!(pane.color_ramp, ramp);
+    }
+
+    fn sample_action_menu(count: usize) -> ActionMenuModel {
+        ActionMenuModel {
+            title: "Actions".to_string(),
+            items: (0..count)
+                .map(|i| ActionMenuItem::new(format!("act-{i}"), format!("Action {i}"), "General"))
+                .collect(),
+            ..ActionMenuModel::default()
+        }
+    }
+
+    #[test]
+    fn action_menu_expands_short_list_and_grid_then_contracts() {
+        let metrics = Metrics::default();
+        let menu = sample_action_menu(8);
+
+        // Short list (1 row, no detail pane)
+        let mut list_model = Model {
+            rows: vec![Row::named("Single Row")],
+            detail: None,
+            ..Model::default()
+        };
+        let base_list_height = list_model.layout(metrics).window_height;
+
+        list_model.action_menu = Some(menu.clone());
+        let expanded_list_layout = list_model.layout(metrics);
+        assert!(expanded_list_layout.window_height > base_list_height);
+        assert_eq!(
+            menu.visible_slots(metrics, expanded_list_layout.window_height),
+            8
+        );
+
+        list_model.action_menu = None;
+        assert_eq!(list_model.layout(metrics).window_height, base_list_height);
+
+        // Short 2D grid (1 row of cells)
+        let mut grid_model = Model {
+            grid: Some(GridModel {
+                columns: 6,
+                cells: vec![
+                    GridCell {
+                        glyph: "a".to_string(),
+                        name: "Alpha".to_string(),
+                        pinned: false,
+                    },
+                    GridCell {
+                        glyph: "b".to_string(),
+                        name: "Beta".to_string(),
+                        pinned: false,
+                    },
+                ],
+                ..GridModel::default()
+            }),
+            ..Model::default()
+        };
+        let base_grid_height = grid_model.layout(metrics).window_height;
+
+        grid_model.action_menu = Some(menu.clone());
+        let expanded_grid_layout = grid_model.layout(metrics);
+        assert!(expanded_grid_layout.window_height > base_grid_height);
+        assert_eq!(
+            menu.visible_slots(metrics, expanded_grid_layout.window_height),
+            8
+        );
+
+        grid_model.action_menu = None;
+        assert_eq!(grid_model.layout(metrics).window_height, base_grid_height);
+    }
+
+    #[test]
+    fn action_menu_clamps_slots_and_hit_tests_accurately_in_constrained_window() {
+        let metrics = Metrics::default();
+        let constrained_h = 220.0;
+        let mut menu = sample_action_menu(10);
+
+        let slots = menu.visible_slots(metrics, constrained_h);
+        assert!(slots < ACTION_MENU_MAX_VISIBLE);
+        assert_eq!(slots, 2);
+
+        menu.selected = 4;
+        let scroll = menu.scroll_start_for_slots(10, slots);
+        assert_eq!(scroll, 3);
+
+        let (left, top, right, bottom) = menu.rect(metrics, constrained_h);
+        let mid_x = (left + right) * 0.5;
+        let rows_top = top + ACTION_MENU_HEADER_H + 4.0;
+
+        // Slot 0 and Slot 1 map to scrolled filtered indices 3 and 4.
+        assert_eq!(
+            menu.hit_test_dip(mid_x, rows_top + 10.0, metrics, constrained_h),
+            Some(3)
+        );
+        assert_eq!(
+            menu.hit_test_dip(
+                mid_x,
+                rows_top + ACTION_MENU_ROW_H + 10.0,
+                metrics,
+                constrained_h
+            ),
+            Some(4)
+        );
+
+        // Click inside the menu card below the clamped visible slots is rejected.
+        let below_slots_y = rows_top + slots as f32 * ACTION_MENU_ROW_H + 1.0;
+        assert!(below_slots_y < bottom);
+        assert_eq!(
+            menu.hit_test_dip(mid_x, below_slots_y, metrics, constrained_h),
+            None
+        );
+    }
+
+    #[test]
+    fn editor_model_uses_split_view_height_even_when_compact_and_blocks_hit_test() {
+        let metrics = Metrics::default();
+        let model = Model {
+            rows: Vec::new(),
+            compact: true,
+            editor: Some(EditorModel {
+                title: "Edit Clipboard Entry".to_string(),
+                text: "line 1\nline 2".to_string(),
+                primary_label: "Save".to_string(),
+                secondary_label: "Save as New".to_string(),
+            }),
+            ..Model::default()
+        };
+
+        let layout = model.layout(metrics);
+        let expected_list_top = metrics.field_height + 1.0 + metrics.list_gap;
+        let expected_window_height =
+            expected_list_top + SPLIT_VIEW_MIN_HEIGHT + metrics.list_gap + metrics.footer_height;
+
+        assert_eq!(layout.viewport_height(), SPLIT_VIEW_MIN_HEIGHT);
+        assert_eq!(layout.window_height, expected_window_height);
+        assert!(layout.rows.is_empty());
+        assert!(layout.sections.is_empty());
+        assert_eq!(
+            model.hit_test_dip(100.0, layout.list_top + 20.0, metrics),
+            None
+        );
     }
 }

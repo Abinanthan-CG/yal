@@ -15,7 +15,8 @@ use tc_palette::FileType;
 use tc_platform_win::window_control::WindowInfo;
 use tc_snippets::StoredSnippet;
 use tc_ui::{
-    Color, DetailPane, GridCell, GridModel, Icon, IconBitmap, IconKind, InlineArgBanner, Model, Row,
+    Color, DetailPane, EditorModel, GridCell, GridModel, Icon, IconBitmap, IconKind,
+    InlineArgBanner, Model, Row,
 };
 
 use crate::features::{
@@ -34,7 +35,7 @@ const MAX_FILE_PREVIEW_BYTES: u64 = 32 * 1024;
 /// Maximum number of lines shown in a file preview pane.
 const MAX_FILE_PREVIEW_LINES: usize = 40;
 /// Maximum number of characters kept in any detail pane preview body.
-const MAX_DETAIL_BODY_CHARS: usize = 3600;
+const MAX_DETAIL_BODY_CHARS: usize = 32_000;
 
 /// Wizard step when creating a Quick Note inline.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -552,6 +553,7 @@ pub fn clipboard_model(
         result_count: Some(count_label),
         footer_hints: vec![
             ("↵".to_string(), "Paste".to_string()),
+            ("Ctrl+E".to_string(), "Edit".to_string()),
             ("Ctrl+D".to_string(), "Delete".to_string()),
             ("Tab".to_string(), "Filter".to_string()),
             ("Ctrl+K".to_string(), "Actions".to_string()),
@@ -706,6 +708,38 @@ pub fn clipboard_detail_with_image(
                 metadata,
             }
         }
+    }
+}
+
+/// Build the native multi-line Edit Clipboard Entry screen model.
+pub fn edit_clipboard_model(item: &ClipboardItem, initial_text: &str) -> Model {
+    let char_count = initial_text.chars().count();
+    let line_count = if initial_text.is_empty() {
+        0
+    } else {
+        initial_text.lines().count().max(1)
+    };
+    let badge = if item.is_pinned() {
+        "Edit Pinned Clip".to_string()
+    } else {
+        "Edit Clipboard Entry".to_string()
+    };
+    Model {
+        header_badge: Some(badge),
+        back_button: true,
+        footer: format!("{char_count} chars · {line_count} lines"),
+        footer_hints: vec![
+            ("Ctrl+↵".to_string(), "Update Entry".to_string()),
+            ("Ctrl+Shift+↵".to_string(), "Save as New Copy".to_string()),
+            ("Esc".to_string(), "Cancel".to_string()),
+        ],
+        editor: Some(EditorModel {
+            title: "Edit Clipboard Entry".to_string(),
+            text: initial_text.to_string(),
+            primary_label: "Update Entry".to_string(),
+            secondary_label: "Save as New Copy".to_string(),
+        }),
+        ..Model::default()
     }
 }
 
@@ -2659,5 +2693,59 @@ mod tests {
             .metadata
             .iter()
             .any(|(k, v)| k == "Lines" && v == "2"));
+    }
+
+    #[test]
+    fn edit_clipboard_model_populates_editor_badge_footer_and_hints() {
+        let unpinned = ClipboardItem::text("hello\nworld", None);
+        let model = edit_clipboard_model(&unpinned, "hello\nworld");
+        assert_eq!(model.header_badge.as_deref(), Some("Edit Clipboard Entry"));
+        assert!(model.back_button);
+        assert_eq!(model.footer, "11 chars · 2 lines");
+        assert_eq!(
+            model.footer_hints,
+            vec![
+                ("Ctrl+↵".to_string(), "Update Entry".to_string()),
+                ("Ctrl+Shift+↵".to_string(), "Save as New Copy".to_string()),
+                ("Esc".to_string(), "Cancel".to_string()),
+            ]
+        );
+        let editor = model.editor.expect("editor model");
+        assert_eq!(editor.title, "Edit Clipboard Entry");
+        assert_eq!(editor.text, "hello\nworld");
+        assert_eq!(editor.primary_label, "Update Entry");
+        assert_eq!(editor.secondary_label, "Save as New Copy");
+
+        let mut pinned = ClipboardItem::text("pinned", None);
+        pinned.pinned_at = Some(1_700_000_000_000);
+        let pinned_empty = edit_clipboard_model(&pinned, "");
+        assert_eq!(
+            pinned_empty.header_badge.as_deref(),
+            Some("Edit Pinned Clip")
+        );
+        assert_eq!(pinned_empty.footer, "0 chars · 0 lines");
+        let pinned_editor = pinned_empty.editor.expect("pinned editor model");
+        assert_eq!(pinned_editor.text, "");
+    }
+
+    #[test]
+    fn clipboard_detail_preserves_long_text_up_to_32000_chars() {
+        let long_text = "a".repeat(5_000);
+        let item = ClipboardItem::text(&long_text, None);
+        let detail = clipboard_detail_with_image(&item, None);
+        assert_eq!(detail.body.chars().count(), 5_000);
+        assert_eq!(detail.body, long_text);
+
+        let max_text = "b".repeat(32_000);
+        let max_item = ClipboardItem::text(&max_text, None);
+        let max_detail = clipboard_detail_with_image(&max_item, None);
+        assert_eq!(max_detail.body.chars().count(), 32_000);
+        assert_eq!(max_detail.body, max_text);
+
+        let over_text = "c".repeat(32_005);
+        let over_item = ClipboardItem::text(&over_text, None);
+        let over_detail = clipboard_detail_with_image(&over_item, None);
+        assert_eq!(over_detail.body.chars().count(), 32_001);
+        assert!(over_detail.body.ends_with('…'));
     }
 }

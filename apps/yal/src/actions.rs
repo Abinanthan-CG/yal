@@ -35,6 +35,7 @@ pub mod id {
     pub const CLIP_PASTE: &str = "clip_paste";
     pub const CLIP_COPY: &str = "clip_copy";
     pub const CLIP_COPY_PLAIN: &str = "clip_copy_plain";
+    pub const CLIP_EDIT: &str = "clip.edit";
     pub const CLIP_TOGGLE_PIN: &str = "clip_toggle_pin";
     pub const CLIP_CYCLE_FILTER: &str = "clip_cycle_filter";
     pub const CLIP_QUEUE_ADD: &str = "clip_queue_add";
@@ -406,6 +407,13 @@ pub fn for_clipboard_item(item: &ClipboardItem, queue_len: usize) -> ActionMenuM
             .with_shortcut("Alt+C")
             .with_glyph("≡"),
     ];
+    if item.kind == ItemKind::Text {
+        items.push(
+            ActionMenuItem::new(id::CLIP_EDIT, "Edit Entry…", "Edit")
+                .with_shortcut("Ctrl+E")
+                .with_glyph("✎"),
+        );
+    }
     if item.kind == ItemKind::Image {
         items.push(
             ActionMenuItem::new(id::CLIP_OCR, "Extract Text / QR (OCR)", "Image")
@@ -924,6 +932,39 @@ mod tests {
             .position(|&x| x == id::CLIP_TOGGLE_PIN)
             .expect("pin");
         assert!(copy_plain_pos < ocr_pos && ocr_pos < pin_pos);
+    }
+
+    #[test]
+    fn clipboard_menu_includes_edit_action_only_for_text_items() {
+        let plain_item = ClipboardItem::text("hello world", None);
+        let link_item = ClipboardItem::text("https://example.com/docs", None);
+        let color_item = ClipboardItem::text("#3B82F6", None);
+        let file_item = ClipboardItem::file("C:\\temp\\doc.pdf", None);
+        let image_item = ClipboardItem::image("C:\\temp\\shot.png", None);
+
+        for item in [&plain_item, &link_item, &color_item] {
+            let menu = for_clipboard_item(item, 0);
+            let edit = find_item(&menu, id::CLIP_EDIT).expect("text edit action");
+            assert_eq!(edit.title, "Edit Entry…");
+            assert_eq!(edit.section, "Edit");
+            assert_eq!(edit.shortcut, "Ctrl+E");
+            assert_eq!(edit.glyph, "✎");
+
+            let ids = item_ids(&menu);
+            let copy_plain_pos = ids
+                .iter()
+                .position(|&x| x == id::CLIP_COPY_PLAIN)
+                .expect("copy plain");
+            let edit_pos = ids.iter().position(|&x| x == id::CLIP_EDIT).expect("edit");
+            let pin_pos = ids
+                .iter()
+                .position(|&x| x == id::CLIP_TOGGLE_PIN)
+                .expect("pin");
+            assert!(copy_plain_pos < edit_pos && edit_pos < pin_pos);
+        }
+
+        assert!(find_item(&for_clipboard_item(&file_item, 0), id::CLIP_EDIT).is_none());
+        assert!(find_item(&for_clipboard_item(&image_item, 0), id::CLIP_EDIT).is_none());
     }
 
     #[test]

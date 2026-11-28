@@ -19,8 +19,8 @@ pub use capture_overlay::{
 pub use event::{ignore, ActionKey, Handler, PaletteEvent, PaletteReply};
 pub use hud::show_hud;
 pub use model::{
-    ActionMenuItem, ActionMenuModel, DetailPane, GridCell, GridModel, Icon, IconBitmap, IconKind,
-    InlineArgBanner, Model, PaletteLayout, Row, ToastKind, ToastModel,
+    ActionMenuItem, ActionMenuModel, DetailPane, EditorModel, GridCell, GridModel, Icon,
+    IconBitmap, IconKind, InlineArgBanner, Model, PaletteLayout, Row, ToastKind, ToastModel,
 };
 pub use theme::{Appearance, Color, Metrics, Theme, PALETTE};
 pub use tokens::{TokenColor, TokenColors, TokenMetrics, Tokens};

@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::ffi::c_void;
 
-use windows::core::{IUnknown, Interface, PCWSTR};
+use windows::core::{IUnknown, Interface, BOOL, PCWSTR};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Direct2D::{
     Common::{
@@ -24,9 +24,9 @@ use windows::Win32::Graphics::DirectWrite::{
     DWriteCreateFactory, IDWriteFactory, IDWriteTextFormat, IDWriteTextLayout,
     DWRITE_FACTORY_TYPE_SHARED, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL,
     DWRITE_FONT_WEIGHT, DWRITE_FONT_WEIGHT_MEDIUM, DWRITE_FONT_WEIGHT_NORMAL,
-    DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_TEXT_ALIGNMENT, DWRITE_TEXT_ALIGNMENT_CENTER,
-    DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING, DWRITE_TEXT_METRICS,
-    DWRITE_TEXT_RANGE, DWRITE_TRIMMING, DWRITE_TRIMMING_GRANULARITY_CHARACTER,
+    DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_HIT_TEST_METRICS, DWRITE_TEXT_ALIGNMENT,
+    DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_TEXT_ALIGNMENT_TRAILING,
+    DWRITE_TEXT_METRICS, DWRITE_TEXT_RANGE, DWRITE_TRIMMING, DWRITE_TRIMMING_GRANULARITY_CHARACTER,
     DWRITE_WORD_WRAPPING_NO_WRAP, DWRITE_WORD_WRAPPING_WRAP,
 };
 use windows::Win32::Graphics::Dxgi::Common::DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -34,8 +34,7 @@ use windows_numerics::{Matrix3x2, Vector2};
 
 use crate::model::{
     ActionMenuModel, DetailPane, GridModel, IconBitmap, IconKind, Model, Row, ToastKind,
-    ACTION_MENU_HEADER_H, ACTION_MENU_MAX_VISIBLE, ACTION_MENU_ROW_H, GRID_CELL_HEIGHT,
-    MASTER_SPLIT_RATIO,
+    ACTION_MENU_HEADER_H, ACTION_MENU_ROW_H, GRID_CELL_HEIGHT, MASTER_SPLIT_RATIO,
 };
 use crate::theme::{Appearance, Color, Theme};
 
@@ -67,6 +66,167 @@ struct ColorRampTile {
     label_top: f32,
 }
 
+/// Interactive scroll & text-selection state for the right-hand Master-Detail preview pane.
+#[derive(Debug, Clone, Default)]
+pub struct DetailTextState {
+    pub scroll_offset: f32,
+    pub content_height: f32,
+    pub viewport_rect: Option<(f32, f32, f32, f32)>,
+    pub text_origin: (f32, f32),
+    pub text_width: f32,
+    pub selection: Option<(u32, u32)>,
+    pub dragging: bool,
+    pub last_body_hash: u64,
+}
+
+impl DetailTextState {
+    pub fn sync_body(&mut self, text: &str) {
+        let hash = detail_text_fingerprint(text);
+        if hash != self.last_body_hash {
+            self.last_body_hash = hash;
+            self.scroll_offset = 0.0;
+            self.selection = None;
+            self.dragging = false;
+        }
+    }
+
+    pub fn reset(&mut self) {
+        *self = Self::default();
+    }
+
+    pub fn viewport_height(&self) -> f32 {
+        match self.viewport_rect {
+            Some((_, t, _, b)) => (b - t).max(0.0),
+            None => 0.0,
+        }
+    }
+
+    pub fn max_scroll(&self) -> f32 {
+        (self.content_height - self.viewport_height()).max(0.0)
+    }
+
+    pub fn clamp_scroll(&mut self) {
+        self.scroll_offset = self.scroll_offset.clamp(0.0, self.max_scroll());
+    }
+
+    pub fn scroll_by(&mut self, delta_dip: f32) {
+        self.scroll_offset = (self.scroll_offset + delta_dip).clamp(0.0, self.max_scroll());
+    }
+
+    pub fn contains_point(&self, x_dip: f32, y_dip: f32) -> bool {
+        match self.viewport_rect {
+            Some((l, t, r, b)) => x_dip >= l && x_dip <= r && y_dip >= t && y_dip <= b,
+            None => false,
+        }
+    }
+
+    pub fn selected_range(&self) -> Option<(u32, u32)> {
+        let (a, b) = self.selection?;
+        if a == b {
+            None
+        } else {
+            Some((a.min(b), a.max(b)))
+        }
+    }
+}
+
+/// Returns the active text string displayed inside a `DetailPane`'s scrollable text area.
+pub fn detail_preview_text(detail: &DetailPane) -> &str {
+    if detail.color_swatch.is_some() {
+        detail.body.as_str()
+    } else if detail.image_key.is_some() && detail.image.is_some() {
+        ""
+    } else if detail.body.trim().is_empty() {
+        detail.title.as_str()
+    } else {
+        detail.body.as_str()
+    }
+}
+
+/// Fast FNV-1a 64-bit fingerprint mixed with string byte length.
+pub fn detail_text_fingerprint(text: &str) -> u64 {
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    for byte in text.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x0100_0000_01b3);
+    }
+    hash ^ (text.len() as u64).rotate_left(32)
+}
+
+/// Safely extracts a UTF-16 code unit range `[min(a,b)..max(a,b)]` from `text` without
+/// ever splitting UTF-16 surrogate pairs or panicking on out-of-range offsets.
+pub fn utf16_slice(text: &str, a: u32, b: u32) -> String {
+    let start = a.min(b);
+    let end = a.max(b);
+    if start == end || text.is_empty() {
+        return String::new();
+    }
+    let mut out = String::new();
+    let mut pos: u32 = 0;
+    for ch in text.chars() {
+        let len = ch.len_utf16() as u32;
+        let next = pos.saturating_add(len);
+        if next > start && pos < end {
+            out.push(ch);
+        }
+        if pos >= end {
+            break;
+        }
+        pos = next;
+    }
+    out
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CharClass {
+    Word,
+    Whitespace,
+    Punct,
+}
+
+fn classify_char(ch: char) -> CharClass {
+    if ch.is_alphanumeric() || ch == '_' {
+        CharClass::Word
+    } else if ch.is_whitespace() {
+        CharClass::Whitespace
+    } else {
+        CharClass::Punct
+    }
+}
+
+/// Expands a UTF-16 code unit offset to the surrounding contiguous run of matching
+/// character class (`Word`, `Whitespace`, or `Punct`) without splitting surrogate pairs.
+pub fn word_bounds_utf16(text: &str, utf16_pos: u32) -> (u32, u32) {
+    if text.is_empty() {
+        return (0, 0);
+    }
+    let mut spans: Vec<(u32, u32, CharClass)> = Vec::new();
+    let mut pos: u32 = 0;
+    for ch in text.chars() {
+        let len = ch.len_utf16() as u32;
+        let next = pos.saturating_add(len);
+        spans.push((pos, next, classify_char(ch)));
+        pos = next;
+    }
+    let total_u16 = pos;
+    let clamped = utf16_pos.min(total_u16.saturating_sub(1));
+    let idx = spans
+        .iter()
+        .position(|&(s, e, _)| clamped >= s && clamped < e)
+        .unwrap_or(spans.len() - 1);
+    let target_class = spans[idx].2;
+
+    let mut left_idx = idx;
+    while left_idx > 0 && spans[left_idx - 1].2 == target_class {
+        left_idx -= 1;
+    }
+    let mut right_idx = idx;
+    while right_idx + 1 < spans.len() && spans[right_idx + 1].2 == target_class {
+        right_idx += 1;
+    }
+    (spans[left_idx].0, spans[right_idx].1)
+}
+
 /// Draws the palette onto a window in crisp 1:1 DIPs.
 pub struct Renderer {
     target: ID2D1HwndRenderTarget,
@@ -94,6 +254,7 @@ pub struct Renderer {
     meta_value_format: IDWriteTextFormat,
     ramp_label_format: IDWriteTextFormat,
     action_title_format: IDWriteTextFormat,
+    editor_title_format: IDWriteTextFormat,
     round_stroke: Option<ID2D1StrokeStyle>,
     logo_ring: Option<ID2D1PathGeometry>,
     logo_arrow: Option<ID2D1PathGeometry>,
@@ -300,6 +461,13 @@ impl Renderer {
             13.0,
             DWRITE_TEXT_ALIGNMENT_LEADING,
         )?;
+        let editor_title_format = dwrite_format(
+            &dwrite,
+            FONT_FAMILY,
+            DWRITE_FONT_WEIGHT_SEMI_BOLD,
+            15.5,
+            DWRITE_TEXT_ALIGNMENT_LEADING,
+        )?;
 
         let round_stroke = unsafe {
             let props = D2D1_STROKE_STYLE_PROPERTIES {
@@ -340,6 +508,7 @@ impl Renderer {
             meta_value_format,
             ramp_label_format,
             action_title_format,
+            editor_title_format,
             round_stroke,
             logo_ring,
             logo_arrow,
@@ -374,6 +543,7 @@ impl Renderer {
             &self.meta_value_format,
             &self.ramp_label_format,
             &self.action_title_format,
+            &self.editor_title_format,
         ] {
             unsafe {
                 let sign = self
@@ -464,7 +634,7 @@ impl Renderer {
     }
 
     /// Draws the complete Raycast/Tinycast-inspired palette in pure 1:1 DIPs.
-    pub fn draw(&mut self, model: &Model, theme: &Theme) {
+    pub fn draw(&mut self, model: &Model, theme: &Theme, detail_state: &mut DetailTextState) {
         let metrics = theme.metrics;
         let size = unsafe { self.target.GetSize() };
         let width = size.width;
@@ -475,6 +645,95 @@ impl Renderer {
         unsafe {
             self.target.BeginDraw();
             self.target.Clear(Some(&to_d2d(theme.background)));
+        }
+
+        // Native multi-line text editor surface (e.g. Edit Clipboard Entry).
+        if let Some(editor) = model.editor.as_ref() {
+            detail_state.reset();
+            self.draw_back_button(theme, 12.0, (metrics.field_height - 26.0) / 2.0);
+            let title = if editor.title.is_empty() {
+                "Edit Text"
+            } else {
+                editor.title.as_str()
+            };
+            let title_max_w = (width
+                - metrics.field_inset
+                - if model.header_badge.is_some() {
+                    136.0
+                } else {
+                    20.0
+                })
+            .max(40.0);
+            if let Some(title_layout) =
+                self.layout(title, &self.editor_title_format, title_max_w, 22.0)
+            {
+                if let Some(brush) = self.brush(theme.text) {
+                    unsafe {
+                        self.target.DrawTextLayout(
+                            Vector2 {
+                                X: metrics.field_inset,
+                                Y: (metrics.field_height - 22.0) / 2.0,
+                            },
+                            &title_layout,
+                            &brush,
+                            D2D1_DRAW_TEXT_OPTIONS_CLIP,
+                        );
+                    }
+                }
+            }
+            self.draw_header_badge(model, theme, width);
+
+            // Full-width subtle header divider hairline.
+            self.fill_rect(
+                1.0,
+                metrics.field_height,
+                (width - 1.0).max(1.0),
+                metrics.field_height + 1.0,
+                theme.border,
+            );
+
+            // Sleek rounded surface card framing the native multi-line `editor_edit` control.
+            let card = D2D1_ROUNDED_RECT {
+                rect: D2D_RECT_F {
+                    left: pad + 4.0,
+                    top: layout.list_top + 4.0,
+                    right: (width - pad - 4.0).max(pad + 12.0),
+                    bottom: (layout.list_bottom - 4.0).max(layout.list_top + 12.0),
+                },
+                radiusX: 8.0,
+                radiusY: 8.0,
+            };
+            if let Some(bg) = self.brush(theme.field) {
+                unsafe {
+                    self.target.FillRoundedRectangle(&card, &bg);
+                }
+            }
+            if let Some(border) = self.brush(theme.border) {
+                unsafe {
+                    self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
+                }
+            }
+
+            // Footer bar.
+            let footer_top = height - metrics.footer_height;
+            self.fill_rect(0.0, footer_top, width, height, theme.background_secondary);
+            self.fill_rect(
+                1.0,
+                footer_top,
+                (width - 1.0).max(1.0),
+                footer_top + 1.0,
+                theme.border,
+            );
+            self.draw_footer(model, theme, footer_top, width, metrics.footer_height);
+
+            if let Some(menu) = model.action_menu.as_ref() {
+                self.draw_action_menu(menu, theme, width, height);
+            }
+
+            unsafe {
+                let _ = self.target.EndDraw(None, None);
+            }
+            return;
         }
 
         // 1. Header leading control: clickable `←` back button on sub-screens,
@@ -501,39 +760,7 @@ impl Renderer {
         }
 
         // Optional header mode/filter pill on the right (e.g., "Settings", "● Recording…").
-        if let Some(badge) = model.header_badge.as_deref() {
-            if !badge.is_empty() {
-                let is_recording = badge.contains("Recording");
-                let (badge_bg, badge_border, badge_fg) = if is_recording {
-                    match theme.appearance {
-                        Appearance::Dark => (
-                            Color::rgba(0xf9, 0x73, 0x16, 0x2e),
-                            Color::rgba(0xf9, 0x73, 0x16, 0xa8),
-                            Color::rgb(0xfb, 0x92, 0x3c),
-                        ),
-                        Appearance::Light => (
-                            Color::rgba(0xf9, 0x73, 0x16, 0x1e),
-                            Color::rgba(0xea, 0x58, 0x0c, 0x88),
-                            Color::rgb(0xc2, 0x41, 0x0c),
-                        ),
-                    }
-                } else {
-                    let bg = match theme.appearance {
-                        Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x16),
-                        Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x10),
-                    };
-                    (bg, Color::rgba(0, 0, 0, 0), theme.text)
-                };
-                self.draw_pill_right(
-                    badge,
-                    width - 16.0,
-                    metrics.field_height / 2.0,
-                    badge_bg,
-                    badge_border,
-                    badge_fg,
-                );
-            }
-        }
+        self.draw_header_badge(model, theme, width);
 
         // Compact single-bar mode: render only the borderless search bar (no divider, list, or footer).
         if model.compact
@@ -541,6 +768,7 @@ impl Renderer {
             && model.detail.is_none()
             && model.grid.is_none()
         {
+            detail_state.reset();
             unsafe {
                 let _ = self.target.EndDraw(None, None);
             }
@@ -723,8 +951,20 @@ impl Renderer {
                 let pane_top = metrics.field_height + 1.0;
                 let pane_bottom = height - metrics.footer_height;
                 self.fill_rect(split_x, pane_top, split_x + 1.0, pane_bottom, theme.border);
-                self.draw_detail_pane(detail, theme, split_x + 1.0, pane_top, width, pane_bottom);
+                self.draw_detail_pane(
+                    detail,
+                    theme,
+                    detail_state,
+                    split_x + 1.0,
+                    pane_top,
+                    width,
+                    pane_bottom,
+                );
+            } else {
+                detail_state.reset();
             }
+        } else {
+            detail_state.reset();
         }
 
         // 3. Seamless Footer Bar with minimal brand mark + Primary Action [↵] | Actions [Ctrl] [K].
@@ -1729,6 +1969,43 @@ impl Renderer {
         (start_right - cursor).max(0.0)
     }
 
+    fn draw_header_badge(&mut self, model: &Model, theme: &Theme, width: f32) {
+        if let Some(badge) = model.header_badge.as_deref() {
+            if !badge.is_empty() {
+                let metrics = theme.metrics;
+                let is_recording = badge.contains("Recording");
+                let (badge_bg, badge_border, badge_fg) = if is_recording {
+                    match theme.appearance {
+                        Appearance::Dark => (
+                            Color::rgba(0xf9, 0x73, 0x16, 0x2e),
+                            Color::rgba(0xf9, 0x73, 0x16, 0xa8),
+                            Color::rgb(0xfb, 0x92, 0x3c),
+                        ),
+                        Appearance::Light => (
+                            Color::rgba(0xf9, 0x73, 0x16, 0x1e),
+                            Color::rgba(0xea, 0x58, 0x0c, 0x88),
+                            Color::rgb(0xc2, 0x41, 0x0c),
+                        ),
+                    }
+                } else {
+                    let bg = match theme.appearance {
+                        Appearance::Dark => Color::rgba(0xff, 0xff, 0xff, 0x16),
+                        Appearance::Light => Color::rgba(0x00, 0x00, 0x00, 0x10),
+                    };
+                    (bg, Color::rgba(0, 0, 0, 0), theme.text)
+                };
+                self.draw_pill_right(
+                    badge,
+                    width - 16.0,
+                    metrics.field_height / 2.0,
+                    badge_bg,
+                    badge_border,
+                    badge_fg,
+                );
+            }
+        }
+    }
+
     fn draw_back_button(&mut self, theme: &Theme, left: f32, top: f32) {
         let size = 26.0_f32;
         let rect = D2D1_ROUNDED_RECT {
@@ -1797,6 +2074,7 @@ impl Renderer {
         &mut self,
         detail: &DetailPane,
         theme: &Theme,
+        detail_state: &mut DetailTextState,
         left: f32,
         top: f32,
         right: f32,
@@ -1858,29 +2136,8 @@ impl Renderer {
                     self.target.DrawRoundedRectangle(&card, &ring, 1.0, None);
                 }
             }
-            if detail.color_ramp.is_empty() {
-                if !detail.body.is_empty() {
-                    if let Some(layout) = self.layout(
-                        &detail.body,
-                        &self.detail_body_format,
-                        content_w,
-                        (preview_bottom - (preview_top + sw_h + 12.0)).max(24.0),
-                    ) {
-                        if let Some(fg) = self.brush(theme.text) {
-                            unsafe {
-                                self.target.DrawTextLayout(
-                                    Vector2 {
-                                        X: left + pad,
-                                        Y: preview_top + sw_h + 12.0,
-                                    },
-                                    &layout,
-                                    &fg,
-                                    D2D1_DRAW_TEXT_OPTIONS_CLIP,
-                                );
-                            }
-                        }
-                    }
-                }
+            let body_top = if detail.color_ramp.is_empty() {
+                preview_top + sw_h + 12.0
             } else {
                 let mut cursor_y = preview_top + sw_h + 10.0;
                 let ramp_h = self.draw_color_ramp(
@@ -1891,32 +2148,24 @@ impl Renderer {
                     content_w,
                 );
                 cursor_y += ramp_h + 10.0;
-                if !detail.body.is_empty() && preview_bottom > cursor_y + 8.0 {
-                    if let Some(layout) = self.layout(
-                        &detail.body,
-                        &self.detail_body_format,
-                        content_w,
-                        (preview_bottom - cursor_y).max(20.0),
-                    ) {
-                        if let Some(fg) = self.brush(theme.text) {
-                            unsafe {
-                                self.target.DrawTextLayout(
-                                    Vector2 {
-                                        X: left + pad,
-                                        Y: cursor_y,
-                                    },
-                                    &layout,
-                                    &fg,
-                                    D2D1_DRAW_TEXT_OPTIONS_CLIP,
-                                );
-                            }
-                        }
-                    }
-                }
+                cursor_y
+            };
+            if !detail.body.is_empty() && preview_bottom > body_top + 8.0 {
+                self.draw_scrollable_detail_text(
+                    &detail.body,
+                    theme,
+                    detail_state,
+                    (left + pad, body_top, right - pad, preview_bottom),
+                    0.0,
+                    0.0,
+                );
+            } else {
+                detail_state.reset();
             }
         } else if let (Some(key), Some(img)) =
             (detail.image_key.as_deref(), detail.image.as_deref())
         {
+            detail_state.reset();
             if let Some(bmp) = self.cached_bitmap(key, img) {
                 let aspect = (img.width.max(1) as f32) / (img.height.max(1) as f32);
                 let max_w = content_w;
@@ -1960,13 +2209,14 @@ impl Renderer {
             }
             if preview_bottom > cursor_y + 20.0 {
                 // Subtle inner preview card for text/code/notes/clipboard body.
+                let card_rect = D2D_RECT_F {
+                    left: left + pad,
+                    top: cursor_y,
+                    right: right - pad,
+                    bottom: preview_bottom,
+                };
                 let card = D2D1_ROUNDED_RECT {
-                    rect: D2D_RECT_F {
-                        left: left + pad,
-                        top: cursor_y,
-                        right: right - pad,
-                        bottom: preview_bottom,
-                    },
+                    rect: card_rect,
                     radiusX: 8.0,
                     radiusY: 8.0,
                 };
@@ -1980,32 +2230,22 @@ impl Renderer {
                         self.target.DrawRoundedRectangle(&card, &border, 1.0, None);
                     }
                 }
-                let text_content = if detail.body.trim().is_empty() {
-                    detail.title.as_str()
-                } else {
-                    detail.body.as_str()
-                };
-                if let Some(layout) = self.layout(
+                let text_content = detail_preview_text(detail);
+                self.draw_scrollable_detail_text(
                     text_content,
-                    &self.detail_body_format,
-                    (content_w - 24.0).max(20.0),
-                    (preview_bottom - cursor_y - 20.0).max(20.0),
-                ) {
-                    if let Some(fg) = self.brush(theme.text) {
-                        unsafe {
-                            self.target.DrawTextLayout(
-                                Vector2 {
-                                    X: left + pad + 12.0,
-                                    Y: cursor_y + 10.0,
-                                },
-                                &layout,
-                                &fg,
-                                D2D1_DRAW_TEXT_OPTIONS_CLIP
-                                    | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
-                            );
-                        }
-                    }
-                }
+                    theme,
+                    detail_state,
+                    (
+                        card_rect.left + 1.0,
+                        card_rect.top + 1.0,
+                        card_rect.right - 1.0,
+                        card_rect.bottom - 1.0,
+                    ),
+                    11.0,
+                    9.0,
+                );
+            } else {
+                detail_state.reset();
             }
         }
 
@@ -2080,6 +2320,225 @@ impl Renderer {
         unsafe {
             self.target.PopAxisAlignedClip();
         }
+    }
+
+    /// Paints scrollable, selectable multi-line text inside the Master-Detail pane
+    /// with selection highlight rectangles and an overlay scrollbar when overflowing.
+    #[allow(clippy::too_many_arguments)]
+    fn draw_scrollable_detail_text(
+        &mut self,
+        text: &str,
+        theme: &Theme,
+        detail_state: &mut DetailTextState,
+        clip_rect: (f32, f32, f32, f32),
+        pad_x: f32,
+        pad_y: f32,
+    ) {
+        detail_state.sync_body(text);
+        let (clip_l, clip_t, clip_r, clip_b) = clip_rect;
+        let viewport_w = clip_r - clip_l;
+        let viewport_h = clip_b - clip_t;
+        let base_text_w = viewport_w - pad_x * 2.0;
+        let inner_h = viewport_h - pad_y * 2.0;
+        if text.is_empty() || base_text_w <= 4.0 || inner_h <= 4.0 {
+            detail_state.viewport_rect = None;
+            detail_state.content_height = 0.0;
+            detail_state.scroll_offset = 0.0;
+            return;
+        }
+
+        let mut text_w = base_text_w.max(20.0);
+        let Some(mut layout) = self.layout(text, &self.detail_body_format, text_w, 100_000.0)
+        else {
+            detail_state.viewport_rect = None;
+            detail_state.content_height = 0.0;
+            detail_state.scroll_offset = 0.0;
+            return;
+        };
+        let mut content_h = measure_height(&layout);
+        if content_h > inner_h + 1.0 {
+            let narrower_w = (base_text_w - 10.0).max(20.0);
+            if let Some(narrower) =
+                self.layout(text, &self.detail_body_format, narrower_w, 100_000.0)
+            {
+                text_w = narrower_w;
+                content_h = measure_height(&narrower);
+                layout = narrower;
+            }
+        }
+
+        detail_state.viewport_rect = Some((clip_l, clip_t, clip_r, clip_b));
+        detail_state.text_origin = (clip_l + pad_x, clip_t + pad_y);
+        detail_state.text_width = text_w;
+        detail_state.content_height = content_h + pad_y * 2.0;
+        detail_state.clamp_scroll();
+
+        let (text_x, text_y) = detail_state.text_origin;
+        let scroll = detail_state.scroll_offset;
+        let clip = D2D_RECT_F {
+            left: clip_l,
+            top: clip_t,
+            right: clip_r,
+            bottom: clip_b,
+        };
+        unsafe {
+            self.target
+                .PushAxisAlignedClip(&clip, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        }
+
+        // Paint text selection highlight rects underneath the glyphs.
+        if let Some((sel_start, sel_end)) = detail_state.selected_range() {
+            let sel_len = sel_end.saturating_sub(sel_start);
+            if sel_len > 0 {
+                let mut actual_count: u32 = 0;
+                unsafe {
+                    let _ = layout.HitTestTextRange(
+                        sel_start,
+                        sel_len,
+                        text_x,
+                        text_y - scroll,
+                        None,
+                        &mut actual_count,
+                    );
+                }
+                let count = (actual_count as usize).min(4096);
+                if count > 0 {
+                    let mut buf = vec![DWRITE_HIT_TEST_METRICS::default(); count];
+                    let mut written: u32 = 0;
+                    let ok = unsafe {
+                        layout
+                            .HitTestTextRange(
+                                sel_start,
+                                sel_len,
+                                text_x,
+                                text_y - scroll,
+                                Some(&mut buf),
+                                &mut written,
+                            )
+                            .is_ok()
+                    };
+                    if ok {
+                        let draw_count = (written as usize).min(buf.len());
+                        if let Some(sel_brush) = self.brush(theme.accent.with_alpha(0.36)) {
+                            for m in &buf[..draw_count] {
+                                let rr = D2D1_ROUNDED_RECT {
+                                    rect: D2D_RECT_F {
+                                        left: m.left,
+                                        top: m.top,
+                                        right: m.left + m.width.max(4.0),
+                                        bottom: m.top + m.height,
+                                    },
+                                    radiusX: 2.0,
+                                    radiusY: 2.0,
+                                };
+                                unsafe {
+                                    self.target.FillRoundedRectangle(&rr, &sel_brush);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Some(fg) = self.brush(theme.text) {
+            unsafe {
+                self.target.DrawTextLayout(
+                    Vector2 {
+                        X: text_x,
+                        Y: text_y - scroll,
+                    },
+                    &layout,
+                    &fg,
+                    D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT,
+                );
+            }
+        }
+
+        unsafe {
+            self.target.PopAxisAlignedClip();
+        }
+
+        // Thin overlay vertical scrollbar when text overflows the viewport.
+        if detail_state.max_scroll() > 1.0 {
+            let track_top = clip_t + 4.0;
+            let track_bottom = (clip_b - 4.0).max(track_top);
+            let track_h = track_bottom - track_top;
+            if track_h > 12.0 {
+                let bar_left = (clip_r - 7.0).max(clip_l);
+                let bar_right = (clip_r - 3.5).max(bar_left + 1.0);
+                let track_rr = D2D1_ROUNDED_RECT {
+                    rect: D2D_RECT_F {
+                        left: bar_left,
+                        top: track_top,
+                        right: bar_right,
+                        bottom: track_bottom,
+                    },
+                    radiusX: 1.75,
+                    radiusY: 1.75,
+                };
+                if let Some(track_brush) = self.brush(theme.text_dim.with_alpha(0.10)) {
+                    unsafe {
+                        self.target.FillRoundedRectangle(&track_rr, &track_brush);
+                    }
+                }
+                let ratio = (detail_state.viewport_height() / detail_state.content_height.max(1.0))
+                    .clamp(0.12, 1.0);
+                let thumb_h = (track_h * ratio).clamp(18.0, track_h);
+                let progress =
+                    (detail_state.scroll_offset / detail_state.max_scroll()).clamp(0.0, 1.0);
+                let thumb_top = track_top + progress * (track_h - thumb_h);
+                let thumb_rr = D2D1_ROUNDED_RECT {
+                    rect: D2D_RECT_F {
+                        left: bar_left,
+                        top: thumb_top,
+                        right: bar_right,
+                        bottom: thumb_top + thumb_h,
+                    },
+                    radiusX: 1.75,
+                    radiusY: 1.75,
+                };
+                if let Some(thumb_brush) = self.brush(theme.text_dim.with_alpha(0.42)) {
+                    unsafe {
+                        self.target.FillRoundedRectangle(&thumb_rr, &thumb_brush);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Maps a local DIP coordinate inside the detail preview text into a UTF-16 code unit offset.
+    pub fn hit_test_detail_text(
+        &self,
+        text: &str,
+        text_width: f32,
+        local_x: f32,
+        local_y: f32,
+    ) -> Option<u32> {
+        if text.is_empty() || text_width <= 0.0 {
+            return None;
+        }
+        let layout = self.layout(text, &self.detail_body_format, text_width, 100_000.0)?;
+        let mut is_trailing = BOOL(0);
+        let mut is_inside = BOOL(0);
+        let mut metrics = DWRITE_HIT_TEST_METRICS::default();
+        unsafe {
+            layout
+                .HitTestPoint(
+                    local_x,
+                    local_y,
+                    &mut is_trailing,
+                    &mut is_inside,
+                    &mut metrics,
+                )
+                .ok()?;
+        }
+        let pos = if is_trailing.as_bool() {
+            metrics.textPosition.saturating_add(metrics.length)
+        } else {
+            metrics.textPosition
+        };
+        Some(pos)
     }
 
     /// Paint a horizontal row of rounded tint/shade swatch tiles with tiny centered labels below.
@@ -2260,13 +2719,21 @@ impl Renderer {
             return;
         }
 
-        let start = menu.scroll_start(filtered.len());
-        let visible = filtered
-            .iter()
-            .enumerate()
-            .skip(start)
-            .take(ACTION_MENU_MAX_VISIBLE);
+        let slots = menu.visible_slots(metrics, height);
+        let start = menu.scroll_start_for_slots(filtered.len(), slots);
+        let visible = filtered.iter().enumerate().skip(start).take(slots);
         let mut last_sec: Option<&str> = None;
+
+        let rows_clip = D2D_RECT_F {
+            left: left + 1.0,
+            top: rows_top,
+            right: right - 1.0,
+            bottom: (bottom - 4.0).max(rows_top),
+        };
+        unsafe {
+            self.target
+                .PushAxisAlignedClip(&rows_clip, D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        }
 
         for (slot, (filtered_idx, &raw_idx)) in visible.enumerate() {
             let Some(item) = menu.items.get(raw_idx) else {
@@ -2362,6 +2829,10 @@ impl Renderer {
                     }
                 }
             }
+        }
+
+        unsafe {
+            self.target.PopAxisAlignedClip();
         }
     }
 
@@ -2802,6 +3273,17 @@ fn measure_width(layout: &IDWriteTextLayout) -> f32 {
     }
 }
 
+fn measure_height(layout: &IDWriteTextLayout) -> f32 {
+    let mut metrics = DWRITE_TEXT_METRICS::default();
+    unsafe {
+        if layout.GetMetrics(&mut metrics).is_ok() {
+            metrics.height
+        } else {
+            0.0
+        }
+    }
+}
+
 fn dwrite_format_wrapped(
     dwrite: &IDWriteFactory,
     family: &str,
@@ -3224,5 +3706,118 @@ mod tests {
                 "dark swatch should use light hairline border"
             );
         }
+    }
+
+    #[test]
+    fn utf16_slice_handles_ascii_reversed_empty_and_out_of_range() {
+        assert_eq!(utf16_slice("hello world", 0, 5), "hello");
+        assert_eq!(utf16_slice("hello world", 5, 0), "hello");
+        assert_eq!(utf16_slice("hello world", 3, 3), "");
+        assert_eq!(utf16_slice("", 0, 10), "");
+        assert_eq!(utf16_slice("hello", 2, 999), "llo");
+        assert_eq!(utf16_slice("hello", 100, 200), "");
+    }
+
+    #[test]
+    fn utf16_slice_is_safe_on_surrogate_pairs_and_mixed_cjk_emoji() {
+        // "a😀b" => UTF-16 offsets: 'a'=0..1, '😀'=1..3, 'b'=3..4
+        let s = "a😀b";
+        assert_eq!(utf16_slice(s, 0, 1), "a");
+        assert_eq!(utf16_slice(s, 1, 3), "😀");
+        assert_eq!(utf16_slice(s, 3, 4), "b");
+        assert_eq!(utf16_slice(s, 3, 1), "😀");
+        // Mid-surrogate bounds include overlapping emoji cleanly without panicking.
+        assert_eq!(utf16_slice(s, 1, 2), "😀");
+        assert_eq!(utf16_slice(s, 2, 3), "😀");
+        assert_eq!(utf16_slice(s, 2, 4), "😀b");
+
+        // "🚀🔥✨" => '🚀'=0..2, '🔥'=2..4, '✨'=4..5
+        let emojis = "🚀🔥✨";
+        assert_eq!(utf16_slice(emojis, 0, 2), "🚀");
+        assert_eq!(utf16_slice(emojis, 2, 4), "🔥");
+        assert_eq!(utf16_slice(emojis, 1, 3), "🚀🔥");
+        assert_eq!(utf16_slice(emojis, 4, 5), "✨");
+
+        // "日本語😀test" => '日'=0..1, '本'=1..2, '語'=2..3, '😀'=3..5, "test"=5..9
+        let mixed = "日本語😀test";
+        assert_eq!(utf16_slice(mixed, 0, 3), "日本語");
+        assert_eq!(utf16_slice(mixed, 3, 5), "😀");
+        assert_eq!(utf16_slice(mixed, 4, 9), "😀test");
+        assert_eq!(utf16_slice(mixed, 9, 4), "😀test");
+        assert_eq!(utf16_slice(mixed, 0, 100), mixed);
+    }
+
+    #[test]
+    fn word_bounds_utf16_handles_words_whitespace_punct_cjk_and_surrogates() {
+        assert_eq!(word_bounds_utf16("", 0), (0, 0));
+
+        let ascii = "foo_bar   baz!!!";
+        // "foo_bar" = 0..7, "   " = 7..10, "baz" = 10..13, "!!!" = 13..16
+        assert_eq!(word_bounds_utf16(ascii, 0), (0, 7));
+        assert_eq!(word_bounds_utf16(ascii, 4), (0, 7));
+        assert_eq!(word_bounds_utf16(ascii, 8), (7, 10));
+        assert_eq!(word_bounds_utf16(ascii, 11), (10, 13));
+        assert_eq!(word_bounds_utf16(ascii, 14), (13, 16));
+        // Out-of-bounds clamps to final run.
+        assert_eq!(word_bounds_utf16(ascii, 999), (13, 16));
+
+        // Surrogate pairs / emoji (Punct class): "hi 🚀🔥 ok"
+        // "hi"=0..2, " "=2..3, "🚀"=3..5, "🔥"=5..7, " "=7..8, "ok"=8..10
+        let with_emoji = "hi 🚀🔥 ok";
+        assert_eq!(word_bounds_utf16(with_emoji, 3), (3, 7));
+        // Mid-surrogate offset 4 inside '🚀' expands to the full emoji run without splitting.
+        assert_eq!(word_bounds_utf16(with_emoji, 4), (3, 7));
+        assert_eq!(word_bounds_utf16(with_emoji, 6), (3, 7));
+        assert_eq!(utf16_slice(with_emoji, 3, 7), "🚀🔥");
+
+        // CJK words are alphanumeric.
+        let cjk = "日本語 テスト";
+        assert_eq!(word_bounds_utf16(cjk, 1), (0, 3));
+        assert_eq!(word_bounds_utf16(cjk, 3), (3, 4));
+        assert_eq!(word_bounds_utf16(cjk, 5), (4, 7));
+    }
+
+    #[test]
+    fn detail_text_state_scroll_clamping_and_sync_body() {
+        let mut state = DetailTextState {
+            viewport_rect: Some((10.0, 20.0, 210.0, 120.0)), // height 100
+            content_height: 260.0,                           // max_scroll 160
+            ..DetailTextState::default()
+        };
+        assert_eq!(state.viewport_height(), 100.0);
+        assert_eq!(state.max_scroll(), 160.0);
+        assert!(state.contains_point(10.0, 20.0));
+        assert!(state.contains_point(210.0, 120.0));
+        assert!(!state.contains_point(9.0, 50.0));
+
+        state.scroll_by(50.0);
+        assert_eq!(state.scroll_offset, 50.0);
+        state.scroll_by(500.0);
+        assert_eq!(state.scroll_offset, 160.0);
+        state.scroll_by(-999.0);
+        assert_eq!(state.scroll_offset, 0.0);
+
+        state.sync_body("initial body");
+        state.scroll_by(42.0);
+        state.selection = Some((2, 8));
+        state.dragging = true;
+        assert_eq!(state.selected_range(), Some((2, 8)));
+
+        // Same body preserves scroll and selection.
+        state.sync_body("initial body");
+        assert_eq!(state.scroll_offset, 42.0);
+        assert_eq!(state.selection, Some((2, 8)));
+        assert!(state.dragging);
+
+        // Different body resets scroll, selection, and dragging.
+        state.sync_body("updated body");
+        assert_eq!(state.scroll_offset, 0.0);
+        assert_eq!(state.selection, None);
+        assert!(!state.dragging);
+        assert_eq!(state.selected_range(), None);
+
+        // Degenerate selection returns None.
+        state.selection = Some((5, 5));
+        assert_eq!(state.selected_range(), None);
     }
 }

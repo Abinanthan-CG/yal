@@ -45,8 +45,8 @@ use crate::palette::{PaletteState, SettingRow};
 use crate::screens::{
     calc_history_model, clipboard_model, color_history_model, create_note_model,
     create_quicklink_model, create_snippet_model, downsample_rgba_premultiplied,
-    downsample_square_cover_premultiplied, emoji_model, fallback_search_rows, files_model,
-    notes_model, ocr_preview_model, parse_clipboard_file_paths, quicklink_arg_model,
+    downsample_square_cover_premultiplied, edit_clipboard_model, emoji_model, fallback_search_rows,
+    files_model, notes_model, ocr_preview_model, parse_clipboard_file_paths, quicklink_arg_model,
     quicklinks_model, run_shell_model, set_alias_model, shorten_home_path, shows_create_note_row,
     shows_create_quicklink_row, shows_create_snippet_row, snippets_model, status_screen_model,
     windows_model, NoteDraft, NoteDraftStep, QuicklinkDraft, QuicklinkDraftStep, SnippetDraft,
@@ -257,6 +257,11 @@ enum Mode {
     #[default]
     Launcher,
     Clipboard,
+    EditClipboard {
+        item: ClipboardItem,
+        previous_query: String,
+        previous_selected: usize,
+    },
     Emoji,
     Snippets,
     CreateSnippet(SnippetDraft),
@@ -795,6 +800,9 @@ fn build(
                                 true,
                             );
                         }
+                        if matches!(shown.mode, Mode::EditClipboard { .. }) {
+                            return PaletteReply::Keep;
+                        }
                         let saved_query = shown.query.clone();
                         if let Some(model) =
                             rebuild_current_model(handler_context.as_deref(), &mut shown, None)
@@ -924,11 +932,15 @@ fn build(
                                 fmt,
                             ))
                         }
+                        Mode::EditClipboard { .. } => PaletteReply::Keep,
                         _ => PaletteReply::Keep,
                     }
                 }
                 PaletteEvent::SelectionChanged(idx) => {
                     let mut shown = lock_shown(&handler_shown);
+                    if matches!(shown.mode, Mode::EditClipboard { .. }) {
+                        return PaletteReply::Keep;
+                    }
                     shown.selected = idx;
                     if shown.action_menu_open {
                         return PaletteReply::Keep;
@@ -1241,6 +1253,9 @@ fn build(
                 PaletteEvent::Command(_) => PaletteReply::Keep,
                 PaletteEvent::QueryChanged(query) => {
                     let mut shown = lock_shown(&handler_shown);
+                    if matches!(shown.mode, Mode::EditClipboard { .. }) {
+                        return PaletteReply::Keep;
+                    }
                     shown.query = query.clone();
                     shown.selected = 0;
                     shown.action_menu_open = false;
@@ -1283,6 +1298,7 @@ fn build(
                                 ctx, &mut shown, &query, &items, 0,
                             ))
                         }
+                        Mode::EditClipboard { .. } => PaletteReply::Keep,
                         Mode::Emoji => {
                             let Some(ctx) = handler_context.as_ref() else {
                                 return PaletteReply::Keep;
@@ -1465,6 +1481,29 @@ fn build(
                     handler_context.as_deref(),
                     &close_with_hud,
                 ),
+                PaletteEvent::CopySelection(text) => {
+                    if text.is_empty() {
+                        return PaletteReply::Keep;
+                    }
+                    let dark = handler_context
+                        .as_deref()
+                        .map(|c| tools::settings_prefers_dark(&*c.settings))
+                        .unwrap_or_else(tc_platform_win::apps_use_dark_theme);
+                    if let Some(ctx) = handler_context.as_deref() {
+                        ctx.hotkeys.suppress_clipboard_for_ms(600);
+                    }
+                    match tc_platform_win::clipboard().write_text(&text) {
+                        Ok(()) => tc_ui::show_hud(
+                            format!("Copied selection ({} chars)", text.chars().count()),
+                            dark,
+                        ),
+                        Err(_) => tc_ui::show_hud("Failed to copy selection", dark),
+                    }
+                    PaletteReply::Keep
+                }
+                PaletteEvent::EditorSubmit { text, as_new } => {
+                    handle_editor_submit(text, as_new, &handler_shown, handler_context.as_deref())
+                }
                 PaletteEvent::Action(action, selected) => handle_action(
                     action,
                     selected,
@@ -1696,6 +1735,28 @@ fn handle_escape_or_back(
         Mode::CreateQuicklink(_) => {
             if let Some(ctx) = ctx {
                 enter_quicklinks(ctx, &mut shown)
+            } else {
+                enter_launcher(launcher, ctx, &mut shown, true)
+            }
+        }
+        Mode::EditClipboard {
+            previous_query,
+            previous_selected,
+            ..
+        } => {
+            if let Some(ctx) = ctx {
+                shown.mode = Mode::Clipboard;
+                shown.action_menu_open = false;
+                shown.query = previous_query.clone();
+                let filter = shown.clipboard_filter;
+                let items = ctx.features.search_clipboard_view(&previous_query, filter);
+                let idx = previous_selected.min(items.len().saturating_sub(1));
+                shown.clipboard_items = items.clone();
+                shown.selected = idx;
+                let mut model =
+                    build_clipboard_screen_model(ctx, &mut shown, &previous_query, &items, idx);
+                apply_recording_overlay(&mut model, &shown);
+                PaletteReply::UpdateWithEdit(previous_query, model)
             } else {
                 enter_launcher(launcher, ctx, &mut shown, true)
             }
@@ -2074,6 +2135,7 @@ fn handle_activate(
             drop(shown);
             execute_clipboard_item(ctx, &item, !secondary, close_with_hud)
         }
+        Mode::EditClipboard { .. } => PaletteReply::Keep,
         Mode::Emoji => {
             let Some(ctx) = ctx else {
                 return PaletteReply::Keep;
@@ -2806,6 +2868,165 @@ fn handle_copy_chord(
     }
 }
 
+fn enter_edit_clipboard(
+    ctx: Option<&NativeContext>,
+    shown: &mut Shown,
+    selected: usize,
+) -> PaletteReply {
+    let Some(item) = shown.clipboard_items.get(selected).cloned() else {
+        return PaletteReply::Keep;
+    };
+    if item.kind == ItemKind::Text {
+        let text = item.text.clone().unwrap_or_default();
+        let previous_query = shown.query.clone();
+        shown.mode = Mode::EditClipboard {
+            item: item.clone(),
+            previous_query,
+            previous_selected: selected,
+        };
+        shown.action_menu_open = false;
+        PaletteReply::Navigate(edit_clipboard_model(&item, &text))
+    } else {
+        shown.action_menu_open = false;
+        let toast = ToastModel {
+            kind: ToastKind::Info,
+            message: "Only text clipboard entries can be edited".to_string(),
+        };
+        match rebuild_current_model(ctx, shown, Some(toast)) {
+            Some(model) => PaletteReply::Update(model),
+            None => PaletteReply::Keep,
+        }
+    }
+}
+
+fn handle_editor_submit(
+    text: String,
+    as_new: bool,
+    shown_lock: &Arc<Mutex<Shown>>,
+    ctx: Option<&NativeContext>,
+) -> PaletteReply {
+    let (item, previous_query, previous_selected, filter) = {
+        let shown = lock_shown(shown_lock);
+        let Mode::EditClipboard {
+            item,
+            previous_query,
+            previous_selected,
+        } = shown.mode.clone()
+        else {
+            return PaletteReply::Keep;
+        };
+        (
+            item,
+            previous_query,
+            previous_selected,
+            shown.clipboard_filter,
+        )
+    };
+    let dark = ctx
+        .map(|c| tools::settings_prefers_dark(&*c.settings))
+        .unwrap_or_else(tc_platform_win::apps_use_dark_theme);
+    if text.trim().is_empty() {
+        tc_ui::show_hud("Cannot save empty text", dark);
+        return PaletteReply::Keep;
+    }
+    let Some(ctx) = ctx else {
+        return PaletteReply::Keep;
+    };
+    if !as_new {
+        match ctx.features.update_clipboard_text(&item, &text) {
+            Ok(Some(updated)) => {
+                let items = ctx.features.search_clipboard_view(&previous_query, filter);
+                let idx = items
+                    .iter()
+                    .position(|c| c.id == updated.id)
+                    .unwrap_or_else(|| previous_selected.min(items.len().saturating_sub(1)));
+                let mut shown = lock_shown(shown_lock);
+                shown.mode = Mode::Clipboard;
+                shown.action_menu_open = false;
+                shown.query = previous_query.clone();
+                shown.clipboard_items = items.clone();
+                shown.selected = idx;
+                let mut model =
+                    build_clipboard_screen_model(ctx, &mut shown, &previous_query, &items, idx);
+                apply_recording_overlay(&mut model, &shown);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Success,
+                    message: "Updated clipboard entry".to_string(),
+                });
+                PaletteReply::UpdateWithEdit(previous_query, model)
+            }
+            Ok(None) => {
+                let items = ctx.features.search_clipboard_view(&previous_query, filter);
+                let idx = previous_selected.min(items.len().saturating_sub(1));
+                let mut shown = lock_shown(shown_lock);
+                shown.mode = Mode::Clipboard;
+                shown.action_menu_open = false;
+                shown.query = previous_query.clone();
+                shown.clipboard_items = items.clone();
+                shown.selected = idx;
+                let mut model =
+                    build_clipboard_screen_model(ctx, &mut shown, &previous_query, &items, idx);
+                apply_recording_overlay(&mut model, &shown);
+                model.toast = Some(ToastModel {
+                    kind: ToastKind::Info,
+                    message: "Entry no longer exists".to_string(),
+                });
+                PaletteReply::UpdateWithEdit(previous_query, model)
+            }
+            Err(err) => {
+                tc_ui::show_hud(err, dark);
+                PaletteReply::Keep
+            }
+        }
+    } else {
+        match ctx.features.add_clipboard_text(&text) {
+            Ok(Some(created)) => {
+                ctx.hotkeys.suppress_clipboard_for_ms(600);
+                let copied = tc_platform_win::clipboard().write_text(&text).is_ok();
+                let mut active_filter = filter;
+                let mut items = ctx.features.search_clipboard_view("", active_filter);
+                if !items.iter().any(|c| c.id == created.id) {
+                    active_filter = ClipboardViewFilter::All;
+                    items = ctx.features.search_clipboard_view("", active_filter);
+                }
+                let idx = items.iter().position(|c| c.id == created.id).unwrap_or(0);
+                let mut shown = lock_shown(shown_lock);
+                shown.mode = Mode::Clipboard;
+                shown.action_menu_open = false;
+                shown.query.clear();
+                shown.clipboard_filter = active_filter;
+                shown.clipboard_items = items.clone();
+                shown.selected = idx;
+                let mut model = build_clipboard_screen_model(ctx, &mut shown, "", &items, idx);
+                apply_recording_overlay(&mut model, &shown);
+                model.toast = Some(if copied {
+                    ToastModel {
+                        kind: ToastKind::Success,
+                        message: "Saved as new copy & copied to clipboard".to_string(),
+                    }
+                } else {
+                    ToastModel {
+                        kind: ToastKind::Info,
+                        message: "Saved as new copy (failed to copy to clipboard)".to_string(),
+                    }
+                });
+                PaletteReply::Navigate(model)
+            }
+            Ok(None) => {
+                tc_ui::show_hud(
+                    "Entry could not be added (check clipboard length/policy)",
+                    dark,
+                );
+                PaletteReply::Keep
+            }
+            Err(err) => {
+                tc_ui::show_hud(err, dark);
+                PaletteReply::Keep
+            }
+        }
+    }
+}
+
 fn handle_action(
     action: ActionKey,
     selected: usize,
@@ -2821,7 +3042,17 @@ fn handle_action(
     }
 
     let mut shown = lock_shown(shown_lock);
+    if matches!(shown.mode, Mode::EditClipboard { .. }) {
+        return PaletteReply::Keep;
+    }
     shown.selected = selected;
+
+    if action == ActionKey::CtrlE {
+        if shown.mode == Mode::Clipboard {
+            return enter_edit_clipboard(ctx, &mut shown, selected);
+        }
+        return PaletteReply::Keep;
+    }
 
     // 0. `Down` while in Compact Mode: expand the single-bar palette into Suggestions.
     if action == ActionKey::Expand {
@@ -3605,6 +3836,9 @@ fn handle_action_menu_choice(
         shown.action_menu_open = false;
         (shown.mode.clone(), shown.selected, shown.query.clone())
     };
+    if matches!(mode, Mode::EditClipboard { .. }) {
+        return PaletteReply::Keep;
+    }
 
     match action_id {
         // Common toggle / primary / copy actions
@@ -3835,6 +4069,13 @@ fn handle_action_menu_choice(
                 close_reply,
                 close_with_hud,
             )
+        }
+        actions::id::CLIP_EDIT => {
+            let mut shown = lock_shown(shown_lock);
+            if shown.mode != Mode::Clipboard {
+                return PaletteReply::Keep;
+            }
+            enter_edit_clipboard(ctx, &mut shown, selected)
         }
         actions::id::SET_HOTKEY => {
             let Some(ctx) = ctx else {
@@ -4260,6 +4501,7 @@ fn rebuild_current_model(
             let items = shown.clipboard_items.clone();
             build_clipboard_screen_model(ctx, shown, &query, &items, sel)
         }
+        Mode::EditClipboard { .. } => return None,
         Mode::Emoji => emoji_model(&query, shown.emoji_cells.clone(), sel),
         Mode::Snippets => {
             let ctx = ctx?;
@@ -4351,8 +4593,8 @@ fn resolve_alias_row(
 
 /// Compose Root Search results in Raycast priority order:
 /// Calculator hero card → Exact Alias Match → Installed Applications →
-/// Quicklinks & Snippets → Windows Settings → Commands & Window/System Actions →
-/// Indexed Files → Fallback Web Search.
+/// Quicklinks & Snippets → Built-in & Custom Commands → Windows Settings →
+/// Window/System Actions → Indexed Files → Fallback Web Search.
 fn build_root_search_rows(
     launcher: &LauncherState,
     ctx: Option<&NativeContext>,
@@ -4361,6 +4603,7 @@ fn build_root_search_rows(
     let base = launcher.search(query);
     let mut calc_rows = Vec::new();
     let mut app_rows = Vec::new();
+    let mut command_rows = Vec::new();
     let mut other_rows = Vec::new();
     let mut file_rows = Vec::new();
 
@@ -4368,6 +4611,7 @@ fn build_root_search_rows(
         match row.kind.as_str() {
             CALCULATOR_SECTION => calc_rows.push(row),
             APPLICATIONS => app_rows.push(row),
+            COMMAND_SECTION | CUSTOM_COMMAND_SECTION => command_rows.push(row),
             FILE_SECTION => file_rows.push(row),
             _ => other_rows.push(row),
         }
@@ -4424,6 +4668,7 @@ fn build_root_search_rows(
             + app_rows.len()
             + quicklink_rows.len()
             + snippet_rows.len()
+            + command_rows.len()
             + win_setting_rows.len()
             + other_rows.len()
             + file_rows.len()
@@ -4461,6 +4706,9 @@ fn build_root_search_rows(
         push_unique(row);
     }
     for row in snippet_rows {
+        push_unique(row);
+    }
+    for row in command_rows {
         push_unique(row);
     }
     for row in win_setting_rows {
@@ -5876,6 +6124,22 @@ mod tests {
             .iter()
             .skip(1)
             .any(|r| r.kind == WIN_SETTING_SECTION && r.target == "ms-settings:display"));
+    }
+
+    #[test]
+    fn root_search_ranks_builtin_commands_above_windows_settings() {
+        let launcher = LauncherState::from_programs(
+            Vec::new(),
+            std::path::PathBuf::from("unused-ranking.json"),
+        );
+        let rows = build_root_search_rows(&launcher, None, "clipboard history");
+        assert!(!rows.is_empty());
+        assert_eq!(rows[0].kind, COMMAND_SECTION);
+        assert_eq!(rows[0].name, "Clipboard History");
+        assert!(rows
+            .iter()
+            .skip(1)
+            .any(|r| r.kind == WIN_SETTING_SECTION && r.name == "Clipboard Settings"));
     }
 
     #[test]

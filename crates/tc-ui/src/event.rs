@@ -20,6 +20,8 @@ pub enum ActionKey {
     CtrlH,
     /// `Ctrl+R` — refresh live rates or re-index files.
     CtrlR,
+    /// `Ctrl+E` — edit selected item (e.g. Clipboard text entry).
+    CtrlE,
     /// `Alt+Left` or `Ctrl+[` — navigate back one screen.
     Back,
     /// `Ctrl+D` (or `Ctrl+Shift+Backspace`) — remove/recycle selected item.
@@ -49,6 +51,10 @@ pub enum PaletteEvent {
     QuickSelect(usize),
     /// Copy chord (`Alt+C` — Copy Path / Copy Unformatted).
     CopyChord(usize),
+    /// The user copied a selected text range from the Detail preview pane (`Ctrl+C` or right-click).
+    CopySelection(String),
+    /// The user submitted the multi-line text editor (`Ctrl+Enter`/`Ctrl+S` -> `as_new: false`; `Ctrl+Shift+Enter`/`Ctrl+Shift+S` -> `as_new: true`).
+    EditorSubmit { text: String, as_new: bool },
     /// The user pressed an action chord along with the currently selected index.
     Action(ActionKey, usize),
     /// The user activated an entry inside the floating `Ctrl+K` Action Panel popover.
@@ -169,7 +175,13 @@ mod tests {
             PaletteEvent::QuaternaryActivated(0),
             PaletteEvent::QuickSelect(0),
             PaletteEvent::CopyChord(0),
+            PaletteEvent::CopySelection("hello".to_string()),
+            PaletteEvent::EditorSubmit {
+                text: "edited".to_string(),
+                as_new: false,
+            },
             PaletteEvent::Action(ActionKey::Tab, 0),
+            PaletteEvent::Action(ActionKey::CtrlE, 0),
             PaletteEvent::ActionMenuActivated("open".to_string()),
             PaletteEvent::ActionMenuDismissed,
             PaletteEvent::Escape,

@@ -886,6 +886,58 @@ impl FeatureStores {
         lock_or_recover(&self.paste_queue).note_external_change();
     }
 
+    /// Update the text of an existing text clipboard entry in-place without
+    /// changing its identity, timestamp, or pin state.
+    pub fn update_clipboard_text(
+        &self,
+        item: &ClipboardItem,
+        text: &str,
+    ) -> Result<Option<ClipboardItem>, String> {
+        let mut guard = lock_or_recover(&self.clipboard);
+        let Some(store) = guard.as_mut() else {
+            return Err("Clipboard history is unavailable".to_string());
+        };
+        store.update_text(text, item).map_err(|err| match err {
+            tc_clipboard::UpdateError::TooLong => {
+                "Text exceeds the 32,000-character limit".to_string()
+            }
+            tc_clipboard::UpdateError::WriteFailed => {
+                "Failed to save edited clipboard entry".to_string()
+            }
+        })
+    }
+
+    /// Record a newly edited text copy as a distinct entry at the top of
+    /// clipboard history and return the created item if inserted.
+    pub fn add_clipboard_text(&self, text: &str) -> Result<Option<ClipboardItem>, String> {
+        if text.is_empty() {
+            return Ok(None);
+        }
+        if text.chars().count() > tc_clipboard::store::MAX_TEXT_LENGTH {
+            return Err("Text exceeds the 32,000-character limit".to_string());
+        }
+        let created = {
+            let mut guard = lock_or_recover(&self.clipboard);
+            let Some(store) = guard.as_mut() else {
+                return Err("Clipboard history is unavailable".to_string());
+            };
+            store
+                .add_text(text, Some("YAL"))
+                .map_err(|_| "Failed to save clipboard copy".to_string())?;
+            store
+                .items()
+                .first()
+                .filter(|i| {
+                    i.kind == tc_clipboard::ItemKind::Text && i.text.as_deref() == Some(text)
+                })
+                .cloned()
+        };
+        if created.is_some() {
+            lock_or_recover(&self.paste_queue).note_external_change();
+        }
+        Ok(created)
+    }
+
     /// Record copied file paths into SQLite clipboard history.
     pub fn record_clipboard_files(&self, paths: &[String], source: Option<&str>) {
         if paths.is_empty() {
@@ -2064,6 +2116,128 @@ mod tests {
         assert_eq!(stores.clear_unpinned_colors(), 1);
         assert!(stores.delete_color("#112233"));
         assert!(stores.color_history_items("").is_empty());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn update_clipboard_text_updates_in_place_and_validates_bounds() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-features-clip-update-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        let paths = Paths {
+            data_dir: dir.join("data"),
+            cache_dir: dir.join("cache"),
+            home_dir: dir.join("home"),
+            settings_file: dir.join("settings.json"),
+        };
+        let stores = FeatureStores::open(&paths);
+        stores.record_clipboard_text("original text", Some("Notepad"));
+
+        let original = stores
+            .search_clipboard("", ClipboardFilter::All)
+            .into_iter()
+            .next()
+            .expect("recorded item");
+        stores.toggle_clipboard_pin(&original);
+        let pinned = stores
+            .search_clipboard("", ClipboardFilter::All)
+            .into_iter()
+            .next()
+            .expect("pinned item");
+        assert!(pinned.pinned_at.is_some());
+
+        let updated = stores
+            .update_clipboard_text(&pinned, "edited text")
+            .expect("update succeeds")
+            .expect("item exists");
+        assert_eq!(updated.id, pinned.id);
+        assert_eq!(updated.pinned_at, pinned.pinned_at);
+        assert_eq!(updated.text.as_deref(), Some("edited text"));
+
+        let persisted = stores
+            .search_clipboard("", ClipboardFilter::All)
+            .into_iter()
+            .next()
+            .expect("persisted item");
+        assert_eq!(persisted.id, pinned.id);
+        assert_eq!(persisted.pinned_at, pinned.pinned_at);
+        assert_eq!(persisted.text.as_deref(), Some("edited text"));
+
+        let too_long = "x".repeat(tc_clipboard::store::MAX_TEXT_LENGTH + 1);
+        let err = stores
+            .update_clipboard_text(&pinned, &too_long)
+            .expect_err("over-limit text must fail");
+        assert_eq!(err, "Text exceeds the 32,000-character limit");
+
+        let mut missing = ClipboardItem::text("missing", None);
+        missing.id = "nonexistent-entry-id".to_string();
+        assert_eq!(
+            stores
+                .update_clipboard_text(&missing, "still missing")
+                .expect("missing entry returns Ok(None)"),
+            None
+        );
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn add_clipboard_text_creates_distinct_copy_and_validates_bounds() {
+        let dir = std::env::temp_dir().join(format!(
+            "yal-features-clip-add-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        ));
+        let paths = Paths {
+            data_dir: dir.join("data"),
+            cache_dir: dir.join("cache"),
+            home_dir: dir.join("home"),
+            settings_file: dir.join("settings.json"),
+        };
+        let stores = FeatureStores::open(&paths);
+        stores.record_clipboard_text("original entry", Some("Notepad"));
+        let original = stores
+            .search_clipboard("", ClipboardFilter::All)
+            .into_iter()
+            .next()
+            .expect("original entry");
+
+        let created = stores
+            .add_clipboard_text("saved copy")
+            .expect("add copy succeeds")
+            .expect("new entry returned");
+        assert_ne!(created.id, original.id);
+        assert_eq!(created.text.as_deref(), Some("saved copy"));
+        assert_eq!(created.source_bundle_id.as_deref(), Some("YAL"));
+
+        let all = stores.search_clipboard("", ClipboardFilter::All);
+        assert_eq!(all.len(), 2);
+        assert!(all
+            .iter()
+            .any(|i| i.id == original.id && i.text.as_deref() == Some("original entry")));
+        assert!(all
+            .iter()
+            .any(|i| i.id == created.id && i.text.as_deref() == Some("saved copy")));
+
+        assert_eq!(
+            stores
+                .add_clipboard_text("")
+                .expect("empty returns Ok(None)"),
+            None
+        );
+
+        let too_long = "y".repeat(tc_clipboard::store::MAX_TEXT_LENGTH + 1);
+        let err = stores
+            .add_clipboard_text(&too_long)
+            .expect_err("over-limit text must fail");
+        assert_eq!(err, "Text exceeds the 32,000-character limit");
+
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
